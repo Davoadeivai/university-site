@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: university-site
+    runtime: python
+    buildCommand: "cd university_site && bash build.sh"
+    startCommand: "cd university_site && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: SECRET_KEY
+        scope: build,runtime
+        value: ${SECRET_KEY}
+      - key: DEBUG
+        scope: build,runtime
+        value: "False"
+      - key: ALLOWED_HOSTS
+        scope: build,runtime
+        value: ${RENDER_EXTERNAL_HOSTNAME}
+      - key: DATABASE_URL
+        scope: build,runtime
+        value: ${DATABASE_URL}
+      - key: EMAIL_HOST_USER
+        scope: build,runtime
+        value: ${EMAIL_HOST_USER}
+      - key: EMAIL_HOST_PASSWORD
+        scope: build,runtime
+        value: ${EMAIL_HOST_PASSWORD}
+
+  - type: postgres
+    name: university-db
+    plan: free
