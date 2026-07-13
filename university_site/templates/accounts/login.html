@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">ورود به سامانه</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5" data-aos="fade-up">
+                <div class="uni-card p-5">
+                    <div class="text-center mb-4">
+                        <div class="logo-placeholder mx-auto mb-3" style="width:70px;height:70px;font-size:30px;">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h3 class="fw-bold text-primary-uni">ورود به سامانه</h3>
+                        <p class="text-muted" style="font-size:14px;">با حساب کاربری دانشگاه وارد شوید</p>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">نام کاربری</label>
+                            <input type="text" name="username" class="form-control" autofocus required placeholder="نام کاربری">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">رمز عبور</label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="login-password" class="form-control" required placeholder="رمز عبور">
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('login-password', this)" tabindex="-1" title="نمایش/پنهان رمز">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary-uni w-100" style="padding:13px;">
+                            <i class="fas fa-sign-in-alt"></i> ورود
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'accounts:password_reset_request' %}" class="text-muted" style="font-size:13px;">فراموشی رمز عبور</a>
+                    </div>
+                    <hr class="my-3">
+                    <div class="text-center">
+                        <span class="text-muted" style="font-size:13px;">حساب کاربری ندارید؟</span>
+                        <a href="{% url 'accounts:register' %}" style="font-size:13px;"> ثبت‌نام کنید</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function togglePassword(fieldId, btn) {
+    var input = document.getElementById(fieldId);
+    var icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+</script>
+{% endblock %}

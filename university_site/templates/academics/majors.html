@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">رشته‌های تحصیلی</h1></div></div>
+<section class="section"><div class="container">
+<div class="d-flex gap-2 flex-wrap mb-4" data-aos="fade-up">
+<a href="{% url 'academics:majors' %}" class="tag-badge {% if not degree %}active{% endif %}">همه</a>
+<a href="?degree=associate" class="tag-badge {% if degree == 'associate' %}active{% endif %}">کاردانی</a>
+<a href="?degree=bachelor" class="tag-badge {% if degree == 'bachelor' %}active{% endif %}">کارشناسی</a>
+<a href="?degree=master" class="tag-badge {% if degree == 'master' %}active{% endif %}">ارشد</a>
+<a href="?degree=phd" class="tag-badge {% if degree == 'phd' %}active{% endif %}">دکتری</a>
+</div>
+<div class="row g-4">
+{% for major in majors %}
+<div class="col-md-6 col-lg-4" data-aos="fade-up">
+<a href="{{ major.get_absolute_url }}" class="text-decoration-none">
+<div class="dept-card">
+<div class="dept-icon"><i class="fas fa-graduation-cap"></i></div>
+<h3 class="dept-title">{{ major.name }}</h3>
+<span class="uni-card-badge">{{ major.get_degree_display }}</span>
+{% if major.department %}<div class="text-muted mt-1" style="font-size:13px;">{{ major.department.name }}</div>{% endif %}
+<div class="dept-stats mt-3">
+<div class="dept-stat"><strong>{{ major.total_credits }}</strong>واحد</div>
+<div class="dept-stat"><strong>{{ major.capacity }}</strong>ظرفیت</div>
+</div>
+</div></a></div>
+{% empty %}
+<div class="col-12 text-center py-5 text-muted"><i class="fas fa-graduation-cap fa-3x mb-3 d-block opacity-25"></i>رشته‌ای یافت نشد</div>
+{% endfor %}
+</div></div></section>
+{% endblock %}

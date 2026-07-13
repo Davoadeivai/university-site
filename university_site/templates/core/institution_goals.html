@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:about' %}">درباره موسسه</a></li>
+                <li class="breadcrumb-item active">اهداف موسسه</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">اهداف موسسه</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <!-- Intro -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <div class="dept-icon mx-auto mb-3" style="width:70px;height:70px;font-size:2rem;">
+                    <i class="fas fa-bullseye text-primary"></i>
+                </div>
+                <h2 class="section-title">اهداف و آرمان‌های موسسه</h2>
+                <p class="text-muted" style="font-size:15px;line-height:2;">
+                    موسسه آموزش عالی با تکیه بر ارزش‌های بنیادین علم، اخلاق و توسعه، اهداف راهبردی روشنی را در حوزه‌های آموزشی، پژوهشی، فرهنگی و اجتماعی ترسیم نموده است.
+                </p>
+            </div>
+        </div>
+
+        {% if goals %}
+
+        <!-- Strategic Goals -->
+        {% if strategic %}
+        <div class="mb-5" data-aos="fade-up">
+            <h3 class="mb-4 d-flex align-items-center gap-2">
+                <span class="badge bg-primary rounded-pill px-3 py-2" style="font-size:14px;">
+                    <i class="fas fa-chess-king me-1"></i> اهداف راهبردی
+                </span>
+            </h3>
+            <div class="row g-4">
+                {% for goal in strategic %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                    <div class="dept-card h-100">
+                        <div class="dept-icon text-primary"><i class="{{ goal.icon|default:'fas fa-bullseye' }}"></i></div>
+                        <h5 class="dept-title">{{ goal.title }}</h5>
+                        {% if goal.description %}
+                        <p class="text-muted" style="font-size:14px;line-height:2;">{{ goal.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Educational Goals -->
+        {% if educational %}
+        <div class="mb-5" data-aos="fade-up">
+            <h3 class="mb-4 d-flex align-items-center gap-2">
+                <span class="badge bg-success rounded-pill px-3 py-2" style="font-size:14px;">
+                    <i class="fas fa-graduation-cap me-1"></i> اهداف آموزشی
+                </span>
+            </h3>
+            <div class="row g-4">
+                {% for goal in educational %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                    <div class="dept-card h-100">
+                        <div class="dept-icon text-success"><i class="{{ goal.icon|default:'fas fa-chalkboard-teacher' }}"></i></div>
+                        <h5 class="dept-title">{{ goal.title }}</h5>
+                        {% if goal.description %}
+                        <p class="text-muted" style="font-size:14px;line-height:2;">{{ goal.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Research Goals -->
+        {% if research %}
+        <div class="mb-5" data-aos="fade-up">
+            <h3 class="mb-4 d-flex align-items-center gap-2">
+                <span class="badge bg-info rounded-pill px-3 py-2" style="font-size:14px;">
+                    <i class="fas fa-flask me-1"></i> اهداف پژوهشی
+                </span>
+            </h3>
+            <div class="row g-4">
+                {% for goal in research %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                    <div class="dept-card h-100">
+                        <div class="dept-icon text-info"><i class="{{ goal.icon|default:'fas fa-microscope' }}"></i></div>
+                        <h5 class="dept-title">{{ goal.title }}</h5>
+                        {% if goal.description %}
+                        <p class="text-muted" style="font-size:14px;line-height:2;">{{ goal.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Cultural Goals -->
+        {% if cultural %}
+        <div class="mb-5" data-aos="fade-up">
+            <h3 class="mb-4 d-flex align-items-center gap-2">
+                <span class="badge bg-warning rounded-pill px-3 py-2" style="font-size:14px;">
+                    <i class="fas fa-theater-masks me-1"></i> اهداف فرهنگی
+                </span>
+            </h3>
+            <div class="row g-4">
+                {% for goal in cultural %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                    <div class="dept-card h-100">
+                        <div class="dept-icon text-warning"><i class="{{ goal.icon|default:'fas fa-palette' }}"></i></div>
+                        <h5 class="dept-title">{{ goal.title }}</h5>
+                        {% if goal.description %}
+                        <p class="text-muted" style="font-size:14px;line-height:2;">{{ goal.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Social Goals -->
+        {% if social %}
+        <div class="mb-5" data-aos="fade-up">
+            <h3 class="mb-4 d-flex align-items-center gap-2">
+                <span class="badge bg-danger rounded-pill px-3 py-2" style="font-size:14px;">
+                    <i class="fas fa-users me-1"></i> اهداف اجتماعی
+                </span>
+            </h3>
+            <div class="row g-4">
+                {% for goal in social %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                    <div class="dept-card h-100">
+                        <div class="dept-icon text-danger"><i class="{{ goal.icon|default:'fas fa-hand-holding-heart' }}"></i></div>
+                        <h5 class="dept-title">{{ goal.title }}</h5>
+                        {% if goal.description %}
+                        <p class="text-muted" style="font-size:14px;line-height:2;">{{ goal.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Default static content if no goals in DB -->
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-primary"><i class="fas fa-chess-king"></i></div>
+                    <h5 class="dept-title">توسعه آموزش عالی کاربردی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">گسترش آموزش عالی کاربردی متناسب با نیازهای بازار کار و صنعت کشور.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-success"><i class="fas fa-graduation-cap"></i></div>
+                    <h5 class="dept-title">تربیت نیروی انسانی متخصص</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">تأمین نیروی انسانی ماهر و متخصص مورد نیاز بخش‌های مختلف اقتصادی و اجتماعی.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-info"><i class="fas fa-flask"></i></div>
+                    <h5 class="dept-title">ارتقاء پژوهش‌های کاربردی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">انجام تحقیقات کاربردی در راستای رفع نیازهای واقعی جامعه و صنعت.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-warning"><i class="fas fa-handshake"></i></div>
+                    <h5 class="dept-title">ارتباط مؤثر با صنعت</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">ایجاد و تقویت پیوند مستحکم بین موسسه و بخش صنعت و اقتصاد.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-danger"><i class="fas fa-globe"></i></div>
+                    <h5 class="dept-title">توسعه همکاری‌های بین‌المللی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">گسترش ارتباطات و همکاری‌های علمی با دانشگاه‌ها و موسسات معتبر جهانی.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="500">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-secondary"><i class="fas fa-star"></i></div>
+                    <h5 class="dept-title">ارتقاء کیفیت آموزشی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">بهبود مستمر کیفیت آموزش از طریق بهره‌گیری از روش‌های نوین تدریس و فناوری.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Related Links -->
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'core:about' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-info-circle"></i> معرفی موسسه
+            </a>
+            <a href="{% url 'core:board_founders' %}" class="btn btn-outline-success me-2">
+                <i class="fas fa-users"></i> هیات موسس
+            </a>
+            <a href="{% url 'core:board_trustees' %}" class="btn btn-outline-warning">
+                <i class="fas fa-user-tie"></i> هیات امنا
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

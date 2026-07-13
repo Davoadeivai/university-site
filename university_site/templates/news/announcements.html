@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">اطلاعیه‌ها</h1></div></div>
+<section class="section"><div class="container">
+{% for item in items %}
+<a href="{{ item.get_absolute_url }}" class="text-decoration-none">
+<div class="announce-card announce-urgent mb-3" data-aos="fade-up">
+<i class="fas fa-bullhorn text-danger fa-lg"></i>
+<div class="flex-grow-1"><div class="announce-title" style="font-size:15px;">{{ item.title }}</div>
+<div class="announce-date">{{ item.published_at|jalali_date }}</div>
+<p class="text-muted mt-1 mb-0" style="font-size:13px;">{{ item.summary|truncatewords:20 }}</p></div>
+<i class="fas fa-chevron-left text-muted" style="font-size:12px;"></i>
+</div></a>
+{% empty %}
+<div class="text-center py-5 text-muted"><i class="fas fa-bullhorn fa-3x mb-3 d-block opacity-25"></i>اطلاعیه‌ای موجود نیست</div>
+{% endfor %}
+</div></section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">خدمات الکترونیکی</h1></div></div>
+<section class="section"><div class="container">
+<div class="row g-4">
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up"><a href="{% url 'academics:students_panel' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-graduation-cap"></i></div><div class="quick-link-title">سامانه آموزشی</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="50"><a href="{% url 'academics:elearning' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-laptop"></i></div><div class="quick-link-title">LMS</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="100"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-envelope"></i></div><div class="quick-link-title">ایمیل دانشگاهی</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150"><a href="{% url 'library:library' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-book"></i></div><div class="quick-link-title">کتابخانه</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-credit-card"></i></div><div class="quick-link-title">پرداخت شهریه</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="250"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-heart"></i></div><div class="quick-link-title">سامانه رفاهی</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300"><a href="{% url 'research:theses' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-scroll"></i></div><div class="quick-link-title">پایان‌نامه‌ها</div></a></div>
+<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="350"><a href="{% url 'admissions:apply' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-file-alt"></i></div><div class="quick-link-title">پذیرش آنلاین</div></a></div>
+</div></div></section>
+{% endblock %}

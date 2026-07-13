@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">فارغ‌التحصیلان</h1></div></div>
+<section class="section"><div class="container">
+{% if featured_alumni %}
+<h3 class="section-title mb-4">فارغ‌التحصیلان برگزیده</h3>
+<div class="row g-4 mb-5">
+{% for person in featured_alumni %}
+<div class="col-md-6 col-lg-4" data-aos="fade-up">
+<div class="alumni-card">{% if person.photo %}<img src="{{ person.photo.url }}" alt="{{ person.full_name }}" class="alumni-photo mb-3">{% else %}<div class="prof-avatar-placeholder" style="margin:0 auto 12px;"><i class="fas fa-user-tie"></i></div>{% endif %}
+<h5 class="fw-bold text-primary-uni">{{ person.full_name }}</h5>
+<p class="text-muted mb-1" style="font-size:13px;">{{ person.major }} | {{ person.degree }} | {{ person.graduation_year }}</p>
+{% if person.current_position %}<p class="text-primary fw-bold mb-1" style="font-size:13px;">{{ person.current_position }}</p>{% endif %}
+{% if person.company %}<small class="text-muted">{{ person.company }}</small>{% endif %}
+{% if person.linkedin %}<div class="mt-2"><a href="{{ person.linkedin }}" target="_blank" class="prof-link-btn"><i class="fab fa-linkedin"></i></a></div>{% endif %}
+</div></div>{% endfor %}
+</div>{% endif %}
+<h3 class="section-title mb-4">همه فارغ‌التحصیلان</h3>
+<div class="row g-3">
+{% for person in alumni_list %}
+<div class="col-12" data-aos="fade-up">
+<div class="announce-card"><div class="flex-grow-1"><div class="announce-title" style="font-size:14px;">{{ person.full_name }}</div><div class="announce-date">{{ person.major }} | {{ person.get_degree_display|default:person.degree }} | {{ person.graduation_year }}</div></div>{% if person.current_position %}<span class="text-muted" style="font-size:12px;">{{ person.current_position }}</span>{% endif %}</div></div>
+{% empty %}
+<div class="col-12 text-center py-5 text-muted"><i class="fas fa-user-tie fa-3x mb-3 d-block opacity-25"></i>اطلاعاتی ثبت نشده</div>
+{% endfor %}
+</div></div></section>
+{% endblock %}

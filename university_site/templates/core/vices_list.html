@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">معاونت‌ها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">معاونت‌های دانشگاه</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <div class="dept-icon mx-auto mb-3" style="width:70px;height:70px;font-size:2rem;">
+                    <i class="fas fa-sitemap text-primary"></i>
+                </div>
+                <h2 class="section-title">معاونت‌های دانشگاه</h2>
+                <p class="text-muted" style="font-size:15px;line-height:2;">
+                    دانشگاه دارای پنج معاونت اصلی است که هر کدام حوزه مشخصی از فعالیت‌های دانشگاه را پوشش می‌دهند.
+                </p>
+            </div>
+        </div>
+
+        <!-- کارت‌های معاونت‌ها — چه data در DB باشد چه نباشد -->
+        {% with vice_meta="education,student,admin_finance,construction,research" %}
+        <div class="row g-4">
+            {% for vt in vice_meta.split|first %}
+            {% endfor %}
+
+            <!-- معاونت آموزشی -->
+            {% url 'core:vice_detail' 'education' as url_edu %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <a href="{{ url_edu }}" class="text-decoration-none">
+                    <div class="dept-card h-100 text-center hover-card">
+                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#3b82d4,#1d4ed8);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                            <i class="fas fa-graduation-cap text-white" style="font-size:1.4rem;"></i>
+                        </div>
+                        <h5 class="dept-title">معاونت آموزشی</h5>
+                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و تحصیلات تکمیلی</p>
+                        <span class="btn btn-sm btn-outline-primary mt-2">بیشتر بدانید</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- معاونت دانشجویی -->
+            {% url 'core:vice_detail' 'student' as url_stu %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <a href="{{ url_stu }}" class="text-decoration-none">
+                    <div class="dept-card h-100 text-center hover-card">
+                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#22c55e,#16a34a);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                            <i class="fas fa-users text-white" style="font-size:1.4rem;"></i>
+                        </div>
+                        <h5 class="dept-title">معاونت دانشجویی</h5>
+                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و فرهنگی</p>
+                        <span class="btn btn-sm btn-outline-success mt-2">بیشتر بدانید</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- معاونت اداری -->
+            {% url 'core:vice_detail' 'admin_finance' as url_adm %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <a href="{{ url_adm }}" class="text-decoration-none">
+                    <div class="dept-card h-100 text-center hover-card">
+                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#f59e0b,#d97706);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                            <i class="fas fa-briefcase text-white" style="font-size:1.4rem;"></i>
+                        </div>
+                        <h5 class="dept-title">معاونت اداری</h5>
+                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و مالی</p>
+                        <span class="btn btn-sm btn-outline-warning mt-2">بیشتر بدانید</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- معاونت فنی -->
+            {% url 'core:vice_detail' 'construction' as url_con %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <a href="{{ url_con }}" class="text-decoration-none">
+                    <div class="dept-card h-100 text-center hover-card">
+                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#ef4444,#dc2626);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                            <i class="fas fa-hard-hat text-white" style="font-size:1.4rem;"></i>
+                        </div>
+                        <h5 class="dept-title">معاونت فنی</h5>
+                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و عمرانی</p>
+                        <span class="btn btn-sm btn-outline-danger mt-2">بیشتر بدانید</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- معاونت پژوهشی -->
+            {% url 'core:vice_detail' 'research' as url_res %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="400">
+                <a href="{{ url_res }}" class="text-decoration-none">
+                    <div class="dept-card h-100 text-center hover-card">
+                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
+                            <i class="fas fa-flask text-white" style="font-size:1.4rem;"></i>
+                        </div>
+                        <h5 class="dept-title">معاونت پژوهشی</h5>
+                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و فناوری</p>
+                        <span class="btn btn-sm btn-outline-secondary mt-2">بیشتر بدانید</span>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+        {% endwith %}
+
+    </div>
+</section>
+{% endblock %}

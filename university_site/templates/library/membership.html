@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">عضویت در کتابخانه</h1></div></div>
+<section class="section"><div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-6" data-aos="fade-up">
+<div class="uni-card p-5">
+<h3 class="fw-bold text-primary-uni mb-4"><i class="fas fa-id-card"></i> فرم عضویت</h3>
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+<div class="col-12"><label class="form-label">نام و نام خانوادگی *</label><input type="text" name="full_name" class="form-control" required></div>
+<div class="col-md-6"><label class="form-label">شماره دانشجویی *</label><input type="text" name="student_id" class="form-control" required></div>
+<div class="col-md-6"><label class="form-label">ایمیل *</label><input type="email" name="email" class="form-control" required></div>
+<div class="col-12"><label class="form-label">تلفن</label><input type="tel" name="phone" class="form-control"></div>
+<div class="col-12"><button type="submit" class="btn-primary-uni w-100"><i class="fas fa-paper-plane"></i> ثبت درخواست عضویت</button></div>
+</div></form></div></div></div></div></section>
+{% endblock %}

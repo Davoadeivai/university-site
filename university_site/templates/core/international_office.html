@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:presidency' %}">حوزه ریاست</a></li>
+                <li class="breadcrumb-item active">دفتر همکاری‌های علمی و بین‌الملل</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">دفتر همکاری‌های علمی و بین‌الملل</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <!-- معرفی دفتر -->
+        {% if office %}
+        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
+            <div class="col-lg-4 text-center">
+                {% if office.manager_photo %}
+                <img src="{{ office.manager_photo.url }}" alt="{{ office.manager_name }}"
+                     class="rounded-circle border border-4 border-info shadow"
+                     style="width:180px;height:180px;object-fit:cover;">
+                {% else %}
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-info shadow"
+                     style="width:180px;height:180px;background:var(--gradient-primary);">
+                    <i class="fas fa-globe text-white" style="font-size:5rem;"></i>
+                </div>
+                {% endif %}
+                <h4 class="mt-3 mb-1">{{ office.manager_name }}</h4>
+                <p class="text-info fw-semibold">مدیر دفتر همکاری‌های بین‌الملل</p>
+                <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+                    {% if office.manager_email %}<a href="mailto:{{ office.manager_email }}" class="btn btn-sm btn-outline-info"><i class="fas fa-envelope"></i> ایمیل</a>{% endif %}
+                    {% if office.manager_phone %}<a href="tel:{{ office.manager_phone }}" class="btn btn-sm btn-outline-success"><i class="fas fa-phone"></i> {{ office.manager_phone }}</a>{% endif %}
+                </div>
+            </div>
+            <div class="col-lg-8">
+                {% if office.description %}
+                <div class="dept-card">
+                    <h4 class="section-title mb-3">معرفی دفتر</h4>
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">{{ office.description }}</p>
+                </div>
+                {% endif %}
+                <div class="row g-3 mt-3">
+                    {% if office.phone %}<div class="col-6"><div class="dept-card text-center py-2"><i class="fas fa-phone text-primary mb-1"></i><div style="font-size:12px;" class="text-muted">تلفن</div><div>{{ office.phone }}</div></div></div>{% endif %}
+                    {% if office.email %}<div class="col-6"><div class="dept-card text-center py-2"><i class="fas fa-envelope text-warning mb-1"></i><div style="font-size:12px;" class="text-muted">ایمیل</div><div>{{ office.email }}</div></div></div>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="dept-card text-center mb-5" data-aos="fade-up">
+            <div class="dept-icon mx-auto mb-3" style="width:80px;height:80px;font-size:2.5rem;"><i class="fas fa-globe text-info"></i></div>
+            <h4>دفتر همکاری‌های علمی و بین‌الملل</h4>
+            <p class="text-muted">این دفتر مسئول برقراری ارتباط با دانشگاه‌ها و موسسات بین‌المللی، تبادل دانشجو و استاد، عقد تفاهم‌نامه و توسعه همکاری‌های علمی بین‌المللی است.</p>
+            <a href="/admin/core/internationaloffice/" class="btn btn-outline-info mt-2">تنظیم اطلاعات دفتر</a>
+        </div>
+        {% endif %}
+
+        <!-- آمار فعالیت‌ها -->
+        {% if activities %}
+        <div class="row g-3 mb-5" data-aos="fade-up">
+            <div class="col-6 col-md-3">
+                <div class="dept-card text-center">
+                    <div class="dept-icon text-primary"><i class="fas fa-handshake"></i></div>
+                    <div class="fw-bold" style="font-size:1.6rem;">{{ agreements.count }}</div>
+                    <div class="text-muted" style="font-size:13px;">تفاهم‌نامه</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dept-card text-center">
+                    <div class="dept-icon text-success"><i class="fas fa-exchange-alt"></i></div>
+                    <div class="fw-bold" style="font-size:1.6rem;">{{ exchanges.count }}</div>
+                    <div class="text-muted" style="font-size:13px;">تبادل دانشجو</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dept-card text-center">
+                    <div class="dept-icon text-warning"><i class="fas fa-flask"></i></div>
+                    <div class="fw-bold" style="font-size:1.6rem;">{{ joint_research.count }}</div>
+                    <div class="text-muted" style="font-size:13px;">پژوهش مشترک</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dept-card text-center">
+                    <div class="dept-icon text-info"><i class="fas fa-award"></i></div>
+                    <div class="fw-bold" style="font-size:1.6rem;">{{ scholarships.count }}</div>
+                    <div class="text-muted" style="font-size:13px;">بورسیه</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تفاهم‌نامه‌ها -->
+        {% if agreements %}
+        <h4 class="section-title mb-4" data-aos="fade-up"><i class="fas fa-handshake text-primary me-2"></i>تفاهم‌نامه‌های بین‌المللی</h4>
+        <div class="row g-4 mb-5">
+            {% for item in agreements %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="dept-card h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="dept-title mb-0">{{ item.title }}</h6>
+                        <span class="badge bg-primary">{{ item.get_activity_type_display }}</span>
+                    </div>
+                    {% if item.partner_institution %}<p class="text-muted mb-1" style="font-size:13px;"><i class="fas fa-university me-1"></i>{{ item.partner_institution }}</p>{% endif %}
+                    {% if item.country %}<p class="text-muted mb-1" style="font-size:13px;"><i class="fas fa-globe me-1"></i>{{ item.country }}</p>{% endif %}
+                    {% if item.date %}<p class="text-muted mb-0" style="font-size:12px;"><i class="fas fa-calendar me-1"></i>{{ item.date }}</p>{% endif %}
+                    {% if item.description %}<p class="text-muted mt-2" style="font-size:13px;line-height:1.7;">{{ item.description|truncatewords:20 }}</p>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- سایر فعالیت‌ها -->
+        {% if exchanges or joint_research or conferences or scholarships %}
+        <h4 class="section-title mb-4" data-aos="fade-up"><i class="fas fa-list text-success me-2"></i>سایر فعالیت‌های بین‌المللی</h4>
+        <div class="row g-4 mb-4">
+            {% for item in exchanges %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <span class="badge bg-success mb-2">{{ item.get_activity_type_display }}</span>
+                    <h6 class="dept-title">{{ item.title }}</h6>
+                    {% if item.country %}<p class="text-muted mb-0" style="font-size:12px;"><i class="fas fa-globe me-1"></i>{{ item.country }}</p>{% endif %}
+                    {% if item.description %}<p class="text-muted mt-1" style="font-size:13px;">{{ item.description|truncatewords:20 }}</p>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% for item in joint_research %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <span class="badge bg-warning mb-2">{{ item.get_activity_type_display }}</span>
+                    <h6 class="dept-title">{{ item.title }}</h6>
+                    {% if item.partner_institution %}<p class="text-muted mb-0" style="font-size:12px;"><i class="fas fa-university me-1"></i>{{ item.partner_institution }}</p>{% endif %}
+                    {% if item.description %}<p class="text-muted mt-1" style="font-size:13px;">{{ item.description|truncatewords:20 }}</p>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% for item in scholarships %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <span class="badge bg-info mb-2">{{ item.get_activity_type_display }}</span>
+                    <h6 class="dept-title">{{ item.title }}</h6>
+                    {% if item.country %}<p class="text-muted mb-0" style="font-size:12px;"><i class="fas fa-globe me-1"></i>{{ item.country }}</p>{% endif %}
+                    {% if item.description %}<p class="text-muted mt-1" style="font-size:13px;">{{ item.description|truncatewords:20 }}</p>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            فعالیت‌های بین‌المللی از طریق <a href="/admin/core/internationalactivity/" class="alert-link">پنل مدیریت</a> قابل افزودن است.
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'core:presidency' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i> بازگشت به حوزه ریاست
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

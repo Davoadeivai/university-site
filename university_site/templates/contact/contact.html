@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">تماس با ما</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Contact Form -->
+            <div class="col-lg-7" data-aos="fade-right">
+                <div class="uni-card p-5">
+                    <h3 class="fw-bold text-primary-uni mb-4"><i class="fas fa-paper-plane"></i> ارسال پیام</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">نام و نام خانوادگی *</label>
+                                <input type="text" name="full_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">آدرس ایمیل *</label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">تلفن</label>
+                                <input type="tel" name="phone" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">موضوع</label>
+                                <select name="subject" class="form-select">
+                                    <option value="general">عمومی</option>
+                                    <option value="academic">آموزشی</option>
+                                    <option value="admission">پذیرش</option>
+                                    <option value="financial">مالی</option>
+                                    <option value="technical">فنی</option>
+                                    <option value="complaint">شکایت</option>
+                                    <option value="suggestion">پیشنهاد</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">متن پیام *</label>
+                                <textarea name="message" class="form-control" rows="5" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn-primary-uni w-100">
+                                    <i class="fas fa-paper-plane"></i> ارسال پیام
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Contact Info -->
+            <div class="col-lg-5" data-aos="fade-left">
+                <div class="uni-card p-4 mb-4">
+                    <h5 class="fw-bold text-primary-uni mb-4">اطلاعات تماس</h5>
+                    {% if site_settings %}
+                    {% if site_settings.address %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-map-marker-alt"></i></div>
+                        <div><div class="fw-600" style="font-size:14px;">آدرس</div><div class="text-muted" style="font-size:13px;">{{ site_settings.address }}</div></div>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.phone %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-phone-alt"></i></div>
+                        <div><div class="fw-600" style="font-size:14px;">تلفن</div><div class="text-muted" style="font-size:13px;">{{ site_settings.phone }}</div></div>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.email %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-envelope"></i></div>
+                        <div><div class="fw-600" style="font-size:14px;">ایمیل</div><div class="text-muted" style="font-size:13px;">{{ site_settings.email }}</div></div>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.working_hours %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-clock"></i></div>
+                        <div><div class="fw-600" style="font-size:14px;">ساعات کاری</div><div class="text-muted" style="font-size:13px;">{{ site_settings.working_hours }}</div></div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-map-marker-alt"></i></div>
+                        <div><div class="fw-600" style="font-size:14px;">آدرس</div><div class="text-muted" style="font-size:13px;">تهران، خیابان آزادی</div></div>
+                    </div>
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-phone-alt"></i></div>
+                        <div><div class="fw-600" style="font-size:14px;">تلفن</div><div class="text-muted" style="font-size:13px;">۰۲۱-۱۲۳۴۵۶۷۸</div></div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if site_settings and site_settings.map_embed %}
+                <div class="uni-card overflow-hidden" style="height:200px;">
+                    {{ site_settings.map_embed|safe }}
+                </div>
+                {% else %}
+                <div class="uni-card d-flex align-items-center justify-content-center" style="height:200px; background:var(--bg-light);">
+                    <div class="text-center text-muted"><i class="fas fa-map fa-3x mb-2 d-block opacity-30"></i>نقشه از پنل مدیریت قابل تنظیم است</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

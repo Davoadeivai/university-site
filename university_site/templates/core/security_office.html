@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:presidency' %}">حوزه ریاست</a></li>
+                <li class="breadcrumb-item active">حراست</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">دفتر حراست</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        {% if office %}
+        <!-- مسئول حراست -->
+        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
+            <div class="col-lg-4 text-center">
+                {% if office.manager_photo %}
+                <img src="{{ office.manager_photo.url }}" alt="{{ office.manager_name }}"
+                     class="rounded-circle border border-4 border-danger shadow"
+                     style="width:180px;height:180px;object-fit:cover;">
+                {% else %}
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-danger shadow"
+                     style="width:180px;height:180px;background:var(--gradient-primary);">
+                    <i class="fas fa-shield-alt text-white" style="font-size:5rem;"></i>
+                </div>
+                {% endif %}
+                <h4 class="mt-3 mb-1">{{ office.manager_name }}</h4>
+                <p class="text-danger fw-semibold">مسئول حراست دانشگاه</p>
+                <!-- تماس اضطراری -->
+                {% if office.emergency_phone %}
+                <div class="alert alert-danger mt-3 py-2">
+                    <i class="fas fa-phone-volume me-2"></i>
+                    <strong>اضطراری:</strong> {{ office.emergency_phone }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-8">
+                {% if office.description %}
+                <div class="dept-card mb-3">
+                    <h4 class="section-title mb-3">درباره حراست دانشگاه</h4>
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">{{ office.description }}</p>
+                </div>
+                {% endif %}
+                <!-- اطلاعات تماس -->
+                <div class="dept-card">
+                    <h5 class="dept-title mb-3"><i class="fas fa-address-card me-2 text-danger"></i>اطلاعات تماس</h5>
+                    <div class="row g-3">
+                        {% if office.phone %}<div class="col-md-6"><div class="d-flex align-items-center gap-2"><i class="fas fa-phone text-success"></i><div><small class="text-muted d-block">تلفن</small>{{ office.phone }}</div></div></div>{% endif %}
+                        {% if office.emergency_phone %}<div class="col-md-6"><div class="d-flex align-items-center gap-2"><i class="fas fa-phone-volume text-danger"></i><div><small class="text-muted d-block">اضطراری</small>{{ office.emergency_phone }}</div></div></div>{% endif %}
+                        {% if office.email %}<div class="col-md-6"><div class="d-flex align-items-center gap-2"><i class="fas fa-envelope text-warning"></i><div><small class="text-muted d-block">ایمیل</small>{{ office.email }}</div></div></div>{% endif %}
+                        {% if office.working_hours %}<div class="col-md-6"><div class="d-flex align-items-center gap-2"><i class="fas fa-clock text-info"></i><div><small class="text-muted d-block">ساعات کاری</small>{{ office.working_hours }}</div></div></div>{% endif %}
+                        {% if office.address %}<div class="col-12 mt-1"><div class="d-flex align-items-start gap-2"><i class="fas fa-map-marker-alt text-danger mt-1"></i><div><small class="text-muted d-block">آدرس</small>{{ office.address }}</div></div></div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- وظایف و آیین‌نامه -->
+        <div class="row g-4 mb-5">
+            {% if office.duties %}
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-danger"><i class="fas fa-tasks"></i></div>
+                    <h5 class="dept-title">وظایف و مسئولیت‌ها</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.duties }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if office.regulations %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-secondary"><i class="fas fa-gavel"></i></div>
+                    <h5 class="dept-title">آیین‌نامه‌ها و مقررات</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.regulations }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <!-- پیش‌فرض استاتیک -->
+        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
+            <div class="col-lg-4 text-center">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-danger shadow"
+                     style="width:180px;height:180px;background:var(--gradient-primary);">
+                    <i class="fas fa-shield-alt text-white" style="font-size:5rem;"></i>
+                </div>
+                <h4 class="mt-3 mb-1">مسئول حراست</h4>
+                <p class="text-danger fw-semibold">دفتر حراست دانشگاه</p>
+            </div>
+            <div class="col-lg-8">
+                <div class="dept-card">
+                    <h4 class="section-title mb-3">درباره حراست دانشگاه</h4>
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">
+                        حراست دانشگاه یکی از واحدهای اصلی در حوزه ریاست است که مسئولیت حفظ امنیت، نظم و انضباط در محیط دانشگاه را بر عهده دارد. این واحد در جهت صیانت از حقوق دانشجویان، اعضای هیئت علمی و کارکنان و حفظ اموال دانشگاه تلاش می‌کند.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="dept-card h-100 text-center">
+                    <div class="dept-icon text-danger"><i class="fas fa-shield-alt"></i></div>
+                    <h5 class="dept-title">حفظ امنیت</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:1.8;">حفظ امنیت محیط دانشگاه و ایجاد فضای امن برای تعلیم و تعلم</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card h-100 text-center">
+                    <div class="dept-icon text-warning"><i class="fas fa-user-shield"></i></div>
+                    <h5 class="dept-title">صیانت از حقوق</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:1.8;">صیانت از حقوق دانشجویان، اساتید و کارکنان در محیط دانشگاه</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="dept-card h-100 text-center">
+                    <div class="dept-icon text-success"><i class="fas fa-gavel"></i></div>
+                    <h5 class="dept-title">اجرای مقررات</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:1.8;">نظارت بر اجرای آیین‌نامه‌ها و مقررات انضباطی دانشگاه</p>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            اطلاعات حراست از طریق <a href="/admin/core/securityoffice/" class="alert-link">پنل مدیریت</a> قابل تنظیم است.
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'core:presidency' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i> بازگشت به حوزه ریاست
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">پروفایل من</h1></div></div>
+<section class="section"><div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-8" data-aos="fade-up">
+<div class="uni-card p-4">
+<div class="d-flex gap-4 align-items-center mb-4">
+{% if profile.avatar %}<img src="{{ profile.avatar.url }}" class="prof-avatar" style="width:90px;height:90px;">{% else %}<div class="prof-avatar-placeholder" style="width:90px;height:90px;font-size:36px;"><i class="fas fa-user"></i></div>{% endif %}
+<div><h4 class="fw-bold text-primary-uni">{{ request.user.get_full_name|default:request.user.username }}</h4>
+<div class="text-muted">{{ profile.get_role_display }}</div>
+{% if profile.student_id %}<div class="text-muted" style="font-size:13px;">{{ profile.student_id }}</div>{% endif %}</div>
+</div>
+<div class="row g-3">
+<div class="col-md-6"><div class="p-3 bg-light rounded"><label class="text-muted" style="font-size:12px;">ایمیل</label><div>{{ request.user.email }}</div></div></div>
+{% if profile.phone %}<div class="col-md-6"><div class="p-3 bg-light rounded"><label class="text-muted" style="font-size:12px;">تلفن</label><div>{{ profile.phone }}</div></div></div>{% endif %}
+{% if profile.department %}<div class="col-md-6"><div class="p-3 bg-light rounded"><label class="text-muted" style="font-size:12px;">دانشکده</label><div>{{ profile.department }}</div></div></div>{% endif %}
+</div>
+<div class="mt-4"><a href="{% url 'accounts:logout' %}" class="btn-primary-uni"><i class="fas fa-sign-out-alt"></i> خروج</a></div>
+</div></div></div></div></section>
+{% endblock %}

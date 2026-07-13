@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">تقویم آموزشی</h1></div></div>
+<section class="section"><div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-8">
+{% for item in calendar_items %}
+<div class="calendar-item mb-3" data-aos="fade-up">
+<div class="calendar-date-box"><span class="calendar-date-day">{{ item.start_date|jalali_date:"day" }}</span><span class="calendar-date-month">{{ item.start_date|jalali_date:"month" }}</span></div>
+<div class="flex-grow-1">
+<div class="fw-bold">{{ item.title }}</div>
+<div class="text-muted" style="font-size:13px;">{{ item.start_date|jalali_date:"short" }} تا {{ item.end_date|jalali_date:"short" }}</div>
+{% if item.description %}<div class="text-muted" style="font-size:12px; margin-top:4px;">{{ item.description }}</div>{% endif %}
+<div style="font-size:12px;"><span class="uni-card-badge">{{ item.get_semester_display }} - {{ item.academic_year }}</span></div>
+</div>
+{% if item.is_important %}<span class="badge bg-danger">مهم</span>{% endif %}
+</div>
+{% empty %}
+<div class="text-center py-5 text-muted"><i class="fas fa-calendar fa-3x mb-3 d-block opacity-25"></i>تقویمی ثبت نشده است</div>
+{% endfor %}
+</div></div></div></section>
+{% endblock %}

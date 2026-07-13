@@ -1,0 +1,222 @@
+{% load static %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:vices_list' %}">معاونت‌ها</a></li>
+                <li class="breadcrumb-item active">{{ page_title }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{{ page_title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        {% if vice %}
+        <!-- ───── معاون: تصویر + پیام + اطلاعات ───── -->
+        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
+            <div class="col-lg-4 text-center">
+                {% if vice.photo %}
+                <img src="{{ vice.photo.url }}" alt="{{ vice.full_name }}"
+                     class="rounded-circle border border-4 border-{{ color }} shadow"
+                     style="width:190px;height:190px;object-fit:cover;">
+                {% else %}
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-{{ color }} shadow"
+                     style="width:190px;height:190px;background:{{ bg_color }}22;">
+                    <i class="{{ icon }} text-{{ color }}" style="font-size:5rem;"></i>
+                </div>
+                {% endif %}
+                <h4 class="mt-3 mb-1">{{ vice.full_name }}</h4>
+                {% if vice.academic_rank %}
+                <p class="text-{{ color }} fw-semibold mb-2">{{ vice.academic_rank }}</p>
+                {% endif %}
+                <p class="text-muted" style="font-size:13px;">معاون {{ page_title }}</p>
+                <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                    {% if vice.email %}
+                    <a href="mailto:{{ vice.email }}" class="btn btn-sm btn-outline-{{ color }}">
+                        <i class="fas fa-envelope"></i> ایمیل
+                    </a>
+                    {% endif %}
+                    {% if vice.phone %}
+                    <a href="tel:{{ vice.phone }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-phone"></i> {{ vice.phone }}
+                    </a>
+                    {% endif %}
+                    {% if vice.office %}
+                    <span class="btn btn-sm btn-outline-secondary disabled">
+                        <i class="fas fa-door-open"></i> اتاق {{ vice.office }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                {% if vice.message %}
+                <blockquote class="blockquote border-start border-{{ color }} border-4 ps-4 mb-4">
+                    <p class="text-muted" style="font-size:15px;line-height:2.3;font-style:italic;">{{ vice.message }}</p>
+                    <footer class="blockquote-footer mt-2">{{ vice.full_name }} — {{ page_title }}</footer>
+                </blockquote>
+                {% endif %}
+                {% if vice.description %}
+                <div class="dept-card mt-3">
+                    <h5 class="dept-title"><i class="{{ icon }} me-2 text-{{ color }}"></i>درباره این معاونت</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ vice.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ───── سوابق تحصیلی و اجرایی ───── -->
+        <div class="row g-4 mb-5">
+            {% if vice.education %}
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-success"><i class="fas fa-graduation-cap"></i></div>
+                    <h5 class="dept-title">سوابق تحصیلی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ vice.education }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if vice.resume %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-info"><i class="fas fa-briefcase"></i></div>
+                    <h5 class="dept-title">سوابق اجرایی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ vice.resume }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if vice.duties %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-{{ color }}"><i class="fas fa-tasks"></i></div>
+                    <h5 class="dept-title">شرح وظایف</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ vice.duties }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if vice.goals %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-warning"><i class="fas fa-bullseye"></i></div>
+                    <h5 class="dept-title">اهداف معاونت</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ vice.goals }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <!-- ───── پیش‌فرض: وقتی data در DB نیست ───── -->
+        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
+            <div class="col-lg-4 text-center">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-{{ color }} shadow"
+                     style="width:190px;height:190px;background:{{ bg_color }}22;">
+                    <i class="{{ icon }} text-{{ color }}" style="font-size:5rem;"></i>
+                </div>
+                <h4 class="mt-3 mb-1">معاون {{ page_title }}</h4>
+                <p class="text-muted" style="font-size:13px;">اطلاعات از پنل مدیریت قابل تنظیم است</p>
+            </div>
+            <div class="col-lg-8">
+                <div class="dept-card">
+                    <h4 class="section-title mb-3">{{ page_title }}</h4>
+                    {% if vice_type == 'education' %}
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">معاونت آموزشی و تحصیلات تکمیلی مسئولیت برنامه‌ریزی، نظارت و ارتقاء کیفیت آموزشی در تمام مقاطع تحصیلی دانشگاه را بر عهده دارد. این معاونت با هماهنگی با گروه‌های آموزشی، مدیریت سیستم ثبت‌نام، برگزاری امتحانات و صدور مدارک تحصیلی را انجام می‌دهد.</p>
+                    {% elif vice_type == 'student' %}
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">معاونت دانشجویی و فرهنگی مسئولیت رفاه، سلامت، مشاوره، فعالیت‌های فرهنگی، ورزشی و انجمن‌های علمی دانشجویی را بر عهده دارد. ایجاد فضای پویا و سازنده برای رشد همه‌جانبه دانشجویان از مأموریت‌های اصلی این معاونت است.</p>
+                    {% elif vice_type == 'admin_finance' %}
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">معاونت اداری و مالی مسئولیت مدیریت منابع انسانی، امور مالی، خدمات اداری، تأمین اعتبارات و نظارت بر بودجه دانشگاه را بر عهده دارد. این معاونت زیرساخت اداری مورد نیاز فعالیت‌های دانشگاه را فراهم می‌کند.</p>
+                    {% elif vice_type == 'construction' %}
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">معاونت فنی و عمرانی مسئولیت توسعه فیزیکی دانشگاه، ساخت و ساز، نگهداری ساختمان‌ها، تأسیسات و زیرساخت‌های فیزیکی را بر عهده دارد. این معاونت با برنامه‌ریزی دقیق محیطی آموزشی مناسب فراهم می‌کند.</p>
+                    {% else %}
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">معاونت پژوهشی و فناوری مسئولیت هدایت، حمایت و توسعه فعالیت‌های پژوهشی، ارتباط با صنعت، ثبت اختراعات، انتشارات علمی و پارک فناوری دانشگاه را بر عهده دارد. این معاونت در تبدیل دانشگاه به مرکز نوآوری منطقه نقش محوری دارد.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- وظایف پیش‌فرض بر اساس نوع معاونت -->
+        <div class="row g-4 mb-5">
+            {% if vice_type == 'education' %}
+            <div class="col-md-4" data-aos="fade-up"><div class="dept-card h-100"><div class="dept-icon text-primary"><i class="fas fa-clipboard-list"></i></div><h5 class="dept-title">برنامه‌ریزی آموزشی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">تدوین برنامه‌های درسی و نظارت بر اجرای سرفصل‌های مصوب وزارت علوم</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card h-100"><div class="dept-icon text-success"><i class="fas fa-scroll"></i></div><h5 class="dept-title">تحصیلات تکمیلی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">هدایت و پشتیبانی دانشجویان کارشناسی ارشد و دکتری و نظارت بر پایان‌نامه‌ها</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card h-100"><div class="dept-icon text-info"><i class="fas fa-chart-line"></i></div><h5 class="dept-title">ارزیابی کیفیت</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">ارزیابی مستمر کیفیت آموزشی و بهبود شاخص‌های عملکردی دانشگاه</p></div></div>
+            {% elif vice_type == 'student' %}
+            <div class="col-md-4" data-aos="fade-up"><div class="dept-card h-100"><div class="dept-icon text-success"><i class="fas fa-home"></i></div><h5 class="dept-title">امور رفاهی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">مدیریت خوابگاه‌ها، سلف‌سرویس، وام‌های دانشجویی و خدمات رفاهی</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card h-100"><div class="dept-icon text-info"><i class="fas fa-heart"></i></div><h5 class="dept-title">بهداشت و مشاوره</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">ارائه خدمات بهداشتی، مشاوره تحصیلی و روان‌شناختی به دانشجویان</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card h-100"><div class="dept-icon text-warning"><i class="fas fa-theater-masks"></i></div><h5 class="dept-title">فعالیت‌های فرهنگی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">برگزاری جشنواره‌ها، مسابقات فرهنگی، هنری و ورزشی دانشجویی</p></div></div>
+            {% elif vice_type == 'admin_finance' %}
+            <div class="col-md-4" data-aos="fade-up"><div class="dept-card h-100"><div class="dept-icon text-warning"><i class="fas fa-users-cog"></i></div><h5 class="dept-title">منابع انسانی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">استخدام، آموزش و توسعه کارکنان، ارزیابی عملکرد پرسنل</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card h-100"><div class="dept-icon text-success"><i class="fas fa-coins"></i></div><h5 class="dept-title">امور مالی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">بودجه‌بندی، حسابداری، پرداخت شهریه و حقوق کارکنان</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card h-100"><div class="dept-icon text-info"><i class="fas fa-boxes"></i></div><h5 class="dept-title">تدارکات</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">خرید تجهیزات، تأمین ملزومات اداری و مدیریت اموال دانشگاه</p></div></div>
+            {% elif vice_type == 'construction' %}
+            <div class="col-md-4" data-aos="fade-up"><div class="dept-card h-100"><div class="dept-icon text-danger"><i class="fas fa-building"></i></div><h5 class="dept-title">ساخت و ساز</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">اجرای پروژه‌های عمرانی، احداث ساختمان‌های آموزشی و اداری</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card h-100"><div class="dept-icon text-warning"><i class="fas fa-tools"></i></div><h5 class="dept-title">نگهداری تأسیسات</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">سرویس، نگهداری و تعمیر تأسیسات برق، گاز، آب و سیستم‌های حرارتی</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card h-100"><div class="dept-icon text-success"><i class="fas fa-leaf"></i></div><h5 class="dept-title">فضای سبز</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">احداث و نگهداری فضای سبز، زیباسازی محیط کمپوس دانشگاه</p></div></div>
+            {% else %}
+            <div class="col-md-4" data-aos="fade-up"><div class="dept-card h-100"><div class="dept-icon text-secondary"><i class="fas fa-microscope"></i></div><h5 class="dept-title">پژوهش‌های بنیادی</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">حمایت از طرح‌های پژوهشی، گرنت‌های تحقیقاتی و انتشارات علمی</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card h-100"><div class="dept-icon text-primary"><i class="fas fa-industry"></i></div><h5 class="dept-title">ارتباط با صنعت</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">مدیریت قراردادهای پژوهشی با صنعت، کارآفرینی و انتقال فناوری</p></div></div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card h-100"><div class="dept-icon text-info"><i class="fas fa-lightbulb"></i></div><h5 class="dept-title">نوآوری و فناوری</h5><p class="text-muted" style="font-size:13px;line-height:1.8;">پارک فناوری، شتاب‌دهنده استارتاپ، ثبت اختراعات و حق اشتراک</p></div></div>
+            {% endif %}
+        </div>
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            اطلاعات این معاونت از <a href="/admin/core/vicepresidency/" class="alert-link">پنل مدیریت</a> قابل تکمیل است.
+        </div>
+        {% endif %}
+
+        <!-- واحدهای زیرمجموعه -->
+        {% if units %}
+        <div class="mt-5" data-aos="fade-up">
+            <h4 class="section-title mb-4"><i class="fas fa-sitemap me-2 text-{{ color }}"></i>واحدهای زیرمجموعه</h4>
+            <div class="row g-3">
+                {% for unit in units %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="dept-card h-100">
+                        <h6 class="dept-title mb-2">{{ unit.name }}</h6>
+                        {% if unit.manager %}<p class="text-muted mb-1" style="font-size:13px;"><i class="fas fa-user me-1"></i>{{ unit.manager }}</p>{% endif %}
+                        {% if unit.duties %}<p class="text-muted" style="font-size:12px;line-height:1.7;">{{ unit.duties|truncatewords:20 }}</p>{% endif %}
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            {% if unit.phone %}<a href="tel:{{ unit.phone }}" class="btn btn-xs btn-outline-success" style="font-size:11px;padding:2px 8px;"><i class="fas fa-phone"></i> {{ unit.phone }}</a>{% endif %}
+                            {% if unit.email %}<a href="mailto:{{ unit.email }}" class="btn btn-xs btn-outline-primary" style="font-size:11px;padding:2px 8px;"><i class="fas fa-envelope"></i></a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- دستاوردها / طرح‌ها -->
+        {% if projects %}
+        <div class="mt-5" data-aos="fade-up">
+            <h4 class="section-title mb-4"><i class="fas fa-trophy me-2 text-warning"></i>طرح‌ها و دستاوردها</h4>
+            <div class="row g-4">
+                {% for proj in projects %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="dept-card h-100">
+                        {% if proj.image %}<img src="{{ proj.image.url }}" alt="{{ proj.title }}" class="w-100 rounded mb-3" style="height:150px;object-fit:cover;">{% endif %}
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="dept-title mb-0">{{ proj.title }}</h6>
+                            {% if proj.status %}<span class="badge bg-{{ color }}" style="font-size:10px;">{{ proj.status }}</span>{% endif %}
+                        </div>
+                        {% if proj.year %}<p class="text-muted mb-1" style="font-size:12px;"><i class="fas fa-calendar me-1"></i>{{ proj.year }}</p>{% endif %}
+                        {% if proj.description %}<p class="text-muted" style="font-size:13px;line-height:1.7;">{{ proj.description|truncatewords:25 }}</p>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-5">
+            <a href="{% url 'core:vices_list' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-arrow-right"></i> بازگشت به معاونت‌ها
+            </a>
+        </div>
+
+    </div>
+</section>

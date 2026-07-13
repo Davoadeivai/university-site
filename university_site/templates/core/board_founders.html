@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:about' %}">درباره موسسه</a></li>
+                <li class="breadcrumb-item active">هیات موسس دانشگاه</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">هیات موسس دانشگاه</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <!-- Intro -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <div class="dept-icon mx-auto mb-3" style="width:70px;height:70px;font-size:2rem;">
+                    <i class="fas fa-users text-primary"></i>
+                </div>
+                <h2 class="section-title">هیات موسس دانشگاه</h2>
+                <p class="text-muted" style="font-size:15px;line-height:2;">
+                    هیات موسس دانشگاه متشکل از صاحب‌نظران برجسته در حوزه‌های علمی، اجرایی و اجتماعی است که با درایت و دوراندیشی زمینه تأسیس این موسسه آموزش عالی را فراهم آورده‌اند.
+                </p>
+            </div>
+        </div>
+
+        {% if founders %}
+        <div class="row g-4 justify-content-center">
+            {% for member in founders %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="dept-card h-100 text-center">
+                    <!-- Photo -->
+                    <div class="mb-3">
+                        {% if member.photo %}
+                        <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                             class="rounded-circle border border-3 border-primary"
+                             style="width:110px;height:110px;object-fit:cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center border border-3 border-primary"
+                             style="width:110px;height:110px;">
+                            <i class="fas fa-user-tie text-white" style="font-size:2.5rem;"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Name -->
+                    <h5 class="dept-title mb-1">{{ member.full_name }}</h5>
+                    {% if member.title %}
+                    <p class="text-primary fw-semibold mb-2" style="font-size:14px;">{{ member.title }}</p>
+                    {% endif %}
+                    {% if member.education %}
+                    <p class="text-muted mb-1" style="font-size:13px;">
+                        <i class="fas fa-graduation-cap me-1"></i> {{ member.education }}
+                    </p>
+                    {% endif %}
+                    {% if member.specialization %}
+                    <p class="text-muted mb-2" style="font-size:13px;">
+                        <i class="fas fa-microscope me-1"></i> {{ member.specialization }}
+                    </p>
+                    {% endif %}
+                    {% if member.bio %}
+                    <p class="text-muted mt-2" style="font-size:13px;line-height:1.8;">{{ member.bio|truncatewords:30 }}</p>
+                    {% endif %}
+                    {% if member.email %}
+                    <div class="mt-3">
+                        <a href="mailto:{{ member.email }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-envelope"></i> ارتباط
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Default static content if no data in DB -->
+        <div class="row g-4 justify-content-center">
+            {% for i in "123456" %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card h-100 text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center"
+                             style="width:110px;height:110px;">
+                            <i class="fas fa-user-tie text-white" style="font-size:2.5rem;"></i>
+                        </div>
+                    </div>
+                    <h5 class="dept-title">عضو هیات موسس</h5>
+                    <p class="text-primary fw-semibold" style="font-size:14px;">سمت / مسئولیت</p>
+                    <p class="text-muted" style="font-size:13px;">
+                        اطلاعات این عضو از طریق پنل مدیریت قابل تنظیم است.
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="alert alert-info mt-4 text-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            اطلاعات اعضای هیات موسس از طریق <a href="/admin/core/boardmember/" class="alert-link">پنل مدیریت</a> قابل افزودن و ویرایش است.
+        </div>
+        {% endif %}
+
+        <!-- Related Links -->
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'core:about' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-info-circle"></i> معرفی موسسه
+            </a>
+            <a href="{% url 'core:board_trustees' %}" class="btn btn-outline-warning me-2">
+                <i class="fas fa-user-tie"></i> هیات امنا
+            </a>
+            <a href="{% url 'core:institution_goals' %}" class="btn btn-outline-success">
+                <i class="fas fa-bullseye"></i> اهداف موسسه
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

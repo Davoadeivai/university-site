@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:presidency' %}">حوزه ریاست</a></li>
+                <li class="breadcrumb-item active">دفتر ریاست</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">دفتر ریاست</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        {% if office %}
+        <!-- رئیس دانشگاه -->
+        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
+            <div class="col-lg-5 text-center">
+                {% if office.president_photo %}
+                <img src="{{ office.president_photo.url }}" alt="{{ office.president_name }}"
+                     class="rounded-circle border border-4 border-primary shadow"
+                     style="width:220px;height:220px;object-fit:cover;">
+                {% else %}
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-primary shadow"
+                     style="width:220px;height:220px;background:var(--gradient-primary);">
+                    <i class="fas fa-user-tie text-white" style="font-size:6rem;"></i>
+                </div>
+                {% endif %}
+                <h3 class="mt-3 mb-1 fw-bold">{{ office.president_name }}</h3>
+                <p class="text-primary fw-semibold mb-3">{{ office.president_title }}</p>
+                <div class="dept-card text-start">
+                    <ul class="list-unstyled mb-0">
+                        {% if office.president_email %}
+                        <li class="mb-2"><i class="fas fa-envelope text-primary me-2"></i>{{ office.president_email }}</li>
+                        {% endif %}
+                        {% if office.president_phone %}
+                        <li class="mb-2"><i class="fas fa-phone text-success me-2"></i>{{ office.president_phone }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <h4 class="section-title mb-3">پیام رئیس دانشگاه</h4>
+                {% if office.president_message %}
+                <blockquote class="blockquote border-start border-primary border-4 ps-4 mb-4">
+                    <p class="text-muted" style="font-size:15px;line-height:2.3;font-style:italic;">{{ office.president_message }}</p>
+                    <footer class="blockquote-footer mt-2">{{ office.president_name }}</footer>
+                </blockquote>
+                {% else %}
+                <p class="text-muted" style="font-size:15px;line-height:2;">پیام رئیس دانشگاه از طریق پنل مدیریت اضافه می‌شود.</p>
+                {% endif %}
+                {% if office.president_bio %}
+                <div class="dept-card mt-3">
+                    <h5 class="dept-title"><i class="fas fa-user me-2 text-primary"></i>بیوگرافی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.president_bio }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- سوابق -->
+        <div class="row g-4 mb-5">
+            {% if office.president_education %}
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-success"><i class="fas fa-graduation-cap"></i></div>
+                    <h5 class="dept-title">سوابق تحصیلی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.president_education }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% if office.president_resume %}
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card h-100">
+                    <div class="dept-icon text-info"><i class="fas fa-briefcase"></i></div>
+                    <h5 class="dept-title">سوابق اجرایی</h5>
+                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.president_resume }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- اطلاعات دفتر -->
+        <div class="dept-card" data-aos="fade-up">
+            <h4 class="section-title mb-4"><i class="fas fa-door-open me-2 text-primary"></i>اطلاعات دفتر ریاست</h4>
+            <div class="row g-3">
+                {% if office.office_phone %}
+                <div class="col-md-3"><div class="d-flex align-items-center gap-2"><i class="fas fa-phone text-primary"></i><div><small class="text-muted d-block">تلفن دفتر</small><span>{{ office.office_phone }}</span></div></div></div>
+                {% endif %}
+                {% if office.office_fax %}
+                <div class="col-md-3"><div class="d-flex align-items-center gap-2"><i class="fas fa-fax text-success"></i><div><small class="text-muted d-block">فکس</small><span>{{ office.office_fax }}</span></div></div></div>
+                {% endif %}
+                {% if office.office_email %}
+                <div class="col-md-3"><div class="d-flex align-items-center gap-2"><i class="fas fa-envelope text-warning"></i><div><small class="text-muted d-block">ایمیل</small><span>{{ office.office_email }}</span></div></div></div>
+                {% endif %}
+                {% if office.office_hours %}
+                <div class="col-md-3"><div class="d-flex align-items-center gap-2"><i class="fas fa-clock text-danger"></i><div><small class="text-muted d-block">ساعات کاری</small><span>{{ office.office_hours }}</span></div></div></div>
+                {% endif %}
+                {% if office.office_address %}
+                <div class="col-12 mt-3"><div class="d-flex align-items-start gap-2"><i class="fas fa-map-marker-alt text-danger mt-1"></i><div><small class="text-muted d-block">آدرس</small><span>{{ office.office_address }}</span></div></div></div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            اطلاعات دفتر ریاست از طریق <a href="/admin/core/presidencyoffice/" class="alert-link">پنل مدیریت</a> قابل تنظیم است.
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{% url 'core:presidency' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-arrow-right"></i> بازگشت به حوزه ریاست
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

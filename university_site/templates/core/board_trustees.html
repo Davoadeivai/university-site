@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:about' %}">درباره موسسه</a></li>
+                <li class="breadcrumb-item active">هیات امنا دانشگاه</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">هیات امنا دانشگاه</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <!-- Intro -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
+                <div class="dept-icon mx-auto mb-3" style="width:70px;height:70px;font-size:2rem;">
+                    <i class="fas fa-user-tie text-warning"></i>
+                </div>
+                <h2 class="section-title">هیات امنا دانشگاه</h2>
+                <p class="text-muted" style="font-size:15px;line-height:2;">
+                    هیات امنا عالی‌ترین رکن تصمیم‌گیری دانشگاه است که مسئولیت سیاست‌گذاری کلان، تصویب بودجه، ارزیابی عملکرد و نظارت بر حسن اجرای برنامه‌های دانشگاه را بر عهده دارد.
+                </p>
+            </div>
+        </div>
+
+        <!-- Responsibilities Box -->
+        <div class="row g-4 mb-5" data-aos="fade-up">
+            <div class="col-md-4">
+                <div class="dept-card h-100 text-center">
+                    <div class="dept-icon text-warning"><i class="fas fa-gavel"></i></div>
+                    <h6 class="dept-title">سیاست‌گذاری کلان</h6>
+                    <p class="text-muted" style="font-size:13px;line-height:1.8;">تعیین خط‌مشی‌های اصلی و راهبردهای بلندمدت دانشگاه</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dept-card h-100 text-center">
+                    <div class="dept-icon text-primary"><i class="fas fa-chart-pie"></i></div>
+                    <h6 class="dept-title">تصویب بودجه</h6>
+                    <p class="text-muted" style="font-size:13px;line-height:1.8;">تأیید و تصویب بودجه سالانه و برنامه‌های مالی دانشگاه</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dept-card h-100 text-center">
+                    <div class="dept-icon text-success"><i class="fas fa-clipboard-check"></i></div>
+                    <h6 class="dept-title">نظارت و ارزیابی</h6>
+                    <p class="text-muted" style="font-size:13px;line-height:1.8;">ارزیابی عملکرد و نظارت بر حسن اجرای برنامه‌های دانشگاه</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members -->
+        {% if trustees %}
+        <h3 class="text-center mb-4" data-aos="fade-up">اعضای هیات امنا</h3>
+        <div class="row g-4 justify-content-center">
+            {% for member in trustees %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="dept-card h-100 text-center">
+                    <!-- Photo -->
+                    <div class="mb-3">
+                        {% if member.photo %}
+                        <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                             class="rounded-circle border border-3 border-warning"
+                             style="width:110px;height:110px;object-fit:cover;">
+                        {% else %}
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-3 border-warning"
+                             style="width:110px;height:110px;background:var(--gradient-primary);">
+                            <i class="fas fa-user-tie text-white" style="font-size:2.5rem;"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Name & Title -->
+                    <h5 class="dept-title mb-1">{{ member.full_name }}</h5>
+                    {% if member.title %}
+                    <p class="text-warning fw-semibold mb-2" style="font-size:14px;">{{ member.title }}</p>
+                    {% endif %}
+                    {% if member.education %}
+                    <p class="text-muted mb-1" style="font-size:13px;">
+                        <i class="fas fa-graduation-cap me-1"></i> {{ member.education }}
+                    </p>
+                    {% endif %}
+                    {% if member.specialization %}
+                    <p class="text-muted mb-2" style="font-size:13px;">
+                        <i class="fas fa-briefcase me-1"></i> {{ member.specialization }}
+                    </p>
+                    {% endif %}
+                    {% if member.bio %}
+                    <p class="text-muted mt-2" style="font-size:13px;line-height:1.8;">{{ member.bio|truncatewords:30 }}</p>
+                    {% endif %}
+                    {% if member.email %}
+                    <div class="mt-3">
+                        <a href="mailto:{{ member.email }}" class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-envelope"></i> ارتباط
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Default static content if no data in DB -->
+        <h3 class="text-center mb-4" data-aos="fade-up">اعضای هیات امنا</h3>
+        <div class="row g-4 justify-content-center">
+            {% for i in "12345" %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card h-100 text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                             style="width:110px;height:110px;background:var(--gradient-primary);">
+                            <i class="fas fa-user-tie text-white" style="font-size:2.5rem;"></i>
+                        </div>
+                    </div>
+                    <h5 class="dept-title">عضو هیات امنا</h5>
+                    <p class="text-warning fw-semibold" style="font-size:14px;">سمت / مسئولیت</p>
+                    <p class="text-muted" style="font-size:13px;">
+                        اطلاعات این عضو از طریق پنل مدیریت قابل تنظیم است.
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="alert alert-info mt-4 text-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            اطلاعات اعضای هیات امنا از طریق <a href="/admin/core/boardmember/" class="alert-link">پنل مدیریت</a> قابل افزودن و ویرایش است.
+        </div>
+        {% endif %}
+
+        <!-- Related Links -->
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'core:about' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-info-circle"></i> معرفی موسسه
+            </a>
+            <a href="{% url 'core:board_founders' %}" class="btn btn-outline-success me-2">
+                <i class="fas fa-users"></i> هیات موسس
+            </a>
+            <a href="{% url 'core:institution_goals' %}" class="btn btn-outline-danger">
+                <i class="fas fa-bullseye"></i> اهداف موسسه
+            </a>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

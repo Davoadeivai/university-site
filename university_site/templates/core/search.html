@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">جستجو: {{ query }}</h1></div></div>
+<section class="section"><div class="container">
+<form method="get" action="{% url 'core:search' %}" class="mb-5" data-aos="fade-up">
+<div class="input-group input-group-lg"><input type="search" name="q" value="{{ query }}" class="form-control" placeholder="جستجو کنید..." style="border-radius:25px 0 0 25px!important;"><button class="btn-search" type="submit" style="border-radius:0 25px 25px 0!important; padding:0 24px;"><i class="fas fa-search"></i> جستجو</button></div>
+</form>
+{% if results %}
+{% if results.news %}<div class="mb-5" data-aos="fade-up"><h4 class="section-title">اخبار</h4>{% for item in results.news %}<a href="{{ item.get_absolute_url }}" class="text-decoration-none"><div class="announce-card mb-2"><div><div class="announce-title">{{ item.title }}</div><div class="announce-date">{{ item.published_at|jalali_date }}</div></div></div></a>{% endfor %}</div>{% endif %}
+{% if results.professors %}<div class="mb-5" data-aos="fade-up"><h4 class="section-title">اساتید</h4>{% for prof in results.professors %}<a href="{{ prof.get_absolute_url }}" class="text-decoration-none"><div class="announce-card mb-2"><div><div class="announce-title">{{ prof.get_full_name }} - {{ prof.get_rank_display }}</div>{% if prof.department %}<div class="announce-date">{{ prof.department.name }}</div>{% endif %}</div></div></a>{% endfor %}</div>{% endif %}
+{% if results.majors %}<div class="mb-5" data-aos="fade-up"><h4 class="section-title">رشته‌ها</h4>{% for major in results.majors %}<a href="{{ major.get_absolute_url }}" class="text-decoration-none"><div class="announce-card mb-2"><div><div class="announce-title">{{ major.name }}</div><div class="announce-date">{{ major.get_degree_display }}</div></div></div></a>{% endfor %}</div>{% endif %}
+{% elif query %}<div class="text-center py-5 text-muted"><i class="fas fa-search fa-3x mb-3 d-block opacity-25"></i><h4>نتیجه‌ای یافت نشد</h4><p>عبارت «{{ query }}» را جستجو کردید</p></div>{% endif %}
+</div></section>
+{% endblock %}

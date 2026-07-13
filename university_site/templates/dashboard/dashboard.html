@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">داشبورد مدیریت</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <!-- Stats Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3" data-aos="fade-up">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:var(--gradient-primary)"><i class="fas fa-newspaper"></i></div>
+                    <div>
+                        <div class="dash-stat-num">{{ total_news }}</div>
+                        <div class="dash-stat-label">اخبار</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:var(--gradient-gold)"><i class="fas fa-file-alt"></i></div>
+                    <div>
+                        <div class="dash-stat-num">{{ total_applications }}</div>
+                        <div class="dash-stat-label">درخواست پذیرش</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fas fa-envelope"></i></div>
+                    <div>
+                        <div class="dash-stat-num">{{ new_messages }}</div>
+                        <div class="dash-stat-label">پیام‌های جدید</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="dash-stat-num">{{ total_users }}</div>
+                        <div class="dash-stat-label">کاربران</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Recent News -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">آخرین اخبار</h5>
+                        <a href="/admin/news/news/" class="uni-card-link" style="font-size:13px;">مدیریت <i class="fas fa-arrow-left"></i></a>
+                    </div>
+                    {% for item in recent_news %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ item.title }}</div>
+                            <div class="announce-date">{{ item.published_at|jalali_date }}</div>
+                        </div>
+                        <span class="badge {% if item.is_published %}bg-success{% else %}bg-warning{% endif %}">
+                            {% if item.is_published %}منتشر{% else %}پیش‌نویس{% endif %}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-3">خبری موجود نیست</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Applications -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">درخواست‌های جدید</h5>
+                        <a href="/admin/admissions/application/" class="uni-card-link" style="font-size:13px;">مدیریت <i class="fas fa-arrow-left"></i></a>
+                    </div>
+                    {% for app in recent_applications %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ app.first_name }} {{ app.last_name }}</div>
+                            <div class="announce-date">{{ app.desired_major }} | {{ app.get_degree_display }}</div>
+                        </div>
+                        <span class="badge bg-{% if app.status == 'pending' %}warning{% elif app.status == 'accepted' %}success{% else %}secondary{% endif %}">
+                            {{ app.get_status_display }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-3">درخواستی موجود نیست</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Quick Access -->
+        <div class="mt-4" data-aos="fade-up">
+            <div class="uni-card p-4">
+                <h5 class="fw-bold text-primary-uni mb-4">دسترسی سریع مدیریت</h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/news/news/add/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-plus-circle"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">خبر جدید</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/faculty/professor/add/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-user-plus"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">استاد جدید</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/admissions/application/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-file-alt"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">درخواست‌ها</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/contact/contactmessage/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-envelope"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">پیام‌ها</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/core/sitesettings/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-cog"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">تنظیمات</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-shield-alt"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">پنل ادمین</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+{% load static custom_filters %}
+
+{% block content %}
+<!-- ===== HERO SLIDER ===== -->
+<section class="hero-section">
+    {% if sliders %}
+    <div class="swiper hero-swiper">
+        <div class="swiper-wrapper">
+            {% for slide in sliders %}
+            <div class="swiper-slide hero-slide" style="{% if slide.image %}background-image: url('{{ slide.image.url }}'){% else %}background: linear-gradient(135deg,#1a3a5c,#2563eb){% endif %}">
+                <div class="container">
+                    <div class="row align-items-center min-vh-60">
+                        <div class="col-lg-7 hero-content" data-aos="fade-right">
+                            <span class="hero-badge"><i class="fas fa-star-of-life"></i> دانشگاه جامع علمی
+                                کاربردی</span>
+                            <h1 class="hero-title">{{ slide.title }}</h1>
+                            {% if slide.subtitle %}<p class="hero-subtitle">{{ slide.subtitle }}</p>{% endif %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if slide.link %}
+                                <a href="{{ slide.link }}" class="hero-btn">
+                                    {{ slide.link_text|default:"بیشتر بدانید" }} <i class="fas fa-arrow-left"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'admissions:admissions' %}" class="hero-btn-outline">
+                                    <i class="fas fa-file-alt"></i> ثبت‌نام
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+    {% else %}
+    <div class="hero-slide" style="background: linear-gradient(135deg,#1a3a5c 0%,#2563eb 60%,#10b981 100%)">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 hero-content" data-aos="fade-right">
+                    <span class="hero-badge"><i class="fas fa-graduation-cap"></i> خوش آمدید</span>
+                    <h1 class="hero-title">دانشگاه جامع<br>علمی کاربردی</h1>
+                    <p class="hero-subtitle">مرکز برتر آموزش عالی؛ جایی که دانش، نوآوری و توسعه فردی با هم تلاقی
+                        می‌یابند</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'admissions:admissions' %}" class="hero-btn">
+                            <i class="fas fa-file-alt"></i> پذیرش دانشجو
+                        </a>
+                        <a href="{% url 'academics:departments' %}" class="hero-btn-outline">
+                            <i class="fas fa-building"></i> دانشکده‌ها
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- ===== STATS BAR ===== -->
+<section class="stats-bar">
+    <div class="container">
+        <div class="row g-3 justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-aos="fade-up">
+                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="stat-number" data-target="5000">۰</div>
+                    <div class="stat-label">دانشجوی فعال</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="stat-number" data-target="200">۰</div>
+                    <div class="stat-label">عضو هیئت علمی</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                    <div class="stat-number" data-target="50">۰</div>
+                    <div class="stat-label">رشته تحصیلی</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-icon"><i class="fas fa-award"></i></div>
+                    <div class="stat-number" data-target="30">۰</div>
+                    <div class="stat-label">سال سابقه</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== QUICK LINKS ===== -->
+<section class="section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">دسترسی سریع</h2>
+            <p class="section-subtitle">خدمات پراستفاده دانشگاه</p>
+        </div>
+        <div class="row g-3">
+            {% if quick_links %}
+            {% for link in quick_links %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                <a href="{{ link.url }}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="{{ link.icon }}"></i></div>
+                    <div class="quick-link-title">{{ link.title }}</div>
+                </a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Fallback static quick links -->
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
+                <a href="{% url 'academics:students_panel' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="quick-link-title">سامانه آموزشی</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="50">
+                <a href="{% url 'admissions:admissions' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="quick-link-title">پذیرش</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <a href="{% url 'library:library' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-book"></i></div>
+                    <div class="quick-link-title">کتابخانه</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150">
+                <a href="{% url 'academics:elearning' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-laptop"></i></div>
+                    <div class="quick-link-title">آموزش مجازی</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'research:theses' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-scroll"></i></div>
+                    <div class="quick-link-title">پایان‌نامه‌ها</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="250">
+                <a href="{% url 'academics:calendar' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="quick-link-title">تقویم آموزشی</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <a href="{% url 'contact:alumni' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="quick-link-title">فارغ‌التحصیلان</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="350">
+                <a href="{% url 'core:eservices' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-globe"></i></div>
+                    <div class="quick-link-title">خدمات الکترونیکی</div>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== NEWS + ANNOUNCEMENTS ===== -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Latest News -->
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="section-title mb-0">آخرین اخبار</h2>
+                    </div>
+                    <a href="{% url 'news:list' %}" class="uni-card-link">همه اخبار <i
+                            class="fas fa-arrow-left"></i></a>
+                </div>
+                {% if featured_news %}
+                <div class="row g-3 mb-4">
+                    {% for item in featured_news %}
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                        <div class="uni-card">
+                            {% if item.image %}
+                            <div class="uni-card-img">
+                                <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
+                            </div>
+                            {% else %}
+                            <div class="uni-card-img"
+                                style="background:var(--gradient-primary); display:flex; align-items:center; justify-content:center; height:160px;">
+                                <i class="fas fa-newspaper" style="font-size:48px; color:rgba(255,255,255,0.4);"></i>
+                            </div>
+                            {% endif %}
+                            <div class="uni-card-body">
+                                {% if item.category %}
+                                <span class="uni-card-badge">{{ item.category.name }}</span>
+                                {% endif %}
+                                <h3 class="uni-card-title">{{ item.title }}</h3>
+                                <div class="uni-card-meta mb-2">
+                                    <i class="fas fa-calendar-alt"></i> {{ item.published_at|jalali_date }}
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-eye"></i> {{ item.views_count }} بازدید
+                                </div>
+                                <a href="{{ item.get_absolute_url }}" class="uni-card-link">ادامه مطلب <i
+                                        class="fas fa-arrow-left"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Latest News List -->
+                {% for item in latest_news %}
+                {% if not item.is_featured %}
+                <div class="announce-card mb-2" data-aos="fade-up">
+                    <div class="flex-shrink-0">
+                        <div
+                            style="width:46px; height:46px; background:var(--bg-light); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-newspaper text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
+                            <div class="announce-title">{{ item.title }}</div>
+                        </a>
+                        <div class="announce-date mt-1">{{ item.published_at|jalali_date }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Announcements Sidebar -->
+            <div class="col-lg-4 sticky-sidebar" data-aos="fade-left">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-title mb-0">اطلاعیه‌ها</h2>
+                    <a href="{% url 'news:announcements' %}" class="uni-card-link text-sm">همه <i
+                            class="fas fa-arrow-left"></i></a>
+                </div>
+                {% for item in announcements %}
+                <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
+                    <div class="announce-card announce-urgent mb-2" data-aos="fade-up">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-bullhorn text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ item.title }}</div>
+                            <div class="announce-date mt-1">{{ item.published_at|jalali_date }}</div>
+                        </div>
+                        <i class="fas fa-chevron-left text-muted" style="font-size:11px;"></i>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-muted text-center py-4">اطلاعیه‌ای موجود نیست</p>
+                {% endfor %}
+
+                <!-- Academic Calendar Widget -->
+                {% if calendar_items %}
+                <div class="mt-4">
+                    <h6 class="section-title" style="font-size:16px;">تقویم آموزشی</h6>
+                    {% for cal in calendar_items %}
+                    <div class="calendar-item" data-aos="fade-up">
+                        <div class="calendar-date-box">
+                            <span class="calendar-date-day">{{ cal.start_date|jalali_date:"day" }}</span>
+                            <span class="calendar-date-month">{{ cal.start_date|jalali_date:"month" }}</span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-600 text-sm" style="font-size:13px; font-weight:600;">{{ cal.title }}</div>
+                            <div class="text-muted" style="font-size:11px;">{{ cal.academic_year }}</div>
+                        </div>
+                        {% if cal.is_important %}
+                        <span class="badge bg-danger">مهم</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== DEPARTMENTS ===== -->
+<section class="section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">دانشکده‌ها و گروه‌های آموزشی</h2>
+            <p class="section-subtitle">مراکز علمی و تخصصی دانشگاه</p>
+        </div>
+        <div class="row g-4">
+            {% if departments %}
+            {% for dept in departments %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                <a href="{{ dept.get_absolute_url }}" class="text-decoration-none">
+                    <div class="dept-card">
+                        <div class="dept-icon"><i class="fas fa-building"></i></div>
+                        <h3 class="dept-title">{{ dept.name }}</h3>
+                        <p class="text-muted" style="font-size:14px; margin-top:8px;">{{
+                            dept.short_description|truncatewords:15 }}</p>
+                        <div class="dept-stats">
+                            <div class="dept-stat">
+                                <strong>{{ dept.majors.count }}</strong>
+                                رشته
+                            </div>
+                            <div class="dept-stat">
+                                <strong>{{ dept.professors.count }}</strong>
+                                استاد
+                            </div>
+                        </div>
+                        <span class="uni-card-link mt-3 d-inline-flex">بیشتر بدانید <i
+                                class="fas fa-arrow-left"></i></span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+            {% else %}
+            {% for i in "123456"|make_list %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card">
+                    <div class="dept-icon"><i class="fas fa-building"></i></div>
+                    <h3 class="dept-title">دانشکده مهندسی</h3>
+                    <p class="text-muted" style="font-size:14px; margin-top:8px;">آموزش و پژوهش در زمینه علوم مهندسی</p>
+                    <span class="uni-card-link mt-3 d-inline-flex">بیشتر بدانید <i class="fas fa-arrow-left"></i></span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="text-center mt-4" data-aos="fade-up">
+            <a href="{% url 'academics:departments' %}" class="btn-primary-uni">
+                <i class="fas fa-building"></i> مشاهده همه دانشکده‌ها
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FACULTY ===== -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">هیئت علمی برگزیده</h2>
+            <p class="section-subtitle">اعضای برجسته دانشگاه</p>
+        </div>
+        <div class="row g-4">
+            {% if featured_professors %}
+            {% for prof in featured_professors %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                <div class="prof-card">
+                    {% if prof.photo %}
+                    <img src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">
+                    {% else %}
+                    <div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>
+                    {% endif %}
+                    <div class="prof-name">{{ prof.get_full_name }}</div>
+                    <div class="prof-rank">{{ prof.get_rank_display }}</div>
+                    {% if prof.department %}
+                    <div class="prof-dept">{{ prof.department.name }}</div>
+                    {% endif %}
+                    <div class="prof-links">
+                        {% if prof.email %}<a href="mailto:{{ prof.email }}" class="prof-link-btn"><i
+                                class="fas fa-envelope"></i></a>{% endif %}
+                        {% if prof.google_scholar %}<a href="{{ prof.google_scholar }}" target="_blank"
+                            class="prof-link-btn"><i class="fas fa-graduation-cap"></i></a>{% endif %}
+                        <a href="{{ prof.get_absolute_url }}" class="prof-link-btn"><i class="fas fa-user"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            {% for i in "1234"|make_list %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
+                <div class="prof-card">
+                    <div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>
+                    <div class="prof-name">دکتر محمد احمدی</div>
+                    <div class="prof-rank">استادیار</div>
+                    <div class="prof-dept">دانشکده مهندسی</div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="text-center mt-4" data-aos="fade-up">
+            <a href="{% url 'faculty:list' %}" class="btn-primary-uni">مشاهده همه اساتید</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== EVENTS ===== -->
+{% if upcoming_events %}
+<section class="section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">رویدادهای آینده</h2>
+            <p class="section-subtitle">برنامه‌های پیش رو</p>
+        </div>
+        <div class="row g-4">
+            {% for event in upcoming_events %}
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                <div class="uni-card">
+                    {% if event.image %}
+                    <div class="uni-card-img">
+                        <img src="{{ event.image.url }}" alt="{{ event.title }}" loading="lazy">
+                    </div>
+                    {% else %}
+                    <div
+                        style="background:var(--gradient-primary); height:140px; display:flex; align-items:center; justify-content:center; border-radius: var(--radius) var(--radius) 0 0;">
+                        <i class="fas fa-calendar-star" style="font-size:48px; color:rgba(255,255,255,0.5);"></i>
+                    </div>
+                    {% endif %}
+                    <div class="uni-card-body">
+                        {% if event.is_featured %}
+                        <span class="uni-card-badge bg-warning text-dark">ویژه</span>
+                        {% endif %}
+                        <h3 class="uni-card-title">{{ event.title }}</h3>
+                        <div class="uni-card-meta">
+                            <i class="fas fa-calendar-alt"></i> {{ event.date }}
+                            {% if event.location %}
+                            <br><i class="fas fa-map-marker-alt"></i> {{ event.location }}
+                            {% endif %}
+                        </div>
+                        <p class="uni-card-desc mt-2">{{ event.description|truncatewords:12 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== GALLERY ===== -->
+{% if gallery_images %}
+<section class="section section-alt">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">گالری تصاویر</h2>
+            <p class="section-subtitle">لحظاتی از زندگی دانشگاهی</p>
+        </div>
+        <div class="row g-2">
+            {% for img in gallery_images %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                <div class="gallery-item">
+                    <img src="{{ img.image.url }}" alt="{{ img.title }}" loading="lazy">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'core:gallery' %}" class="btn-primary-uni">مشاهده گالری کامل</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== ALUMNI ===== -->
+{% if alumni %}
+<section class="section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">فارغ‌التحصیلان موفق</h2>
+            <p class="section-subtitle">افتخارات دانشگاه در دنیای کار</p>
+        </div>
+        <div class="row g-4">
+            {% for person in alumni %}
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                <div class="alumni-card text-center">
+                    {% if person.photo %}
+                    <img src="{{ person.photo.url }}" alt="{{ person.full_name }}" class="alumni-photo mb-3">
+                    {% else %}
+                    <div class="prof-avatar-placeholder" style="margin: 0 auto 12px;"><i class="fas fa-user-tie"></i>
+                    </div>
+                    {% endif %}
+                    <h5 class="fw-bold text-primary-uni mb-1">{{ person.full_name }}</h5>
+                    <p class="text-muted mb-1" style="font-size:13px;">{{ person.major }} - {{ person.degree }}</p>
+                    {% if person.current_position %}
+                    <p class="text-primary" style="font-size:13px; font-weight:600;">{{ person.current_position }}</p>
+                    {% endif %}
+                    {% if person.company %}
+                    <small class="text-muted">{{ person.company }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'contact:alumni' %}" class="btn-primary-uni">باشگاه فارغ‌التحصیلان</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== FAQ ===== -->
+{% if faqs %}
+<section class="section section-alt">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">سوالات متداول</h2>
+            <p class="section-subtitle">پاسخ سریع به پرسش‌های رایج</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item border-0 mb-2 rounded-xl overflow-hidden shadow-sm" data-aos="fade-up"
+                        data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ faq.pk }}"
+                                style="font-family:'Vazirmatn',sans-serif;">
+                                <i class="fas fa-question-circle text-primary me-2 ms-0 ms-2"></i>
+                                {{ faq.question }}
+                            </button>
+                        </h2>
+                        <div id="faq{{ faq.pk }}"
+                            class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                            data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted" style="font-size:14px; line-height:1.9;">
+                                {{ faq.answer }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{% url 'core:faq' %}" class="uni-card-link">مشاهده همه سوالات <i
+                            class="fas fa-arrow-left"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== CTA ===== -->
+<section class="section" style="background: var(--gradient-primary); color: white; margin-top: 0;">
+    <div class="container">
+        <div class="row align-items-center" data-aos="fade-up">
+            <div class="col-lg-8 text-center text-lg-start mb-4 mb-lg-0">
+                <h2 class="fw-900 mb-2" style="font-size:28px;">آماده‌اید دانشجوی ما شوید؟</h2>
+                <p style="opacity:0.85; font-size:16px;">همین امروز ثبت‌نام کنید و آینده‌ای روشن را آغاز کنید</p>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end">
+                <a href="{% url 'admissions:apply' %}" class="hero-btn" style="background: var(--gradient-gold);">
+                    <i class="fas fa-file-alt"></i> شروع پذیرش
+                </a>
+                <a href="{% url 'contact:contact' %}" class="hero-btn-outline ms-2"
+                    style="border-color:rgba(255,255,255,0.5);">
+                    <i class="fas fa-phone"></i> تماس با ما
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">همایش‌ها</h1></div></div>
+<section class="section"><div class="container"><div class="row g-4">
+{% for conf in conferences %}
+<div class="col-md-6 col-lg-4" data-aos="fade-up">
+<div class="uni-card">
+{% if conf.image %}<div class="uni-card-img"><img src="{{ conf.image.url }}" alt="{{ conf.title }}" loading="lazy"></div>{% else %}<div style="height:150px;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;border-radius:var(--radius) var(--radius) 0 0;"><i class="fas fa-podium" style="font-size:48px;color:rgba(255,255,255,0.3);"></i></div>{% endif %}
+<div class="uni-card-body">
+<h5 class="uni-card-title">{{ conf.title }}</h5>
+<div class="uni-card-meta"><i class="fas fa-calendar-alt"></i> {{ conf.date|jalali_date }}{% if conf.location %}<br><i class="fas fa-map-marker-alt"></i> {{ conf.location }}{% endif %}</div>
+{% if conf.website %}<a href="{{ conf.website }}" target="_blank" class="uni-card-link mt-2">وبسایت همایش <i class="fas fa-external-link-alt"></i></a>{% endif %}
+</div></div></div>
+{% empty %}
+<div class="col-12 text-center py-5 text-muted"><i class="fas fa-microphone fa-3x mb-3 d-block opacity-25"></i>همایشی ثبت نشده</div>
+{% endfor %}
+</div></div></section>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'faculty:list' %}">اساتید</a></li>
+                <li class="breadcrumb-item active">{{ professor.get_full_name }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{{ professor.get_full_name }}</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Profile Sidebar -->
+            <div class="col-lg-4" data-aos="fade-right">
+                <div class="uni-card p-4 text-center">
+                    {% if professor.photo %}
+                    <img src="{{ professor.photo.url }}" alt="{{ professor.get_full_name }}" class="prof-avatar" style="width:140px;height:140px;">
+                    {% else %}
+                    <div class="prof-avatar-placeholder" style="width:140px;height:140px;font-size:60px;margin:0 auto 16px;"><i class="fas fa-user-tie"></i></div>
+                    {% endif %}
+                    <h2 class="prof-name mt-3" style="font-size:20px;">{{ professor.get_full_name }}</h2>
+                    <div class="prof-rank">{{ professor.get_rank_display }}</div>
+                    {% if professor.department %}<div class="prof-dept mt-1">{{ professor.department.name }}</div>{% endif %}
+                    <div class="divider"></div>
+                    {% if professor.email %}
+                    <div class="d-flex align-items-center gap-2 mb-2 justify-content-center">
+                        <i class="fas fa-envelope text-primary"></i>
+                        <a href="mailto:{{ professor.email }}" style="font-size:13px;">{{ professor.email }}</a>
+                    </div>
+                    {% endif %}
+                    {% if professor.phone %}
+                    <div class="d-flex align-items-center gap-2 mb-2 justify-content-center">
+                        <i class="fas fa-phone text-primary"></i>
+                        <span style="font-size:13px;">{{ professor.phone }}</span>
+                    </div>
+                    {% endif %}
+                    {% if professor.office %}
+                    <div class="d-flex align-items-center gap-2 mb-2 justify-content-center">
+                        <i class="fas fa-door-open text-primary"></i>
+                        <span style="font-size:13px;">اتاق: {{ professor.office }}</span>
+                    </div>
+                    {% endif %}
+                    {% if professor.office_hours %}
+                    <div class="mt-3 p-3 bg-light rounded-xl">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-clock text-primary"></i> ساعات حضور</h6>
+                        <p class="mb-0 text-muted" style="font-size:13px;">{{ professor.office_hours }}</p>
+                    </div>
+                    {% endif %}
+                    <!-- External Links -->
+                    <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+                        {% if professor.google_scholar %}<a href="{{ professor.google_scholar }}" class="tag-badge" target="_blank"><i class="fas fa-graduation-cap"></i> Google Scholar</a>{% endif %}
+                        {% if professor.researchgate %}<a href="{{ professor.researchgate }}" class="tag-badge" target="_blank"><i class="fab fa-researchgate"></i> ResearchGate</a>{% endif %}
+                        {% if professor.linkedin %}<a href="{{ professor.linkedin }}" class="tag-badge" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>{% endif %}
+                        {% if professor.personal_website %}<a href="{{ professor.personal_website }}" class="tag-badge" target="_blank"><i class="fas fa-globe"></i> وبسایت</a>{% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- Details -->
+            <div class="col-lg-8" data-aos="fade-left">
+                {% if professor.bio %}
+                <div class="uni-card p-4 mb-4">
+                    <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-user"></i> بیوگرافی</h5>
+                    <p style="font-size:15px; line-height:2; color:var(--text-dark);">{{ professor.bio }}</p>
+                </div>
+                {% endif %}
+                {% if professor.specialization %}
+                <div class="uni-card p-4 mb-4">
+                    <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-microscope"></i> تخصص و زمینه‌های پژوهشی</h5>
+                    <p style="font-size:14px; line-height:2;">{{ professor.specialization }}</p>
+                    {% if professor.research_interests %}
+                    <p style="font-size:14px; line-height:2;">{{ professor.research_interests }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if professor.education %}
+                <div class="uni-card p-4 mb-4">
+                    <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-graduation-cap"></i> سوابق تحصیلی</h5>
+                    <p style="font-size:14px; line-height:2;">{{ professor.education }}</p>
+                </div>
+                {% endif %}
+                <!-- Publications -->
+                {% if publications %}
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-file-alt"></i> مقالات و انتشارات</h5>
+                    {% for pub in publications %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-shrink-0">
+                            <span class="badge bg-primary">{{ pub.year }}</span>
+                        </div>
+                        <div>
+                            <div class="announce-title" style="font-size:13px;">{{ pub.title }}</div>
+                            {% if pub.journal_conference %}<div class="announce-date">{{ pub.journal_conference }}</div>{% endif %}
+                            {% if pub.doi %}<a href="https://doi.org/{{ pub.doi }}" class="uni-card-link" style="font-size:12px;" target="_blank">DOI</a>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

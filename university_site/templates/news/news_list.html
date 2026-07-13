@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">اخبار و اطلاعیه‌ها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">اخبار و اطلاعیه‌ها</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    <h6 class="fw-bold text-primary-uni mb-3">دسته‌بندی</h6>
+                    <a href="{% url 'news:list' %}" class="tag-badge d-block mb-2 text-center {% if not current_category %}active{% endif %}">همه اخبار</a>
+                    {% for cat in categories %}
+                    <a href="?category={{ cat.slug }}" class="tag-badge d-block mb-2 text-center {% if current_category.pk == cat.pk %}active{% endif %}">
+                        <i class="{{ cat.icon }}"></i> {{ cat.name }}
+                    </a>
+                    {% endfor %}
+                    <div class="divider"></div>
+                    <a href="?type=news" class="tag-badge d-block mb-2 text-center">اخبار</a>
+                    <a href="?type=announcement" class="tag-badge d-block mb-2 text-center">اطلاعیه‌ها</a>
+                </div>
+            </div>
+            <!-- News Grid -->
+            <div class="col-lg-9">
+                {% if featured_news %}
+                <div class="row g-3 mb-4">
+                    {% for item in featured_news %}
+                    <div class="col-md-4" data-aos="fade-up">
+                        <div class="uni-card">
+                            {% if item.image %}
+                            <div class="uni-card-img"><img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy"></div>
+                            {% else %}
+                            <div style="background:var(--gradient-primary);height:160px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius) var(--radius) 0 0;"><i class="fas fa-newspaper" style="font-size:40px;color:rgba(255,255,255,0.3);"></i></div>
+                            {% endif %}
+                            <div class="uni-card-body">
+                                {% if item.category %}<span class="uni-card-badge">{{ item.category.name }}</span>{% endif %}
+                                <h3 class="uni-card-title">{{ item.title }}</h3>
+                                <div class="uni-card-meta">{{ item.published_at|jalali_date }}</div>
+                                <a href="{{ item.get_absolute_url }}" class="uni-card-link mt-2">ادامه مطلب <i class="fas fa-arrow-left"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="row g-3">
+                    {% for item in news %}
+                    {% if not item.is_featured %}
+                    <div class="col-12" data-aos="fade-up">
+                        <div class="uni-card p-3">
+                            <div class="d-flex gap-3">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.title }}" style="width:90px;height:70px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;">
+                                {% endif %}
+                                <div>
+                                    {% if item.category %}<span class="uni-card-badge">{{ item.category.name }}</span>{% endif %}
+                                    <h4 class="uni-card-title">{{ item.title }}</h4>
+                                    <div class="uni-card-meta">{{ item.published_at|jalali_date }} | {{ item.views_count }} بازدید</div>
+                                    <a href="{{ item.get_absolute_url }}" class="uni-card-link mt-1">ادامه مطلب</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <div class="col-12 text-center py-5 text-muted"><i class="fas fa-newspaper fa-3x mb-3 d-block opacity-25"></i>خبری یافت نشد</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

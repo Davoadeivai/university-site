@@ -1,0 +1,458 @@
+{% load static %}
+{% load i18n %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}موسسه آموزش عالی - آموزش کارشناسی، کارشناسی ارشد و کاردانی - پذیرش دانشجو{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}موسسه آموزش عالی، دانشگاه، کارشناسی، کارشناسی ارشد، کاردانی، پذیرش دانشجو{% endblock %}">
+    <meta name="robots" content="index, follow">
+    <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %} | موسسه آموزش عالی{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    <!-- Bootstrap 5 RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts - Vazirmatn -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Swiper -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <!-- IntroJS site tour -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs-rtl.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 d-none d-md-flex align-items-center gap-3">
+                {% if site_settings %}
+                <span class="topbar-info"><i class="fas fa-phone-alt"></i> {{ site_settings.phone }}</span>
+                <span class="topbar-info"><i class="fas fa-envelope"></i> {{ site_settings.email }}</span>
+                {% endif %}
+            </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-3">
+                <div class="social-links">
+                    {% if site_settings %}
+                    {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" target="_blank"><i class="fab fa-telegram"></i></a>{% endif %}
+                    {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
+                    {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
+                    {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" target="_blank"><i class="fab fa-youtube"></i></a>{% endif %}
+                    {% endif %}
+                </div>
+                <!-- Site Tour Button -->
+                <button id="startSiteTour" class="btn btn-sm btn-tour d-none d-md-inline-flex align-items-center gap-1" title="راهنمای سایت">
+                    <i class="fas fa-map-signs"></i> راهنمای سایت
+                </button>
+                <div class="lang-switch">
+                    <a href="?lang=fa" class="btn btn-sm btn-outline-light">FA</a>
+                    <a href="?lang=en" class="btn btn-sm btn-outline-light">EN</a>
+                </div>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:dashboard' %}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-tachometer-alt"></i> داشبورد
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-sign-out-alt"></i> خروج
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-light">
+                    <i class="fas fa-sign-in-alt"></i> ورود
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Navbar -->
+<nav class="navbar navbar-expand-xl navbar-light sticky-top main-navbar" id="mainNav">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:landing' %}">
+            {% if site_settings and site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="لوگو" height="55" class="nav-logo">
+            {% else %}
+            <div class="logo-placeholder">
+                <i class="fas fa-university"></i>
+            </div>
+            {% endif %}
+            <div class="brand-text">
+                <span class="brand-name">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %}</span>
+                <span class="brand-sub">موسسه آموزش عالی</span>
+            </div>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                        <i class="fas fa-home"></i> صفحه اصلی
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="fas fa-crown"></i> حوزه ریاست
+                    </a>
+                    <ul class="dropdown-menu mega-menu">
+                        <li><a class="dropdown-item" href="{% url 'core:presidency' %}"><i class="fas fa-user-tie text-primary"></i> ریاست</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:presidency_office' %}"><i class="fas fa-door-open text-success"></i> دفتر ریاست</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:deputies' %}"><i class="fas fa-users-cog text-info"></i> معاونین دانشگاه</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:international_office' %}"><i class="fas fa-globe text-warning"></i> دفتر همکاری‌های علمی و بین الملل</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:public_relations' %}"><i class="fas fa-bullhorn text-secondary"></i> مدیریت روابط عمومی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:security_office' %}"><i class="fas fa-shield-alt text-danger"></i> حراست</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="fas fa-university"></i> درباره موسسه
+                    </a>
+                    <ul class="dropdown-menu mega-menu">
+                        <li><a class="dropdown-item" href="{% url 'core:about' %}"><i class="fas fa-info-circle text-primary"></i> معرفی و تاریخچه</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:about' %}#vision"><i class="fas fa-eye text-info"></i> چشم انداز و اهداف</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:institution_goals' %}"><i class="fas fa-bullseye text-success"></i> اهداف موسسه</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:board_founders' %}"><i class="fas fa-users text-warning"></i> هیات موسس دانشگاه</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:board_trustees' %}"><i class="fas fa-user-tie text-danger"></i> هیات امنا دانشگاه</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:about' %}#chart"><i class="fas fa-sitemap text-secondary"></i> چارت سازمانی</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="fas fa-sitemap"></i> معاونت‌ها
+                    </a>
+                    <ul class="dropdown-menu mega-menu">
+                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'education' %}"><i class="fas fa-graduation-cap text-primary"></i> معاونت آموزشی و تحصیلات تکمیلی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'student' %}"><i class="fas fa-users text-success"></i> معاونت دانشجویی و فرهنگی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'admin_finance' %}"><i class="fas fa-briefcase text-warning"></i> معاونت اداری و مالی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'construction' %}"><i class="fas fa-hard-hat text-danger"></i> معاونت فنی و عمرانی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'research' %}"><i class="fas fa-flask text-secondary"></i> معاونت پژوهشی و فناوری</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="fas fa-graduation-cap"></i> آموزش
+                    </a>
+                    <ul class="dropdown-menu mega-menu">
+                        <li><a class="dropdown-item" href="{% url 'academics:departments' %}"><i class="fas fa-building text-primary"></i> دانشکده‌ها</a></li>
+                        <li><a class="dropdown-item" href="{% url 'academics:majors' %}"><i class="fas fa-book-open text-info"></i> رشته‌های تحصیلی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'academics:calendar' %}"><i class="fas fa-calendar-alt text-warning"></i> تقویم آموزشی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'academics:students_panel' %}"><i class="fas fa-user-graduate text-danger"></i> پنل دانشجویی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'academics:elearning' %}"><i class="fas fa-laptop text-secondary"></i> آموزش الکترونیکی</a></li>
+                    </ul>
+                </li>
+                <!-- گروه‌های آموزشی — dynamic از DB، قابل ویرایش توسط ادمین -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown">
+                        <i class="fas fa-chalkboard"></i> گروه‌های آموزشی
+                    </a>
+                    <ul class="dropdown-menu" style="max-height:420px;overflow-y:auto;min-width:260px;">
+                        <li>
+                            <a class="dropdown-item fw-semibold border-bottom pb-2 mb-1" href="{% url 'academics:groups_list' %}">
+                                <i class="fas fa-list text-primary me-1"></i> همه گروه‌ها
+                            </a>
+                        </li>
+                        {% if nav_groups %}
+                            {% for group in nav_groups %}
+                            <li>
+                                <a class="dropdown-item" href="{{ group.get_absolute_url }}">
+                                    <i class="fas fa-angle-left text-muted me-1"></i>
+                                    {{ group.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                        <li><span class="dropdown-item text-muted" style="font-size:13px;"><i class="fas fa-info-circle me-1"></i> گروهی تعریف نشده</span></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'faculty:list' %}">
+                        <i class="fas fa-chalkboard-teacher"></i> اساتید
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="fas fa-flask"></i> پژوهش
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'research:research' %}"><i class="fas fa-microscope text-primary"></i> معاونت پژوهشی</a></li>
+                        <li><a class="dropdown-item" href="{% url 'research:theses' %}"><i class="fas fa-scroll text-success"></i> پایان‌نامه‌ها</a></li>
+                        <li><a class="dropdown-item" href="{% url 'research:conferences' %}"><i class="fas fa-podium text-info"></i> همایش‌ها</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'library:library' %}">
+                        <i class="fas fa-book"></i> کتابخانه
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'news:list' %}">
+                        <i class="fas fa-newspaper"></i> اخبار
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admissions:admissions' %}">
+                        <i class="fas fa-file-alt"></i> پذیرش
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contact:contact' %}">
+                        <i class="fas fa-envelope"></i> تماس
+                    </a>
+                </li>
+            </ul>
+            <!-- Search Bar -->
+            <form class="d-flex search-form" action="{% url 'core:search' %}" method="get">
+                <div class="input-group">
+                    <input class="form-control search-input" type="search" name="q" placeholder="جستجوی هوشمند..." aria-label="جستجو" autocomplete="off">
+                    <button class="btn btn-search" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- Urgent Announcements -->
+{% if urgent_announcements %}
+<div class="urgent-bar">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3">
+            <span class="urgent-label"><i class="fas fa-exclamation-circle"></i> فوری</span>
+            <div class="urgent-ticker">
+                {% for ann in urgent_announcements %}
+                <span>{{ ann.title }}</span>{% if not forloop.last %} &nbsp;|&nbsp; {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Messages -->
+{% if messages %}
+<div class="container mt-2">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Page Content -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="main-footer">
+    <div class="footer-top">
+        <div class="container">
+            <div class="row g-4">
+                <!-- About Column -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-widget">
+                        <div class="footer-logo mb-3">
+                            <i class="fas fa-university footer-logo-icon"></i>
+                            <div>
+                                <h5 class="mb-0">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %}</h5>
+                                <small>موسسه آموزش عالی</small>
+                            </div>
+                        </div>
+                        <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}دانشگاه جامع علمی کاربردی با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
+                        <div class="social-links mt-3">
+                            {% if site_settings %}
+                            {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank"><i class="fab fa-telegram"></i></a>{% endif %}
+                            {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
+                            {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" class="social-btn linkedin" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
+                            {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>{% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6">
+                    <div class="footer-widget">
+                        <h6 class="footer-title">دسترسی سریع</h6>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'core:home' %}"><i class="fas fa-angle-left"></i> صفحه اصلی</a></li>
+                            <li><a href="{% url 'core:about' %}"><i class="fas fa-angle-left"></i> درباره ما</a></li>
+                            <li><a href="{% url 'academics:departments' %}"><i class="fas fa-angle-left"></i> دانشکده‌ها</a></li>
+                            <li><a href="{% url 'faculty:list' %}"><i class="fas fa-angle-left"></i> اساتید</a></li>
+                            <li><a href="{% url 'news:list' %}"><i class="fas fa-angle-left"></i> اخبار</a></li>
+                            <li><a href="{% url 'admissions:admissions' %}"><i class="fas fa-angle-left"></i> پذیرش</a></li>
+                            <li><a href="{% url 'contact:contact' %}"><i class="fas fa-angle-left"></i> تماس با ما</a></li>
+                            <li><a href="{% url 'core:faq' %}"><i class="fas fa-angle-left"></i> سوالات متداول</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Services -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-widget">
+                        <h6 class="footer-title">خدمات الکترونیکی</h6>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'academics:students_panel' %}"><i class="fas fa-angle-left"></i> سامانه آموزشی</a></li>
+                            <li><a href="{% url 'academics:elearning' %}"><i class="fas fa-angle-left"></i> آموزش الکترونیکی</a></li>
+                            <li><a href="{% url 'library:library' %}"><i class="fas fa-angle-left"></i> کتابخانه دیجیتال</a></li>
+                            <li><a href="{% url 'research:theses' %}"><i class="fas fa-angle-left"></i> پایان‌نامه‌ها</a></li>
+                            <li><a href="{% url 'contact:alumni' %}"><i class="fas fa-angle-left"></i> فارغ‌التحصیلان</a></li>
+                            <li><a href="{% url 'contact:industry' %}"><i class="fas fa-angle-left"></i> ارتباط با صنعت</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-widget">
+                        <h6 class="footer-title">اطلاعات تماس</h6>
+                        {% if site_settings %}
+                        <ul class="footer-contact">
+                            {% if site_settings.address %}
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ site_settings.address }}</span>
+                            </li>
+                            {% endif %}
+                            {% if site_settings.phone %}
+                            <li>
+                                <i class="fas fa-phone-alt"></i>
+                                <span>{{ site_settings.phone }}</span>
+                            </li>
+                            {% endif %}
+                            {% if site_settings.email %}
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                <span>{{ site_settings.email }}</span>
+                            </li>
+                            {% endif %}
+                            {% if site_settings.working_hours %}
+                            <li>
+                                <i class="fas fa-clock"></i>
+                                <span>{{ site_settings.working_hours }}</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                        {% else %}
+                        <ul class="footer-contact">
+                            <li><i class="fas fa-map-marker-alt"></i><span>تهران، ایران</span></li>
+                            <li><i class="fas fa-phone-alt"></i><span>۰۲۱-۱۲۳۴۵۶۷۸</span></li>
+                            <li><i class="fas fa-envelope"></i><span>info@university.ac.ir</span></li>
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Info Bar -->
+    <div class="footer-payment-bar">
+        <div class="container">
+            <div class="row align-items-center g-3 py-3">
+                <div class="col-md-4 text-center text-md-start">
+                    <span class="payment-label"><i class="fas fa-university"></i> دریافت شناسه واریز شهریه:</span>
+                    <a href="{% url 'core:eservices' %}" class="payment-link">کلیک کنید</a>
+                </div>
+                <div class="col-md-4 text-center">
+                    <span class="payment-label"><i class="fas fa-headset"></i> ارتباط مستقیم با رئیس مؤسسه:</span>
+                    <a href="{% url 'contact:contact' %}" class="payment-link">فرم ارتباطی</a>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <a href="{% url 'admissions:admissions' %}" class="btn btn-sm btn-warning fw-bold">
+                        <i class="fas fa-file-alt"></i> پذیرش دانشجو مهر ۱۴۰۴
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; ۱۴۰۳ {% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %} - تمامی حقوق محفوظ است</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'core:faq' %}" class="footer-bottom-link">سوالات متداول</a>
+                    <a href="{% url 'core:eservices' %}" class="footer-bottom-link">خدمات الکترونیکی</a>
+                    <a href="/admin/" class="footer-bottom-link">پنل مدیریت</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scroll to Top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <i class="fas fa-chevron-up"></i>
+</button>
+
+<!-- Chatbot Toggle -->
+<div class="chatbot-btn" id="chatbotBtn" onclick="toggleChatbot()">
+    <i class="fas fa-robot"></i>
+    <span class="chatbot-badge">AI</span>
+</div>
+
+<!-- Chatbot Widget -->
+<div class="chatbot-widget" id="chatbotWidget" style="display:none;">
+    <div class="chatbot-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-robot"></i>
+            <div>
+                <div class="fw-bold">دستیار هوشمند</div>
+                <small>همیشه آنلاین</small>
+            </div>
+        </div>
+        <button onclick="toggleChatbot()" class="btn btn-sm btn-close-chatbot"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chatbot-messages" id="chatMessages">
+        <div class="chat-msg bot-msg">
+            <i class="fas fa-robot"></i>
+            <div class="msg-bubble">سلام! من دستیار هوشمند دانشگاه هستم. چطور می‌توانم کمکتان کنم؟</div>
+        </div>
+    </div>
+    <div class="chatbot-quick-btns">
+        <button onclick="sendQuickMsg('پذیرش دانشجو')">پذیرش</button>
+        <button onclick="sendQuickMsg('رشته‌های تحصیلی')">رشته‌ها</button>
+        <button onclick="sendQuickMsg('شهریه')">شهریه</button>
+        <button onclick="sendQuickMsg('اساتید')">اساتید</button>
+    </div>
+    <div class="chatbot-input">
+        <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." onkeypress="if(event.key==='Enter') sendMsg()">
+        <button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AOS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<!-- Swiper -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<!-- IntroJS -->
+<script src="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/intro.min.js"></script>
+<!-- Custom JS -->
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

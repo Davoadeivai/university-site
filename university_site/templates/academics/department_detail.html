@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">{{ department.name }}</h1></div></div>
+<section class="section"><div class="container">
+<div class="row g-5">
+<div class="col-lg-8">
+{% if department.description %}<div class="uni-card p-4 mb-4"><p style="font-size:15px;line-height:2;">{{ department.description }}</p></div>{% endif %}
+{% if majors %}
+<div class="mb-5"><h4 class="section-title">رشته‌های تحصیلی</h4>
+<div class="row g-3 mt-3">
+{% for major in majors %}
+<div class="col-md-6">
+<a href="{{ major.get_absolute_url }}" class="text-decoration-none">
+<div class="dept-card"><h5 class="dept-title" style="font-size:16px;">{{ major.name }}</h5>
+<span class="uni-card-badge">{{ major.get_degree_display }}</span>
+<div class="text-muted mt-2" style="font-size:13px;"><i class="fas fa-credit-card"></i> {{ major.total_credits }} واحد</div>
+</div></a></div>
+{% endfor %}
+</div></div>{% endif %}
+{% if professors %}
+<div class="mb-5"><h4 class="section-title">اعضای هیئت علمی</h4>
+<div class="row g-3 mt-3">
+{% for prof in professors %}
+<div class="col-6 col-md-4">
+<div class="prof-card">
+{% if prof.photo %}<img src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">{% else %}<div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>{% endif %}
+<div class="prof-name" style="font-size:14px;">{{ prof.get_full_name }}</div>
+<div class="prof-rank">{{ prof.get_rank_display }}</div>
+</div></div>
+{% endfor %}
+</div></div>{% endif %}
+{% if labs %}<div><h4 class="section-title">آزمایشگاه‌ها</h4>
+<div class="row g-3 mt-3">{% for lab in labs %}
+<div class="col-md-6"><div class="dept-card"><div class="dept-icon"><i class="fas fa-flask"></i></div><h5 class="dept-title" style="font-size:15px;">{{ lab.name }}</h5>
+{% if lab.supervisor %}<div class="text-muted" style="font-size:13px;"><i class="fas fa-user"></i> {{ lab.supervisor }}</div>{% endif %}</div></div>
+{% endfor %}</div></div>{% endif %}
+</div>
+<div class="col-lg-4">
+<div class="uni-card p-4">
+<h5 class="fw-bold text-primary-uni mb-3">اطلاعات دانشکده</h5>
+{% if department.head %}<div class="mb-2"><i class="fas fa-user-tie text-primary"></i> <strong>رئیس:</strong> {{ department.head }}</div>{% endif %}
+{% if department.email %}<div class="mb-2"><i class="fas fa-envelope text-primary"></i> <a href="mailto:{{ department.email }}">{{ department.email }}</a></div>{% endif %}
+{% if department.phone %}<div class="mb-2"><i class="fas fa-phone text-primary"></i> {{ department.phone }}</div>{% endif %}
+{% if department.location %}<div class="mb-2"><i class="fas fa-map-marker-alt text-primary"></i> {{ department.location }}</div>{% endif %}
+</div>
+</div>
+</div></div></section>
+{% endblock %}

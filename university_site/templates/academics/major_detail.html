@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">{{ major.name }}</h1></div></div>
+<section class="section"><div class="container">
+<div class="row g-4">
+<div class="col-lg-8">
+<div class="uni-card p-4 mb-4">
+<span class="uni-card-badge">{{ major.get_degree_display }}</span>
+{% if major.department %}<span class="uni-card-badge ms-2">{{ major.department.name }}</span>{% endif %}
+<div class="row g-3 mt-2 mb-3">
+<div class="col-4 text-center"><div class="dept-stat"><strong class="d-block" style="font-size:24px; color:var(--primary);">{{ major.total_credits }}</strong>کل واحد</div></div>
+<div class="col-4 text-center"><div class="dept-stat"><strong class="d-block" style="font-size:24px; color:var(--primary);">{{ major.capacity }}</strong>ظرفیت</div></div>
+</div>
+{% if major.description %}<h5 class="fw-bold text-primary-uni">معرفی رشته</h5><p style="font-size:15px;line-height:2;">{{ major.description }}</p>{% endif %}
+{% if major.job_market %}<h5 class="fw-bold text-primary-uni mt-3">بازار کار</h5><p style="font-size:14px;line-height:2;">{{ major.job_market }}</p>{% endif %}
+{% if major.objectives %}<h5 class="fw-bold text-primary-uni mt-3">اهداف</h5><p style="font-size:14px;line-height:2;">{{ major.objectives }}</p>{% endif %}
+</div>
+{% if courses %}
+<div class="uni-card p-4">
+<h5 class="fw-bold text-primary-uni mb-3">برنامه درسی</h5>
+<div class="table-responsive"><table class="table table-hover" style="font-size:14px;">
+<thead class="table-primary"><tr><th>نام درس</th><th>کد</th><th>واحد</th><th>نوع</th><th>ترم</th></tr></thead>
+<tbody>
+{% for course in courses %}
+<tr><td>{{ course.name }}</td><td>{{ course.code }}</td><td>{{ course.credits }}</td><td>{{ course.get_course_type_display }}</td><td>{{ course.semester }}</td></tr>
+{% endfor %}
+</tbody></table></div></div>{% endif %}
+</div>
+<div class="col-lg-4">
+<div class="uni-card p-4 mb-4">
+<h5 class="fw-bold text-primary-uni mb-3">شرایط پذیرش</h5>
+{% if major.admission_requirements %}<p style="font-size:14px;line-height:2;">{{ major.admission_requirements }}</p>{% else %}<p class="text-muted">از طریق پنل مدیریت تنظیم می‌شود</p>{% endif %}
+{% if major.tuition_fee %}<div class="mt-3 p-3 bg-light rounded"><i class="fas fa-money-bill text-success"></i> <strong>شهریه:</strong><br>{{ major.tuition_fee }}</div>{% endif %}
+<a href="{% url 'admissions:apply' %}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3"><i class="fas fa-file-alt"></i> ثبت‌نام</a>
+</div></div></div></div></section>
+{% endblock %}

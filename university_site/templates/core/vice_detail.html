@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% comment %}
+  vice_type values: education | student | admin_finance | construction | research
+  رنگ و آیکون بر اساس نوع معاونت
+{% endcomment %}
+
+{% if vice_type == 'education' %}
+  {% with color="primary" icon="fas fa-graduation-cap" bg_color="#3b82d4" %}
+  {% include "core/vice_detail_inner.html" %}
+  {% endwith %}
+{% elif vice_type == 'student' %}
+  {% with color="success" icon="fas fa-users" bg_color="#22c55e" %}
+  {% include "core/vice_detail_inner.html" %}
+  {% endwith %}
+{% elif vice_type == 'admin_finance' %}
+  {% with color="warning" icon="fas fa-briefcase" bg_color="#f59e0b" %}
+  {% include "core/vice_detail_inner.html" %}
+  {% endwith %}
+{% elif vice_type == 'construction' %}
+  {% with color="danger" icon="fas fa-hard-hat" bg_color="#ef4444" %}
+  {% include "core/vice_detail_inner.html" %}
+  {% endwith %}
+{% else %}
+  {% with color="secondary" icon="fas fa-flask" bg_color="#8b5cf6" %}
+  {% include "core/vice_detail_inner.html" %}
+  {% endwith %}
+{% endif %}
+
+{% endblock %}

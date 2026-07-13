@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">اساتید</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">هیئت علمی</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            {% for prof in professors %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                <div class="prof-card">
+                    {% if prof.photo %}
+                    <img src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">
+                    {% else %}
+                    <div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>
+                    {% endif %}
+                    <div class="prof-name">{{ prof.get_full_name }}</div>
+                    <div class="prof-rank">{{ prof.get_rank_display }}</div>
+                    {% if prof.department %}<div class="prof-dept">{{ prof.department.name }}</div>{% endif %}
+                    <p class="text-muted mt-2 mb-0" style="font-size:12px;">{{ prof.specialization|truncatewords:8 }}</p>
+                    <div class="prof-links">
+                        {% if prof.email %}<a href="mailto:{{ prof.email }}" class="prof-link-btn"><i class="fas fa-envelope"></i></a>{% endif %}
+                        <a href="{{ prof.get_absolute_url }}" class="prof-link-btn"><i class="fas fa-user"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fas fa-users fa-3x mb-3 d-block opacity-25"></i>استادی یافت نشد
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

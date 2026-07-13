@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">ثبت‌نام در سامانه</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="uni-card p-5">
+                    <div class="text-center mb-4">
+                        <div class="logo-placeholder mx-auto mb-3" style="width:70px;height:70px;font-size:30px;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3 class="fw-bold text-primary-uni">ایجاد حساب کاربری</h3>
+                        <p class="text-muted" style="font-size:14px;">اطلاعات خود را برای ثبت‌نام وارد کنید</p>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">نام</label>
+                                <input type="text" name="first_name" class="form-control" placeholder="نام">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">نام خانوادگی</label>
+                                <input type="text" name="last_name" class="form-control" placeholder="نام خانوادگی">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">نام کاربری <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control" required placeholder="نام کاربری">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ایمیل</label>
+                            <input type="email" name="email" class="form-control" placeholder="ایمیل">
+                        </div>
+
+                        <!-- رمز عبور + چشمی + نوار قدرت -->
+                        <div class="mb-3">
+                            <label class="form-label">رمز عبور <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" name="password1" id="reg-password1"
+                                       class="form-control" required placeholder="حداقل ۸ کاراکتر"
+                                       oninput="checkStrength(this.value)">
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePassword('reg-password1', this)"
+                                        tabindex="-1" title="نمایش/پنهان رمز">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <!-- نوار قدرت رمز عبور -->
+                            <div class="mt-2">
+                                <div style="display:flex;gap:4px;height:6px;border-radius:4px;overflow:hidden;">
+                                    <div id="str-bar-1" style="flex:1;background:#e5e7eb;border-radius:4px;transition:background .3s;"></div>
+                                    <div id="str-bar-2" style="flex:1;background:#e5e7eb;border-radius:4px;transition:background .3s;"></div>
+                                    <div id="str-bar-3" style="flex:1;background:#e5e7eb;border-radius:4px;transition:background .3s;"></div>
+                                    <div id="str-bar-4" style="flex:1;background:#e5e7eb;border-radius:4px;transition:background .3s;"></div>
+                                </div>
+                                <small id="str-label" class="text-muted" style="font-size:12px;"></small>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">تکرار رمز عبور <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" name="password2" id="reg-password2"
+                                       class="form-control" required placeholder="تکرار رمز عبور">
+                                <button type="button" class="btn btn-outline-secondary"
+                                        onclick="togglePassword('reg-password2', this)"
+                                        tabindex="-1" title="نمایش/پنهان رمز">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary-uni w-100" style="padding:13px;">
+                            <i class="fas fa-user-plus"></i> ثبت‌نام
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <span class="text-muted" style="font-size:13px;">قبلاً ثبت‌نام کرده‌اید؟</span>
+                        <a href="{% url 'accounts:login' %}" style="font-size:13px;"> وارد شوید</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function togglePassword(fieldId, btn) {
+    var input = document.getElementById(fieldId);
+    var icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+function checkStrength(val) {
+    var score = 0;
+    if (val.length >= 8)  score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    var colors  = ['', '#ef4444', '#f97316', '#eab308', '#22c55e'];
+    var labels  = ['', 'خیلی ضعیف', 'ضعیف', 'متوسط', 'قوی'];
+    var barCnt  = score;
+
+    for (var i = 1; i <= 4; i++) {
+        var bar = document.getElementById('str-bar-' + i);
+        bar.style.background = (i <= barCnt) ? colors[score] : '#e5e7eb';
+    }
+
+    var lbl = document.getElementById('str-label');
+    if (val.length === 0) {
+        lbl.textContent = '';
+        lbl.style.color = '';
+    } else {
+        lbl.textContent = 'قدرت رمز: ' + labels[score];
+        lbl.style.color = colors[score];
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">دانشکده‌ها</h1></div></div>
+<section class="section"><div class="container">
+<div class="row g-4">
+{% for dept in departments %}
+<div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+<a href="{{ dept.get_absolute_url }}" class="text-decoration-none">
+<div class="dept-card">
+{% if dept.image %}<img src="{{ dept.image.url }}" alt="{{ dept.name }}" class="w-100 mb-3" style="height:160px;object-fit:cover;border-radius:var(--radius-sm);">{% else %}<div style="height:120px;background:var(--gradient-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:16px;"><i class="fas fa-building" style="font-size:48px;color:rgba(255,255,255,0.4);"></i></div>{% endif %}
+<div class="dept-icon"><i class="fas fa-building"></i></div>
+<h3 class="dept-title">{{ dept.name }}</h3>
+<p class="text-muted" style="font-size:14px;">{{ dept.short_description|truncatewords:15 }}</p>
+{% if dept.head %}<div class="text-muted" style="font-size:13px;"><i class="fas fa-user-tie text-primary"></i> {{ dept.head }}</div>{% endif %}
+<div class="dept-stats">
+<div class="dept-stat"><strong>{{ dept.majors.count }}</strong>رشته</div>
+<div class="dept-stat"><strong>{{ dept.professors.count }}</strong>استاد</div>
+<div class="dept-stat"><strong>{{ dept.labs.count }}</strong>آزمایشگاه</div>
+</div>
+</div></a></div>
+{% empty %}
+<div class="col-12 text-center py-5 text-muted"><i class="fas fa-building fa-3x mb-3 d-block opacity-25"></i>دانشکده‌ای تعریف نشده</div>
+{% endfor %}
+</div></div></section>
+{% endblock %}

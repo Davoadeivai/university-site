@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">پایان‌نامه‌ها</h1></div></div>
+<section class="section"><div class="container">
+<form method="get" class="mb-4" data-aos="fade-up">
+<div class="input-group"><input type="search" name="q" value="{{ query }}" class="form-control form-control-lg" placeholder="جستجو..." style="border-radius:25px 0 0 25px!important;"><button class="btn-search" type="submit"><i class="fas fa-search"></i></button></div>
+</form>
+{% for thesis in theses %}
+<div class="uni-card p-4 mb-3" data-aos="fade-up">
+<div class="d-flex gap-3 align-items-start">
+<div class="calendar-date-box flex-shrink-0"><span class="calendar-date-day" style="font-size:16px;">{{ thesis.year }}</span></div>
+<div><h5 class="fw-bold text-primary-uni mb-1" style="font-size:15px;">{{ thesis.title }}</h5>
+<div class="text-muted" style="font-size:13px;"><i class="fas fa-user"></i> {{ thesis.author }} | استاد راهنما: {{ thesis.supervisor }}</div>
+<div class="mt-1"><span class="uni-card-badge">{{ thesis.get_degree_display }}</span>{% if thesis.department %}<span class="uni-card-badge ms-1">{{ thesis.department }}</span>{% endif %}</div>
+{% if thesis.abstract %}<p class="text-muted mt-2 mb-0" style="font-size:13px;">{{ thesis.abstract|truncatewords:25 }}</p>{% endif %}
+{% if thesis.file %}<a href="{{ thesis.file.url }}" class="uni-card-link mt-2" download><i class="fas fa-download"></i> دانلود</a>{% endif %}
+</div></div></div>
+{% empty %}
+<div class="text-center py-5 text-muted"><i class="fas fa-scroll fa-3x mb-3 d-block opacity-25"></i>پایان‌نامه‌ای یافت نشد</div>
+{% endfor %}
+</div></section>
+{% endblock %}

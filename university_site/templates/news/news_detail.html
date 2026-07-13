@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'news:list' %}">اخبار</a></li>
+                <li class="breadcrumb-item active">{{ article.title|truncatechars:40 }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{{ article.title }}</h1>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    {% if article.image %}
+                    <img src="{{ article.image.url }}" alt="{{ article.title }}" class="w-100 mb-4" style="border-radius:var(--radius); max-height:400px; object-fit:cover;">
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% if article.category %}<span class="uni-card-badge">{{ article.category.name }}</span>{% endif %}
+                        <span class="uni-card-badge"><i class="fas fa-calendar-alt"></i> {{ article.published_at|jalali_date }}</span>
+                        <span class="uni-card-badge"><i class="fas fa-eye"></i> {{ article.views_count }} بازدید</span>
+                    </div>
+                    <div class="article-content" style="font-size:15px; line-height:2; color:var(--text-dark);">
+                        {{ article.content|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4" data-aos="fade-left">
+                {% if related_news %}
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">اخبار مرتبط</h5>
+                    {% for item in related_news %}
+                    <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
+                        <div class="announce-card mb-2">
+                            <i class="fas fa-arrow-left text-primary-uni" style="font-size:11px;"></i>
+                            <div>
+                                <div class="announce-title" style="font-size:13px;">{{ item.title }}</div>
+                                <div class="announce-date">{{ item.published_at|jalali_date }}</div>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

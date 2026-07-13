@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">سوالات متداول</h1></div></div>
+<section class="section"><div class="container">
+<ul class="nav nav-pills justify-content-center mb-5 gap-2" id="faqTabs" data-aos="fade-up">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#gen" style="font-family:'Vazirmatn',sans-serif;">عمومی</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#adm" style="font-family:'Vazirmatn',sans-serif;">پذیرش</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#aca" style="font-family:'Vazirmatn',sans-serif;">آموزشی</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fin" style="font-family:'Vazirmatn',sans-serif;">مالی</button></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="gen">
+<div class="accordion" id="acc1">
+{% for faq in general_faqs %}<div class="accordion-item border-0 mb-2 rounded-xl overflow-hidden shadow-sm"><h2 class="accordion-header"><button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#q{{ faq.pk }}" style="font-family:'Vazirmatn',sans-serif;"><i class="fas fa-question-circle text-primary me-2 ms-2"></i>{{ faq.question }}</button></h2><div id="q{{ faq.pk }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#acc1"><div class="accordion-body text-muted">{{ faq.answer }}</div></div></div>{% empty %}<p class="text-muted text-center py-3">سوالی ثبت نشده</p>{% endfor %}
+</div></div>
+<div class="tab-pane fade" id="adm"><div class="accordion" id="acc2">
+{% for faq in admission_faqs %}<div class="accordion-item border-0 mb-2 rounded-xl overflow-hidden shadow-sm"><h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#qa{{ faq.pk }}" style="font-family:'Vazirmatn',sans-serif;">{{ faq.question }}</button></h2><div id="qa{{ faq.pk }}" class="accordion-collapse collapse" data-bs-parent="#acc2"><div class="accordion-body text-muted">{{ faq.answer }}</div></div></div>{% empty %}<p class="text-muted text-center py-3">سوالی ثبت نشده</p>{% endfor %}
+</div></div>
+<div class="tab-pane fade" id="aca"><div class="accordion" id="acc3">
+{% for faq in academic_faqs %}<div class="accordion-item border-0 mb-2 rounded-xl overflow-hidden shadow-sm"><h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#qb{{ faq.pk }}" style="font-family:'Vazirmatn',sans-serif;">{{ faq.question }}</button></h2><div id="qb{{ faq.pk }}" class="accordion-collapse collapse" data-bs-parent="#acc3"><div class="accordion-body text-muted">{{ faq.answer }}</div></div></div>{% empty %}<p class="text-muted text-center py-3">سوالی ثبت نشده</p>{% endfor %}
+</div></div>
+<div class="tab-pane fade" id="fin"><div class="accordion" id="acc4">
+{% for faq in financial_faqs %}<div class="accordion-item border-0 mb-2 rounded-xl overflow-hidden shadow-sm"><h2 class="accordion-header"><button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#qc{{ faq.pk }}" style="font-family:'Vazirmatn',sans-serif;">{{ faq.question }}</button></h2><div id="qc{{ faq.pk }}" class="accordion-collapse collapse" data-bs-parent="#acc4"><div class="accordion-body text-muted">{{ faq.answer }}</div></div></div>{% empty %}<p class="text-muted text-center py-3">سوالی ثبت نشده</p>{% endfor %}
+</div></div>
+</div></div></section>
+{% endblock %}
