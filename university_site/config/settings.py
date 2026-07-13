@@ -1,13 +1,13 @@
 from pathlib import Path
 import os
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-university-super-secret-key-change-in-production-2024'
-
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
+# ── Security Settings ──────────────────────────────────────────────────────
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -34,8 +34,10 @@ INSTALLED_APPS = [
     'dashboard',
 ]
 
+# ── Middleware with Whitenoise for Static Files ────────────────────────────
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,12 +69,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# ── Database Configuration (PostgreSQL for Production) ─────────────────────
+# Automatically uses DATABASE_URL from environment in production
+if config('DEBUG', default=False, cast=bool):
+    # Development: SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # Production: PostgreSQL
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL', default=''),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -94,9 +110,13 @@ LANGUAGES = [
 
 LOCALE_PATHS = [BASE_DIR / 'locale']
 
+# ── Static Files Configuration (with Whitenoise) ────────────────────────────
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static'] if os.path.exists(BASE_DIR / 'static') else []
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Whitenoise static files storage
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -180,13 +200,13 @@ JAZZMIN_UI_TWEAKS = {
     }
 }
 
-# ── Email (Gmail SMTP) ──────────────────────────────────────────────────────
+# ── Email Configuration (Gmail SMTP) ────────────────────────────────────────
 # برای ارسال ایمیل واقعی مقادیر زیر را پر کنید:
 #   EMAIL_HOST_USER  = 'your_gmail@gmail.com'
 #   EMAIL_HOST_PASSWORD = 'your_app_password'   ← App Password از Google Account
-import os as _os
-_email_user = _os.environ.get('EMAIL_HOST_USER', 'davoadeivazkhani@gmail.com')
-_email_pass = _os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+_email_user = config('EMAIL_HOST_USER', default='')
+_email_pass = config('EMAIL_HOST_PASSWORD', default='')
 
 if _email_user and _email_pass:
     EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
@@ -200,6 +220,19 @@ else:
     # تست محلی: ایمیل در console چاپ می‌شود
     EMAIL_BACKEND      = 'django.core.mail.backends.console.EmailBackend'
     EMAIL_HOST_USER    = _email_user
-    DEFAULT_FROM_EMAIL = f'دانشگاه جامع <{_email_user}>'
+    DEFAULT_FROM_EMAIL = 'دانشگاه جامع <noreply@university.ir>'
 
 PASSWORD_RESET_TIMEOUT = 3600   # توکن ۱ ساعت اعتبار دارد
+
+# ── Security Settings for Production ───────────────────────────────────────
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_SECURITY_POLICY = {
+        "default-src": ("'self'",),
+        "script-src": ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net"),
+        "style-src": ("'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "fonts.googleapis.com"),
+        "font-src": ("'self'", "fonts.gstatic.com", "cdn.jsdelivr.net"),
+    }
