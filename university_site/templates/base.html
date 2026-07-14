@@ -76,155 +76,116 @@
     </div>
 </div>
 
-<!-- Main Navbar -->
-<nav class="navbar navbar-expand-xl navbar-light sticky-top main-navbar" id="mainNav">
-    <div class="container">
-        <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:landing' %}">
-            {% if site_settings and site_settings.logo %}
-            <img src="{{ site_settings.logo.url }}" alt="لوگو" height="55" class="nav-logo">
-            {% else %}
-            <div class="logo-placeholder">
-                <i class="fas fa-university"></i>
-            </div>
-            {% endif %}
-            <div class="brand-text">
-                <span class="brand-name">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %}</span>
-                <span class="brand-sub">موسسه آموزش عالی</span>
-            </div>
-        </a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-            <span class="navbar-toggler-icon"></span>
+<!-- Main Navbar — طرح مطابق عکس: تیره، ساده، بدون آیکون -->
+<nav class="navbar navbar-expand-xl sticky-top main-navbar" id="mainNav">
+    <div class="container-fluid px-0">
+        <button class="navbar-toggler ms-2 me-2 mt-1 mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="border-color:rgba(255,255,255,0.4);">
+            <span class="navbar-toggler-icon" style="filter:invert(1);"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav mx-auto">
+            <ul class="navbar-nav w-100 justify-content-center">
+
+                <!-- صفحه اصلی -->
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
-                        <i class="fas fa-home"></i> صفحه اصلی
-                    </a>
+                    <a class="nav-link-flat {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">صفحه اصلی</a>
                 </li>
+
+                <!-- درباره موسسه -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-crown"></i> حوزه ریاست
-                    </a>
-                    <ul class="dropdown-menu mega-menu">
-                        <li><a class="dropdown-item" href="{% url 'core:presidency' %}"><i class="fas fa-user-tie text-primary"></i> ریاست</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:presidency_office' %}"><i class="fas fa-door-open text-success"></i> دفتر ریاست</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:deputies' %}"><i class="fas fa-users-cog text-info"></i> معاونین دانشگاه</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:international_office' %}"><i class="fas fa-globe text-warning"></i> دفتر همکاری‌های علمی و بین الملل</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:public_relations' %}"><i class="fas fa-bullhorn text-secondary"></i> مدیریت روابط عمومی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:security_office' %}"><i class="fas fa-shield-alt text-danger"></i> حراست</a></li>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">درباره موسسه</a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">معرفی و تاریخچه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم انداز و اهداف</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_founders' %}">هیات موسس دانشگاه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امنا دانشگاه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">آشنایی با شهر بهنمیر</a></li>
                     </ul>
                 </li>
+
+                <!-- حوزه ریاست -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-university"></i> درباره موسسه
-                    </a>
-                    <ul class="dropdown-menu mega-menu">
-                        <li><a class="dropdown-item" href="{% url 'core:about' %}"><i class="fas fa-info-circle text-primary"></i> معرفی و تاریخچه</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:about' %}#vision"><i class="fas fa-eye text-info"></i> چشم انداز و اهداف</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:institution_goals' %}"><i class="fas fa-bullseye text-success"></i> اهداف موسسه</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:board_founders' %}"><i class="fas fa-users text-warning"></i> هیات موسس دانشگاه</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:board_trustees' %}"><i class="fas fa-user-tie text-danger"></i> هیات امنا دانشگاه</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:about' %}#chart"><i class="fas fa-sitemap text-secondary"></i> چارت سازمانی</a></li>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">حوزه ریاست</a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency' %}">ریاست</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office' %}">دفتر ریاست</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:deputies' %}">معاونین دانشگاه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:international_office' %}">دفتر همکاری‌های علمی و بین الملل</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:public_relations' %}">مدیریت روابط عمومی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:security_office' %}">حراست</a></li>
                     </ul>
                 </li>
+
+                <!-- معاونت‌ها -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-sitemap"></i> معاونت‌ها
-                    </a>
-                    <ul class="dropdown-menu mega-menu">
-                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'education' %}"><i class="fas fa-graduation-cap text-primary"></i> معاونت آموزشی و تحصیلات تکمیلی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'student' %}"><i class="fas fa-users text-success"></i> معاونت دانشجویی و فرهنگی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'admin_finance' %}"><i class="fas fa-briefcase text-warning"></i> معاونت اداری و مالی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'construction' %}"><i class="fas fa-hard-hat text-danger"></i> معاونت فنی و عمرانی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'core:vice_detail' 'research' %}"><i class="fas fa-flask text-secondary"></i> معاونت پژوهشی و فناوری</a></li>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">معاونت ها</a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'education' %}">معاونت آموزشی و تحصیلات تکمیلی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'student' %}">معاونت دانشجویی و فرهنگی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'admin_finance' %}">معاونت اداری و مالی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'construction' %}">معاونت فنی و عمرانی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'research' %}">معاونت پژوهشی و فناوری</a></li>
                     </ul>
                 </li>
+
+                <!-- گروه‌های آموزشی — dynamic از DB -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-graduation-cap"></i> آموزش
-                    </a>
-                    <ul class="dropdown-menu mega-menu">
-                        <li><a class="dropdown-item" href="{% url 'academics:departments' %}"><i class="fas fa-building text-primary"></i> دانشکده‌ها</a></li>
-                        <li><a class="dropdown-item" href="{% url 'academics:majors' %}"><i class="fas fa-book-open text-info"></i> رشته‌های تحصیلی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'academics:calendar' %}"><i class="fas fa-calendar-alt text-warning"></i> تقویم آموزشی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'academics:students_panel' %}"><i class="fas fa-user-graduate text-danger"></i> پنل دانشجویی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'academics:elearning' %}"><i class="fas fa-laptop text-secondary"></i> آموزش الکترونیکی</a></li>
-                    </ul>
-                </li>
-                <!-- گروه‌های آموزشی — dynamic از DB، قابل ویرایش توسط ادمین -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown">
-                        <i class="fas fa-chalkboard"></i> گروه‌های آموزشی
-                    </a>
-                    <ul class="dropdown-menu" style="max-height:420px;overflow-y:auto;min-width:260px;">
-                        <li>
-                            <a class="dropdown-item fw-semibold border-bottom pb-2 mb-1" href="{% url 'academics:groups_list' %}">
-                                <i class="fas fa-list text-primary me-1"></i> همه گروه‌ها
-                            </a>
-                        </li>
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">گروه های آموزشی</a>
+                    <ul class="dropdown-menu nav-dd" style="max-height:460px;overflow-y:auto;">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:groups_list' %}">همه گروه‌ها</a></li>
+                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.15);margin:4px 0;"></li>
                         {% if nav_groups %}
                             {% for group in nav_groups %}
-                            <li>
-                                <a class="dropdown-item" href="{{ group.get_absolute_url }}">
-                                    <i class="fas fa-angle-left text-muted me-1"></i>
-                                    {{ group.name }}
-                                </a>
-                            </li>
+                            <li><a class="dropdown-item nav-dd-item" href="{{ group.get_absolute_url }}">{{ group.name }}</a></li>
                             {% endfor %}
                         {% else %}
-                        <li><span class="dropdown-item text-muted" style="font-size:13px;"><i class="fas fa-info-circle me-1"></i> گروهی تعریف نشده</span></li>
+                        <li><span class="dropdown-item nav-dd-item" style="opacity:.6;">گروهی ثبت نشده</span></li>
                         {% endif %}
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'faculty:list' %}">
-                        <i class="fas fa-chalkboard-teacher"></i> اساتید
-                    </a>
-                </li>
+
+                <!-- تحصیلات تکمیلی -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="fas fa-flask"></i> پژوهش
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'research:research' %}"><i class="fas fa-microscope text-primary"></i> معاونت پژوهشی</a></li>
-                        <li><a class="dropdown-item" href="{% url 'research:theses' %}"><i class="fas fa-scroll text-success"></i> پایان‌نامه‌ها</a></li>
-                        <li><a class="dropdown-item" href="{% url 'research:conferences' %}"><i class="fas fa-podium text-info"></i> همایش‌ها</a></li>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">تحصیلات تکمیلی</a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=master">کارشناسی ارشد</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=phd">دکتری</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">پایان‌نامه‌ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:calendar' %}">تقویم آموزشی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:students_panel' %}">پنل دانشجویی</a></li>
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'library:library' %}">
-                        <i class="fas fa-book"></i> کتابخانه
-                    </a>
+
+                <!-- بانک اطلاعات علمی -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">بانک اطلاعات علمی</a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:research' %}">معاونت پژوهشی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:conferences' %}">همایش‌ها و کنفرانس‌ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">کتابخانه دیجیتال</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'faculty:list' %}">اعضای هیئت علمی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:elearning' %}">آموزش الکترونیکی</a></li>
+                    </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'news:list' %}">
-                        <i class="fas fa-newspaper"></i> اخبار
-                    </a>
+
+                <!-- گالری تصاویر -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">گالری تصاویر</a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'news:gallery' %}">گالری تصاویر</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'news:list' %}">اخبار و رویدادها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'news:announcements' %}">اطلاعیه‌ها</a></li>
+                    </ul>
                 </li>
+
+                <!-- تماس با ما -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admissions:admissions' %}">
-                        <i class="fas fa-file-alt"></i> پذیرش
-                    </a>
+                    <a class="nav-link-flat" href="{% url 'contact:contact' %}">تماس با ما</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'contact:contact' %}">
-                        <i class="fas fa-envelope"></i> تماس
-                    </a>
-                </li>
+
             </ul>
-            <!-- Search Bar -->
-            <form class="d-flex search-form" action="{% url 'core:search' %}" method="get">
-                <div class="input-group">
-                    <input class="form-control search-input" type="search" name="q" placeholder="جستجوی هوشمند..." aria-label="جستجو" autocomplete="off">
-                    <button class="btn btn-search" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </nav>

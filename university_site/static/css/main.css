@@ -49,105 +49,95 @@ body {
 .topbar .social-links a:hover { color: var(--secondary); }
 .lang-switch .btn { font-size: 11px; padding: 2px 8px; }
 
-/* ---- Navbar ---- */
+/* ---- Navbar — طرح تیره مطابق عکس ---- */
 .main-navbar {
-    background: var(--bg-white) !important;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    background: #0e2340 !important;   /* navy تیره مثل عکس */
     padding: 0;
-    transition: var(--transition);
     z-index: 1000;
+    border-bottom: 3px solid #c0392b; /* خط قرمز پایین مثل عکس */
 }
-@media (min-width: 1200px) {
-    .main-navbar .navbar-nav {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        flex-wrap: nowrap !important;
-    }
-    .main-navbar .navbar-nav .nav-item {
-        display: flex !important;
-        align-items: center !important;
-        white-space: nowrap !important;
-    }
-}
-.main-navbar.scrolled {
-    box-shadow: var(--shadow-lg);
-}
-.navbar-brand { text-decoration: none; }
-.logo-placeholder {
-    width: 55px; height: 55px;
-    background: var(--gradient-primary);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: white;
-}
-.nav-logo { border-radius: 10px; }
-.brand-text { display: flex; flex-direction: column; line-height: 1.3; }
-.brand-name { font-size: 16px; font-weight: 800; color: var(--primary); }
-.brand-sub { font-size: 11px; color: var(--text-muted); }
 
-.nav-link {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-dark) !important;
-    transition: var(--transition);
-    position: relative;
-    gap: 5px;
+/* لینک‌های navbar — بدون آیکون، فونت کوچک */
+.nav-link-flat {
+    display: block;
+    color: #ffffff !important;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 14px 13px !important;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+    cursor: pointer;
 }
-@media (min-width: 1200px) {
-    .nav-link {
-        padding: 22px 14px !important;
-        display: inline-flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        white-space: nowrap !important;
-        line-height: 1 !important;
-    }
-    .nav-link::after {
-        content: '';
-        position: absolute;
-        bottom: 0; right: 50%; left: 50%;
-        height: 3px;
-        background: var(--primary-light);
-        border-radius: 3px 3px 0 0;
-        transition: var(--transition);
-    }
-    .nav-link:hover::after, .nav-link.active::after {
-        right: 0; left: 0;
-    }
+.nav-link-flat:hover,
+.nav-link-flat.active {
+    background: rgba(255,255,255,0.12);
+    color: #ffffff !important;
 }
-.nav-link:hover, .nav-link.active {
-    color: var(--primary-light) !important;
+/* مثلث dropdown روی آیتم فعال */
+.nav-item.dropdown.show > .nav-link-flat {
+    background: rgba(255,255,255,0.15);
 }
-.nav-link i { font-size: 13px; line-height: 1; flex-shrink: 0; vertical-align: middle; display: inline-block !important; }
 
-/* Mobile nav improvements */
+/* Dropdown */
+.nav-dd {
+    background: #0e2340 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.45) !important;
+    padding: 4px 0 !important;
+    min-width: 240px;
+    margin-top: 0 !important;
+}
+.nav-dd-item {
+    color: #e8edf3 !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    padding: 10px 20px !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    transition: background 0.15s !important;
+    white-space: nowrap;
+}
+.nav-dd-item:last-child { border-bottom: none !important; }
+.nav-dd-item:hover,
+.nav-dd-item:focus {
+    background: rgba(255,255,255,0.12) !important;
+    color: #ffffff !important;
+}
+
+/* ---- حالت موبایل ---- */
 @media (max-width: 1199px) {
-    .navbar-collapse .nav-link {
-        padding: 12px 20px !important;
-        border-bottom: 1px solid var(--border);
-        display: flex !important;
-        align-items: center;
-        gap: 10px;
-    }
-    .navbar-collapse .dropdown-menu {
+    .main-navbar { padding: 4px 0; }
+    .nav-link-flat { padding: 12px 18px !important; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .nav-dd {
         position: static !important;
         box-shadow: none !important;
-        border: none !important;
-        border-right: 4px solid var(--primary-light) !important;
-        border-radius: 0 !important;
-        padding: 0 0 8px 0;
+        background: rgba(255,255,255,0.05) !important;
+        border-right: 3px solid rgba(255,255,255,0.2) !important;
         margin-right: 1rem;
-        background: var(--bg-light);
-    }
-    .search-form {
-        min-width: unset;
-        width: 100%;
-        padding: 12px 20px;
     }
 }
 
-.dropdown-menu {
+/* dropdown-toggle بدون آیکون Bootstrap پیش‌فرض → کوچک‌تر */
+.nav-link-flat.dropdown-toggle::after {
+    display: inline-block;
+    width: 0; height: 0;
+    border-top: 4px solid currentColor;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    vertical-align: middle;
+    margin-right: 4px;
+    margin-bottom: 1px;
+    border-bottom: 0;
+}
+
+/* ---- dropdown-divider رنگ تیره ---- */
+.nav-dd .dropdown-divider { border-color: rgba(255,255,255,0.12) !important; }
+
+/* ---- سایر dropdown‌های غیر-navbar (فرم‌ها و ...) ---- */
+.dropdown-menu:not(.nav-dd) {
     border: none;
     box-shadow: var(--shadow-lg);
     border-radius: var(--radius);
@@ -155,28 +145,18 @@ body {
     min-width: 220px;
     border-top: 3px solid var(--primary-light);
 }
-.dropdown-item {
+.dropdown-menu:not(.nav-dd) .dropdown-item {
     border-radius: var(--radius-sm);
     padding: 10px 16px;
     font-size: 14px;
     font-weight: 500;
     transition: var(--transition);
 }
-.dropdown-item:hover { background: var(--bg-light); color: var(--primary-light); }
-.dropdown-item i { margin-left: 10px; width: 16px; }
+.dropdown-menu:not(.nav-dd) .dropdown-item:hover {
+    background: var(--bg-light);
+    color: var(--primary-light);
+}
 
-.search-form { min-width: 240px; }
-.search-input {
-    border-radius: 25px 0 0 25px !important;
-    border: 2px solid var(--border);
-    font-size: 13px;
-    padding: 8px 16px;
-    transition: var(--transition);
-}
-.search-input:focus {
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
 .btn-search {
     background: var(--gradient-primary);
     color: white;
