@@ -135,12 +135,12 @@
             <!-- Category filter tabs -->
             <ul class="nav nav-pills justify-content-center mb-4" id="attractionTabs">
                 <li class="nav-item">
-                    <button class="nav-link active" onclick="filterAttractions('all')">همه</button>
+                    <button class="nav-link active" type="button" onclick="filterAttractions(event, 'all')">همه</button>
                 </li>
                 {% for cat in categories %}
                 {% if cat %}
                 <li class="nav-item">
-                    <button class="nav-link" onclick="filterAttractions('{{ cat }}')">{{ cat }}</button>
+                    <button class="nav-link" type="button" onclick="filterAttractions(event, '{{ cat }}')">{{ cat }}</button>
                 </li>
                 {% endif %}
                 {% endfor %}
@@ -268,7 +268,7 @@
 
 {% block extra_js %}
 <script>
-function filterAttractions(category) {
+function filterAttractions(event, category) {
     document.querySelectorAll('.attraction-item').forEach(item => {
         if (category === 'all' || item.dataset.category === category) {
             item.style.display = '';

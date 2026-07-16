@@ -366,7 +366,7 @@
                         {% if prof.email %}<a href="mailto:{{ prof.email }}" class="prof-link-btn"><i
                                 class="fas fa-envelope"></i></a>{% endif %}
                         {% if prof.google_scholar %}<a href="{{ prof.google_scholar }}" target="_blank"
-                            class="prof-link-btn"><i class="fas fa-graduation-cap"></i></a>{% endif %}
+                            class="prof-link-btn" rel="noopener noreferrer"><i class="fas fa-graduation-cap"></i></a>{% endif %}
                         <a href="{{ prof.get_absolute_url }}" class="prof-link-btn"><i class="fas fa-user"></i></a>
                     </div>
                 </div>

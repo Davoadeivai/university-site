@@ -91,9 +91,23 @@ document.addEventListener('DOMContentLoaded', function () {
             const imgSrc = item.querySelector('img') ? item.querySelector('img').src : '';
             if (imgSrc) {
                 const modal = document.createElement('div');
+                const image = document.createElement('img');
+                const closeModal = function () {
+                    if (modal.parentNode) document.body.removeChild(modal);
+                    document.removeEventListener('keydown', onKeyDown);
+                };
+                const onKeyDown = function (event) {
+                    if (event.key === 'Escape') closeModal();
+                };
                 modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-                modal.innerHTML = `<img src="${imgSrc}" style="max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">`;
-                modal.addEventListener('click', function () { document.body.removeChild(modal); });
+                modal.setAttribute('role', 'dialog');
+                modal.setAttribute('aria-label', 'نمایش بزرگ تصویر');
+                image.src = imgSrc;
+                image.alt = item.querySelector('img').alt;
+                image.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+                modal.appendChild(image);
+                modal.addEventListener('click', closeModal);
+                document.addEventListener('keydown', onKeyDown);
                 document.body.appendChild(modal);
             }
         });
@@ -133,13 +147,13 @@ function toggleChatbot() {
 
 // ---- Chatbot Responses ----
 const chatResponses = {
-    'پذیرش': 'برای پذیرش دانشجو می‌توانید از بخش پذیرش در منوی اصلی اقدام کنید. <a href="/پذیرش/">کلیک کنید</a>',
-    'رشته': 'رشته‌های متعددی در مقاطع کاردانی، کارشناسی و ارشد داریم. <a href="/آموزش/رشته‌ها/">مشاهده رشته‌ها</a>',
-    'شهریه': 'اطلاعات شهریه در بخش پذیرش موجود است. <a href="/پذیرش/">مشاهده</a>',
-    'اساتید': 'لیست اعضای هیئت علمی: <a href="/اساتید/">مشاهده اساتید</a>',
-    'تماس': 'می‌توانید از طریق فرم تماس با ما در ارتباط باشید: <a href="/تماس-با-ما/">تماس با ما</a>',
-    'کتابخانه': 'به کتابخانه دیجیتال ما خوش آمدید: <a href="/کتابخانه/">کتابخانه</a>',
-    'default': 'سوال شما دریافت شد. کارشناسان ما در اسرع وقت پاسخ خواهند داد. می‌توانید از منوی اصلی به بخش مورد نظر دسترسی داشته باشید.'
+    'پذیرش': 'برای پذیرش دانشجو به بخش پذیرش در منوی اصلی مراجعه کنید.',
+    'رشته': 'فهرست رشته‌ها در بخش آموزش در دسترس است.',
+    'شهریه': 'اطلاعات شهریه در بخش پذیرش موجود است.',
+    'اساتید': 'فهرست اعضای هیئت علمی در بخش اساتید در دسترس است.',
+    'تماس': 'می‌توانید از طریق فرم «تماس با ما» با دانشگاه در ارتباط باشید.',
+    'کتابخانه': 'کتابخانه دیجیتال از منوی اصلی قابل دسترسی است.',
+    'default': 'برای راهنمایی، از منوی اصلی یا گزینه‌های پیشنهادی استفاده کنید.'
 };
 
 function sendMsg() {
@@ -168,9 +182,12 @@ function appendMsg(text, type) {
     if (!container) return;
     const div = document.createElement('div');
     div.className = `chat-msg ${type === 'user' ? 'user-msg' : ''}`;
-    div.innerHTML = type === 'bot'
-        ? `<i class="fas fa-robot"></i><div class="msg-bubble">${text}</div>`
-        : `<i class="fas fa-user"></i><div class="msg-bubble">${text}</div>`;
+    const icon = document.createElement('i');
+    const bubble = document.createElement('div');
+    icon.className = type === 'bot' ? 'fas fa-robot' : 'fas fa-user';
+    bubble.className = 'msg-bubble';
+    bubble.textContent = text;
+    div.append(icon, bubble);
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
 }

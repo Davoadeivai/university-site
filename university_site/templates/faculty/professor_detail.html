@@ -53,10 +53,10 @@
                     {% endif %}
                     <!-- External Links -->
                     <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
-                        {% if professor.google_scholar %}<a href="{{ professor.google_scholar }}" class="tag-badge" target="_blank"><i class="fas fa-graduation-cap"></i> Google Scholar</a>{% endif %}
-                        {% if professor.researchgate %}<a href="{{ professor.researchgate }}" class="tag-badge" target="_blank"><i class="fab fa-researchgate"></i> ResearchGate</a>{% endif %}
-                        {% if professor.linkedin %}<a href="{{ professor.linkedin }}" class="tag-badge" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>{% endif %}
-                        {% if professor.personal_website %}<a href="{{ professor.personal_website }}" class="tag-badge" target="_blank"><i class="fas fa-globe"></i> وبسایت</a>{% endif %}
+                        {% if professor.google_scholar %}<a href="{{ professor.google_scholar }}" class="tag-badge" target="_blank" rel="noopener noreferrer"><i class="fas fa-graduation-cap"></i> Google Scholar</a>{% endif %}
+                        {% if professor.researchgate %}<a href="{{ professor.researchgate }}" class="tag-badge" target="_blank" rel="noopener noreferrer"><i class="fab fa-researchgate"></i> ResearchGate</a>{% endif %}
+                        {% if professor.linkedin %}<a href="{{ professor.linkedin }}" class="tag-badge" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>{% endif %}
+                        {% if professor.personal_website %}<a href="{{ professor.personal_website }}" class="tag-badge" target="_blank" rel="noopener noreferrer"><i class="fas fa-globe"></i> وبسایت</a>{% endif %}
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                         <div>
                             <div class="announce-title" style="font-size:13px;">{{ pub.title }}</div>
                             {% if pub.journal_conference %}<div class="announce-date">{{ pub.journal_conference }}</div>{% endif %}
-                            {% if pub.doi %}<a href="https://doi.org/{{ pub.doi }}" class="uni-card-link" style="font-size:12px;" target="_blank">DOI</a>{% endif %}
+                            {% if pub.doi %}<a href="https://doi.org/{{ pub.doi }}" class="uni-card-link" style="font-size:12px;" target="_blank" rel="noopener noreferrer">DOI</a>{% endif %}
                         </div>
                     </div>
                     {% endfor %}

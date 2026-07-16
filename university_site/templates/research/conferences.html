@@ -10,7 +10,7 @@
 <div class="uni-card-body">
 <h5 class="uni-card-title">{{ conf.title }}</h5>
 <div class="uni-card-meta"><i class="fas fa-calendar-alt"></i> {{ conf.date|jalali_date }}{% if conf.location %}<br><i class="fas fa-map-marker-alt"></i> {{ conf.location }}{% endif %}</div>
-{% if conf.website %}<a href="{{ conf.website }}" target="_blank" class="uni-card-link mt-2">وبسایت همایش <i class="fas fa-external-link-alt"></i></a>{% endif %}
+{% if conf.website %}<a href="{{ conf.website }}" target="_blank" class="uni-card-link mt-2" rel="noopener noreferrer">وبسایت همایش <i class="fas fa-external-link-alt"></i></a>{% endif %}
 </div></div></div>
 {% empty %}
 <div class="col-12 text-center py-5 text-muted"><i class="fas fa-microphone fa-3x mb-3 d-block opacity-25"></i>همایشی ثبت نشده</div>
