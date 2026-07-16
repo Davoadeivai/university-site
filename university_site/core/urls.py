@@ -16,6 +16,7 @@ urlpatterns = [
     path('سوالات-متداول/', views.faq_view, name='faq'),
     path('خدمات-الکترونیکی/', views.eservices, name='eservices'),
     path('گالری/', views.gallery_view, name='gallery'),
+    path('شهر-بهنمیر/', views.city_behnamir, name='city_behnamir'),
     # حوزه ریاست
     path('ریاست/', views.presidency, name='presidency'),
     path('دفتر-ریاست/', views.presidency_office, name='presidency_office'),

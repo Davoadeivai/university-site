@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.utils import timezone
 from core.models import (
-    SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember, CityInfo, CityAttraction,
     PresidencyOffice, DeputyVice,
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
@@ -39,7 +39,7 @@ def home(request):
     ).order_by('start_date')[:5]
     featured_professors = Professor.objects.filter(is_active=True).order_by('order')[:4]
     faqs = FAQ.objects.filter(is_active=True)[:6]
-    gallery_images = Gallery.objects.filter(is_active=True, media_type='image')[:8]
+    gallery_images = Gallery.objects.filter(is_active=True, media_type='image').exclude(image='')[:8]
     alumni = Alumni.objects.filter(is_featured=True)[:4]
 
     context = {
@@ -159,7 +159,7 @@ def eservices(request):
 
 
 def gallery_view(request):
-    images = Gallery.objects.filter(is_active=True, media_type='image')
+    images = Gallery.objects.filter(is_active=True, media_type='image').exclude(image='')
     videos = Gallery.objects.filter(is_active=True, media_type='video')
     context = {
         'images': images,
@@ -168,6 +168,15 @@ def gallery_view(request):
     }
     return render(request, 'core/gallery.html', context)
 
+
+def city_behnamir(request):
+    attractions = CityAttraction.objects.filter(is_active=True)
+    return render(request, 'core/city_behnammir.html', {
+        'city_info': CityInfo.objects.filter(is_active=True),
+        'attractions': attractions,
+        'categories': list(attractions.exclude(category='').values_list('category', flat=True).distinct()),
+        'page_title': 'آشنایی با شهر بهنمیر',
+    })
 
 # ─── حوزه ریاست ───────────────────────────────────────────────
 

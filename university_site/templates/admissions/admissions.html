@@ -41,7 +41,7 @@
                             <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-money-bill"></i> اطلاعات شهریه</h5>
                             {% if info.tuition_info %}<p style="font-size:14px; line-height:2;">{{ info.tuition_info }}</p>{% else %}<p class="text-muted">شهریه از طریق پنل مدیریت تنظیم می‌شود</p>{% endif %}
                             {% if info.registration_link %}
-                            <a href="{{ info.registration_link }}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3" target="_blank">
+                            <a href="{{ info.registration_link }}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3" target="_blank" rel="noopener noreferrer">
                                 <i class="fas fa-file-alt"></i> ثبت‌نام آنلاین
                             </a>
                             {% endif %}

@@ -45,10 +45,10 @@
             <div class="col-md-6 d-flex justify-content-end align-items-center gap-3">
                 <div class="social-links">
                     {% if site_settings %}
-                    {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" target="_blank"><i class="fab fa-telegram"></i></a>{% endif %}
-                    {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
-                    {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
-                    {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" target="_blank"><i class="fab fa-youtube"></i></a>{% endif %}
+                    {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i></a>{% endif %}
+                    {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>{% endif %}
+                    {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>{% endif %}
+                    {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>{% endif %}
                     {% endif %}
                 </div>
                 <!-- Site Tour Button -->
@@ -101,7 +101,7 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_founders' %}">هیات موسس دانشگاه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امنا دانشگاه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">آشنایی با شهر بهنمیر</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:city_behnamir' %}">آشنایی با شهر بهنمیر</a></li>
                     </ul>
                 </li>
 
@@ -242,10 +242,10 @@
                         <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}دانشگاه جامع علمی کاربردی با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
                         <div class="social-links mt-3">
                             {% if site_settings %}
-                            {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank"><i class="fab fa-telegram"></i></a>{% endif %}
-                            {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
-                            {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" class="social-btn linkedin" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
-                            {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>{% endif %}
+                            {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i></a>{% endif %}
+                            {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" class="social-btn instagram" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>{% endif %}
+                            {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" class="social-btn linkedin" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>{% endif %}
+                            {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" class="social-btn youtube" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>{% endif %}
                             {% endif %}
                         </div>
                     </div>
