@@ -452,3 +452,64 @@ class ViceAchievement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ─── چارت سازمانی ───────────────────────────────────────────────
+
+class OrganizationalChart(models.Model):
+    """چارت سازمانی دانشگاه - ساختار درختی"""
+    NODE_TYPE_CHOICES = [
+        ('president', _('ریاست دانشگاه')),
+        ('vice', _('معاونت')),
+        ('unit', _('واحد/اداره')),
+        ('department', _('دانشکده')),
+        ('group', _('گروه آموزشی')),
+        ('office', _('دفتر')),
+        ('section', _('بخش')),
+    ]
+    
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
+                              related_name='children', verbose_name=_('والد'))
+    node_type = models.CharField(_('نوع واحد'), max_length=20, choices=NODE_TYPE_CHOICES)
+    name = models.CharField(_('نام واحد'), max_length=200)
+    title = models.CharField(_('عنوان/سمت'), max_length=300, blank=True)
+    person_name = models.CharField(_('نام مسئول'), max_length=200, blank=True)
+    person_photo = models.ImageField(_('تصویر مسئول'), upload_to='org_chart/', blank=True, null=True)
+    person_email = models.EmailField(_('ایمیل'), blank=True)
+    person_phone = models.CharField(_('تلفن'), max_length=50, blank=True)
+    description = models.TextField(_('شرح وظایف'), blank=True)
+    location = models.CharField(_('محل'), max_length=200, blank=True)
+    staff_count = models.PositiveIntegerField(_('تعداد پرسنل'), default=0, blank=True)
+    order = models.PositiveIntegerField(_('ترتیب نمایش'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('چارت سازمانی')
+        verbose_name_plural = _('چارت سازمانی')
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_node_type_display()})"
+
+    def get_level(self):
+        """محاسبه سطح درخت"""
+        level = 0
+        parent = self.parent
+        while parent:
+            level += 1
+            parent = parent.parent
+        return level
+
+    def get_children(self):
+        """دریافت فرزندان مستقیم"""
+        return self.children.filter(is_active=True).order_by('order', 'name')
+
+    def get_all_descendants(self):
+        """دریافت تمام نسل‌ها (فرزندان و نوه‌ها)"""
+        descendants = []
+        for child in self.children.all():
+            descendants.append(child)
+            descendants.extend(child.get_all_descendants())
+        return descendants

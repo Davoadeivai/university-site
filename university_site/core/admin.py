@@ -7,6 +7,7 @@ from .models import (
     PublicRelations, PressRelease,
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
+    OrganizationalChart,
 )
 
 
@@ -193,3 +194,25 @@ class ViceAchievementAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
     list_filter   = ['vice', 'is_active']
     search_fields = ['title', 'description']
+
+
+# ─── چارت سازمانی ───────────────────────────────────────────────
+
+class OrganizationalChartInline(admin.TabularInline):
+    model = OrganizationalChart
+    fk_name = 'parent'
+    extra = 0
+    fields = ['name', 'node_type', 'person_name', 'order', 'is_active']
+    show_change_link = True
+
+
+@admin.register(OrganizationalChart)
+class OrganizationalChartAdmin(admin.ModelAdmin):
+    list_display = ['name', 'node_type', 'parent', 'person_name', 'location', 'staff_count', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    list_filter = ['node_type', 'is_active']
+    search_fields = ['name', 'person_name', 'title', 'description']
+    inlines = [OrganizationalChartInline]
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('parent')
