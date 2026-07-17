@@ -1,14 +1,18 @@
 from pathlib import Path
-import os
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-university-super-secret-key-change-in-production-2024'
+# -----------------------------------------------------------------------------
+# Core
+# -----------------------------------------------------------------------------
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
+# -----------------------------------------------------------------------------
+# Apps
+# -----------------------------------------------------------------------------
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
@@ -67,13 +71,49 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# -----------------------------------------------------------------------------
+# Database
+# DB_ENGINE = postgres | mysql | sqlite
+# -----------------------------------------------------------------------------
+DB_ENGINE = config('DB_ENGINE', default='sqlite')
 
+if DB_ENGINE == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST', default='127.0.0.1'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
+    }
+elif DB_ENGINE == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='3306'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'charset': 'utf8mb4',
+            },
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# -----------------------------------------------------------------------------
+# Password validation
+# -----------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -81,6 +121,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# -----------------------------------------------------------------------------
+# i18n
+# -----------------------------------------------------------------------------
 LANGUAGE_CODE = 'fa'
 TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
@@ -94,6 +137,9 @@ LANGUAGES = [
 
 LOCALE_PATHS = [BASE_DIR / 'locale']
 
+# -----------------------------------------------------------------------------
+# Static & Media
+# -----------------------------------------------------------------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -103,103 +149,108 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# -----------------------------------------------------------------------------
+# Crispy
+# -----------------------------------------------------------------------------
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+# -----------------------------------------------------------------------------
+# Auth redirects
+# -----------------------------------------------------------------------------
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Jazzmin Admin UI Config
+# -----------------------------------------------------------------------------
+# Jazzmin
+# -----------------------------------------------------------------------------
 JAZZMIN_SETTINGS = {
-    "site_title": "پنل مدیریت دانشگاه",
-    "site_header": "دانشگاه جامع",
-    "site_brand": "دانشگاه",
-    "welcome_sign": "به پنل مدیریت خوش آمدید",
-    "copyright": "دانشگاه جامع © 2024",
-    "search_model": ["auth.user", "news.news"],
-    "topmenu_links": [
-        {"name": "صفحه اصلی", "url": "/", "new_window": True},
-        {"name": "داشبورد", "url": "/dashboard/"},
+    'site_title': 'پنل مدیریت دانشگاه',
+    'site_header': 'دانشگاه جامع',
+    'site_brand': 'دانشگاه',
+    'welcome_sign': 'به پنل مدیریت خوش آمدید',
+    'copyright': 'دانشگاه جامع © 2024',
+    'search_model': ['auth.user', 'news.news'],
+    'topmenu_links': [
+        {'name': 'صفحه اصلی', 'url': '/', 'new_window': True},
+        {'name': 'داشبورد', 'url': '/dashboard/'},
     ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "hide_apps": [],
-    "hide_models": [],
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "auth.Group": "fas fa-users",
-        "news.News": "fas fa-newspaper",
-        "academics.Department": "fas fa-building",
-        "faculty.Professor": "fas fa-chalkboard-teacher",
-        "library.Book": "fas fa-book",
-        "admissions.Application": "fas fa-file-alt",
-        "contact.ContactMessage": "fas fa-envelope",
-        "research.ResearchProject": "fas fa-flask",
+    'show_sidebar': True,
+    'navigation_expanded': True,
+    'hide_apps': [],
+    'hide_models': [],
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'auth.user': 'fas fa-user',
+        'auth.Group': 'fas fa-users',
+        'news.News': 'fas fa-newspaper',
+        'academics.Department': 'fas fa-building',
+        'faculty.Professor': 'fas fa-chalkboard-teacher',
+        'library.Book': 'fas fa-book',
+        'admissions.Application': 'fas fa-file-alt',
+        'contact.ContactMessage': 'fas fa-envelope',
+        'research.ResearchProject': 'fas fa-flask',
     },
-    "default_icon_parents": "fas fa-chevron-circle-right",
-    "default_icon_children": "fas fa-circle",
-    "related_modal_active": True,
-    "custom_css": "admin/css/rtl_admin.css",
-    "custom_js": None,
-    "show_ui_builder": False,
-    "changeform_format": "collapsible",
-    "language_chooser": False,
+    'default_icon_parents': 'fas fa-chevron-circle-right',
+    'default_icon_children': 'fas fa-circle',
+    'related_modal_active': True,
+    'custom_css': 'admin/css/rtl_admin.css',
+    'custom_js': None,
+    'show_ui_builder': False,
+    'changeform_format': 'collapsible',
+    'language_chooser': False,
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "navbar_small_text": False,
-    "footer_small_text": False,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "brand_colour": "navbar-primary",
-    "accent": "accent-primary",
-    "navbar": "navbar-dark",
-    "no_navbar_border": False,
-    "navbar_fixed": True,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": False,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
-    "theme": "default",
-    "dark_mode_theme": None,
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success"
-    }
+    'navbar_small_text': False,
+    'footer_small_text': False,
+    'body_small_text': False,
+    'brand_small_text': False,
+    'brand_colour': 'navbar-primary',
+    'accent': 'accent-primary',
+    'navbar': 'navbar-dark',
+    'no_navbar_border': False,
+    'navbar_fixed': True,
+    'layout_boxed': False,
+    'footer_fixed': False,
+    'sidebar_fixed': True,
+    'sidebar': 'sidebar-dark-primary',
+    'sidebar_nav_small_text': False,
+    'sidebar_disable_expand': False,
+    'sidebar_nav_child_indent': False,
+    'sidebar_nav_compact_style': False,
+    'sidebar_nav_legacy_style': False,
+    'sidebar_nav_flat_style': False,
+    'theme': 'default',
+    'dark_mode_theme': None,
+    'button_classes': {
+        'primary': 'btn-primary',
+        'secondary': 'btn-secondary',
+        'info': 'btn-info',
+        'warning': 'btn-warning',
+        'danger': 'btn-danger',
+        'success': 'btn-success',
+    },
 }
 
-# ── Email (Gmail SMTP) ──────────────────────────────────────────────────────
-# برای ارسال ایمیل واقعی مقادیر زیر را پر کنید:
-#   EMAIL_HOST_USER  = 'your_gmail@gmail.com'
-#   EMAIL_HOST_PASSWORD = 'your_app_password'   ← App Password از Google Account
-import os as _os
-_email_user = _os.environ.get('EMAIL_HOST_USER', 'davoadeivazkhani@gmail.com')
-_email_pass = _os.environ.get('EMAIL_HOST_PASSWORD', '')
+# -----------------------------------------------------------------------------
+# Email
+# -----------------------------------------------------------------------------
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-if _email_user and _email_pass:
-    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST          = 'smtp.gmail.com'
-    EMAIL_PORT          = 587
-    EMAIL_USE_TLS       = True
-    EMAIL_HOST_USER     = _email_user
-    EMAIL_HOST_PASSWORD = _email_pass
-    DEFAULT_FROM_EMAIL  = f'دانشگاه جامع <{_email_user}>'
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    DEFAULT_FROM_EMAIL = config(
+        'DEFAULT_FROM_EMAIL',
+        default=f'دانشگاه جامع <{EMAIL_HOST_USER}>',
+    )
 else:
-    # تست محلی: ایمیل در console چاپ می‌شود
-    EMAIL_BACKEND      = 'django.core.mail.backends.console.EmailBackend'
-    EMAIL_HOST_USER    = _email_user
-    DEFAULT_FROM_EMAIL = f'دانشگاه جامع <{_email_user}>'
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'دانشگاه جامع <noreply@localhost>'
 
-PASSWORD_RESET_TIMEOUT = 3600   # توکن ۱ ساعت اعتبار دارد
+PASSWORD_RESET_TIMEOUT = 3600
