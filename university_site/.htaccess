@@ -1,0 +1,23 @@
+# Passenger WSGI configuration for subdomain deployment
+PassengerAppRoot /home/cp29524/public_html/university
+PassengerBaseURI /
+PassengerPython /home/cp29524/virtualenv/university_site/3.11/bin/python
+PassengerAppEnv production
+
+# Redirect HTTP to HTTPS (uncomment after SSL is configured)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Serve static files directly
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^static/(.*)$ - [L]
+
+# Serve media files directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^media/(.*)$ - [L]
+
+# Pass all other requests to Django
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
