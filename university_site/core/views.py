@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.utils import timezone
 from core.models import (
-    SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    SiteSettings, Slider, LandingSlider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     PresidencyOffice, DeputyVice,
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
@@ -20,8 +20,10 @@ from research.models import ResearchProject, Conference
 
 def landing(request):
     latest_news = News.objects.filter(is_published=True)[:3]
+    landing_sliders = LandingSlider.objects.filter(is_active=True).order_by('order')
     context = {
         'latest_news': latest_news,
+        'landing_sliders': landing_sliders,
     }
     return render(request, 'core/landing.html', context)
 

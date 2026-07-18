@@ -1,51 +1,279 @@
 {% extends 'base.html' %}
 {% load static custom_filters %}
 
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   FULLSCREEN HERO SLIDER
+═══════════════════════════════════════ */
+.uni-hero-wrap {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 520px;
+    overflow: hidden;
+    background: #0a1628;
+}
+
+/* ─── track ─── */
+.uni-hero-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform .9s cubic-bezier(.77,0,.18,1);
+    will-change: transform;
+}
+
+/* ─── each slide ─── */
+.uni-hero-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.uni-hero-slide img.slide-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 8s ease;
+    transform: scale(1.06);
+}
+.uni-hero-slide.is-active img.slide-bg {
+    transform: scale(1);
+}
+
+/* dark gradient overlay */
+.uni-hero-slide::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,.18) 0%,
+        rgba(0,0,0,.45) 55%,
+        rgba(0,0,0,.72) 100%
+    );
+}
+
+/* ─── text content ─── */
+.uni-slide-body {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 0 56px;
+}
+
+.uni-slide-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    letter-spacing: .3px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    width: fit-content;
+    border: 1.5px solid rgba(255,255,255,.3);
+}
+.uni-slide-badge.badge-danger  { background: rgba(220,38,38,.85);  color: #fff; }
+.uni-slide-badge.badge-warning { background: rgba(217,119,6,.9);   color: #fff; }
+.uni-slide-badge.badge-success { background: rgba(22,163,74,.85);  color: #fff; }
+.uni-slide-badge.badge-info    { background: rgba(14,165,233,.85); color: #fff; }
+.uni-slide-badge.badge-primary { background: rgba(37,99,235,.85);  color: #fff; }
+.uni-slide-badge.badge-dark    { background: rgba(15,23,42,.85);   color: #fff; }
+
+.uni-slide-title {
+    font-size: clamp(26px, 4.5vw, 56px);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 16px rgba(0,0,0,.5);
+}
+.uni-slide-subtitle {
+    font-size: clamp(14px, 1.6vw, 18px);
+    color: rgba(255,255,255,.88);
+    margin-bottom: 24px;
+    max-width: 600px;
+    line-height: 1.7;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+}
+.uni-slide-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ─── nav arrows ─── */
+.uni-hero-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,.18);
+    border: 2px solid rgba(255,255,255,.35);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background .25s, transform .25s;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.uni-hero-arrow:hover {
+    background: rgba(255,255,255,.35);
+    transform: translateY(-50%) scale(1.08);
+}
+.uni-hero-arrow.prev { right: 20px; }
+.uni-hero-arrow.next { left:  20px; }
+
+/* ─── dots ─── */
+.uni-hero-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+}
+.uni-hero-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.45);
+    cursor: pointer;
+    transition: background .3s, transform .3s;
+    border: 0;
+    padding: 0;
+}
+.uni-hero-dot.active {
+    background: #fff;
+    transform: scale(1.35);
+}
+
+/* ─── progress bar ─── */
+.uni-hero-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg,#3b82d4,#7c5cd8);
+    z-index: 11;
+    transition: width linear;
+}
+
+/* ─── slide count badge (top-left) ─── */
+.uni-slide-counter {
+    position: absolute;
+    top: 22px;
+    left: 22px;
+    z-index: 10;
+    background: rgba(0,0,0,.45);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    letter-spacing: 1px;
+}
+
+/* ─── responsive ─── */
+@media (max-width: 768px) {
+    .uni-hero-wrap { height: 70vh; min-height: 400px; }
+    .uni-slide-body { padding: 0 0 44px; }
+    .uni-hero-arrow { width: 38px; height: 38px; font-size: 14px; }
+}
+@media (max-width: 480px) {
+    .uni-hero-wrap { height: 60vh; min-height: 340px; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- ===== HERO SLIDER ===== -->
-<section class="hero-section">
-    {% if sliders %}
-    <div class="swiper hero-swiper">
-        <div class="swiper-wrapper">
-            {% for slide in sliders %}
-            <div class="swiper-slide hero-slide" style="{% if slide.image %}background-image: url('{{ slide.image.url }}'){% else %}background: linear-gradient(135deg,#1a3a5c,#2563eb){% endif %}">
+
+<!-- ═══════════════════════════════════════════
+     HERO SLIDER — fullscreen with news overlay
+═══════════════════════════════════════════ -->
+<div class="uni-hero-wrap" id="uniHero">
+
+    <!-- ── track ── -->
+    <div class="uni-hero-track" id="heroTrack">
+
+        {% if sliders %}
+        {% for slide in sliders %}
+        <div class="uni-hero-slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.counter0 }}">
+
+            <!-- background image -->
+            {% if slide.image %}
+            <img class="slide-bg" src="{{ slide.image.url }}" alt="{{ slide.title }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+            {% else %}
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1562774053-701939374585?w=1600&q=80"
+                 alt="{{ slide.title }}" loading="lazy">
+            {% endif %}
+
+            <!-- content -->
+            <div class="uni-slide-body">
                 <div class="container">
-                    <div class="row align-items-center min-vh-60">
-                        <div class="col-lg-7 hero-content" data-aos="fade-right">
-                            <span class="hero-badge"><i class="fas fa-star-of-life"></i> دانشگاه جامع علمی
-                                کاربردی</span>
-                            <h1 class="hero-title">{{ slide.title }}</h1>
-                            {% if slide.subtitle %}<p class="hero-subtitle">{{ slide.subtitle }}</p>{% endif %}
-                            <div class="d-flex flex-wrap gap-2">
-                                {% if slide.link %}
-                                <a href="{{ slide.link }}" class="hero-btn">
-                                    {{ slide.link_text|default:"بیشتر بدانید" }} <i class="fas fa-arrow-left"></i>
-                                </a>
-                                {% endif %}
-                                <a href="{% url 'admissions:admissions' %}" class="hero-btn-outline">
-                                    <i class="fas fa-file-alt"></i> ثبت‌نام
-                                </a>
-                            </div>
-                        </div>
+
+                    <!-- news/announcement badge -->
+                    {% if slide.badge_text %}
+                    <div class="uni-slide-badge badge-{{ slide.badge_color|default:'danger' }}">
+                        <i class="{{ slide.badge_icon|default:'fas fa-bell' }}"></i>
+                        {{ slide.badge_text }}
+                    </div>
+                    {% endif %}
+
+                    <h1 class="uni-slide-title">{{ slide.title }}</h1>
+                    {% if slide.subtitle %}
+                    <p class="uni-slide-subtitle">{{ slide.subtitle }}</p>
+                    {% endif %}
+                    <div class="uni-slide-actions">
+                        {% if slide.link %}
+                        <a href="{{ slide.link }}" class="hero-btn">
+                            {{ slide.link_text|default:"بیشتر بدانید" }}
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'admissions:admissions' %}" class="hero-btn-outline">
+                            <i class="fas fa-file-alt"></i> ثبت‌نام
+                        </a>
                     </div>
                 </div>
             </div>
-            {% endfor %}
+
         </div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-pagination"></div>
-    </div>
-    {% else %}
-    <div class="hero-slide" style="background: linear-gradient(135deg,#1a3a5c 0%,#2563eb 60%,#10b981 100%)">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-8 hero-content" data-aos="fade-right">
-                    <span class="hero-badge"><i class="fas fa-graduation-cap"></i> خوش آمدید</span>
-                    <h1 class="hero-title">دانشگاه جامع<br>علمی کاربردی</h1>
-                    <p class="hero-subtitle">مرکز برتر آموزش عالی؛ جایی که دانش، نوآوری و توسعه فردی با هم تلاقی
-                        می‌یابند</p>
-                    <div class="d-flex flex-wrap gap-3">
+        {% endfor %}
+
+        {% else %}
+        <!-- ──── DEMO SLIDES (6 تصویر طبیعت) ──── -->
+        <!-- اسلاید ۱ — دریاچه کوهستانی -->
+        <div class="uni-hero-slide is-active" data-index="0">
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80"
+                 alt="دریاچه کوهستانی" loading="eager">
+            <div class="uni-slide-body">
+                <div class="container">
+                    <div class="uni-slide-badge badge-danger">
+                        <i class="fas fa-calendar-alt"></i>
+                        تاریخ شروع کلاس‌ها: ۱ مهرماه ۱۴۰۴
+                    </div>
+                    <h1 class="uni-slide-title">دانشگاه جامع<br>علمی کاربردی</h1>
+                    <p class="uni-slide-subtitle">مرکز برتر آموزش عالی؛ جایی که دانش، نوآوری و توسعه فردی با هم تلاقی می‌یابند</p>
+                    <div class="uni-slide-actions">
                         <a href="{% url 'admissions:admissions' %}" class="hero-btn">
                             <i class="fas fa-file-alt"></i> پذیرش دانشجو
                         </a>
@@ -56,9 +284,259 @@
                 </div>
             </div>
         </div>
-    </div>
-    {% endif %}
-</section>
+
+        <!-- اسلاید ۲ — پل زمستانی -->
+        <div class="uni-hero-slide" data-index="1">
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1551582045-6ec9c11d8697?w=1600&q=80"
+                 alt="پل برفی" loading="lazy">
+            <div class="uni-slide-body">
+                <div class="container">
+                    <div class="uni-slide-badge badge-warning">
+                        <i class="fas fa-mouse-pointer"></i>
+                        زمان انتخاب واحد: ۱۵ تا ۲۵ شهریور ۱۴۰۴
+                    </div>
+                    <h1 class="uni-slide-title">انتخاب واحد<br>نیمسال اول</h1>
+                    <p class="uni-slide-subtitle">انتخاب واحد نیمسال اول سال تحصیلی ۱۴۰۵-۱۴۰۴ از ۱۵ شهریور آغاز می‌شود</p>
+                    <div class="uni-slide-actions">
+                        <a href="{% url 'academics:students_panel' %}" class="hero-btn">
+                            <i class="fas fa-check-square"></i> سامانه آموزشی
+                        </a>
+                        <a href="{% url 'academics:calendar' %}" class="hero-btn-outline">
+                            <i class="fas fa-calendar-alt"></i> تقویم آموزشی
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اسلاید ۳ — جنگل پاییزی -->
+        <div class="uni-hero-slide" data-index="2">
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1600&q=80"
+                 alt="جنگل پاییزی" loading="lazy">
+            <div class="uni-slide-body">
+                <div class="container">
+                    <div class="uni-slide-badge badge-success">
+                        <i class="fas fa-flask"></i>
+                        ثبت‌نام آزمون جامع دکتری آغاز شد
+                    </div>
+                    <h1 class="uni-slide-title">پژوهش و نوآوری<br>در دانشگاه</h1>
+                    <p class="uni-slide-subtitle">دانشگاه جامع با ۵۰ رشته تحصیلی آماده پذیرش دانشجویان نخبه در مقاطع کارشناسی، ارشد و دکتری است</p>
+                    <div class="uni-slide-actions">
+                        <a href="{% url 'research:research' %}" class="hero-btn">
+                            <i class="fas fa-microscope"></i> پژوهش
+                        </a>
+                        <a href="{% url 'admissions:apply' %}" class="hero-btn-outline">
+                            <i class="fas fa-file-signature"></i> ثبت‌نام
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اسلاید ۴ — لاله‌های بنفش -->
+        <div class="uni-hero-slide" data-index="3">
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1490750967868-88df5691cc56?w=1600&q=80"
+                 alt="لاله" loading="lazy">
+            <div class="uni-slide-body">
+                <div class="container">
+                    <div class="uni-slide-badge badge-info">
+                        <i class="fas fa-award"></i>
+                        جشن فارغ‌التحصیلی ۱۴۰۴ — ۲۰ دی‌ماه
+                    </div>
+                    <h1 class="uni-slide-title">جامعه دانشگاهی<br>پویا و بالنده</h1>
+                    <p class="uni-slide-subtitle">با پیوستن به جامعه دانشگاهی ما، آینده‌ای درخشان را برای خود رقم بزنید</p>
+                    <div class="uni-slide-actions">
+                        <a href="{% url 'contact:alumni' %}" class="hero-btn">
+                            <i class="fas fa-user-graduate"></i> فارغ‌التحصیلان
+                        </a>
+                        <a href="{% url 'core:about' %}" class="hero-btn-outline">
+                            <i class="fas fa-info-circle"></i> درباره ما
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اسلاید ۵ — درختان طلایی کنار آب -->
+        <div class="uni-hero-slide" data-index="4">
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600&q=80"
+                 alt="طبیعت پاییزی" loading="lazy">
+            <div class="uni-slide-body">
+                <div class="container">
+                    <div class="uni-slide-badge badge-primary">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        استخدام هیئت علمی — مهلت: ۳۱ مرداد
+                    </div>
+                    <h1 class="uni-slide-title">هیئت علمی<br>برجسته</h1>
+                    <p class="uni-slide-subtitle">بیش از ۲۰۰ عضو هیئت علمی متخصص آماده آموزش و راهنمایی دانشجویان</p>
+                    <div class="uni-slide-actions">
+                        <a href="{% url 'faculty:list' %}" class="hero-btn">
+                            <i class="fas fa-users"></i> اساتید
+                        </a>
+                        <a href="{% url 'contact:contact' %}" class="hero-btn-outline">
+                            <i class="fas fa-phone"></i> تماس با ما
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- اسلاید ۶ — جاده درختی -->
+        <div class="uni-hero-slide" data-index="5">
+            <img class="slide-bg"
+                 src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80"
+                 alt="جاده سبز" loading="lazy">
+            <div class="uni-slide-body">
+                <div class="container">
+                    <div class="uni-slide-badge badge-dark">
+                        <i class="fas fa-globe"></i>
+                        همکاری‌های بین‌المللی با ۱۲ دانشگاه جهانی
+                    </div>
+                    <h1 class="uni-slide-title">دانشگاه بین‌المللی<br>با افق جهانی</h1>
+                    <p class="uni-slide-subtitle">از طریق برنامه‌های تبادل دانشجو و همکاری‌های علمی بین‌المللی، جهانی بیندیشید</p>
+                    <div class="uni-slide-actions">
+                        <a href="{% url 'core:international_office' %}" class="hero-btn">
+                            <i class="fas fa-globe-americas"></i> بین‌الملل
+                        </a>
+                        <a href="{% url 'research:conferences' %}" class="hero-btn-outline">
+                            <i class="fas fa-microphone"></i> کنفرانس‌ها
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /track -->
+
+    <!-- ── arrows ── -->
+    <button class="uni-hero-arrow prev" id="heroPrev" aria-label="اسلاید بعدی">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+    <button class="uni-hero-arrow next" id="heroNext" aria-label="اسلاید قبلی">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- ── dots ── -->
+    <div class="uni-hero-dots" id="heroDots"></div>
+
+    <!-- ── counter ── -->
+    <div class="uni-slide-counter" id="heroCounter">۱ / ۶</div>
+
+    <!-- ── progress bar ── -->
+    <div class="uni-hero-progress" id="heroProgress"></div>
+
+</div><!-- /uni-hero-wrap -->
+
+<script>
+(function () {
+    'use strict';
+
+    var track    = document.getElementById('heroTrack');
+    var slides   = track ? track.querySelectorAll('.uni-hero-slide') : [];
+    var dotsWrap = document.getElementById('heroDots');
+    var counter  = document.getElementById('heroCounter');
+    var progress = document.getElementById('heroProgress');
+    var prevBtn  = document.getElementById('heroPrev');
+    var nextBtn  = document.getElementById('heroNext');
+
+    if (!slides.length) return;
+
+    var total    = slides.length;
+    var current  = 0;
+    var autoMs   = 5000;
+    var timer    = null;
+
+    /* ── تبدیل عدد به فارسی ── */
+    function toPersian(n) {
+        return String(n).replace(/[0-9]/g, function(d) {
+            return '۰۱۲۳۴۵۶۷۸۹'[d];
+        });
+    }
+
+    /* ── ساخت dots ── */
+    for (var i = 0; i < total; i++) {
+        var dot = document.createElement('button');
+        dot.className = 'uni-hero-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', 'اسلاید ' + (i + 1));
+        dot.dataset.idx = i;
+        dotsWrap.appendChild(dot);
+    }
+    var dots = dotsWrap.querySelectorAll('.uni-hero-dot');
+
+    /* ── رفتن به اسلاید ── */
+    function goTo(idx) {
+        slides[current].classList.remove('is-active');
+        dots[current].classList.remove('active');
+
+        current = (idx + total) % total;
+
+        slides[current].classList.add('is-active');
+        dots[current].classList.add('active');
+        track.style.transform = 'translateX(' + (current * -100) + '%)';
+        counter.textContent = toPersian(current + 1) + ' / ' + toPersian(total);
+        restartProgress();
+    }
+
+    /* ── progress bar ── */
+    function restartProgress() {
+        if (progress) {
+            progress.style.transition = 'none';
+            progress.style.width = '0%';
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    progress.style.transition = 'width ' + autoMs + 'ms linear';
+                    progress.style.width = '100%';
+                });
+            });
+        }
+    }
+
+    /* ── auto play ── */
+    function startAuto() {
+        clearInterval(timer);
+        timer = setInterval(function () { goTo(current + 1); }, autoMs);
+    }
+
+    /* ── pause on hover ── */
+    var heroWrap = document.getElementById('uniHero');
+    heroWrap.addEventListener('mouseenter', function () { clearInterval(timer); });
+    heroWrap.addEventListener('mouseleave', startAuto);
+
+    /* ── touch swipe ── */
+    var touchStartX = 0;
+    heroWrap.addEventListener('touchstart', function (e) {
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    heroWrap.addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 40) { dx < 0 ? goTo(current + 1) : goTo(current - 1); }
+    }, { passive: true });
+
+    /* ── buttons ── */
+    prevBtn.addEventListener('click', function () { goTo(current - 1); startAuto(); });
+    nextBtn.addEventListener('click', function () { goTo(current + 1); startAuto(); });
+
+    /* ── dots click ── */
+    dots.forEach(function (dot) {
+        dot.addEventListener('click', function () {
+            goTo(parseInt(this.dataset.idx));
+            startAuto();
+        });
+    });
+
+    /* ── init ── */
+    track.style.transform = 'translateX(0%)';
+    /* اطمینان از سمت چپ به راست برای track (RTL-safe) */
+    track.style.direction = 'ltr';
+    restartProgress();
+    startAuto();
+})();
+</script>
 
 <!-- ===== STATS BAR ===== -->
 <section class="stats-bar">

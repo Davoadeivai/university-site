@@ -1,5 +1,7 @@
+import random
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -7,8 +9,8 @@ class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('student', 'دانشجو'),
         ('professor', 'استاد'),
-        ('staff', 'کارمند'),
-        ('admin', 'مدیر'),
+        ('staff', 'مدیر دانشگاه'),
+        ('admin', 'ادمین'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(_('نقش'), max_length=20, choices=ROLE_CHOICES, default='student')
@@ -53,3 +55,30 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class OTPCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes')
+    code = models.CharField(_('کد تأیید'), max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _('کد تأیید')
+        verbose_name_plural = _('کدهای تأیید')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.code}"
+
+    def is_valid(self):
+        return not self.is_used and timezone.now() <= self.expires_at
+
+    @classmethod
+    def create_for_user(cls, user):
+        """یک کد ۶ رقمی جدید برای کاربر می‌سازد و کدهای قبلی را باطل می‌کند."""
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+        code = str(random.randint(100000, 999999))
+        expires = timezone.now() + timezone.timedelta(minutes=10)
+        return cls.objects.create(user=user, code=code, expires_at=expires)

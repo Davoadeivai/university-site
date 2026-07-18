@@ -3,53 +3,70 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
-        <h1 class="page-header-title">داشبورد مدیریت</h1>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <h1 class="page-header-title mb-0">{{ page_title }}</h1>
+            <div class="d-flex align-items-center gap-2">
+                {% if role == 'admin' or request.user.is_staff %}
+                    <span class="badge" style="background:#ef4444;font-size:13px;padding:6px 14px;border-radius:20px;">
+                        <i class="fas fa-user-shield me-1"></i> ادمین
+                    </span>
+                {% elif role == 'staff' %}
+                    <span class="badge" style="background:#f97316;font-size:13px;padding:6px 14px;border-radius:20px;">
+                        <i class="fas fa-building me-1"></i> مدیر دانشگاه
+                    </span>
+                {% elif role == 'professor' %}
+                    <span class="badge" style="background:#7c5cd8;font-size:13px;padding:6px 14px;border-radius:20px;">
+                        <i class="fas fa-chalkboard-teacher me-1"></i> استاد
+                    </span>
+                {% else %}
+                    <span class="badge" style="background:#3b82d4;font-size:13px;padding:6px 14px;border-radius:20px;">
+                        <i class="fas fa-user-graduate me-1"></i> دانشجو
+                    </span>
+                {% endif %}
+                <span class="text-muted" style="font-size:13px;">خوش آمدید، {{ request.user.get_full_name|default:request.user.username }}</span>
+            </div>
+        </div>
     </div>
 </div>
+
 <section class="section">
     <div class="container">
-        <!-- Stats Row -->
+
+{# ══════════════════════════════════════════════════════════════════════ #}
+{#  ADMIN DASHBOARD                                                       #}
+{# ══════════════════════════════════════════════════════════════════════ #}
+{% if role == 'admin' or request.user.is_staff %}
+
+        <!-- آمار ادمین -->
         <div class="row g-4 mb-4">
             <div class="col-6 col-md-3" data-aos="fade-up">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:var(--gradient-primary)"><i class="fas fa-newspaper"></i></div>
-                    <div>
-                        <div class="dash-stat-num">{{ total_news }}</div>
-                        <div class="dash-stat-label">اخبار</div>
-                    </div>
+                    <div><div class="dash-stat-num">{{ total_news }}</div><div class="dash-stat-label">اخبار منتشر شده</div></div>
                 </div>
             </div>
             <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:var(--gradient-gold)"><i class="fas fa-file-alt"></i></div>
-                    <div>
-                        <div class="dash-stat-num">{{ total_applications }}</div>
-                        <div class="dash-stat-label">درخواست پذیرش</div>
-                    </div>
+                    <div><div class="dash-stat-num">{{ total_applications }}</div><div class="dash-stat-label">درخواست پذیرش</div></div>
                 </div>
             </div>
             <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fas fa-envelope"></i></div>
-                    <div>
-                        <div class="dash-stat-num">{{ new_messages }}</div>
-                        <div class="dash-stat-label">پیام‌های جدید</div>
-                    </div>
+                    <div><div class="dash-stat-num">{{ new_messages }}</div><div class="dash-stat-label">پیام‌های جدید</div></div>
                 </div>
             </div>
             <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i class="fas fa-users"></i></div>
-                    <div>
-                        <div class="dash-stat-num">{{ total_users }}</div>
-                        <div class="dash-stat-label">کاربران</div>
-                    </div>
+                    <div><div class="dash-stat-num">{{ total_users }}</div><div class="dash-stat-label">کاربران</div></div>
                 </div>
             </div>
         </div>
 
         <div class="row g-4">
-            <!-- Recent News -->
+            <!-- آخرین اخبار -->
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="uni-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -66,17 +83,14 @@
                             {% if item.is_published %}منتشر{% else %}پیش‌نویس{% endif %}
                         </span>
                     </div>
-                    {% empty %}
-                    <p class="text-muted text-center py-3">خبری موجود نیست</p>
-                    {% endfor %}
+                    {% empty %}<p class="text-muted text-center py-3">خبری موجود نیست</p>{% endfor %}
                 </div>
             </div>
-
-            <!-- Recent Applications -->
+            <!-- درخواست‌های پذیرش -->
             <div class="col-lg-6" data-aos="fade-left">
                 <div class="uni-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-primary-uni mb-0">درخواست‌های جدید</h5>
+                        <h5 class="fw-bold text-primary-uni mb-0">درخواست‌های پذیرش</h5>
                         <a href="/admin/admissions/application/" class="uni-card-link" style="font-size:13px;">مدیریت <i class="fas fa-arrow-left"></i></a>
                     </div>
                     {% for app in recent_applications %}
@@ -89,49 +103,47 @@
                             {{ app.get_status_display }}
                         </span>
                     </div>
-                    {% empty %}
-                    <p class="text-muted text-center py-3">درخواستی موجود نیست</p>
-                    {% endfor %}
+                    {% empty %}<p class="text-muted text-center py-3">درخواستی موجود نیست</p>{% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- Admin Quick Access -->
+        <!-- دسترسی سریع ادمین -->
         <div class="mt-4" data-aos="fade-up">
             <div class="uni-card p-4">
                 <h5 class="fw-bold text-primary-uni mb-4">دسترسی سریع مدیریت</h5>
                 <div class="row g-3">
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <a href="/admin/news/news/add/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-plus-circle"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">خبر جدید</div>
                         </a>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <a href="/admin/faculty/professor/add/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-user-plus"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">استاد جدید</div>
                         </a>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <a href="/admin/admissions/application/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-file-alt"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">درخواست‌ها</div>
                         </a>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <a href="/admin/contact/contactmessage/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-envelope"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">پیام‌ها</div>
                         </a>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <a href="/admin/core/sitesettings/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-cog"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">تنظیمات</div>
                         </a>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <a href="/admin/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;"><i class="fas fa-shield-alt"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">پنل ادمین</div>
@@ -140,6 +152,398 @@
                 </div>
             </div>
         </div>
+
+{# ══════════════════════════════════════════════════════════════════════ #}
+{#  STAFF / مدیر دانشگاه DASHBOARD                                       #}
+{# ══════════════════════════════════════════════════════════════════════ #}
+{% elif role == 'staff' %}
+
+        <!-- آمار مدیر دانشگاه -->
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3" data-aos="fade-up">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#3b82d4,#2563eb)"><i class="fas fa-user-graduate"></i></div>
+                    <div><div class="dash-stat-num">{{ total_students }}</div><div class="dash-stat-label">دانشجویان</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#7c5cd8,#6d28d9)"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div><div class="dash-stat-num">{{ total_professors }}</div><div class="dash-stat-label">اساتید</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:var(--gradient-gold)"><i class="fas fa-file-alt"></i></div>
+                    <div><div class="dash-stat-num">{{ pending_applications }}</div><div class="dash-stat-label">پذیرش در انتظار</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fas fa-envelope"></i></div>
+                    <div><div class="dash-stat-num">{{ new_messages }}</div><div class="dash-stat-label">پیام‌های جدید</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- درخواست‌های دانشجویی -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">درخواست‌های دانشجویی</h5>
+                        <span class="badge bg-warning">{{ pending_requests }} در انتظار</span>
+                    </div>
+                    {% for req in recent_requests %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ req.title }}</div>
+                            <div class="announce-date">{{ req.student.get_full_name }} | {{ req.get_request_type_display }}</div>
+                        </div>
+                        <span class="badge bg-{% if req.status == 'pending' %}warning{% elif req.status == 'approved' %}success{% else %}secondary{% endif %}">
+                            {{ req.get_status_display }}
+                        </span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">درخواستی موجود نیست</p>{% endfor %}
+                </div>
+            </div>
+            <!-- اطلاعیه‌ها -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">اطلاعیه‌ها</h5>
+                    </div>
+                    {% for ann in announcements %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">
+                                {% if ann.is_urgent %}<span class="badge bg-danger me-1">فوری</span>{% endif %}
+                                {{ ann.title }}
+                            </div>
+                            <div class="announce-date">{{ ann.created_at|jalali_date }}</div>
+                        </div>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">اطلاعیه‌ای موجود نیست</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- دسترسی سریع مدیر دانشگاه -->
+        <div class="mt-4" data-aos="fade-up">
+            <div class="uni-card p-4">
+                <h5 class="fw-bold text-primary-uni mb-4">دسترسی سریع</h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/admissions/application/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#f97316;"><i class="fas fa-file-alt"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">درخواست‌های پذیرش</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/dashboard/studentrequest/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#3b82d4;"><i class="fas fa-tasks"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">درخواست‌های دانشجویی</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/contact/contactmessage/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#10b981;"><i class="fas fa-envelope"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">پیام‌های دریافتی</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/accounts/announcement/add/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#7c5cd8;"><i class="fas fa-bullhorn"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">اطلاعیه جدید</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{# ══════════════════════════════════════════════════════════════════════ #}
+{#  PROFESSOR DASHBOARD                                                   #}
+{# ══════════════════════════════════════════════════════════════════════ #}
+{% elif role == 'professor' %}
+
+        <!-- آمار استاد -->
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3" data-aos="fade-up">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#7c5cd8,#6d28d9)"><i class="fas fa-book-open"></i></div>
+                    <div><div class="dash-stat-num">{{ total_my_courses }}</div><div class="dash-stat-label">دروس من</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#3b82d4,#2563eb)"><i class="fas fa-user-graduate"></i></div>
+                    <div><div class="dash-stat-num">{{ total_my_students }}</div><div class="dash-stat-label">دانشجویان</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="fas fa-tasks"></i></div>
+                    <div><div class="dash-stat-num">{{ my_assignments|length }}</div><div class="dash-stat-label">تکالیف فعال</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626)"><i class="fas fa-inbox"></i></div>
+                    <div><div class="dash-stat-num">{{ pending_student_requests }}</div><div class="dash-stat-label">درخواست‌های در انتظار</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- دروس این ترم -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">دروس این ترم</h5>
+                        {% if active_semester %}
+                        <span class="badge bg-success" style="font-size:11px;">{{ active_semester.name }}</span>
+                        {% endif %}
+                    </div>
+                    {% for ta in my_courses %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ ta.course.name }}</div>
+                            <div class="announce-date">
+                                کد: {{ ta.course.code }} |
+                                {% if ta.classroom %}کلاس: {{ ta.classroom }}{% endif %}
+                            </div>
+                        </div>
+                        <span class="badge bg-primary">{{ ta.course.credits }} واحد</span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">درسی در این ترم ندارید</p>{% endfor %}
+                </div>
+            </div>
+            <!-- دانشجویان -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">دانشجویان من</h5>
+                        <span class="text-muted" style="font-size:12px;">{{ total_my_students }} دانشجو</span>
+                    </div>
+                    {% for en in my_students %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ en.student.get_full_name|default:en.student.username }}</div>
+                            <div class="announce-date">{{ en.course.name }}</div>
+                        </div>
+                        <span class="badge bg-{% if en.status == 'in_progress' %}primary{% else %}secondary{% endif %}">
+                            {{ en.get_status_display }}
+                        </span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">دانشجویی یافت نشد</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- اطلاعیه‌ها و اخبار استاد -->
+        <div class="row g-4 mt-0">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">اطلاعیه‌های من</h5>
+                    {% for ann in announcements %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">
+                                {% if ann.is_urgent %}<span class="badge bg-danger me-1">فوری</span>{% endif %}
+                                {{ ann.title }}
+                            </div>
+                            <div class="announce-date">{{ ann.created_at|jalali_date }}</div>
+                        </div>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">اطلاعیه‌ای موجود نیست</p>{% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">آخرین اخبار</h5>
+                    {% for item in recent_news %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ item.title }}</div>
+                            <div class="announce-date">{{ item.published_at|jalali_date }}</div>
+                        </div>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">خبری موجود نیست</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+{# ══════════════════════════════════════════════════════════════════════ #}
+{#  STUDENT DASHBOARD                                                     #}
+{# ══════════════════════════════════════════════════════════════════════ #}
+{% else %}
+
+        <!-- آمار دانشجو -->
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3" data-aos="fade-up">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#3b82d4,#2563eb)"><i class="fas fa-book"></i></div>
+                    <div><div class="dash-stat-num">{{ current_enrollments|length }}</div><div class="dash-stat-label">دروس این ترم</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fas fa-layer-group"></i></div>
+                    <div><div class="dash-stat-num">{{ total_units }}</div><div class="dash-stat-label">واحد انتخابی</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="fas fa-tasks"></i></div>
+                    <div><div class="dash-stat-num">{{ pending_assignments|length }}</div><div class="dash-stat-label">تکالیف در انتظار</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i class="fas fa-clipboard-list"></i></div>
+                    <div><div class="dash-stat-num">{{ pending_requests_count }}</div><div class="dash-stat-label">درخواست‌های در انتظار</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- دروس این ترم -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="uni-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">دروس این ترم</h5>
+                        {% if active_semester %}
+                        <span class="badge bg-success" style="font-size:11px;">{{ active_semester.name }}</span>
+                        {% endif %}
+                    </div>
+                    {% for en in current_enrollments %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ en.course.name }}</div>
+                            <div class="announce-date">
+                                {{ en.course.credits }} واحد
+                                {% if en.final_grade %} | نمره: <strong>{{ en.final_grade }}</strong>{% endif %}
+                            </div>
+                        </div>
+                        <span class="badge bg-{% if en.status == 'in_progress' %}primary{% elif en.status == 'completed' %}success{% elif en.status == 'failed' %}danger{% else %}secondary{% endif %}">
+                            {{ en.get_status_display }}
+                        </span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">درسی انتخاب نشده</p>{% endfor %}
+                </div>
+            </div>
+
+            <!-- امتحانات پیش‌رو -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">امتحانات پیش‌رو</h5>
+                    {% for exam in upcoming_exams %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ exam.course.name }}</div>
+                            <div class="announce-date">
+                                {{ exam.date }} | {{ exam.start_time }} — {{ exam.end_time }}
+                                {% if exam.location %} | {{ exam.location }}{% endif %}
+                            </div>
+                        </div>
+                        <span class="badge bg-{% if exam.exam_type == 'final' %}danger{% else %}warning{% endif %}">
+                            {{ exam.get_exam_type_display }}
+                        </span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">امتحانی در پیش نیست</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-0">
+            <!-- درخواست‌های من -->
+            <div class="col-lg-4" data-aos="fade-up">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">درخواست‌های من</h5>
+                    {% for req in my_requests %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ req.title }}</div>
+                            <div class="announce-date">{{ req.get_request_type_display }}</div>
+                        </div>
+                        <span class="badge bg-{% if req.status == 'pending' %}warning{% elif req.status == 'approved' %}success{% else %}secondary{% endif %}">
+                            {{ req.get_status_display }}
+                        </span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">درخواستی ندارید</p>{% endfor %}
+                </div>
+            </div>
+
+            <!-- تکالیف در انتظار -->
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">تکالیف در انتظار</h5>
+                    {% for asgn in pending_assignments %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">{{ asgn.title }}</div>
+                            <div class="announce-date">{{ asgn.course.name }} | مهلت: {{ asgn.due_date|date:"Y/m/d" }}</div>
+                        </div>
+                        <span class="badge bg-warning">{{ asgn.get_assignment_type_display }}</span>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">تکلیفی در انتظار نیست</p>{% endfor %}
+                </div>
+            </div>
+
+            <!-- اطلاعیه‌ها -->
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">اطلاعیه‌های من</h5>
+                    {% for ann in announcements %}
+                    <div class="announce-card mb-2">
+                        <div class="flex-grow-1">
+                            <div class="announce-title" style="font-size:13px;">
+                                {% if ann.is_urgent %}<span class="badge bg-danger me-1" style="font-size:10px;">فوری</span>{% endif %}
+                                {{ ann.title }}
+                            </div>
+                            <div class="announce-date">{{ ann.created_at|jalali_date }}</div>
+                        </div>
+                    </div>
+                    {% empty %}<p class="text-muted text-center py-3">اطلاعیه‌ای موجود نیست</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- دسترسی سریع دانشجو -->
+        <div class="mt-4" data-aos="fade-up">
+            <div class="uni-card p-4">
+                <h5 class="fw-bold text-primary-uni mb-4">دسترسی سریع</h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a href="{% url 'accounts:profile' %}" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#3b82d4;"><i class="fas fa-user-circle"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">پروفایل من</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/پذیرش/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#10b981;"><i class="fas fa-file-signature"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">ثبت درخواست</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/اخبار/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#f59e0b;"><i class="fas fa-newspaper"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">اخبار دانشگاه</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/تماس/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#7c5cd8;"><i class="fas fa-envelope"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">تماس با دانشگاه</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endif %}
+
     </div>
 </section>
 {% endblock %}

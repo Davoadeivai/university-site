@@ -26,7 +26,7 @@
 html{scroll-behavior:smooth;}
 body{background:var(--navy);overflow-x:hidden;direction:rtl;}
 
-/* ── CANVAS BG ── */
+/* ── CANVAS BG (فقط زیر اسلایدر اگر تصویر نباشد) ── */
 #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
 /* ── NAV ── */
@@ -40,9 +40,7 @@ body{background:var(--navy);overflow-x:hidden;direction:rtl;}
   transition:background .3s;
 }
 .lp-nav.scrolled{background:rgba(13,27,62,.92);}
-.lp-logo{
-  display:flex;align-items:center;gap:.75rem;text-decoration:none;
-}
+.lp-logo{display:flex;align-items:center;gap:.75rem;text-decoration:none;}
 .lp-logo-icon{
   width:42px;height:42px;border-radius:10px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
@@ -66,68 +64,180 @@ body{background:var(--navy);overflow-x:hidden;direction:rtl;}
 .lp-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(201,168,76,.4)!important;}
 @media(max-width:768px){.lp-links .hide-sm{display:none;}}
 
-/* ── HERO ── */
-.lp-hero{
-  min-height:100vh;
-  display:flex;align-items:center;justify-content:center;
-  position:relative;z-index:1;
-  padding:6rem 1.5rem 3rem;
-  text-align:center;
+/* ════════════════════════════════════════
+   HERO SLIDER
+════════════════════════════════════════ */
+.lp-hero-wrap{
+  position:relative;
+  width:100%;height:100vh;min-height:540px;
+  overflow:hidden;
+  z-index:1;
 }
-.lp-hero-content{max-width:800px;margin:0 auto;}
+
+/* track */
+.lp-hero-track{
+  display:flex;
+  width:100%;height:100%;
+  direction:ltr;
+  transition:transform .9s cubic-bezier(.77,0,.18,1);
+  will-change:transform;
+}
+
+/* each slide */
+.lp-slide{
+  flex:0 0 100%;width:100%;height:100%;
+  position:relative;overflow:hidden;
+}
+
+/* bg image */
+.lp-slide-img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  transition:transform 9s ease;
+  transform:scale(1.07);
+}
+.lp-slide.is-active .lp-slide-img{transform:scale(1);}
+
+/* dark overlay */
+.lp-slide::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(13,27,62,.25) 0%,
+    rgba(13,27,62,.5)  50%,
+    rgba(13,27,62,.78) 100%
+  );
+}
+
+/* fallback: no image — dark navy bg */
+.lp-slide.no-img{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);}
+.lp-slide.no-img::after{display:none;}
+
+/* content */
+.lp-slide-body{
+  position:absolute;inset:0;z-index:3;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:6rem 1.5rem 4rem;
+}
+
+/* announcement badge */
+.lp-slide-badge{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.38rem 1.15rem;border-radius:50px;
+  font-size:.8rem;font-weight:700;
+  margin-bottom:1.4rem;letter-spacing:.2px;
+  box-shadow:0 3px 14px rgba(0,0,0,.35);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  border:1.5px solid rgba(255,255,255,.25);
+}
+.lp-badge-danger  {background:rgba(220,38,38,.85); color:#fff;}
+.lp-badge-warning {background:rgba(180,100,0,.9);  color:#fff;}
+.lp-badge-success {background:rgba(22,163,74,.85); color:#fff;}
+.lp-badge-info    {background:rgba(14,165,233,.85);color:#fff;}
+.lp-badge-gold    {background:rgba(160,120,32,.92); color:#fff;}
+.lp-badge-dark    {background:rgba(15,23,42,.85);  color:#fff;}
+
+/* eyebrow (fallback when no badge) */
 .lp-eyebrow{
   display:inline-flex;align-items:center;gap:.5rem;
   background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);
   border-radius:50px;padding:.35rem 1.1rem;
   color:var(--gold2);font-size:.82rem;font-weight:600;
   margin-bottom:1.75rem;
-  animation:fadeDown .7s ease both;
 }
 .lp-h1{
-  font-size:clamp(2.4rem,6vw,4.2rem);
-  font-weight:900;color:#fff;line-height:1.15;
-  margin-bottom:1.25rem;
-  animation:fadeDown .7s .1s ease both;
+  font-size:clamp(2.2rem,5.5vw,4rem);
+  font-weight:900;color:#fff;line-height:1.18;
+  margin-bottom:1.1rem;
+  text-shadow:0 2px 20px rgba(0,0,0,.45);
 }
 .lp-h1 .accent{
   background:linear-gradient(90deg,var(--gold),var(--gold2));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 .lp-sub{
-  font-size:1.05rem;color:rgba(255,255,255,.68);line-height:1.85;
-  max-width:580px;margin:0 auto 2.25rem;
-  animation:fadeDown .7s .2s ease both;
+  font-size:clamp(.9rem,1.6vw,1.05rem);color:rgba(255,255,255,.72);line-height:1.85;
+  max-width:600px;margin:0 auto 2rem;
+  text-shadow:0 1px 8px rgba(0,0,0,.4);
 }
-.lp-cta-row{
-  display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;
-  animation:fadeDown .7s .3s ease both;
-}
+.lp-cta-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;}
+
 .lp-cta-primary{
   display:inline-flex;align-items:center;gap:.5rem;
   background:linear-gradient(135deg,var(--gold),#a07820);
   color:var(--navy);font-weight:800;font-size:.95rem;
   border:none;border-radius:12px;padding:.85rem 2rem;
-  text-decoration:none;cursor:pointer;
-  transition:all .25s;
-  box-shadow:0 4px 20px rgba(201,168,76,.35);
+  text-decoration:none;cursor:pointer;transition:all .25s;
+  box-shadow:0 4px 20px rgba(201,168,76,.4);
 }
-.lp-cta-primary:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(201,168,76,.5);}
+.lp-cta-primary:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(201,168,76,.6);}
 .lp-cta-secondary{
   display:inline-flex;align-items:center;gap:.5rem;
   background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.3);
   color:#fff;font-weight:600;font-size:.95rem;
   border-radius:12px;padding:.85rem 2rem;
-  text-decoration:none;cursor:pointer;
-  transition:all .25s;backdrop-filter:blur(6px);
+  text-decoration:none;cursor:pointer;transition:all .25s;backdrop-filter:blur(6px);
 }
 .lp-cta-secondary:hover{background:rgba(255,255,255,.18);transform:translateY(-2px);}
+
+/* scroll hint */
 .lp-scroll-hint{
   position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
   display:flex;flex-direction:column;align-items:center;gap:.4rem;
-  color:rgba(255,255,255,.4);font-size:.75rem;
+  color:rgba(255,255,255,.4);font-size:.75rem;z-index:4;
   animation:bounce 2s infinite;
 }
 .lp-scroll-hint i{font-size:1.2rem;}
+
+/* nav arrows */
+.lp-hero-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  z-index:10;width:46px;height:46px;
+  background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);
+  border-radius:50%;color:#fff;font-size:17px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .25s,transform .25s;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.lp-hero-arrow:hover{background:rgba(255,255,255,.3);transform:translateY(-50%) scale(1.08);}
+.lp-hero-arrow.lp-prev{right:22px;}
+.lp-hero-arrow.lp-next{left:22px;}
+
+/* dots */
+.lp-hero-dots{
+  position:absolute;bottom:52px;left:50%;transform:translateX(-50%);
+  z-index:10;display:flex;gap:8px;
+}
+.lp-hero-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:rgba(255,255,255,.4);cursor:pointer;
+  transition:background .3s,transform .3s;border:0;padding:0;
+}
+.lp-hero-dot.active{background:#fff;transform:scale(1.4);}
+
+/* progress */
+.lp-hero-progress{
+  position:absolute;bottom:0;left:0;height:3px;width:0%;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+  z-index:11;transition:width linear;
+}
+
+/* counter */
+.lp-hero-counter{
+  position:absolute;top:90px;left:22px;z-index:10;
+  background:rgba(0,0,0,.4);color:#fff;
+  font-size:12px;font-weight:700;padding:3px 12px;
+  border-radius:20px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  letter-spacing:1px;
+}
+
+@media(max-width:768px){
+  .lp-hero-wrap{height:70vh;min-height:420px;}
+  .lp-hero-arrow{width:38px;height:38px;font-size:14px;}
+}
 
 /* ── STATS ── */
 .lp-stats{
@@ -269,28 +379,104 @@ body{background:var(--navy);overflow-x:hidden;direction:rtl;}
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="lp-hero">
-  <div class="lp-hero-content">
-    <div class="lp-eyebrow"><i class="fas fa-star"></i> پیشتاز در آموزش عالی ایران</div>
-    <h1 class="lp-h1">
-      آینده‌ای روشن‌تر<br>با <span class="accent">دانشگاه جامع</span>
-    </h1>
-    <p class="lp-sub">مرکز برتر آموزش علمی‌کاربردی — جایی که دانش، نوآوری و توسعه فردی در کنار هم رشد می‌کنند.</p>
-    <div class="lp-cta-row">
-      <a href="{% url 'admissions:admissions' %}" class="lp-cta-primary">
-        <i class="fas fa-file-alt"></i> شروع پذیرش
-      </a>
-      <a href="{% url 'core:home' %}" class="lp-cta-secondary">
-        <i class="fas fa-compass"></i> کاوش در دانشگاه
-      </a>
+<!-- ══ HERO SLIDER ══ -->
+<div class="lp-hero-wrap" id="lpHero">
+
+  <div class="lp-hero-track" id="lpTrack">
+
+    {% if landing_sliders %}
+    {% for slide in landing_sliders %}
+    <div class="lp-slide{% if forloop.first %} is-active{% endif %}{% if not slide.image %} no-img{% endif %}">
+      {% if slide.image %}
+      <img class="lp-slide-img" src="{{ slide.image.url }}" alt="{{ slide.title }}"
+           loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+      {% endif %}
+      <div class="lp-slide-body">
+        {% if slide.badge_text %}
+        <div class="lp-slide-badge lp-badge-{{ slide.badge_color|default:'gold' }}">
+          <i class="{{ slide.badge_icon|default:'fas fa-bell' }}"></i> {{ slide.badge_text }}
+        </div>
+        {% else %}
+        <div class="lp-eyebrow"><i class="fas fa-star"></i> پیشتاز در آموزش عالی ایران</div>
+        {% endif %}
+        <h1 class="lp-h1">{{ slide.title|linebreaksbr }}</h1>
+        {% if slide.subtitle %}<p class="lp-sub">{{ slide.subtitle }}</p>{% endif %}
+        <div class="lp-cta-row">
+          {% if slide.btn1_text and slide.btn1_url %}<a href="{{ slide.btn1_url }}" class="lp-cta-primary"><i class="fas fa-file-alt"></i> {{ slide.btn1_text }}</a>{% endif %}
+          {% if slide.btn2_text and slide.btn2_url %}<a href="{{ slide.btn2_url }}" class="lp-cta-secondary"><i class="fas fa-compass"></i> {{ slide.btn2_text }}</a>{% endif %}
+        </div>
+      </div>
     </div>
-  </div>
+    {% endfor %}
+
+    {% else %}
+    <!-- demo slide 1 -->
+    <div class="lp-slide is-active">
+      <img class="lp-slide-img" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80" alt="دریاچه" loading="eager">
+      <div class="lp-slide-body">
+        <div class="lp-slide-badge lp-badge-danger"><i class="fas fa-calendar-alt"></i> شروع کلاس‌ها: ۱ مهرماه ۱۴۰۴</div>
+        <h1 class="lp-h1">آینده‌ای روشن‌تر<br>با <span class="accent">دانشگاه جامع</span></h1>
+        <p class="lp-sub">مرکز برتر آموزش علمی‌کاربردی — جایی که دانش، نوآوری و توسعه فردی در کنار هم رشد می‌کنند.</p>
+        <div class="lp-cta-row">
+          <a href="{% url 'admissions:admissions' %}" class="lp-cta-primary"><i class="fas fa-file-alt"></i> شروع پذیرش</a>
+          <a href="{% url 'core:home' %}" class="lp-cta-secondary"><i class="fas fa-compass"></i> کاوش در دانشگاه</a>
+        </div>
+      </div>
+    </div>
+    <!-- demo slide 2 -->
+    <div class="lp-slide">
+      <img class="lp-slide-img" src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80" alt="جاده" loading="lazy">
+      <div class="lp-slide-body">
+        <div class="lp-slide-badge lp-badge-warning"><i class="fas fa-mouse-pointer"></i> انتخاب واحد: ۱۵ تا ۲۵ شهریور ۱۴۰۴</div>
+        <h1 class="lp-h1">انتخاب واحد<br><span class="accent">نیمسال اول</span></h1>
+        <p class="lp-sub">سامانه انتخاب واحد از ۱۵ شهریور ماه برای تمامی دانشجویان فعال است.</p>
+        <div class="lp-cta-row">
+          <a href="{% url 'academics:students_panel' %}" class="lp-cta-primary"><i class="fas fa-check-square"></i> سامانه آموزشی</a>
+          <a href="{% url 'academics:calendar' %}" class="lp-cta-secondary"><i class="fas fa-calendar-alt"></i> تقویم آموزشی</a>
+        </div>
+      </div>
+    </div>
+    <!-- demo slide 3 -->
+    <div class="lp-slide">
+      <img class="lp-slide-img" src="https://images.unsplash.com/photo-1490750967868-88df5691cc56?w=1600&q=80" alt="لاله" loading="lazy">
+      <div class="lp-slide-body">
+        <div class="lp-slide-badge lp-badge-success"><i class="fas fa-award"></i> جشن فارغ‌التحصیلی ۱۴۰۴ — ۲۰ دی‌ماه</div>
+        <h1 class="lp-h1">جامعه دانشگاهی<br><span class="accent">پویا و بالنده</span></h1>
+        <p class="lp-sub">با پیوستن به جامعه دانشگاهی ما، آینده‌ای درخشان را برای خود رقم بزنید.</p>
+        <div class="lp-cta-row">
+          <a href="{% url 'contact:alumni' %}" class="lp-cta-primary"><i class="fas fa-user-graduate"></i> فارغ‌التحصیلان</a>
+          <a href="{% url 'core:about' %}" class="lp-cta-secondary"><i class="fas fa-info-circle"></i> درباره ما</a>
+        </div>
+      </div>
+    </div>
+    <!-- demo slide 4 -->
+    <div class="lp-slide">
+      <img class="lp-slide-img" src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600&q=80" alt="طبیعت" loading="lazy">
+      <div class="lp-slide-body">
+        <div class="lp-slide-badge lp-badge-gold"><i class="fas fa-globe"></i> همکاری با ۱۲ دانشگاه بین‌المللی</div>
+        <h1 class="lp-h1">دانشگاه<br><span class="accent">بین‌المللی</span></h1>
+        <p class="lp-sub">از طریق برنامه‌های تبادل دانشجو و همکاری‌های علمی بین‌المللی، جهانی بیندیشید.</p>
+        <div class="lp-cta-row">
+          <a href="{% url 'core:international_office' %}" class="lp-cta-primary"><i class="fas fa-globe-americas"></i> دفتر بین‌الملل</a>
+          <a href="{% url 'research:conferences' %}" class="lp-cta-secondary"><i class="fas fa-microphone"></i> کنفرانس‌ها</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- /track -->
+
+  <button class="lp-hero-arrow lp-prev" id="lpPrev" aria-label="اسلاید قبلی"><i class="fas fa-chevron-right"></i></button>
+  <button class="lp-hero-arrow lp-next" id="lpNext" aria-label="اسلاید بعدی"><i class="fas fa-chevron-left"></i></button>
+  <div class="lp-hero-dots" id="lpDots"></div>
+  <div class="lp-hero-counter" id="lpCounter">۱ / ۱</div>
+  <div class="lp-hero-progress" id="lpProgress"></div>
   <div class="lp-scroll-hint">
     <span>اسکرول کنید</span>
     <i class="fas fa-chevron-down"></i>
   </div>
-</section>
+
+</div><!-- /lp-hero-wrap -->
 
 <!-- STATS -->
 <div class="lp-stats">
@@ -400,6 +586,81 @@ body{background:var(--navy);overflow-x:hidden;direction:rtl;}
 </footer>
 
 <script>
+/* ══ HERO SLIDER ══ */
+(function(){
+  'use strict';
+  var track   = document.getElementById('lpTrack');
+  var slides  = track ? track.querySelectorAll('.lp-slide') : [];
+  var dotsBox = document.getElementById('lpDots');
+  var counter = document.getElementById('lpCounter');
+  var prog    = document.getElementById('lpProgress');
+  var prevBtn = document.getElementById('lpPrev');
+  var nextBtn = document.getElementById('lpNext');
+  if(!slides.length) return;
+
+  var total = slides.length, cur = 0, autoMs = 5500, timer = null;
+
+  function toFa(n){ return String(n).replace(/[0-9]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d];}); }
+
+  /* build dots */
+  for(var i=0;i<total;i++){
+    var d=document.createElement('button');
+    d.className='lp-hero-dot'+(i===0?' active':'');
+    d.setAttribute('aria-label','اسلاید '+(i+1));
+    d.dataset.idx=i; dotsBox.appendChild(d);
+  }
+  var dots=dotsBox.querySelectorAll('.lp-hero-dot');
+
+  function goTo(idx){
+    slides[cur].classList.remove('is-active');
+    dots[cur].classList.remove('active');
+    cur=(idx+total)%total;
+    slides[cur].classList.add('is-active');
+    dots[cur].classList.add('active');
+    track.style.transform='translateX('+(cur*-100)+'%)';
+    counter.textContent=toFa(cur+1)+' / '+toFa(total);
+    restartProg();
+  }
+
+  function restartProg(){
+    if(!prog) return;
+    prog.style.transition='none'; prog.style.width='0%';
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        prog.style.transition='width '+autoMs+'ms linear';
+        prog.style.width='100%';
+      });
+    });
+  }
+
+  function startAuto(){
+    clearInterval(timer);
+    timer=setInterval(function(){goTo(cur+1);},autoMs);
+  }
+
+  var hero=document.getElementById('lpHero');
+  hero.addEventListener('mouseenter',function(){clearInterval(timer);});
+  hero.addEventListener('mouseleave',startAuto);
+
+  /* touch */
+  var tx=0;
+  hero.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+  hero.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX-tx;
+    if(Math.abs(dx)>40){dx<0?goTo(cur+1):goTo(cur-1);}
+  },{passive:true});
+
+  prevBtn.addEventListener('click',function(){goTo(cur-1);startAuto();});
+  nextBtn.addEventListener('click',function(){goTo(cur+1);startAuto();});
+  dots.forEach(function(dot){
+    dot.addEventListener('click',function(){goTo(parseInt(this.dataset.idx));startAuto();});
+  });
+
+  counter.textContent=toFa(1)+' / '+toFa(total);
+  restartProg();
+  startAuto();
+})();
+
 /* ── Particle canvas ── */
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
