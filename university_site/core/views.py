@@ -9,6 +9,7 @@ from core.models import (
     PublicRelations, PressRelease,
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
+    OrganizationalChart,
 )
 from news.models import News, Category, Gallery
 from academics.models import Department, Major, AcademicCalendar
@@ -63,8 +64,10 @@ def home(request):
 
 def about(request):
     settings = SiteSettings.objects.first()
+    org_chart = OrganizationalChart.objects.filter(is_active=True, parent__isnull=True).order_by('order')
     context = {
         'settings': settings,
+        'org_chart': org_chart,
         'page_title': 'معرفی دانشگاه',
     }
     return render(request, 'core/about.html', context)

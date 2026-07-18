@@ -14,6 +14,24 @@ from .models import (
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ['university_name_fa', 'phone', 'email']
+    
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('university_name_fa', 'university_name_en', 'logo', 'favicon')
+        }),
+        ('اطلاعات تماس', {
+            'fields': ('address', 'phone', 'fax', 'email', 'postal_code')
+        }),
+        ('شبکه‌های اجتماعی', {
+            'fields': ('telegram', 'instagram', 'twitter', 'linkedin', 'youtube')
+        }),
+        ('محتوای صفحه معرفی', {
+            'fields': ('about_short', 'history_text', 'vision_text', 'mission_text', 'values_text')
+        }),
+        ('اطلاعات تکمیلی', {
+            'fields': ('working_hours', 'map_embed', 'established_year')
+        }),
+    )
 
     def has_add_permission(self, request):
         return not SiteSettings.objects.exists()
@@ -208,11 +226,23 @@ class OrganizationalChartInline(admin.TabularInline):
 
 @admin.register(OrganizationalChart)
 class OrganizationalChartAdmin(admin.ModelAdmin):
-    list_display = ['name', 'node_type', 'parent', 'person_name', 'location', 'staff_count', 'order', 'is_active']
+    list_display = ['name', 'node_type', 'parent', 'person_name', 'order', 'is_active']
     list_editable = ['order', 'is_active']
     list_filter = ['node_type', 'is_active']
-    search_fields = ['name', 'person_name', 'title', 'description']
+    search_fields = ['name', 'person_name', 'title']
     inlines = [OrganizationalChartInline]
+    
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('parent', 'node_type', 'name', 'order', 'is_active')
+        }),
+        ('اطلاعات مسئول', {
+            'fields': ('person_name', 'person_photo', 'title', 'person_email', 'person_phone')
+        }),
+        ('اطلاعات تکمیلی', {
+            'fields': ('description', 'location', 'staff_count')
+        }),
+    )
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('parent')

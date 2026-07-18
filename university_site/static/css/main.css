@@ -17,7 +17,18 @@
     --shadow-lg: 0 8px 40px rgba(26, 58, 92, 0.18);
     --radius: 14px;
     --radius-sm: 8px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 160ms;
+    --duration-base: 240ms;
+    --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: color var(--duration-base) var(--easing-standard), background-color var(--duration-base) var(--easing-standard), border-color var(--duration-base) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard), opacity var(--duration-base) var(--easing-standard);
+    --transition-motion: transform var(--duration-base) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard), border-color var(--duration-base) var(--easing-standard), background-color var(--duration-base) var(--easing-standard), color var(--duration-base) var(--easing-standard), opacity var(--duration-base) var(--easing-standard); 
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --focus-ring: 0 0 0 3px rgba(245, 158, 11, 0.45);
     --gradient-primary: linear-gradient(135deg, #1a3a5c 0%, #2563eb 100%);
     --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
@@ -39,7 +50,7 @@ body {
     font-size: 13px;
 }
 .topbar-info { color: rgba(255,255,255,0.85); }
-.topbar-info i { margin-left: 5px; color: var(--secondary); }
+.topbar-info i { margin-inline-start: 5px; color: var(--secondary); }
 .topbar .social-links a {
     color: rgba(255,255,255,0.75);
     margin: 0 4px;
@@ -116,7 +127,7 @@ body {
         box-shadow: none !important;
         background: rgba(255,255,255,0.05) !important;
         border-right: 3px solid rgba(255,255,255,0.2) !important;
-        margin-right: 1rem;
+        margin-inline-start: 1rem;
     }
 }
 
@@ -128,8 +139,8 @@ body {
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
     vertical-align: middle;
-    margin-right: 4px;
-    margin-bottom: 1px;
+    margin-inline-start: 4px;
+    margin-block-end: 1px;
     border-bottom: 0;
 }
 
@@ -272,7 +283,7 @@ body {
     font-size: 15px;
     font-weight: 600;
     text-decoration: none;
-    margin-right: 12px;
+    margin-inline-start: 12px;
     transition: var(--transition);
 }
 .hero-btn-outline:hover { background: rgba(255,255,255,0.15); color: white; }
@@ -435,7 +446,7 @@ body {
 .dept-card::before {
     content: '';
     position: absolute;
-    top: 0; right: 0; left: 0;
+    inset-block-start: 0; inset-inline: 0;
     height: 4px;
     background: var(--gradient-primary);
     border-radius: var(--radius) var(--radius) 0 0;
@@ -494,7 +505,7 @@ body {
     background: white;
     border-radius: var(--radius-sm);
     padding: 14px 18px;
-    border-right: 4px solid var(--primary-light);
+    border-inline-start: 4px solid var(--primary-light);
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -505,7 +516,7 @@ body {
 .announce-card:hover { box-shadow: var(--shadow); }
 .announce-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 .announce-title { font-size: 14px; font-weight: 600; color: var(--text-dark); }
-.announce-urgent { border-right-color: var(--danger); }
+.announce-urgent { border-inline-start-color: var(--danger); }
 .announce-urgent .announce-title { color: var(--danger); }
 
 /* ---- Calendar ---- */
@@ -596,7 +607,7 @@ body {
 .footer-title::after {
     content: '';
     position: absolute;
-    bottom: -2px; right: 0;
+    bottom: -2px; inset-inline-start: 0;
     width: 40px; height: 2px;
     background: var(--secondary);
 }
@@ -609,7 +620,7 @@ body {
     transition: var(--transition);
     display: flex; align-items: center; gap: 8px;
 }
-.footer-links a:hover { color: var(--secondary); padding-right: 5px; }
+.footer-links a:hover { color: var(--secondary); padding-inline-start: 5px; }
 .footer-links a i { font-size: 11px; color: var(--primary-light); }
 .footer-contact { list-style: none; padding: 0; }
 .footer-contact li {
@@ -639,10 +650,10 @@ body {
     background: #030712;
     padding: 16px 0;
     font-size: 13px;
-    color: #475569;
+    color: #94a3b8;
 }
-.footer-bottom p { color: #475569; }
-.footer-bottom-link { color: #475569; text-decoration: none; margin: 0 12px; font-size: 13px; transition: var(--transition); }
+.footer-bottom p { color: #94a3b8; }
+.footer-bottom-link { color: #cbd5e1; text-decoration: none; margin: 0 12px; font-size: 13px; transition: var(--transition); }
 .footer-bottom-link:hover { color: var(--secondary); }
 
 /* ---- Footer Payment Bar ---- */
@@ -655,11 +666,11 @@ body {
     font-size: 13px;
     font-weight: 600;
     color: #94a3b8;
-    margin-left: 8px;
+    margin-inline-start: 8px;
 }
 .payment-label i {
     color: var(--secondary);
-    margin-left: 6px;
+    margin-inline-start: 6px;
 }
 .payment-link {
     display: inline-block;
@@ -669,14 +680,14 @@ body {
     text-decoration: none;
     border-bottom: 1px dashed var(--secondary);
     transition: var(--transition);
-    margin-right: 6px;
+    margin-inline-start: 6px;
 }
 .payment-link:hover { color: #fcd34d; border-color: #fcd34d; }
 
 /* ---- Scroll to Top ---- */
 .scroll-top {
     position: fixed;
-    bottom: 100px; left: 24px;
+    bottom: 100px; inset-inline-start: 24px;
     width: 44px; height: 44px;
     background: var(--gradient-primary);
     border: none;
@@ -695,7 +706,7 @@ body {
 /* ---- Chatbot ---- */
 .chatbot-btn {
     position: fixed;
-    bottom: 36px; left: 24px;
+    bottom: 36px; inset-inline-start: 24px;
     width: 56px; height: 56px;
     background: var(--gradient-primary);
     border-radius: 50%;
@@ -710,7 +721,7 @@ body {
 .chatbot-btn:hover { transform: scale(1.1); }
 .chatbot-badge {
     position: absolute;
-    top: -4px; right: -4px;
+    top: -4px; inset-inline-start: -4px;
     background: var(--secondary);
     color: white;
     font-size: 9px;
@@ -720,7 +731,7 @@ body {
 }
 .chatbot-widget {
     position: fixed;
-    bottom: 100px; left: 24px;
+    bottom: 100px; inset-inline-start: 24px;
     width: 330px;
     background: white;
     border-radius: var(--radius);
@@ -807,7 +818,7 @@ body {
 .page-header::after {
     content: '';
     position: absolute;
-    bottom: 0; right: -5%; left: -5%;
+    inset-block-end: 0; inset-inline: -5%;
     height: 60px;
     background: var(--bg-light);
     transform: skewY(-2deg);
@@ -976,3 +987,136 @@ body {
 .border-start-primary { border-right: 4px solid var(--primary-light) !important; }
 .text-gold { color: var(--secondary); }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+
+/* ============================================================
+   کیفیت رابط، دسترس‌پذیری و حالت‌های مشترک
+   این بخش بدون تغییر نام کلاس‌های فعلی، الگوهای قابل استفادهٔ مجدد می‌افزاید.
+   ============================================================ */
+
+html { scroll-behavior: smooth; }
+body { min-width: 320px; }
+img, svg { max-width: 100%; }
+img { height: auto; }
+
+/* Skip link: برای کاربران کیبورد، مستقیماً به محتوای اصلی می‌رود. */
+.skip-link {
+    position: fixed;
+    inset-block-start: var(--space-3);
+    inset-inline-start: var(--space-3);
+    z-index: 2000;
+    padding: var(--space-2) var(--space-4);
+    color: #fff;
+    background: var(--primary);
+    border-radius: var(--radius-sm);
+    transform: translateY(-150%);
+    transition: transform var(--duration-fast) var(--easing-standard);
+}
+.skip-link:focus { transform: translateY(0); color: #fff; }
+
+/* Focus همیشه قابل تشخیص است؛ focus-visible مزاحم استفاده با ماوس نمی‌شود. */
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus { outline: none; }
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+    outline: 3px solid var(--secondary);
+    outline-offset: 3px;
+    box-shadow: var(--focus-ring);
+}
+.nav-dd-item:focus-visible,
+.nav-link-flat:focus-visible { outline-color: var(--secondary); outline-offset: -3px; }
+
+/* کنترل‌ها و دکمه‌ها */
+button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipulation; }
+.btn-primary-uni, .btn-secondary-uni, .hero-btn, .hero-btn-outline, .btn-search { transition: var(--transition-motion); }
+.btn-primary-uni:active, .btn-secondary-uni:active, .hero-btn:active, .hero-btn-outline:active, .btn-search:active { transform: translateY(1px); }
+.btn-primary-uni:disabled, .btn-secondary-uni:disabled, .hero-btn[aria-disabled="true"], .hero-btn-outline[aria-disabled="true"], .btn-search:disabled {
+    cursor: not-allowed;
+    opacity: .58;
+    pointer-events: none;
+    box-shadow: none;
+}
+[aria-busy="true"] { cursor: progress; }
+[aria-busy="true"]::after { content: '…'; margin-inline-start: .35em; }
+
+/* فرم‌ها: خطا، راهنما و موفقیت در کنار کنترل قابل نمایش‌اند. */
+.form-control, .form-select { min-height: 44px; transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard), background-color var(--duration-fast) var(--easing-standard); }
+.form-control::placeholder { color: #7b8798; opacity: 1; }
+.form-control.is-invalid, .form-select.is-invalid, [aria-invalid="true"].form-control, [aria-invalid="true"].form-select { border-color: var(--danger); }
+.form-control.is-valid, .form-select.is-valid { border-color: var(--accent); }
+.invalid-feedback, .form-error { color: #b91c1c; font-size: .8125rem; font-weight: 600; margin-block-start: var(--space-1); }
+.form-text, .form-help { color: var(--text-muted); font-size: .8125rem; margin-block-start: var(--space-1); }
+.required-mark { color: var(--danger); margin-inline-start: .2em; }
+
+/* برای کارت‌های دارای لینک: خود لینک باید تمام سطح کارت را بپوشاند. */
+.uni-card, .quick-link-card, .dept-card, .prof-card, .alumni-card, .dash-stat-card { transition: var(--transition-motion); }
+.uni-card-img img, .gallery-item img { transition: transform var(--duration-base) var(--easing-standard); }
+
+/* حالت‌های مشترک بارگذاری، خالی، خطا و موفقیت. */
+.ui-state {
+    display: grid;
+    place-items: center;
+    gap: var(--space-3);
+    min-block-size: 180px;
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--text-muted);
+    background: var(--bg-white);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+.ui-state__icon { color: var(--primary-light); font-size: 2rem; }
+.ui-state--error { border-color: rgba(239,68,68,.45); color: #991b1b; }
+.ui-state--error .ui-state__icon { color: var(--danger); }
+.ui-state--success { border-color: rgba(16,185,129,.45); color: #065f46; }
+.ui-state--success .ui-state__icon { color: var(--accent); }
+.skeleton {
+    border-radius: var(--radius-sm);
+    background: linear-gradient(90deg, #e8edf3 25%, #f5f7fa 37%, #e8edf3 63%);
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.35s ease infinite;
+}
+.skeleton--image { aspect-ratio: 16 / 9; }
+.skeleton--line { block-size: 1rem; margin-block: .7rem; }
+.skeleton--line-sm { inline-size: 58%; }
+@keyframes skeleton-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+/* امکان فعال‌سازی تم تیره در آینده بدون بازنویسی کامپوننت‌ها. */
+[data-theme="dark"] {
+    --text-dark: #e5e7eb;
+    --text-muted: #aab5c4;
+    --bg-light: #0f172a;
+    --bg-white: #172033;
+    --border: #334155;
+    --shadow: 0 4px 24px rgba(0, 0, 0, .24);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, .38);
+}
+[data-theme="dark"] .uni-card,
+[data-theme="dark"] .quick-link-card,
+[data-theme="dark"] .dept-card,
+[data-theme="dark"] .prof-card,
+[data-theme="dark"] .alumni-card,
+[data-theme="dark"] .dash-stat-card,
+[data-theme="dark"] .calendar-item,
+[data-theme="dark"] .announce-card,
+[data-theme="dark"] .chatbot-widget,
+[data-theme="dark"] .msg-bubble { background: var(--bg-white); }
+
+/* مرورگرهای کم‌توان و کاربرانی که حرکت کم می‌خواهند. */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
+    .uni-card:hover, .quick-link-card:hover, .dept-card:hover, .prof-card:hover, .alumni-card:hover, .dash-stat-card:hover, .hero-btn:hover, .btn-primary-uni:hover, .scroll-top:hover, .social-btn:hover { transform: none; }
+}
+@media (hover: none) {
+    .uni-card:hover, .quick-link-card:hover, .dept-card:hover, .prof-card:hover, .alumni-card:hover, .dash-stat-card:hover { transform: none; }
+}
+@media (max-width: 576px) {
+    .scroll-top { inset-inline-start: 16px; bottom: 92px; }
+    .chatbot-btn { inset-inline-start: 16px; bottom: 24px; }
+    .chatbot-widget { inset-inline-start: 16px; inset-inline-end: 16px; width: auto; bottom: 92px; }
+    .ui-state { padding: var(--space-4); min-block-size: 150px; }
+}

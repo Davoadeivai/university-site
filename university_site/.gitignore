@@ -1,7 +1,11 @@
 ﻿__pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
 venv/
 .venv/
+env/
 .env
 .env.*
 !.env.example
@@ -12,8 +16,10 @@ staticfiles/
 public/static/
 public/media/
 logs/
+*.log
 *.rar
 *.zip
 .idea/
 .vscode/
 .DS_Store
+Thumbs.db

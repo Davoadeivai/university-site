@@ -1,7 +1,7 @@
-"""
-Production settings for cPanel / live server.
+﻿"""
+Production settings for cPanel.
 
-Set on server:
+On server:
   DJANGO_SETTINGS_MODULE=config.settings_prod
 """
 
@@ -19,15 +19,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------------------------------------------------------------
 DEBUG = config('DEBUG', default=False, cast=bool)
 SECRET_KEY = config('SECRET_KEY')
-
-# Example: university.example.com,www.university.example.com
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
-
-# Example: https://university.example.com,https://www.university.example.com
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
@@ -39,9 +34,7 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # -----------------------------------------------------------------------------
-# Database
-# On most cPanel hosts use: DB_ENGINE=mysql
-# If your host has Postgres: DB_ENGINE=postgres
+# Database (default mysql for cPanel)
 # -----------------------------------------------------------------------------
 DB_ENGINE = config('DB_ENGINE', default='mysql')
 
@@ -89,12 +82,8 @@ STATIC_ROOT = config('STATIC_ROOT', default=str(BASE_DIR / 'public' / 'static'))
 MEDIA_URL = '/media/'
 MEDIA_ROOT = config('MEDIA_ROOT', default=str(BASE_DIR / 'public' / 'media'))
 
-# Keep project static sources if present
 _static_dir = BASE_DIR / 'static'
-if _static_dir.exists():
-    STATICFILES_DIRS = [_static_dir]
-else:
-    STATICFILES_DIRS = []
+STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
 # -----------------------------------------------------------------------------
 # Email

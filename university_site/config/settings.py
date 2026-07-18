@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Core
 # -----------------------------------------------------------------------------
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 # -----------------------------------------------------------------------------
@@ -22,10 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    # Third party
     'crispy_forms',
     'crispy_bootstrap5',
-    # Local apps
     'core',
     'accounts',
     'news',
@@ -72,8 +70,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # -----------------------------------------------------------------------------
-# Database
-# DB_ENGINE = postgres | mysql | sqlite
+# Database: sqlite | postgres | mysql
 # -----------------------------------------------------------------------------
 DB_ENGINE = config('DB_ENGINE', default='sqlite')
 
@@ -138,10 +135,10 @@ LANGUAGES = [
 LOCALE_PATHS = [BASE_DIR / 'locale']
 
 # -----------------------------------------------------------------------------
-# Static & Media
+# Static & Media (local)
 # -----------------------------------------------------------------------------
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
@@ -156,7 +153,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # -----------------------------------------------------------------------------
-# Auth redirects
+# Auth
 # -----------------------------------------------------------------------------
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
@@ -166,20 +163,18 @@ LOGOUT_REDIRECT_URL = '/'
 # Jazzmin
 # -----------------------------------------------------------------------------
 JAZZMIN_SETTINGS = {
-    'site_title': 'پنل مدیریت دانشگاه',
-    'site_header': 'دانشگاه جامع',
+    'site_title': 'دانشگاه جامع',
+    'site_header': 'پنل مدیریت',
     'site_brand': 'دانشگاه',
-    'welcome_sign': 'به پنل مدیریت خوش آمدید',
-    'copyright': 'دانشگاه جامع © 2024',
+    'welcome_sign': 'به پنل مدیریت دانشگاه خوش آمدید',
+    'copyright': 'دانشگاه جامع © 2026',
     'search_model': ['auth.user', 'news.news'],
     'topmenu_links': [
-        {'name': 'صفحه اصلی', 'url': '/', 'new_window': True},
+        {'name': 'مشاهده سایت', 'url': '/', 'new_window': True},
         {'name': 'داشبورد', 'url': '/dashboard/'},
     ],
     'show_sidebar': True,
     'navigation_expanded': True,
-    'hide_apps': [],
-    'hide_models': [],
     'icons': {
         'auth': 'fas fa-users-cog',
         'auth.user': 'fas fa-user',
@@ -216,12 +211,6 @@ JAZZMIN_UI_TWEAKS = {
     'footer_fixed': False,
     'sidebar_fixed': True,
     'sidebar': 'sidebar-dark-primary',
-    'sidebar_nav_small_text': False,
-    'sidebar_disable_expand': False,
-    'sidebar_nav_child_indent': False,
-    'sidebar_nav_compact_style': False,
-    'sidebar_nav_legacy_style': False,
-    'sidebar_nav_flat_style': False,
     'theme': 'default',
     'dark_mode_theme': None,
     'button_classes': {

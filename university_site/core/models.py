@@ -21,6 +21,12 @@ class SiteSettings(models.Model):
     working_hours = models.CharField(_('ساعت کاری'), max_length=200, blank=True)
     map_embed = models.TextField(_('کد نقشه'), blank=True)
     established_year = models.CharField(_('سال تأسیس'), max_length=10, blank=True)
+    
+    # About page content
+    history_text = models.TextField(_('تاریخچه دانشگاه'), blank=True)
+    vision_text = models.TextField(_('چشم‌انداز'), blank=True)
+    mission_text = models.TextField(_('مأموریت'), blank=True)
+    values_text = models.TextField(_('ارزش‌ها'), blank=True)
 
     class Meta:
         verbose_name = _('تنظیمات سایت')
@@ -383,6 +389,7 @@ class VicePresidency(models.Model):
         ('admin_finance', _('معاونت اداری و مالی')),
         ('construction',  _('معاونت فنی و عمرانی')),
         ('research',      _('معاونت پژوهشی و فناوری')),
+        ('development',   _('معاونت توسعه و منابع انسانی')),
     ]
     vice_type      = models.CharField(_('نوع معاونت'), max_length=20, choices=VICE_TYPE_CHOICES, unique=True)
     full_name      = models.CharField(_('نام معاون'), max_length=200, blank=True)

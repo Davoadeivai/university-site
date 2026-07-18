@@ -17,7 +17,7 @@
         <div class="row g-5 align-items-center mb-5" id="history">
             <div class="col-lg-6" data-aos="fade-right">
                 <h2 class="section-title">تاریخچه مؤسسه</h2>
-                <p class="text-muted" style="font-size:15px; line-height:2;">دانشگاه جامع علمی کاربردی با سابقه‌ای طولانی در آموزش عالی، همواره در پیشرفت علم و فناوری کشور نقش مؤثری ایفا کرده است. این مؤسسه با بهره‌مندی از اعضای هیئت علمی برجسته و امکانات آموزشی پیشرفته، در تربیت نیروهای متخصص و کارآمد گام برداشته است.</p>
+                <p class="text-muted" style="font-size:15px; line-height:2;">{% if settings and settings.history_text %}{{ settings.history_text }}{% else %}دانشگاه جامع علمی کاربردی با سابقه‌ای طولانی در آموزش عالی، همواره در پیشرفت علم و فناوری کشور نقش مؤثری ایفا کرده است. این مؤسسه با بهره‌مندی از اعضای هیئت علمی برجسته و امکانات آموزشی پیشرفته، در تربیت نیروهای متخصص و کارآمد گام برداشته است.{% endif %}</p>
                 <div class="row g-3 mt-2">
                     <div class="col-6">
                         <div class="dept-card text-center">
@@ -48,21 +48,21 @@
                 <div class="dept-card h-100">
                     <div class="dept-icon text-primary"><i class="fas fa-eye"></i></div>
                     <h3 class="dept-title">چشم‌انداز</h3>
-                    <p class="text-muted" style="font-size:14px; line-height:2;">تبدیل شدن به یکی از ده دانشگاه برتر کشور در آموزش، پژوهش و ارتباط با صنعت تا افق ۱۴۱۰.</p>
+                    <p class="text-muted" style="font-size:14px; line-height:2;">{% if settings and settings.vision_text %}{{ settings.vision_text }}{% else %}تبدیل شدن به یکی از ده دانشگاه برتر کشور در آموزش، پژوهش و ارتباط با صنعت تا افق ۱۴۱۰.{% endif %}</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="dept-card h-100">
                     <div class="dept-icon text-success"><i class="fas fa-bullseye"></i></div>
                     <h3 class="dept-title">مأموریت</h3>
-                    <p class="text-muted" style="font-size:14px; line-height:2;">تربیت نیروهای متخصص، کارآمد و اخلاق‌مدار با هدف توسعه پایدار کشور و پاسخ به نیازهای بازار کار.</p>
+                    <p class="text-muted" style="font-size:14px; line-height:2;">{% if settings and settings.mission_text %}{{ settings.mission_text }}{% else %}تربیت نیروهای متخصص، کارآمد و اخلاق‌مدار با هدف توسعه پایدار کشور و پاسخ به نیازهای بازار کار.{% endif %}</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="dept-card h-100">
                     <div class="dept-icon text-warning"><i class="fas fa-star"></i></div>
                     <h3 class="dept-title">ارزش‌ها</h3>
-                    <p class="text-muted" style="font-size:14px; line-height:2;">تعهد به کیفیت، نوآوری، یکپارچگی، احترام به تنوع و مسئولیت‌پذیری اجتماعی از اصول بنیادین ماست.</p>
+                    <p class="text-muted" style="font-size:14px; line-height:2;">{% if settings and settings.values_text %}{{ settings.values_text }}{% else %}تعهد به کیفیت، نوآوری، یکپارچگی، احترام به تنوع و مسئولیت‌پذیری اجتماعی از اصول بنیادین ماست.{% endif %}</p>
                 </div>
             </div>
         </div>
@@ -70,11 +70,150 @@
         <!-- Org Chart -->
         <div id="chart" class="mt-5" data-aos="fade-up">
             <h2 class="section-title text-center">چارت سازمانی</h2>
+            {% if org_chart %}
+            <div class="org-chart-container mt-4">
+                {% for node in org_chart %}
+                <div class="org-node-wrapper">
+                    <div class="org-node">
+                        {% if node.person_photo %}
+                        <img src="{{ node.person_photo.url }}" alt="{{ node.person_name }}" class="org-photo">
+                        {% else %}
+                        <div class="org-photo-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                        <div class="org-info">
+                            <h4 class="org-name">{{ node.name }}</h4>
+                            <p class="org-title">{{ node.title }}</p>
+                            {% if node.person_name %}
+                            <p class="org-person">{{ node.person_name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if node.get_children %}
+                    <div class="org-children">
+                        {% for child in node.get_children %}
+                        <div class="org-node child-node">
+                            {% if child.person_photo %}
+                            <img src="{{ child.person_photo.url }}" alt="{{ child.person_name }}" class="org-photo child-photo">
+                            {% else %}
+                            <div class="org-photo-placeholder child-photo">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                            <div class="org-info">
+                                <h5 class="org-name">{{ child.name }}</h5>
+                                <p class="org-title">{{ child.title }}</p>
+                                {% if child.person_name %}
+                                <p class="org-person">{{ child.person_name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
             <div class="text-center p-5 bg-white rounded-xl shadow-sm mt-4">
                 <i class="fas fa-sitemap text-primary" style="font-size:60px; opacity:0.3;"></i>
                 <p class="text-muted mt-3">چارت سازمانی از طریق پنل مدیریت بارگذاری می‌شود</p>
             </div>
+            {% endif %}
         </div>
     </div>
 </section>
+
+<style>
+.org-chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px;
+}
+
+.org-node-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.org-node {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    min-width: 200px;
+    border: 2px solid var(--primary);
+}
+
+.org-node.child-node {
+    border-color: var(--secondary);
+    min-width: 180px;
+}
+
+.org-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 10px;
+    border: 3px solid var(--primary);
+}
+
+.org-photo.child-photo {
+    width: 60px;
+    height: 60px;
+    border-color: var(--secondary);
+}
+
+.org-photo-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    color: white;
+    font-size: 30px;
+}
+
+.org-photo-placeholder.child-photo {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+}
+
+.org-info h4,
+.org-info h5 {
+    margin: 0 0 5px;
+    color: var(--dark);
+}
+
+.org-title {
+    color: var(--primary);
+    font-weight: 600;
+    margin: 0 0 5px;
+}
+
+.org-person {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+}
+
+.org-children {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px dashed #dee2e6;
+}
+</style>
 {% endblock %}
