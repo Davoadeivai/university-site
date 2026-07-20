@@ -17,6 +17,7 @@ class ContactMessage(models.Model):
         ('technical', 'فنی'),
         ('complaint', 'شکایت'),
         ('suggestion', 'پیشنهاد'),
+        ('presidency', 'ارتباط با ریاست'),
     ]
     full_name = models.CharField(_('نام و نام خانوادگی'), max_length=200)
     email = models.EmailField()

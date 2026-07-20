@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">آیین‌نامه‌ها و فرم‌ها</h1>
+        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;opacity:.85;">دانلود آیین‌نامه‌ها، فرم‌ها و راهنماها</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <ul class="nav nav-pills justify-content-center mb-4 gap-2 flex-wrap" data-aos="fade-up">
+            <li class="nav-item">
+                <a class="nav-link {% if not current_category %}active{% endif %}" href="{% url 'core:documents' %}" style="font-family:'Vazirmatn',sans-serif;">همه</a>
+            </li>
+            {% for key, label in categories %}
+            <li class="nav-item">
+                <a class="nav-link {% if current_category == key %}active{% endif %}" href="?category={{ key }}" style="font-family:'Vazirmatn',sans-serif;">{{ label }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="row g-3">
+            {% for doc in documents %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="uni-card p-4 h-100 d-flex flex-column">
+                    <div class="mb-2">
+                        <span class="badge bg-secondary">{{ doc.get_category_display }}</span>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="font-size:15px;">{{ doc.title }}</h5>
+                    {% if doc.description %}<p class="text-muted flex-grow-1 mb-3" style="font-size:13px;">{{ doc.description|truncatewords:25 }}</p>{% else %}<div class="flex-grow-1"></div>{% endif %}
+                    {% if doc.download_url %}
+                    <a href="{{ doc.download_url }}" class="btn-primary-uni btn-sm align-self-start" {% if doc.external_url and not doc.file %}target="_blank" rel="noopener"{% else %}download{% endif %}>
+                        <i class="fas fa-download me-1"></i> دانلود
+                    </a>
+                    {% else %}
+                    <span class="text-muted" style="font-size:13px;">فایل هنوز بارگذاری نشده</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">موردی ثبت نشده است.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

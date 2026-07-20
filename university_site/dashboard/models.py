@@ -128,6 +128,8 @@ class Payment(models.Model):
     description = models.TextField(_('توضیحات'), blank=True)
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='pending')
     transaction_id = models.CharField(_('شناسه تراکنش'), max_length=100, blank=True)
+    authority = models.CharField(_('کد authority درگاه'), max_length=100, blank=True, db_index=True)
+    gateway = models.CharField(_('درگاه'), max_length=20, blank=True, default='')
     payment_date = models.DateTimeField(_('تاریخ پرداخت'), null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

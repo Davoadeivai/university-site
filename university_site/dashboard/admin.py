@@ -35,9 +35,10 @@ class StudentRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ['student', 'payment_type', 'amount', 'semester', 'status', 'payment_date', 'created_at']
-    list_filter = ['payment_type', 'status', 'semester']
-    search_fields = ['student__first_name', 'student__last_name', 'transaction_id']
+    list_display = ['student', 'payment_type', 'amount', 'semester', 'status', 'gateway', 'transaction_id', 'payment_date']
+    list_filter = ['status', 'payment_type', 'gateway', 'semester']
+    search_fields = ['student__first_name', 'student__last_name', 'student__username', 'transaction_id', 'authority']
+    readonly_fields = ['authority', 'transaction_id', 'payment_date', 'created_at']
 
 
 @admin.register(ExamSchedule)

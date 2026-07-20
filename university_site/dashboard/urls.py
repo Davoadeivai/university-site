@@ -14,6 +14,9 @@ urlpatterns = [
     path('assignments/<int:pk>/submit/', views.student_assignment_submit, name='student_assignment_submit'),
     path('exams/', views.student_exams, name='student_exams'),
     path('payments/', views.student_payments, name='student_payments'),
+    path('payments/<int:pk>/pay/', views.payment_start, name='payment_start'),
+    path('payments/<int:pk>/mock/', views.payment_mock, name='payment_mock'),
+    path('payments/callback/', views.payment_callback, name='payment_callback'),
 
     # استاد
     path('teaching/', views.professor_courses, name='professor_courses'),

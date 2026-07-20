@@ -576,6 +576,15 @@ body {
 .announce-title { font-size: 14px; font-weight: 600; color: var(--text-dark); }
 .announce-urgent { border-inline-start-color: var(--danger); }
 .announce-urgent .announce-title { color: var(--danger); }
+.announce-tabs .nav-link {
+    background: var(--bg-light);
+    color: var(--text-muted);
+    border-radius: 6px;
+}
+.announce-tabs .nav-link.active {
+    background: var(--primary);
+    color: #fff;
+}
 
 /* ---- Calendar ---- */
 .calendar-item {

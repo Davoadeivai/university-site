@@ -255,6 +255,13 @@ OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
 OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)
 
 # -----------------------------------------------------------------------------
+# Online payment (mock | zarinpal)
+# -----------------------------------------------------------------------------
+PAYMENT_GATEWAY = config('PAYMENT_GATEWAY', default='mock')  # mock | zarinpal
+ZARINPAL_MERCHANT_ID = config('ZARINPAL_MERCHANT_ID', default='')
+ZARINPAL_SANDBOX = config('ZARINPAL_SANDBOX', default=True, cast=bool)
+
+# -----------------------------------------------------------------------------
 # Cache (OTP rate limits)
 # -----------------------------------------------------------------------------
 CACHES = {

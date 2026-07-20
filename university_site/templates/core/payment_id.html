@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">شماره حساب و شناسه واریز</h1>
+        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;opacity:.85;">واریز شهریه و دریافت شناسه پرداخت</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <h2 class="section-title mb-3" style="font-size:1.25rem;">شماره حساب‌های موسسه</h2>
+            </div>
+            {% for acc in accounts %}
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="uni-card p-4 h-100">
+                    <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-university me-2"></i>{{ acc.title }}</h5>
+                    <ul class="list-unstyled mb-0" style="font-size:14px;line-height:2;">
+                        <li><strong>بانک:</strong> {{ acc.bank_name }}</li>
+                        <li><strong>شماره حساب:</strong> <span class="font-monospace" dir="ltr">{{ acc.account_number }}</span></li>
+                        {% if acc.iban %}<li><strong>شبا:</strong> <span class="font-monospace" dir="ltr">{{ acc.iban }}</span></li>{% endif %}
+                        {% if acc.account_holder %}<li><strong>به نام:</strong> {{ acc.account_holder }}</li>{% endif %}
+                    </ul>
+                    {% if acc.description %}<p class="text-muted mt-3 mb-0" style="font-size:13px;">{{ acc.description }}</p>{% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12"><p class="text-muted">حساب بانکی ثبت نشده است. از پنل مدیریت اضافه کنید.</p></div>
+            {% endfor %}
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7" data-aos="fade-up">
+                <div class="uni-card p-4 p-md-5">
+                    <h2 class="section-title mb-2" style="font-size:1.2rem;">دریافت شناسه واریز شهریه</h2>
+                    <p class="text-muted mb-4" style="font-size:14px;">کد ملی یا شماره دانشجویی خود را وارد کنید.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <input type="text" name="query" value="{{ query }}" class="form-control" placeholder="کد ملی یا شماره دانشجویی" required dir="ltr" style="text-align:left;">
+                            <button type="submit" class="btn-primary-uni"><i class="fas fa-search"></i> جستجو</button>
+                        </div>
+                    </form>
+                    {% if searched %}
+                        {% if result %}
+                        <div class="alert alert-success mt-3 mb-0">
+                            <div class="fw-bold mb-2">{{ result.full_name }}</div>
+                            <div>شناسه واریز: <strong class="font-monospace" dir="ltr" style="font-size:1.15rem;">{{ result.payment_id }}</strong></div>
+                            {% if result.academic_year %}<div class="text-muted mt-1" style="font-size:13px;">سال تحصیلی: {{ result.academic_year }}</div>{% endif %}
+                            {% if result.note %}<div class="text-muted mt-1" style="font-size:13px;">{{ result.note }}</div>{% endif %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning mt-3 mb-0">شناسه‌ای با این مشخصات یافت نشد. با امور مالی تماس بگیرید.</div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

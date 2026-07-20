@@ -779,29 +779,61 @@
                 {% endfor %}
             </div>
 
-            <!-- Announcements Sidebar -->
+            <!-- Announcements Sidebar (تب‌بندی شبیه aab.ac.ir) -->
             <div class="col-lg-4 sticky-sidebar" data-aos="fade-left">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="section-title mb-0">اطلاعیه‌ها</h2>
                     <a href="{% url 'news:announcements' %}" class="uni-card-link text-sm">همه <i
                             class="fas fa-arrow-left"></i></a>
                 </div>
-                {% for item in announcements %}
-                <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
-                    <div class="announce-card announce-urgent mb-2" data-aos="fade-up">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-bullhorn text-danger"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="announce-title" style="font-size:13px;">{{ item.title }}</div>
-                            <div class="announce-date mt-1">{{ item.published_at|jalali_date }}</div>
-                        </div>
-                        <i class="fas fa-chevron-left text-muted" style="font-size:11px;"></i>
+                <ul class="nav nav-pills announce-tabs flex-wrap gap-1 mb-3" role="tablist">
+                    {% for key, label, items in announcement_tabs %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link py-1 px-2 {% if forloop.first %}active{% endif %}"
+                                data-bs-toggle="tab" data-bs-target="#ann-tab-{{ key }}" type="button"
+                                style="font-size:11px;font-family:'Vazirmatn',sans-serif;">{{ label }}</button>
+                    </li>
+                    {% endfor %}
+                    <li class="nav-item">
+                        <a class="nav-link py-1 px-2" href="{% url 'core:documents' %}"
+                           style="font-size:11px;font-family:'Vazirmatn',sans-serif;">آیین‌نامه‌ها</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    {% for key, label, items in announcement_tabs %}
+                    <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="ann-tab-{{ key }}">
+                        {% for item in items %}
+                        <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
+                            <div class="announce-card {% if forloop.first %}announce-urgent{% endif %} mb-2">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-bullhorn {% if forloop.first %}text-danger{% else %}text-muted{% endif %}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="announce-title" style="font-size:13px;">{{ item.title }}</div>
+                                    <div class="announce-date mt-1">{{ item.published_at|jalali_date }}</div>
+                                </div>
+                                <i class="fas fa-chevron-left text-muted" style="font-size:11px;"></i>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <p class="text-muted text-center py-3" style="font-size:13px;">اطلاعیه‌ای در این دسته نیست</p>
+                        {% endfor %}
                     </div>
-                </a>
-                {% empty %}
-                <p class="text-muted text-center py-4">اطلاعیه‌ای موجود نیست</p>
-                {% endfor %}
+                    {% endfor %}
+                </div>
+
+                {% if bank_accounts %}
+                <div class="mt-4 uni-card p-3">
+                    <h6 class="fw-bold mb-2" style="font-size:14px;"><i class="fas fa-university text-primary-uni me-1"></i> شماره حساب</h6>
+                    {% for acc in bank_accounts %}
+                    <div class="mb-2 {% if not forloop.last %}pb-2 border-bottom{% endif %}" style="font-size:12px;">
+                        <div class="fw-600">{{ acc.title }}</div>
+                        <div class="text-muted">{{ acc.bank_name }} — <span dir="ltr">{{ acc.account_number }}</span></div>
+                    </div>
+                    {% endfor %}
+                    <a href="{% url 'core:payment_id' %}" class="uni-card-link" style="font-size:12px;">شناسه واریز <i class="fas fa-arrow-left"></i></a>
+                </div>
+                {% endif %}
 
                 <!-- Academic Calendar Widget -->
                 {% if calendar_items %}

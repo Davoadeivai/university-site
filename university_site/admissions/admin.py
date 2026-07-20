@@ -45,10 +45,12 @@ class ApplicationAdmin(admin.ModelAdmin):
         'tracking_code', 'full_name', 'national_id', 'phone',
         'desired_major', 'degree', 'status', 'created_at',
     ]
-    list_filter = ['status', 'degree', 'created_at']
+    list_filter = ['status', 'degree', 'created_at', 'desired_major']
     list_editable = ['status']
-    search_fields = ['tracking_code', 'national_id', 'first_name', 'last_name', 'phone']
+    search_fields = ['tracking_code', 'national_id', 'first_name', 'last_name', 'phone',
+                     'desired_major__name']
     readonly_fields = ['tracking_code', 'created_at', 'updated_at']
+    autocomplete_fields = ['desired_major', 'desired_major2']
     inlines = [StudentPaymentInline]
     date_hierarchy = 'created_at'
 

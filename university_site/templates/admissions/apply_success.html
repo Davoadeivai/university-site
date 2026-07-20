@@ -29,7 +29,7 @@
         </div>
         <div class="col-6">
             <div class="text-muted" style="font-size:12px;">رشته انتخابی</div>
-            <div class="fw-bold">{{ app.desired_major }}</div>
+            <div class="fw-bold">{{ app.desired_major.name }}{% if app.desired_major2 %} / {{ app.desired_major2.name }}{% endif %}</div>
         </div>
         <div class="col-6">
             <div class="text-muted" style="font-size:12px;">وضعیت</div>

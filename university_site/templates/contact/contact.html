@@ -30,13 +30,9 @@
                             <div class="col-md-6">
                                 <label class="form-label">موضوع</label>
                                 <select name="subject" class="form-select">
-                                    <option value="general">عمومی</option>
-                                    <option value="academic">آموزشی</option>
-                                    <option value="admission">پذیرش</option>
-                                    <option value="financial">مالی</option>
-                                    <option value="technical">فنی</option>
-                                    <option value="complaint">شکایت</option>
-                                    <option value="suggestion">پیشنهاد</option>
+                                    {% for value, label in subject_choices %}
+                                    <option value="{{ value }}" {% if selected_subject == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="col-12">

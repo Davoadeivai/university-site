@@ -183,15 +183,28 @@
         </div>
         <div class="col-md-4">
             <label class="form-label" for="desired_major">اولویت اول رشته <span class="text-danger">*</span></label>
-            <input type="text" name="desired_major" id="desired_major" class="form-control" list="majorList" required value="{{ post.desired_major|default:'' }}" placeholder="ابتدا مقطع را انتخاب کنید...">
-            <datalist id="majorList">
-                {% for m in all_majors %}<option value="{{ m.name }}" data-degree="{{ m.admission_degree }}">{{ m.name }} ({{ m.get_degree_display }})</option>{% endfor %}
-            </datalist>
-            <div class="form-text">فقط رشته‌های همان مقطع در لیست پیشنهاد می‌شوند.</div>
+            <select name="desired_major" id="desired_major" class="form-select" required>
+                <option value="">ابتدا مقطع را انتخاب کنید...</option>
+                {% for m in all_majors %}
+                <option value="{{ m.pk }}" data-degree="{{ m.admission_degree }}"
+                    {% if post.desired_major == m.pk|stringformat:"s" or post.desired_major == m.pk %}selected{% endif %}>
+                    {{ m.name }} ({{ m.get_degree_display }})
+                </option>
+                {% endfor %}
+            </select>
+            <div class="form-text">فقط رشته‌های همان مقطع نمایش داده می‌شوند.</div>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="desired_major2">اولویت دوم رشته</label>
-            <input type="text" name="desired_major2" id="desired_major2" class="form-control" list="majorList" value="{{ post.desired_major2|default:'' }}" placeholder="رشته دوم (اختیاری)">
+            <select name="desired_major2" id="desired_major2" class="form-select">
+                <option value="">— اختیاری —</option>
+                {% for m in all_majors %}
+                <option value="{{ m.pk }}" data-degree="{{ m.admission_degree }}"
+                    {% if post.desired_major2 == m.pk|stringformat:"s" or post.desired_major2 == m.pk %}selected{% endif %}>
+                    {{ m.name }} ({{ m.get_degree_display }})
+                </option>
+                {% endfor %}
+            </select>
         </div>
         <div class="col-md-1">
             <label class="form-label" for="shift">شیفت</label>
@@ -288,12 +301,22 @@ toggleMilitary();
     var degreeSel = document.getElementById('degree');
     var prevSel = document.getElementById('prev_degree');
     var hint = document.getElementById('prevDegreeHint');
-    var list = document.getElementById('majorList');
-    if(!degreeSel || !list) return;
+    var major1 = document.getElementById('desired_major');
+    var major2 = document.getElementById('desired_major2');
+    if(!degreeSel || !major1) return;
 
-    var allMajors = Array.from(list.querySelectorAll('option')).map(function(o){
-        return { name: o.value, degree: o.getAttribute('data-degree') || '' };
-    });
+    function cacheOptions(sel){
+        return Array.from(sel.querySelectorAll('option')).map(function(o){
+            return {
+                value: o.value,
+                text: o.textContent,
+                degree: o.getAttribute('data-degree') || '',
+                selected: o.selected
+            };
+        });
+    }
+    var all1 = cacheOptions(major1);
+    var all2 = major2 ? cacheOptions(major2) : [];
 
     var hints = {
         associate: 'برای کاردانی معمولاً دیپلم کافی است.',
@@ -302,17 +325,32 @@ toggleMilitary();
         phd: 'برای دکتری: مدرک کارشناسی ارشد لازم است.'
     };
 
-    function refreshMajors(){
-        var deg = degreeSel.value;
-        list.innerHTML = '';
-        allMajors.forEach(function(m){
+    function fillSelect(sel, all, deg, keepEmptyLabel){
+        var prev = sel.value;
+        sel.innerHTML = '';
+        if(keepEmptyLabel){
+            var empty = document.createElement('option');
+            empty.value = '';
+            empty.textContent = keepEmptyLabel;
+            sel.appendChild(empty);
+        }
+        all.forEach(function(m){
+            if(!m.value) return;
             if(!deg || m.degree === deg){
                 var opt = document.createElement('option');
-                opt.value = m.name;
+                opt.value = m.value;
+                opt.textContent = m.text;
                 opt.setAttribute('data-degree', m.degree);
-                list.appendChild(opt);
+                if(m.value === prev) opt.selected = true;
+                sel.appendChild(opt);
             }
         });
+    }
+
+    function refreshMajors(){
+        var deg = degreeSel.value;
+        fillSelect(major1, all1, deg, 'انتخاب رشته...');
+        if(major2) fillSelect(major2, all2, deg, '— اختیاری —');
         if(hint) hint.textContent = hints[deg] || 'مثلاً برای ارشد، مدرک کارشناسی لازم است.';
     }
 

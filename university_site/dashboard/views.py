@@ -3,9 +3,11 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import Announcement
@@ -334,7 +336,92 @@ def student_exams(request):
 def student_payments(request):
     ctx = panel_context(request, 'پرداخت‌ها', 'payments')
     ctx['payments'] = Payment.objects.filter(student=request.user).order_by('-created_at')
+    ctx['payment_gateway'] = getattr(settings, 'PAYMENT_GATEWAY', 'mock')
     return render(request, 'dashboard/student_payments.html', ctx)
+
+
+@role_required('student')
+def payment_start(request, pk):
+    """شروع پرداخت آنلاین برای یک پرداخت در انتظار."""
+    payment = get_object_or_404(Payment, pk=pk, student=request.user)
+    if payment.status == 'paid':
+        messages.info(request, 'این پرداخت قبلاً انجام شده است.')
+        return redirect('dashboard:student_payments')
+    if payment.status not in ('pending', 'failed'):
+        messages.warning(request, 'امکان پرداخت این مورد وجود ندارد.')
+        return redirect('dashboard:student_payments')
+
+    payment.status = 'pending'
+    payment.save(update_fields=['status'])
+
+    from .payment_gateway import PaymentGatewayError, start_payment
+    try:
+        result = start_payment(request, payment)
+    except PaymentGatewayError as e:
+        messages.error(request, str(e))
+        return redirect('dashboard:student_payments')
+    return redirect(result['redirect_url'])
+
+
+@role_required('student')
+def payment_mock(request, pk):
+    """صفحه شبیه‌ساز درگاه (حالت mock)."""
+    payment = get_object_or_404(Payment, pk=pk, student=request.user)
+    authority = request.GET.get('Authority', payment.authority)
+    if request.method == 'POST':
+        action = request.POST.get('action', 'ok')
+        status = 'OK' if action == 'ok' else 'NOK'
+        return redirect(
+            reverse('dashboard:payment_callback')
+            + f'?Authority={authority}&Status={status}&payment_id={payment.pk}'
+        )
+    ctx = panel_context(request, 'درگاه آزمایشی', 'payments')
+    ctx.update({'payment': payment, 'authority': authority})
+    return render(request, 'dashboard/payment_mock.html', ctx)
+
+
+@login_required
+def payment_callback(request):
+    """بازگشت از درگاه (mock یا زرین‌پال)."""
+    from .payment_gateway import PaymentGatewayError, verify_payment
+
+    authority = request.GET.get('Authority', '')
+    payment_id = request.GET.get('payment_id')
+    payment = None
+    if payment_id:
+        payment = Payment.objects.filter(pk=payment_id, student=request.user).first()
+    if not payment and authority:
+        payment = Payment.objects.filter(authority=authority, student=request.user).first()
+    if not payment:
+        # زرین‌پال ممکن است بدون login session برگردد — جستجو با authority
+        payment = Payment.objects.filter(authority=authority).first()
+
+    if not payment:
+        messages.error(request, 'پرداخت یافت نشد.')
+        return redirect('dashboard:student_payments')
+
+    if payment.student_id != request.user.id and not request.user.is_staff:
+        messages.error(request, 'دسترسی غیرمجاز.')
+        return redirect('dashboard:dashboard')
+
+    if payment.status == 'paid':
+        messages.success(request, 'پرداخت قبلاً تأیید شده است.')
+        return redirect('dashboard:student_payments')
+
+    try:
+        ok = verify_payment(request, payment, authority=authority)
+    except PaymentGatewayError as e:
+        messages.error(request, str(e))
+        return redirect('dashboard:student_payments')
+
+    if ok:
+        messages.success(
+            request,
+            f'پرداخت موفق — کد پیگیری: {payment.transaction_id or payment.authority}',
+        )
+    else:
+        messages.error(request, 'پرداخت ناموفق بود یا لغو شد.')
+    return redirect('dashboard:student_payments')
 
 
 # ──────────────────────────────────────────────

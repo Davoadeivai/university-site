@@ -114,8 +114,14 @@ class Application(models.Model):
 
     # ── رشته درخواستی ──
     degree         = models.CharField(_('مقطع'), max_length=20, choices=DEGREE_CHOICES)
-    desired_major  = models.CharField(_('اولویت اول رشته'), max_length=200)
-    desired_major2 = models.CharField(_('اولویت دوم رشته'), max_length=200, blank=True)
+    desired_major  = models.ForeignKey(
+        'academics.Major', on_delete=models.PROTECT,
+        related_name='applications_priority1', verbose_name=_('اولویت اول رشته'),
+    )
+    desired_major2 = models.ForeignKey(
+        'academics.Major', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='applications_priority2', verbose_name=_('اولویت دوم رشته'),
+    )
     shift          = models.CharField(_('ترجیح شیفت'), max_length=10,
                                       choices=SHIFT_CHOICES, default='day')
 

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">رویدادها</h1>
+        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;opacity:.85;">برنامه‌ها و رویدادهای پیش‌رو</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <h2 class="section-title mb-4" style="font-size:1.2rem;">رویدادهای آینده</h2>
+        <div class="row g-3 mb-5">
+            {% for event in upcoming %}
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="uni-card p-4 h-100">
+                    <div class="d-flex gap-3">
+                        <div class="calendar-date-box flex-shrink-0">
+                            <span class="calendar-date-day">{{ event.date|jalali_date:"day" }}</span>
+                            <span class="calendar-date-month">{{ event.date|jalali_date:"month" }}</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-size:15px;">{{ event.title }}</h5>
+                            {% if event.location %}<div class="text-muted mb-2" style="font-size:12px;"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</div>{% endif %}
+                            <p class="text-muted mb-2" style="font-size:13px;">{{ event.description|truncatewords:30 }}</p>
+                            {% if event.link %}<a href="{{ event.link }}" class="uni-card-link" target="_blank" rel="noopener">جزئیات <i class="fas fa-arrow-left"></i></a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12"><p class="text-muted">رویداد آینده‌ای ثبت نشده است.</p></div>
+            {% endfor %}
+        </div>
+
+        {% if past %}
+        <h2 class="section-title mb-4" style="font-size:1.2rem;">رویدادهای گذشته</h2>
+        <div class="row g-3">
+            {% for event in past %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="uni-card p-3">
+                    <div class="text-muted mb-1" style="font-size:12px;">{{ event.date|jalali_date }}</div>
+                    <div class="fw-600" style="font-size:14px;">{{ event.title }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

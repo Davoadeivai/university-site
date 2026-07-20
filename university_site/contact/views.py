@@ -18,7 +18,14 @@ def contact(request):
         messages.success(request, 'پیام شما با موفقیت ارسال شد.')
         return redirect('contact:contact')
 
-    context = {'page_title': 'تماس با ما'}
+    selected_subject = request.GET.get('to', 'general')
+    if selected_subject not in dict(ContactMessage.SUBJECT_CHOICES):
+        selected_subject = 'general'
+    context = {
+        'page_title': 'تماس با ما' if selected_subject != 'presidency' else 'ارتباط با ریاست',
+        'selected_subject': selected_subject,
+        'subject_choices': ContactMessage.SUBJECT_CHOICES,
+    }
     return render(request, 'contact/contact.html', context)
 
 

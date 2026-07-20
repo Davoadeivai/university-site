@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.utils import timezone
+from django.db.models import Q
+
 from core.models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     PresidencyOffice, DeputyVice,
@@ -10,6 +12,7 @@ from core.models import (
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
     OrganizationalChart,
+    BankAccount, PaymentIdentifier, DownloadableDocument,
 )
 from news.models import News, Category, Gallery
 from academics.models import Department, Major, AcademicCalendar
@@ -25,7 +28,16 @@ def home(request):
     quick_links = QuickLink.objects.filter(is_active=True)[:8]
     featured_news = News.objects.filter(is_published=True, is_featured=True)[:3]
     latest_news = News.objects.filter(is_published=True)[:6]
-    announcements = News.objects.filter(is_published=True, news_type='announcement')[:5]
+    announcements_qs = News.objects.filter(is_published=True, news_type='announcement')
+    announcements = announcements_qs[:8]
+    # تب‌های اطلاعیه شبیه aab.ac.ir
+    announcement_tabs = [
+        ('all', 'همه', announcements_qs[:8]),
+        ('academic', 'آموزش', announcements_qs.filter(category__category_type='academic')[:8]),
+        ('cultural', 'دانشجویی و فرهنگی', announcements_qs.filter(category__category_type='cultural')[:8]),
+        ('administrative', 'اداری و مالی', announcements_qs.filter(category__category_type='administrative')[:8]),
+        ('research', 'پژوهشی', announcements_qs.filter(category__category_type='research')[:8]),
+    ]
     upcoming_events = Event.objects.filter(is_active=True, date__gte=timezone.now().date()).order_by('date')[:4]
     departments = Department.objects.filter(is_active=True)[:6]
     calendar_items = AcademicCalendar.objects.filter(
@@ -35,6 +47,7 @@ def home(request):
     faqs = FAQ.objects.filter(is_active=True)[:6]
     gallery_images = Gallery.objects.filter(is_active=True, media_type='image')[:8]
     alumni = Alumni.objects.filter(is_featured=True)[:4]
+    bank_accounts = BankAccount.objects.filter(is_active=True)[:3]
 
     context = {
         'settings': settings,
@@ -43,6 +56,7 @@ def home(request):
         'featured_news': featured_news,
         'latest_news': latest_news,
         'announcements': announcements,
+        'announcement_tabs': announcement_tabs,
         'upcoming_events': upcoming_events,
         'departments': departments,
         'calendar_items': calendar_items,
@@ -50,6 +64,7 @@ def home(request):
         'faqs': faqs,
         'gallery_images': gallery_images,
         'alumni': alumni,
+        'bank_accounts': bank_accounts,
         'page_title': 'صفحه اصلی',
     }
     return render(request, 'core/home.html', context)
@@ -155,8 +170,77 @@ def faq_view(request):
 
 
 def eservices(request):
-    context = {'page_title': 'خدمات الکترونیکی'}
+    settings = SiteSettings.objects.first()
+    context = {
+        'page_title': 'خدمات الکترونیکی',
+        'settings': settings,
+    }
     return render(request, 'core/eservices.html', context)
+
+
+def payment_id(request):
+    """شماره حساب و دریافت شناسه واریز شهریه"""
+    accounts = BankAccount.objects.filter(is_active=True)
+    result = None
+    query = ''
+    searched = False
+    if request.method == 'POST':
+        searched = True
+        query = (request.POST.get('query') or '').strip()
+        if query:
+            result = PaymentIdentifier.objects.filter(
+                is_active=True
+            ).filter(
+                Q(national_id=query) | Q(student_number=query) | Q(payment_id=query)
+            ).first()
+    context = {
+        'accounts': accounts,
+        'result': result,
+        'query': query,
+        'searched': searched,
+        'page_title': 'شناسه واریز شهریه',
+    }
+    return render(request, 'core/payment_id.html', context)
+
+
+def documents(request):
+    """آیین‌نامه‌ها و فرم‌ها"""
+    docs = DownloadableDocument.objects.filter(is_active=True)
+    category = request.GET.get('category', '')
+    if category in dict(DownloadableDocument.CATEGORY_CHOICES):
+        docs = docs.filter(category=category)
+    context = {
+        'documents': docs,
+        'current_category': category,
+        'categories': DownloadableDocument.CATEGORY_CHOICES,
+        'page_title': 'آیین‌نامه‌ها و فرم‌ها',
+    }
+    return render(request, 'core/documents.html', context)
+
+
+def events_list(request):
+    """فهرست رویدادها"""
+    today = timezone.now().date()
+    upcoming = Event.objects.filter(is_active=True, date__gte=today).order_by('date')
+    past = Event.objects.filter(is_active=True, date__lt=today).order_by('-date')[:20]
+    context = {
+        'upcoming': upcoming,
+        'past': past,
+        'page_title': 'رویدادها',
+    }
+    return render(request, 'core/events.html', context)
+
+
+def graduate_studies(request):
+    """هاب تحصیلات تکمیلی (کارشناسی ارشد و دکتری)"""
+    master_majors = Major.objects.filter(is_active=True, degree='master').select_related('group')
+    phd_majors = Major.objects.filter(is_active=True, degree='phd').select_related('group')
+    context = {
+        'master_majors': master_majors,
+        'phd_majors': phd_majors,
+        'page_title': 'تحصیلات تکمیلی',
+    }
+    return render(request, 'core/graduate_studies.html', context)
 
 
 def gallery_view(request):

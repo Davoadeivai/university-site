@@ -20,6 +20,10 @@ urlpatterns = [
     path('سوالات-متداول/', views.faq_view, name='faq'),
     path('خدمات-الکترونیکی/', views.eservices, name='eservices'),
     path('گالری/', views.gallery_view, name='gallery'),
+    path('شناسه-واریز/', views.payment_id, name='payment_id'),
+    path('آیین-نامه-ها-و-فرم-ها/', views.documents, name='documents'),
+    path('رویدادها/', views.events_list, name='events'),
+    path('تحصیلات-تکمیلی/', views.graduate_studies, name='graduate_studies'),
     # حوزه ریاست
     path('ریاست/', views.presidency, name='presidency'),
     path('دفتر-ریاست/', views.presidency_office, name='presidency_office'),

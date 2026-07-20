@@ -8,6 +8,7 @@ from .models import (
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
     OrganizationalChart,
+    BankAccount, PaymentIdentifier, DownloadableDocument,
 )
 
 
@@ -24,6 +25,10 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ('شبکه‌های اجتماعی', {
             'fields': ('telegram', 'instagram', 'twitter', 'linkedin', 'youtube')
+        }),
+        ('سامانه‌های خارجی', {
+            'fields': ('external_lms_url', 'external_admin_url'),
+            'description': 'اتوماسیون تغذیه و خوابگاه در این پروژه پشتیبانی نمی‌شود.',
         }),
         ('محتوای صفحه معرفی', {
             'fields': ('about_short', 'history_text', 'vision_text', 'mission_text', 'values_text')
@@ -258,3 +263,26 @@ class OrganizationalChartAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('parent')
+
+
+@admin.register(BankAccount)
+class BankAccountAdmin(admin.ModelAdmin):
+    list_display = ['title', 'bank_name', 'account_number', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    search_fields = ['title', 'bank_name', 'account_number', 'iban']
+
+
+@admin.register(PaymentIdentifier)
+class PaymentIdentifierAdmin(admin.ModelAdmin):
+    list_display = ['full_name', 'national_id', 'student_number', 'payment_id', 'academic_year', 'is_active']
+    list_filter = ['is_active', 'academic_year']
+    search_fields = ['full_name', 'national_id', 'student_number', 'payment_id']
+    list_editable = ['is_active']
+
+
+@admin.register(DownloadableDocument)
+class DownloadableDocumentAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'order', 'is_active', 'created_at']
+    list_filter = ['category', 'is_active']
+    list_editable = ['order', 'is_active']
+    search_fields = ['title', 'description']

@@ -203,6 +203,9 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=phd">
                             <i class="fas fa-university me-1" style="width:16px;"></i> دکتری
                         </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_studies' %}">
+                            <i class="fas fa-user-graduate me-1" style="width:16px;"></i> تحصیلات تکمیلی
+                        </a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">
                             <i class="fas fa-book-reader me-1" style="width:16px;"></i> پایان‌نامه‌ها
                         </a></li>
@@ -249,6 +252,12 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:tuition_calc' %}">
                             <i class="fas fa-calculator me-1" style="width:16px;"></i> محاسبه‌گر آنلاین شهریه
                         </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:payment_id' %}">
+                            <i class="fas fa-university me-1" style="width:16px;"></i> شناسه واریز
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:documents' %}">
+                            <i class="fas fa-file-alt me-1" style="width:16px;"></i> آیین‌نامه‌ها و فرم‌ها
+                        </a></li>
 
                     </ul>
                 </li>
@@ -279,7 +288,9 @@
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:gallery' %}">گالری تصاویر</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'news:list' %}">اخبار و رویدادها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:events' %}">تقویم رویدادها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'news:announcements' %}">اطلاعیه‌ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:documents' %}">آیین‌نامه‌ها و فرم‌ها</a></li>
                     </ul>
                 </li>
 
@@ -379,10 +390,10 @@
                         <h6 class="footer-title">خدمات الکترونیکی</h6>
                         <ul class="footer-links">
                             <li><a href="{% url 'dashboard:dashboard' %}"><i class="fas fa-angle-left"></i> سامانه آموزشی</a></li>
-                            <li><a href="{% url 'academics:students_panel' %}"><i class="fas fa-angle-left"></i> پنل دانشجو</a></li>
-                            <li><a href="{% url 'academics:professors_panel' %}"><i class="fas fa-angle-left"></i> پنل استاد</a></li>
-                            <li><a href="{% url 'academics:elearning' %}"><i class="fas fa-angle-left"></i> آموزش الکترونیکی</a></li>
-                            <li><a href="{% url 'library:library' %}"><i class="fas fa-angle-left"></i> کتابخانه دیجیتال</a></li>
+                            <li><a href="{% url 'core:payment_id' %}"><i class="fas fa-angle-left"></i> شناسه واریز</a></li>
+                            <li><a href="{% url 'core:documents' %}"><i class="fas fa-angle-left"></i> آیین‌نامه‌ها و فرم‌ها</a></li>
+                            <li><a href="{% url 'core:events' %}"><i class="fas fa-angle-left"></i> رویدادها</a></li>
+                            <li><a href="{% url 'core:graduate_studies' %}"><i class="fas fa-angle-left"></i> تحصیلات تکمیلی</a></li>
                             <li><a href="{% url 'admissions:apply_otp_send' %}"><i class="fas fa-angle-left"></i> پذیرش آنلاین</a></li>
                             <li><a href="{% url 'core:eservices' %}"><i class="fas fa-angle-left"></i> همه خدمات</a></li>
                         </ul>
@@ -439,11 +450,11 @@
             <div class="row align-items-center g-3 py-3">
                 <div class="col-md-4 text-center text-md-start">
                     <span class="payment-label"><i class="fas fa-university"></i> دریافت شناسه واریز شهریه:</span>
-                    <a href="{% url 'core:eservices' %}" class="payment-link">کلیک کنید</a>
+                    <a href="{% url 'core:payment_id' %}" class="payment-link">کلیک کنید</a>
                 </div>
                 <div class="col-md-4 text-center">
                     <span class="payment-label"><i class="fas fa-headset"></i> ارتباط مستقیم با رئیس مؤسسه:</span>
-                    <a href="{% url 'contact:contact' %}" class="payment-link">فرم ارتباطی</a>
+                    <a href="{% url 'contact:contact' %}?to=presidency" class="payment-link">فرم ارتباطی</a>
                 </div>
                 <div class="col-md-4 text-center text-md-end">
                     <a href="{% url 'admissions:admissions' %}" class="btn btn-sm btn-warning fw-bold">

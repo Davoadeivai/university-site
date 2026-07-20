@@ -97,7 +97,7 @@
                     <div class="announce-card mb-2">
                         <div class="flex-grow-1">
                             <div class="announce-title" style="font-size:13px;">{{ app.first_name }} {{ app.last_name }}</div>
-                            <div class="announce-date">{{ app.desired_major }} | {{ app.get_degree_display }}</div>
+                            <div class="announce-date">{% if app.desired_major %}{{ app.desired_major.name }}{% endif %} | {{ app.get_degree_display }}</div>
                         </div>
                         <span class="badge bg-{% if app.status == 'pending' %}warning{% elif app.status == 'accepted' %}success{% else %}secondary{% endif %}">
                             {{ app.get_status_display }}

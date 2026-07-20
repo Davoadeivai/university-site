@@ -21,7 +21,17 @@ class SiteSettings(models.Model):
     working_hours = models.CharField(_('ساعت کاری'), max_length=200, blank=True)
     map_embed = models.TextField(_('کد نقشه'), blank=True)
     established_year = models.CharField(_('سال تأسیس'), max_length=10, blank=True)
-    
+
+    # لینک سامانه‌های خارجی (مثل سامانه آموزشی / اتوماسیون اداری — بدون تغذیه و خوابگاه)
+    external_lms_url = models.URLField(
+        _('لینک سامانه آموزشی خارجی'), blank=True,
+        help_text=_('در صورت خالی بودن، به پنل داخلی هدایت می‌شود'),
+    )
+    external_admin_url = models.URLField(
+        _('لینک اتوماسیون اداری'), blank=True,
+        help_text=_('سامانه مکاتبات/اتوماسیون اداری؛ تغذیه و خوابگاه پشتیبانی نمی‌شود'),
+    )
+
     # About page content
     history_text = models.TextField(_('تاریخچه دانشگاه'), blank=True)
     vision_text = models.TextField(_('چشم‌انداز'), blank=True)
@@ -550,3 +560,80 @@ class OrganizationalChart(models.Model):
             descendants.append(child)
             descendants.extend(child.get_all_descendants())
         return descendants
+
+
+# ─── حساب بانکی و شناسه واریز (مشابه aab.ac.ir/sh.html) ─────────
+
+class BankAccount(models.Model):
+    """شماره حساب‌های موسسه برای واریز شهریه و سایر موارد"""
+    title = models.CharField(_('عنوان'), max_length=200)
+    bank_name = models.CharField(_('نام بانک'), max_length=100)
+    account_number = models.CharField(_('شماره حساب'), max_length=50)
+    iban = models.CharField(_('شبا'), max_length=34, blank=True)
+    account_holder = models.CharField(_('صاحب حساب'), max_length=200, blank=True)
+    description = models.TextField(_('توضیحات'), blank=True)
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('حساب بانکی')
+        verbose_name_plural = _('حساب‌های بانکی')
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"{self.title} — {self.bank_name}"
+
+
+class PaymentIdentifier(models.Model):
+    """شناسه واریز شهریه دانشجو (جستجو با کد ملی / شماره دانشجویی)"""
+    full_name = models.CharField(_('نام و نام خانوادگی'), max_length=200)
+    national_id = models.CharField(_('کد ملی'), max_length=10, db_index=True)
+    student_number = models.CharField(_('شماره دانشجویی'), max_length=30, blank=True, db_index=True)
+    payment_id = models.CharField(_('شناسه واریز'), max_length=50)
+    academic_year = models.CharField(_('سال تحصیلی'), max_length=20, blank=True)
+    note = models.CharField(_('یادداشت'), max_length=300, blank=True)
+    is_active = models.BooleanField(_('فعال'), default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('شناسه واریز')
+        verbose_name_plural = _('شناسه‌های واریز')
+        ordering = ['full_name']
+
+    def __str__(self):
+        return f"{self.full_name} — {self.payment_id}"
+
+
+# ─── آیین‌نامه‌ها و فرم‌ها ───────────────────────────────────────
+
+class DownloadableDocument(models.Model):
+    """فایل‌های قابل دانلود: آیین‌نامه، فرم، راهنما"""
+    CATEGORY_CHOICES = [
+        ('regulation', _('آیین‌نامه')),
+        ('form', _('فرم')),
+        ('guide', _('راهنما')),
+        ('other', _('سایر')),
+    ]
+    title = models.CharField(_('عنوان'), max_length=300)
+    category = models.CharField(_('دسته'), max_length=20, choices=CATEGORY_CHOICES, default='form')
+    description = models.TextField(_('توضیحات'), blank=True)
+    file = models.FileField(_('فایل'), upload_to='documents/', blank=True, null=True)
+    external_url = models.URLField(_('لینک خارجی'), blank=True,
+                                   help_text=_('اگر فایل آپلود نشده، از این لینک استفاده می‌شود'))
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('آیین‌نامه / فرم')
+        verbose_name_plural = _('آیین‌نامه‌ها و فرم‌ها')
+        ordering = ['category', 'order', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def download_url(self):
+        if self.file:
+            return self.file.url
+        return self.external_url or ''

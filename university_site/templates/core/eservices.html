@@ -83,6 +83,57 @@
                     <div class="quick-link-title">سوابق پرداخت</div>
                 </a>
             </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'core:payment_id' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-university"></i></div>
+                    <div class="quick-link-title">شناسه واریز شهریه</div>
+                </a>
+            </div>
+        </div>
+
+        <h2 class="section-title mb-2" style="font-size:1.25rem;">اداری و اسناد</h2>
+        <p class="section-subtitle mb-4">بدون اتوماسیون تغذیه و خوابگاه</p>
+        <div class="row g-3 mb-5">
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
+                <a href="{% url 'core:documents' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="quick-link-title">آیین‌نامه‌ها و فرم‌ها</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="40">
+                <a href="{% url 'core:events' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="quick-link-title">رویدادها</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+                <a href="{% url 'core:graduate_studies' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="quick-link-title">تحصیلات تکمیلی</div>
+                </a>
+            </div>
+            {% if settings and settings.external_admin_url %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+                <a href="{{ settings.external_admin_url }}" class="quick-link-card" target="_blank" rel="noopener">
+                    <div class="quick-link-icon"><i class="fas fa-network-wired"></i></div>
+                    <div class="quick-link-title">اتوماسیون اداری</div>
+                </a>
+            </div>
+            {% endif %}
+            {% if settings and settings.external_lms_url %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="160">
+                <a href="{{ settings.external_lms_url }}" class="quick-link-card" target="_blank" rel="noopener">
+                    <div class="quick-link-icon"><i class="fas fa-chalkboard"></i></div>
+                    <div class="quick-link-title">سامانه آموزشی خارجی</div>
+                </a>
+            </div>
+            {% endif %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'contact:contact' %}?to=presidency" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="quick-link-title">ارتباط با ریاست</div>
+                </a>
+            </div>
         </div>
 
         <h2 class="section-title mb-2" style="font-size:1.25rem;">منابع و ارتباط</h2>

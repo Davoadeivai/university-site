@@ -1,0 +1,23 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>درگاه آزمایشی پرداخت</h2>
+</div>
+
+<div class="uni-card p-4" style="max-width:480px;">
+    <p class="mb-2">این صفحه شبیه‌ساز درگاه است (حالت <code>PAYMENT_GATEWAY=mock</code>).</p>
+    <ul class="mb-4" style="font-size:14px;">
+        <li>مبلغ: <strong>{{ payment.amount|floatformat:0 }}</strong> تومان</li>
+        <li>نوع: {{ payment.get_payment_type_display }}</li>
+        {% if payment.description %}<li>{{ payment.description }}</li>{% endif %}
+        <li>Authority: <code dir="ltr">{{ authority }}</code></li>
+    </ul>
+    <form method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        <button type="submit" name="action" value="ok" class="btn btn-success">پرداخت موفق</button>
+        <button type="submit" name="action" value="cancel" class="btn btn-outline-danger">لغو / ناموفق</button>
+    </form>
+</div>
+{% endblock %}

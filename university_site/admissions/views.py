@@ -166,7 +166,28 @@ def apply(request):
             errors.append('کد ملی باید ۱۰ رقم باشد.')
         if not p.get('address', '').strip(): errors.append('آدرس الزامی است.')
         if not p.get('degree'):     errors.append('مقطع را انتخاب کنید.')
-        if not p.get('desired_major'): errors.append('رشته اولویت اول را وارد کنید.')
+        major_id = p.get('desired_major')
+        major2_id = p.get('desired_major2') or None
+        major_obj = None
+        major2_obj = None
+        if not major_id:
+            errors.append('رشته اولویت اول را انتخاب کنید.')
+        else:
+            try:
+                major_obj = Major.objects.get(pk=int(major_id), is_active=True)
+                if major_obj.admission_degree != p.get('degree'):
+                    errors.append('رشته اولویت اول با مقطع انتخاب‌شده هم‌خوان نیست.')
+            except (Major.DoesNotExist, ValueError, TypeError):
+                errors.append('رشته اولویت اول معتبر نیست.')
+        if major2_id:
+            try:
+                major2_obj = Major.objects.get(pk=int(major2_id), is_active=True)
+                if major2_obj.admission_degree != p.get('degree'):
+                    errors.append('رشته اولویت دوم با مقطع انتخاب‌شده هم‌خوان نیست.')
+                if major_obj and major2_obj.pk == major_obj.pk:
+                    errors.append('اولویت اول و دوم نباید یکسان باشند.')
+            except (Major.DoesNotExist, ValueError, TypeError):
+                errors.append('رشته اولویت دوم معتبر نیست.')
         if not p.get('agreed_terms'): errors.append('پذیرش قوانین الزامی است.')
 
         # مدرک قبلی باید با مقطع درخواستی سازگار باشد (همه مقاطع یک فرم)
@@ -235,8 +256,8 @@ def apply(request):
             prev_grad_year=p.get('prev_grad_year', ''),
             gpa=gpa_val,
             degree=p.get('degree', 'bachelor'),
-            desired_major=p.get('desired_major', ''),
-            desired_major2=p.get('desired_major2', ''),
+            desired_major=major_obj,
+            desired_major2=major2_obj,
             shift=p.get('shift', 'day'),
             know_from=p.get('know_from', 'site'),
             special_needs=p.get('special_needs', ''),
@@ -262,7 +283,10 @@ def apply(request):
 
 
 def apply_success(request, code):
-    app = get_object_or_404(Application, tracking_code=code)
+    app = get_object_or_404(
+        Application.objects.select_related('desired_major', 'desired_major2'),
+        tracking_code=code,
+    )
     return render(request, 'admissions/apply_success.html', {
         'app': app, 'page_title': 'ثبت موفق درخواست'
     })
@@ -279,7 +303,9 @@ def track_application(request):
         query = request.POST.get('query', '').strip()
         app = Application.objects.filter(
             tracking_code=query
-        ).first() or Application.objects.filter(national_id=query).first()
+        ).select_related('desired_major', 'desired_major2').first() or Application.objects.filter(
+            national_id=query
+        ).select_related('desired_major', 'desired_major2').first()
         if not app:
             messages.error(request, 'درخواستی با این اطلاعات یافت نشد.')
         else:
