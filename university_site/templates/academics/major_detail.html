@@ -30,7 +30,7 @@
 <div class="uni-card p-4 mb-4">
 <h5 class="fw-bold text-primary-uni mb-3">شرایط پذیرش</h5>
 {% if major.admission_requirements %}<p style="font-size:14px;line-height:2;">{{ major.admission_requirements }}</p>{% else %}<p class="text-muted">از طریق پنل مدیریت تنظیم می‌شود</p>{% endif %}
-{% if major.tuition_fee %}<div class="mt-3 p-3 bg-light rounded"><i class="fas fa-money-bill text-success"></i> <strong>شهریه:</strong><br>{{ major.tuition_fee }}</div>{% endif %}
-<a href="{% url 'admissions:apply' %}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3"><i class="fas fa-file-alt"></i> ثبت‌نام</a>
+{% if major.current_tuition or major.tuition_fee %}<div class="mt-3 p-3 bg-light rounded"><i class="fas fa-money-bill text-success"></i> <strong>شهریه:</strong><br>{{ major.tuition_display }}{% if major.current_tuition %} <a href="{% url 'admissions:tuition_calc' %}" class="uni-card-link" style="font-size:12px;">محاسبه</a>{% endif %}</div>{% endif %}
+<a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3"><i class="fas fa-file-alt"></i> ثبت‌نام</a>
 </div></div></div></div></section>
 {% endblock %}

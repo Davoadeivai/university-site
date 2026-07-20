@@ -1,0 +1,42 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>درخواست‌های دانشجویی</h2>
+    <span class="badge bg-warning">{{ pending_count }} در انتظار</span>
+</div>
+
+<div class="mb-3 d-flex flex-wrap gap-2">
+    <a href="?status=pending" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline-primary{% endif %}">در انتظار</a>
+    <a href="?status=processing" class="btn btn-sm {% if status_filter == 'processing' %}btn-primary{% else %}btn-outline-primary{% endif %}">در حال بررسی</a>
+    <a href="?status=approved" class="btn btn-sm {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline-primary{% endif %}">تایید شده</a>
+    <a href="?status=all" class="btn btn-sm {% if status_filter == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">همه</a>
+</div>
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if requests %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr><th>دانشجو</th><th>عنوان</th><th>نوع</th><th>وضعیت</th><th>تاریخ</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.student.get_full_name|default:req.student.username }}</td>
+                    <td>{{ req.title }}</td>
+                    <td>{{ req.get_request_type_display }}</td>
+                    <td><span class="badge bg-{% if req.status == 'pending' %}warning{% elif req.status == 'approved' %}success{% else %}secondary{% endif %}">{{ req.get_status_display }}</span></td>
+                    <td>{{ req.created_at|jalali_date }}</td>
+                    <td><a href="{% url 'dashboard:staff_request_respond' req.pk %}" class="btn btn-sm btn-outline-primary">پاسخ</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">درخواستی یافت نشد.</p>
+    {% endif %}
+</div>
+{% endblock %}

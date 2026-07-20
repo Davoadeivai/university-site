@@ -1,0 +1,64 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>دروس من</h2>
+    {% if active_semester %}<span class="badge bg-success">{{ active_semester.name }}</span>{% endif %}
+</div>
+
+<div class="uni-card p-0 overflow-hidden mb-4">
+    <div class="p-3 border-bottom d-flex justify-content-between">
+        <strong>ترم جاری</strong>
+        <span class="text-muted">{{ total_units }} واحد</span>
+    </div>
+    {% if current_enrollments %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>درس</th>
+                    <th>کد</th>
+                    <th>واحد</th>
+                    <th>وضعیت</th>
+                    <th>نمره نهایی</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for en in current_enrollments %}
+                <tr>
+                    <td><strong>{{ en.course.name }}</strong></td>
+                    <td>{{ en.course.code }}</td>
+                    <td>{{ en.course.credits }}</td>
+                    <td><span class="badge bg-{% if en.status == 'in_progress' %}primary{% elif en.status == 'completed' %}success{% elif en.status == 'failed' %}danger{% else %}secondary{% endif %}">{{ en.get_status_display }}</span></td>
+                    <td>{% if en.final_grade %}{{ en.final_grade }}{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">درسی در ترم جاری ثبت نشده است.</p>
+    {% endif %}
+</div>
+
+{% if all_enrollments and active_semester %}
+<details class="uni-card p-3">
+    <summary class="fw-bold" style="cursor:pointer;">همه ترم‌ها</summary>
+    <div class="table-responsive mt-3">
+        <table class="panel-table">
+            <thead><tr><th>ترم</th><th>درس</th><th>وضعیت</th><th>نمره</th></tr></thead>
+            <tbody>
+            {% for en in all_enrollments %}
+            <tr>
+                <td>{{ en.semester.name }}</td>
+                <td>{{ en.course.name }}</td>
+                <td>{{ en.get_status_display }}</td>
+                <td>{% if en.final_grade %}{{ en.final_grade }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+{% endif %}
+{% endblock %}

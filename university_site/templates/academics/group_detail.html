@@ -100,26 +100,37 @@
             {% endif %}
         </div>
 
-        <!-- رشته‌های مرتبط -->
-        {% if majors %}
+        <!-- رشته‌های گروه — گروه‌بندی بر اساس مقطع -->
         <div class="mt-4" data-aos="fade-up">
-            <h4 class="section-title mb-4"><i class="fas fa-book-open me-2 text-primary"></i>رشته‌های تحصیلی مرتبط</h4>
-            <div class="row g-3">
-                {% for major in majors %}
-                <div class="col-md-6 col-lg-4">
-                    <a href="{{ major.get_absolute_url }}" class="dept-card d-block text-decoration-none">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-semibold">{{ major.name }}</span>
-                            <span class="badge bg-{% if major.degree == 'phd' %}danger{% elif major.degree == 'master' %}warning{% else %}primary{% endif %}">
-                                {{ major.get_degree_display }}
-                            </span>
-                        </div>
-                    </a>
+            <h4 class="section-title mb-4">
+                <i class="fas fa-book-open me-2 text-primary"></i>
+                لیست رشته‌ها و مقاطع تحصیلی {{ group.name }}
+            </h4>
+            {% if majors_by_degree %}
+            <div class="uni-card p-4" style="background:#1a2e1a;color:#fff;">
+                {% for degree_label, degree_majors in majors_by_degree.items %}
+                <div class="mb-4">
+                    <h5 style="color:#f97316;font-weight:700;margin-bottom:10px;">{{ degree_label }}:</h5>
+                    <ol style="padding-right:1.2rem;margin:0;">
+                        {% for major in degree_majors %}
+                        <li class="mb-2" style="color:#e5e7eb;">
+                            <a href="{{ major.get_absolute_url }}" class="text-decoration-none" style="color:#f3f4f6;">
+                                {{ major.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ol>
                 </div>
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-book fa-2x mb-2 d-block opacity-25"></i>
+                هنوز رشته‌ای برای این گروه ثبت نشده است.
+                <br><small>از پنل مدیریت → گروه‌های آموزشی می‌توانید رشته اضافه کنید.</small>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
 
         <!-- اساتید مرتبط -->
         {% if professors %}

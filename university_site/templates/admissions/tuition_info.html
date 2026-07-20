@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">اطلاعات شهریه</h1></div></div>
+<section class="section">
+<div class="container">
+
+<!-- تخفیف‌ها -->
+{% if discounts %}
+<div class="row g-4 mb-5" data-aos="fade-up">
+    <div class="col-12">
+        <h4 class="section-title">تخفیف‌ها و بورسیه‌ها</h4>
+    </div>
+    {% for d in discounts %}
+    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+        <div class="uni-card p-4 h-100">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#3b82d4,#7c5cd8);display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-percent" style="color:#fff;font-size:18px;"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">{{ d.title }}</div>
+                    <div style="font-size:22px;font-weight:900;color:#16a34a;">{{ d.percent }}%</div>
+                </div>
+            </div>
+            {% if d.description %}<p class="text-muted" style="font-size:13px;line-height:1.7;">{{ d.description }}</p>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- جدول شهریه -->
+{% if tuitions %}
+<div data-aos="fade-up">
+<h4 class="section-title mb-4">جدول شهریه‌ها</h4>
+<div class="table-responsive uni-card p-0 overflow-hidden">
+<table class="table table-hover mb-0" style="font-size:14px;">
+    <thead style="background:var(--primary);color:#fff;">
+        <tr>
+            <th class="py-3 px-4">رشته</th>
+            <th class="py-3 px-3">مقطع</th>
+            <th class="py-3 px-3">سال تحصیلی</th>
+            <th class="py-3 px-3">شهریه ثابت</th>
+            <th class="py-3 px-3">هر واحد نظری</th>
+            <th class="py-3 px-3">هر واحد عملی</th>
+            <th class="py-3 px-3">ثبت‌نام</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in tuitions %}
+        <tr>
+            <td class="px-4 fw-bold">
+                {{ t.major.name }}
+                {% if t.major.group %}<div class="text-muted" style="font-size:11px;">{{ t.major.group.name }}</div>{% endif %}
+            </td>
+            <td class="px-3"><span class="badge bg-primary">{{ t.degree }}</span></td>
+            <td class="px-3">{{ t.academic_year }}</td>
+            <td class="px-3 text-success fw-bold">{{ t.fixed_fee|floatformat:0 }}  ت</td>
+            <td class="px-3">{{ t.theory_fee|floatformat:0 }}  ت</td>
+            <td class="px-3">{{ t.practical_fee|floatformat:0 }}  ت</td>
+            <td class="px-3">{{ t.registration_fee|floatformat:0 }}  ت</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted" data-aos="fade-up">
+    <i class="fas fa-file-invoice-dollar fa-3x mb-3 d-block opacity-25"></i>
+    <p>اطلاعات شهریه توسط ادمین تنظیم نشده است.</p>
+    <a href="{% url 'admissions:tuition_calc' %}" class="btn-primary-uni mt-3">محاسبه‌گر آنلاین شهریه</a>
+</div>
+{% endif %}
+
+{% if history %}
+<div class="mt-5" data-aos="fade-up">
+    <h4 class="section-title mb-4">سوابق شهریه سال‌های قبل</h4>
+    <div class="table-responsive uni-card p-0 overflow-hidden">
+    <table class="table table-sm mb-0" style="font-size:13px;">
+        <thead style="background:#f1f5f9;">
+            <tr>
+                <th class="py-2 px-3">رشته</th>
+                <th class="py-2 px-3">مقطع</th>
+                <th class="py-2 px-3">سال تحصیلی</th>
+                <th class="py-2 px-3">شهریه ثابت</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in history %}
+            <tr>
+                <td class="px-3">{{ h.major.name }}</td>
+                <td class="px-3">{{ h.degree }}</td>
+                <td class="px-3">{{ h.academic_year }}</td>
+                <td class="px-3">{{ h.fixed_fee|floatformat:0 }} ت</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- لینک محاسبه‌گر -->
+<div class="text-center mt-5" data-aos="fade-up">
+    <a href="{% url 'admissions:tuition_calc' %}" class="btn-primary-uni">
+        <i class="fas fa-calculator"></i> محاسبه‌گر آنلاین شهریه
+    </a>
+    <a href="{% url 'admissions:apply_otp_send' %}" class="btn-secondary-uni ms-3">
+        <i class="fas fa-user-plus"></i> ثبت درخواست پذیرش
+    </a>
+</div>
+
+</div>
+</section>
+{% endblock %}

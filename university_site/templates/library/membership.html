@@ -1,17 +1,84 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">عضویت در کتابخانه</h1></div></div>
-<section class="section"><div class="container">
-<div class="row justify-content-center">
-<div class="col-lg-6" data-aos="fade-up">
-<div class="uni-card p-5">
-<h3 class="fw-bold text-primary-uni mb-4"><i class="fas fa-id-card"></i> فرم عضویت</h3>
-<form method="post">{% csrf_token %}
-<div class="row g-3">
-<div class="col-12"><label class="form-label">نام و نام خانوادگی *</label><input type="text" name="full_name" class="form-control" required></div>
-<div class="col-md-6"><label class="form-label">شماره دانشجویی *</label><input type="text" name="student_id" class="form-control" required></div>
-<div class="col-md-6"><label class="form-label">ایمیل *</label><input type="email" name="email" class="form-control" required></div>
-<div class="col-12"><label class="form-label">تلفن</label><input type="tel" name="phone" class="form-control"></div>
-<div class="col-12"><button type="submit" class="btn-primary-uni w-100"><i class="fas fa-paper-plane"></i> ثبت درخواست عضویت</button></div>
-</div></form></div></div></div></div></section>
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">عضویت در کتابخانه</h1>
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">ثبت درخواست یا پیگیری وضعیت عضویت</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-6" data-aos="fade-up">
+                <div class="uni-card p-4 p-md-5">
+                    <h3 class="fw-bold text-primary-uni mb-4"><i class="fas fa-id-card me-2"></i>فرم عضویت</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="register">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label" for="full_name">نام و نام خانوادگی *</label>
+                                <input type="text" name="full_name" id="full_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="student_id">شماره دانشجویی *</label>
+                                <input type="text" name="student_id" id="student_id" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="email">ایمیل *</label>
+                                <input type="email" name="email" id="email" class="form-control" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="phone">تلفن</label>
+                                <input type="tel" name="phone" id="phone" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn-primary-uni w-100"><i class="fas fa-paper-plane me-1"></i> ثبت درخواست</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="uni-card p-4 p-md-5 mb-4">
+                    <h3 class="fw-bold text-primary-uni mb-3"><i class="fas fa-search me-2"></i>پیگیری وضعیت</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="check">
+                        <label class="form-label" for="check_sid">شماره دانشجویی</label>
+                        <div class="input-group mb-3">
+                            <input type="text" name="student_id" id="check_sid" value="{{ check_id }}" class="form-control" required>
+                            <button type="submit" class="btn btn-primary">بررسی</button>
+                        </div>
+                    </form>
+                    {% if membership_result %}
+                    <div class="border rounded p-3" style="background:rgba(59,130,212,.06);">
+                        <div class="fw-bold mb-2">{{ membership_result.full_name }}</div>
+                        <div class="mb-2">
+                            وضعیت:
+                            <span class="badge bg-{% if membership_result.status == 'active' %}success{% elif membership_result.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ membership_result.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="text-muted" style="font-size:13px;">
+                            تاریخ ثبت: {{ membership_result.created_at|jalali_date }}
+                            {% if membership_result.expires_at %}<br>انقضا: {{ membership_result.expires_at }}{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-2">نکته</h5>
+                    <p class="text-muted mb-0" style="font-size:13px;line-height:1.9;">
+                        پس از تایید عضویت توسط کتابخانه، می‌توانید از خدمات حضوری و امانت استفاده کنید.
+                        کاتالوگ آنلاین برای همه قابل جستجو است.
+                    </p>
+                    <a href="{% url 'library:library' %}" class="uni-card-link mt-2 d-inline-block">بازگشت به کاتالوگ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

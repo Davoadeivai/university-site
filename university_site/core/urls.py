@@ -1,12 +1,16 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 app_name = 'core'
 
 urlpatterns = [
-    path('', views.landing, name='landing'),
-    path('خانه/', views.home, name='home'),
+    # صفحه اصلی یکپارچه (قبلاً landing + home جدا بودند)
+    path('', views.home, name='home'),
+    path('خانه/', RedirectView.as_view(pattern_name='core:home', permanent=True)),
+    path('landing/', RedirectView.as_view(pattern_name='core:home', permanent=True), name='landing'),
     path('درباره-ما/', views.about, name='about'),
+    path('شهر-بهنمیر/', views.city_behnammir, name='city_behnammir'),
     path('اهداف-موسسه/', views.institution_goals, name='institution_goals'),
     path('هیات-موسس/', views.board_founders, name='board_founders'),
     path('هیات-امنا/', views.board_trustees, name='board_trustees'),

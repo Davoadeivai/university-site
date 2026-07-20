@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">گالری</h1></div></div>
+<section class="section"><div class="container">
+<ul class="nav nav-pills justify-content-center mb-5 gap-2" data-aos="fade-up">
+<li><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#imgs" style="font-family:'Vazirmatn',sans-serif;">تصاویر</button></li>
+<li><button class="nav-link" data-bs-toggle="tab" data-bs-target="#vids" style="font-family:'Vazirmatn',sans-serif;">ویدئوها</button></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="imgs">
+<div class="row g-2">
+{% for img in images %}<div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'30' }}"><div class="gallery-item"><img src="{{ img.image.url }}" alt="{{ img.title }}" loading="lazy"></div></div>{% empty %}<div class="col-12 text-center py-5 text-muted"><i class="fas fa-images fa-3x mb-3 d-block opacity-25"></i>تصویری ثبت نشده</div>{% endfor %}
+</div></div>
+<div class="tab-pane fade" id="vids">
+<div class="row g-3">
+{% for vid in videos %}<div class="col-md-4" data-aos="fade-up"><div class="uni-card"><div class="uni-card-img" style="background:#000;display:flex;align-items:center;justify-content:center;"><i class="fas fa-play-circle fa-4x" style="color:rgba(255,255,255,0.5);"></i></div><div class="uni-card-body"><div class="uni-card-title">{{ vid.title }}</div>{% if vid.video_url %}<a href="{{ vid.video_url }}" target="_blank" rel="noopener noreferrer" class="uni-card-link">تماشا <i class="fas fa-play"></i></a>{% endif %}</div></div></div>{% empty %}<div class="col-12 text-center py-5 text-muted"><i class="fas fa-film fa-3x mb-3 d-block opacity-25"></i>ویدئویی ثبت نشده</div>{% endfor %}
+</div></div>
+</div></div></section>
+{% endblock %}

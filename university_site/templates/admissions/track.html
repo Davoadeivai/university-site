@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">پیگیری وضعیت درخواست</h1></div></div>
+<section class="section">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-7" data-aos="fade-up">
+
+    <div class="uni-card p-5 mb-4">
+        <h5 class="fw-bold text-primary-uni mb-4"><i class="fas fa-search"></i> جستجوی درخواست</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="input-group input-group-lg">
+                <label class="visually-hidden" for="trackQuery">کد رهگیری یا کد ملی</label>
+                <input type="text" name="query" id="trackQuery" class="form-control"
+                       placeholder="کد رهگیری ۱۲ رقمی یا کد ملی خود را وارد کنید..."
+                       value="{{ query|default:'' }}"
+                       required>
+                <button type="submit" class="btn btn-primary" style="font-family:Vazirmatn,sans-serif;">
+                    <i class="fas fa-search"></i> جستجو
+                </button>
+            </div>
+            <div class="form-text text-muted mt-2">مثال: <code>123456789012</code> یا کد ملی ۱۰ رقمی</div>
+        </form>
+    </div>
+
+    {% if app %}
+    <div class="uni-card p-4" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h5 class="fw-bold mb-1">{{ app.first_name }} {{ app.last_name }}</h5>
+                <div class="text-muted" style="font-size:13px;">کد رهگیری: <strong>{{ app.tracking_code }}</strong></div>
+            </div>
+            {% with s=app.status %}
+            {% if s == 'pending' %}
+            <span class="badge bg-warning text-dark fs-6">{{ app.get_status_display }}</span>
+            {% elif s == 'reviewing' %}
+            <span class="badge bg-primary fs-6">{{ app.get_status_display }}</span>
+            {% elif s == 'incomplete' %}
+            <span class="badge fs-6" style="background:#f97316;">{{ app.get_status_display }}</span>
+            {% elif s == 'interview' %}
+            <span class="badge fs-6" style="background:#8b5cf6;">{{ app.get_status_display }}</span>
+            {% elif s == 'accepted' %}
+            <span class="badge bg-success fs-6">{{ app.get_status_display }}</span>
+            {% elif s == 'rejected' %}
+            <span class="badge bg-danger fs-6">{{ app.get_status_display }}</span>
+            {% else %}
+            <span class="badge bg-secondary fs-6">{{ app.get_status_display }}</span>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        {% if timeline %}
+        <div class="mb-4" style="position:relative;padding-right:28px;">
+            {% for step in timeline %}
+            <div style="position:relative;margin-bottom:16px;">
+                <div style="position:absolute;right:-28px;top:2px;width:18px;height:18px;border-radius:50%;
+                    {% if step.state == 'current' %}background:#3b82d4;box-shadow:0 0 0 4px rgba(59,130,212,.25);
+                    {% elif step.state == 'done' %}background:#16a34a;
+                    {% else %}background:#e5e7eb;
+                    {% endif %}
+                    display:flex;align-items:center;justify-content:center;">
+                    {% if step.state == 'done' %}
+                    <i class="fas fa-check" style="font-size:8px;color:#fff;"></i>
+                    {% elif step.state == 'current' %}
+                    <i class="fas fa-circle" style="font-size:6px;color:#fff;"></i>
+                    {% endif %}
+                </div>
+                <div style="font-size:14px;{% if step.state == 'current' %}font-weight:700;color:#1e293b;{% elif step.state == 'done' %}color:#16a34a;{% else %}color:#94a3b8;{% endif %}">
+                    {{ step.label }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if app.reject_reason %}
+        <div class="alert alert-danger mt-3" style="font-size:14px;">
+            <i class="fas fa-times-circle"></i> <strong>دلیل رد:</strong> {{ app.reject_reason }}
+        </div>
+        {% endif %}
+
+        <div class="row g-3" style="font-size:14px;">
+            <div class="col-6">
+                <div class="text-muted">مقطع</div>
+                <div class="fw-bold">{{ app.get_degree_display }}</div>
+            </div>
+            <div class="col-6">
+                <div class="text-muted">رشته انتخابی</div>
+                <div class="fw-bold">{{ app.desired_major }}</div>
+            </div>
+            <div class="col-6">
+                <div class="text-muted">تاریخ ثبت</div>
+                <div class="fw-bold">{{ app.created_at|date:"Y/m/d" }}</div>
+            </div>
+            {% if app.interview_date %}
+            <div class="col-6">
+                <div class="text-muted">تاریخ مصاحبه</div>
+                <div class="fw-bold text-primary">{{ app.interview_date|date:"Y/m/d H:i" }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

@@ -60,78 +60,135 @@ body {
 .topbar .social-links a:hover { color: var(--secondary); }
 .lang-switch .btn { font-size: 11px; padding: 2px 8px; }
 
-/* ---- Navbar — طرح تیره مطابق عکس ---- */
+/* ---- Navbar — طرح تیره مدرن ---- */
 .main-navbar {
-    background: #0e2340 !important;   /* navy تیره مثل عکس */
+    background: linear-gradient(135deg, #0a1628 0%, #0e2340 60%, #0d1f3c 100%) !important;
     padding: 0;
     z-index: 1000;
-    border-bottom: 3px solid #c0392b; /* خط قرمز پایین مثل عکس */
+    border-bottom: 3px solid #c0392b;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    transition: box-shadow 0.25s ease, border-bottom-color 0.25s ease;
+}
+.main-navbar.scrolled {
+    box-shadow: 0 4px 28px rgba(0,0,0,0.55);
+    border-bottom-color: var(--secondary, #c9a227);
 }
 
-/* لینک‌های navbar — بدون آیکون، فونت کوچک */
+/* لینک‌های navbar — متن gradient سفید‌مایل */
 .nav-link-flat {
     display: block;
-    color: #ffffff !important;
+    color: #d0dff5 !important;
     font-size: 13.5px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 14px 13px !important;
     white-space: nowrap;
     text-decoration: none;
     transition: background 0.2s, color 0.2s;
     line-height: 1;
     cursor: pointer;
+    letter-spacing: 0.2px;
 }
 .nav-link-flat:hover,
 .nav-link-flat.active {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.10);
     color: #ffffff !important;
 }
-/* مثلث dropdown روی آیتم فعال */
 .nav-item.dropdown.show > .nav-link-flat {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.13);
+    color: #ffffff !important;
+}
+
+/* ── آیکون‌های navbar — هر کدام رنگ خودش ── */
+
+/* صفحه اصلی — آبی روشن */
+.nav-item:nth-child(1) .nav-link-flat i { color: #60b4ff; }
+
+/* درباره موسسه — بنفش */
+.nav-item:nth-child(2) .nav-link-flat i { color: #b48bff; }
+
+/* حوزه ریاست — طلایی */
+.nav-item:nth-child(3) .nav-link-flat i { color: #fbbf24; }
+
+/* معاونت‌ها — سبز نعنایی */
+.nav-item:nth-child(4) .nav-link-flat i { color: #34d399; }
+
+/* گروه‌های آموزشی — نارنجی */
+.nav-item:nth-child(5) .nav-link-flat i { color: #fb923c; }
+
+/* پذیرش دانشجو — طلایی (منوی یکپارچه همه مقاطع) */
+.nav-item:nth-child(6) .nav-link-flat { color: #f0d080 !important; }
+.nav-item:nth-child(6) .nav-link-flat i { color: #f0d080; }
+
+/* بانک اطلاعات علمی — سبز زیتونی */
+.nav-item:nth-child(7) .nav-link-flat i { color: #4ade80; }
+
+/* گالری تصاویر — صورتی */
+.nav-item:nth-child(8) .nav-link-flat i { color: #f472b6; }
+
+/* تماس با ما — فیروزه‌ای */
+.nav-item:nth-child(9) .nav-link-flat i { color: #2dd4bf; }
+
+/* hover → آیکون‌ها سفید می‌شوند */
+.nav-link-flat:hover i,
+.nav-link-flat.active i,
+.nav-item.dropdown.show > .nav-link-flat i {
+    color: #ffffff !important;
+    transition: color 0.2s;
 }
 
 /* Dropdown */
 .nav-dd {
-    background: #0e2340 !important;
+    background: linear-gradient(180deg, #0d1f3c 0%, #0a1628 100%) !important;
     border: none !important;
-    border-radius: 0 !important;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.45) !important;
-    padding: 4px 0 !important;
+    border-radius: 0 0 10px 10px !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55) !important;
+    padding: 6px 0 !important;
     min-width: 240px;
     margin-top: 0 !important;
+    border-top: 2px solid rgba(96,180,255,0.25) !important;
 }
 .nav-dd-item {
-    color: #e8edf3 !important;
+    color: #b8cce4 !important;
     font-size: 13px !important;
-    font-weight: 400 !important;
-    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    padding: 9px 20px !important;
     border-radius: 0 !important;
-    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-    transition: background 0.15s !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    transition: background 0.15s, color 0.15s, padding-right 0.15s !important;
     white-space: nowrap;
 }
 .nav-dd-item:last-child { border-bottom: none !important; }
 .nav-dd-item:hover,
 .nav-dd-item:focus {
-    background: rgba(255,255,255,0.12) !important;
+    background: rgba(96,180,255,0.12) !important;
     color: #ffffff !important;
+    padding-inline-start: 26px !important;
 }
+/* آیکون‌های داخل dropdown */
+.nav-dd-item i {
+    color: #60b4ff;
+    opacity: 0.85;
+    transition: opacity 0.15s;
+}
+.nav-dd-item:hover i,
+.nav-dd-item:focus i { opacity: 1; color: #60b4ff; }
 
 /* ---- حالت موبایل ---- */
 @media (max-width: 1199px) {
     .main-navbar { padding: 4px 0; }
-    .nav-link-flat { padding: 12px 18px !important; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .nav-link-flat { padding: 12px 18px !important; border-bottom: 1px solid rgba(255,255,255,0.07); }
     .nav-dd {
         position: static !important;
         box-shadow: none !important;
-        background: rgba(255,255,255,0.05) !important;
-        border-right: 3px solid rgba(255,255,255,0.2) !important;
+        background: rgba(255,255,255,0.04) !important;
+        border-right: 3px solid rgba(96,180,255,0.3) !important;
+        border-top: none !important;
+        border-radius: 0 !important;
         margin-inline-start: 1rem;
     }
 }
 
-/* dropdown-toggle بدون آیکون Bootstrap پیش‌فرض → کوچک‌تر */
+/* dropdown-toggle arrow */
 .nav-link-flat.dropdown-toggle::after {
     display: inline-block;
     width: 0; height: 0;
@@ -139,13 +196,14 @@ body {
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
     vertical-align: middle;
-    margin-inline-start: 4px;
+    margin-inline-start: 5px;
     margin-block-end: 1px;
     border-bottom: 0;
+    opacity: 0.6;
 }
 
-/* ---- dropdown-divider رنگ تیره ---- */
-.nav-dd .dropdown-divider { border-color: rgba(255,255,255,0.12) !important; }
+/* dropdown-divider */
+.nav-dd .dropdown-divider { border-color: rgba(255,255,255,0.10) !important; }
 
 /* ---- سایر dropdown‌های غیر-navbar (فرم‌ها و ...) ---- */
 .dropdown-menu:not(.nav-dd) {
@@ -709,6 +767,7 @@ body {
     bottom: 36px; inset-inline-start: 24px;
     width: 56px; height: 56px;
     background: var(--gradient-primary);
+    border: none;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     color: white;
@@ -717,6 +776,7 @@ body {
     box-shadow: var(--shadow-lg);
     z-index: 1000;
     transition: var(--transition);
+    padding: 0;
 }
 .chatbot-btn:hover { transform: scale(1.1); }
 .chatbot-badge {
@@ -1120,3 +1180,50 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     .chatbot-widget { inset-inline-start: 16px; inset-inline-end: 16px; width: auto; bottom: 92px; }
     .ui-state { padding: var(--space-4); min-block-size: 150px; }
 }
+
+/* ---- Library / Research catalog ---- */
+.catalog-cover {
+    width: 72px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: var(--border);
+}
+.catalog-cover-ph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    color: rgba(255,255,255,.55);
+    font-size: 22px;
+}
+.catalog-item:hover { box-shadow: var(--shadow-lg); }
+.book-detail-cover {
+    width: 100%;
+    max-width: 200px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+.book-detail-cover-ph {
+    aspect-ratio: 3/4;
+    max-width: 200px;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    color: rgba(255,255,255,.6);
+    border-radius: 12px;
+}
+.catalog-meta dt {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.catalog-meta dd {
+    font-size: 14px;
+    margin-bottom: .65rem;
+}
+.min-w-0 { min-width: 0; }
+

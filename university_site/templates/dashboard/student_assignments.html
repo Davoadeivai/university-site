@@ -1,0 +1,53 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>تکالیف</h2>
+</div>
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if rows %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>عنوان</th>
+                    <th>درس</th>
+                    <th>مهلت</th>
+                    <th>وضعیت ارسال</th>
+                    <th>نمره</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>
+                        <strong>{{ row.assignment.title }}</strong>
+                        <div class="text-muted" style="font-size:12px;">{{ row.assignment.get_assignment_type_display }}</div>
+                    </td>
+                    <td>{{ row.assignment.course.name }}</td>
+                    <td>{{ row.assignment.due_date|date:"Y/m/d H:i" }}</td>
+                    <td>
+                        {% if row.submission %}
+                        <span class="badge bg-{% if row.submission.status == 'graded' %}success{% elif row.submission.status == 'late' %}warning{% else %}primary{% endif %}">{{ row.submission.get_status_display }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">ارسال نشده</span>
+                        {% endif %}
+                    </td>
+                    <td>{% if row.submission and row.submission.grade %}{{ row.submission.grade }}/{{ row.assignment.max_score }}{% else %}—{% endif %}</td>
+                    <td>
+                        <a href="{% url 'dashboard:student_assignment_submit' row.assignment.pk %}" class="btn btn-sm btn-outline-primary">
+                            {% if row.submission %}ویرایش{% else %}ارسال{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">تکلیفی برای دروس شما ثبت نشده است.</p>
+    {% endif %}
+</div>
+{% endblock %}

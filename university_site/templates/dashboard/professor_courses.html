@@ -1,0 +1,42 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>دروس تدریس</h2>
+</div>
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if teaching_list %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>درس</th>
+                    <th>کد</th>
+                    <th>ترم</th>
+                    <th>کلاس</th>
+                    <th>برنامه</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ta in teaching_list %}
+                <tr>
+                    <td><strong>{{ ta.course.name }}</strong></td>
+                    <td>{{ ta.course.code }}</td>
+                    <td>{{ ta.semester.name }}</td>
+                    <td>{{ ta.classroom|default:"—" }}</td>
+                    <td style="max-width:180px;font-size:12px;">{{ ta.class_schedule|truncatechars:60|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'dashboard:professor_course_detail' ta.pk %}" class="btn btn-sm btn-primary">لیست و نمره</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">تخصیص تدریس فعالی ندارید.</p>
+    {% endif %}
+</div>
+{% endblock %}

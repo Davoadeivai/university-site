@@ -2,6 +2,15 @@
 //  دانشگاه جامع - اسکریپت اصلی
 // ============================================================
 
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ---- AOS Init ----
@@ -33,8 +42,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ---- Hero Swiper ----
-    if (document.querySelector('.hero-swiper')) {
+    // ---- Hero Swiper (only when present) ----
+    if (typeof Swiper !== 'undefined' && document.querySelector('.hero-swiper')) {
         new Swiper('.hero-swiper', {
             loop: true,
             autoplay: { delay: 5000, disableOnInteraction: false },
@@ -55,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
         entries.forEach(function (entry) {
             if (entry.isIntersecting) {
                 const el = entry.target;
-                const target = parseInt(el.getAttribute('data-target'));
+                const target = parseInt(el.getAttribute('data-target'), 10);
                 const duration = 2000;
                 const step = target / (duration / 16);
                 let current = 0;
@@ -73,51 +82,46 @@ document.addEventListener('DOMContentLoaded', function () {
     }, observerOptions);
     counters.forEach(function (counter) { counterObserver.observe(counter); });
 
-    // ---- Search Autocomplete Placeholder ----
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-        const placeholders = ['جستجوی اخبار...', 'جستجوی اساتید...', 'جستجوی رشته‌ها...', 'جستجوی خدمات...'];
-        let pi = 0;
-        setInterval(function () {
-            pi = (pi + 1) % placeholders.length;
-            searchInput.placeholder = placeholders[pi];
-        }, 2500);
-    }
-
-    // ---- Gallery Lightbox ----
+    // ---- Gallery Lightbox (safe DOM, no innerHTML for user-controlled URLs beyond img src attr) ----
     const galleryItems = document.querySelectorAll('.gallery-item');
     galleryItems.forEach(function (item) {
         item.addEventListener('click', function () {
-            const imgSrc = item.querySelector('img') ? item.querySelector('img').src : '';
-            if (imgSrc) {
-                const modal = document.createElement('div');
-                modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-                modal.innerHTML = `<img src="${imgSrc}" style="max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">`;
-                modal.addEventListener('click', function () { document.body.removeChild(modal); });
-                document.body.appendChild(modal);
-            }
+            const imgEl = item.querySelector('img');
+            const imgSrc = imgEl ? imgEl.src : '';
+            if (!imgSrc) return;
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-label', 'بزرگ‌نمایی تصویر');
+            const big = document.createElement('img');
+            big.src = imgSrc;
+            big.alt = imgEl.alt || '';
+            big.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+            modal.appendChild(big);
+            modal.addEventListener('click', function () { document.body.removeChild(modal); });
+            document.body.appendChild(modal);
         });
     });
 
     // ---- Active Nav Link ----
     const currentPath = window.location.pathname;
-    document.querySelectorAll('.nav-link').forEach(function (link) {
-        if (link.getAttribute('href') && link.getAttribute('href') !== '#' &&
-            currentPath.startsWith(link.getAttribute('href')) && link.getAttribute('href') !== '/') {
+    document.querySelectorAll('.nav-link-flat').forEach(function (link) {
+        const href = link.getAttribute('href');
+        if (href && href !== '#' && currentPath.startsWith(href) && href !== '/') {
             link.classList.add('active');
         }
     });
 
-    // ---- Ticker ----
+    // ---- Ticker (RTL: move positive X) ----
     const tickers = document.querySelectorAll('.urgent-ticker');
     tickers.forEach(function (ticker) {
         const content = ticker.innerHTML;
         ticker.innerHTML = content + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + content;
         let pos = 0;
         setInterval(function () {
-            pos -= 1;
-            if (pos < -ticker.scrollWidth / 2) pos = 0;
-            ticker.style.transform = `translateX(${pos}px)`;
+            pos += 1;
+            if (pos > ticker.scrollWidth / 2) pos = 0;
+            ticker.style.transform = 'translateX(' + pos + 'px)';
         }, 20);
     });
 
@@ -126,19 +130,25 @@ document.addEventListener('DOMContentLoaded', function () {
 // ---- Chatbot Toggle ----
 function toggleChatbot() {
     const widget = document.getElementById('chatbotWidget');
-    if (widget) {
-        widget.style.display = widget.style.display === 'none' ? 'block' : 'none';
+    const btn = document.getElementById('chatbotBtn');
+    if (!widget) return;
+    const open = widget.style.display === 'none' || !widget.style.display;
+    widget.style.display = open ? 'block' : 'none';
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+        const input = document.getElementById('chatInput');
+        if (input) input.focus();
     }
 }
 
-// ---- Chatbot Responses ----
+// ---- Chatbot Responses (bot HTML is trusted static templates) ----
 const chatResponses = {
-    'پذیرش': 'برای پذیرش دانشجو می‌توانید از بخش پذیرش در منوی اصلی اقدام کنید. <a href="/پذیرش/">کلیک کنید</a>',
-    'رشته': 'رشته‌های متعددی در مقاطع کاردانی، کارشناسی و ارشد داریم. <a href="/آموزش/رشته‌ها/">مشاهده رشته‌ها</a>',
-    'شهریه': 'اطلاعات شهریه در بخش پذیرش موجود است. <a href="/پذیرش/">مشاهده</a>',
-    'اساتید': 'لیست اعضای هیئت علمی: <a href="/اساتید/">مشاهده اساتید</a>',
-    'تماس': 'می‌توانید از طریق فرم تماس با ما در ارتباط باشید: <a href="/تماس-با-ما/">تماس با ما</a>',
-    'کتابخانه': 'به کتابخانه دیجیتال ما خوش آمدید: <a href="/کتابخانه/">کتابخانه</a>',
+    'پذیرش': 'برای پذیرش دانشجو می‌توانید از بخش پذیرش در منوی اصلی اقدام کنید.',
+    'رشته': 'رشته‌های متعددی در مقاطع کاردانی، کارشناسی و ارشد داریم.',
+    'شهریه': 'اطلاعات شهریه در بخش پذیرش و محاسبه‌گر شهریه موجود است.',
+    'اساتید': 'لیست اعضای هیئت علمی از منوی اساتید در دسترس است.',
+    'تماس': 'می‌توانید از طریق فرم تماس با ما در ارتباط باشید.',
+    'کتابخانه': 'به بخش کتابخانه از منوی اصلی دسترسی دارید.',
     'default': 'سوال شما دریافت شد. کارشناسان ما در اسرع وقت پاسخ خواهند داد. می‌توانید از منوی اصلی به بخش مورد نظر دسترسی داشته باشید.'
 };
 
@@ -152,14 +162,16 @@ function sendMsg() {
     setTimeout(function () {
         let resp = chatResponses['default'];
         for (const key in chatResponses) {
-            if (msg.includes(key)) { resp = chatResponses[key]; break; }
+            if (key !== 'default' && msg.includes(key)) { resp = chatResponses[key]; break; }
         }
         appendMsg(resp, 'bot');
     }, 700);
 }
 
 function sendQuickMsg(msg) {
-    document.getElementById('chatInput').value = msg;
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+    input.value = msg;
     sendMsg();
 }
 
@@ -167,10 +179,15 @@ function appendMsg(text, type) {
     const container = document.getElementById('chatMessages');
     if (!container) return;
     const div = document.createElement('div');
-    div.className = `chat-msg ${type === 'user' ? 'user-msg' : ''}`;
-    div.innerHTML = type === 'bot'
-        ? `<i class="fas fa-robot"></i><div class="msg-bubble">${text}</div>`
-        : `<i class="fas fa-user"></i><div class="msg-bubble">${text}</div>`;
+    div.className = 'chat-msg' + (type === 'user' ? ' user-msg' : '');
+    const icon = document.createElement('i');
+    icon.className = type === 'bot' ? 'fas fa-robot' : 'fas fa-user';
+    icon.setAttribute('aria-hidden', 'true');
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = text;
+    div.appendChild(icon);
+    div.appendChild(bubble);
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
 }
@@ -178,43 +195,43 @@ function appendMsg(text, type) {
 // ---- Site Tour (Intro.js) ----
 function startSiteTour() {
     if (typeof introJs === 'undefined') return;
+    const steps = [
+        {
+            title: 'به سایت خوش آمدید',
+            intro: 'این راهنما شما را با بخش‌های اصلی سایت آموزش عالی آشنا می‌کند.'
+        }
+    ];
+    const nav = document.querySelector('#mainNav .navbar-nav');
+    if (nav) {
+        steps.push({
+            element: nav,
+            title: 'منوی اصلی',
+            intro: 'از این منو می‌توانید به تمام بخش‌های سایت دسترسی داشته باشید.'
+        });
+    }
+    const quick = document.querySelector('.quick-link-card');
+    if (quick) {
+        steps.push({
+            element: quick,
+            title: 'دسترسی سریع',
+            intro: 'این آیکون‌ها دسترسی سریع به خدمات پراستفاده را فراهم می‌کنند.'
+        });
+    }
+    const chatBtn = document.querySelector('#chatbotBtn');
+    if (chatBtn) {
+        steps.push({
+            element: chatBtn,
+            title: 'دستیار هوشمند',
+            intro: 'برای پرسش سریع درباره پذیرش، رشته‌ها و خدمات، روی این دکمه کلیک کنید.'
+        });
+    }
     introJs().setOptions({
         nextLabel: 'بعدی ›',
         prevLabel: '‹ قبلی',
         skipLabel: '✕ بستن',
         doneLabel: '✓ اتمام',
         buttonClass: 'introjs-button',
-        steps: [
-            {
-                title: '🏫 به سایت خوش آمدید',
-                intro: 'این راهنما شما را با بخش‌های اصلی سایت آموزش عالی آشنا می‌کند.'
-            },
-            {
-                element: document.querySelector('.navbar-brand'),
-                title: '🎓 لوگوی مؤسسه',
-                intro: 'برای بازگشت به صفحه اصلی روی لوگو کلیک کنید.'
-            },
-            {
-                element: document.querySelector('#mainNav .navbar-nav'),
-                title: '📋 منوی اصلی',
-                intro: 'از این منو می‌توانید به تمام بخش‌های سایت دسترسی داشته باشید: آموزش، اساتید، کتابخانه، پذیرش و تماس.'
-            },
-            {
-                element: document.querySelector('.search-form'),
-                title: '🔍 جستجوی هوشمند',
-                intro: 'از کادر جستجو برای یافتن اخبار، رشته‌های تحصیلی، اساتید و خدمات استفاده کنید.'
-            },
-            {
-                element: document.querySelector('.quick-link-card'),
-                title: '⚡ دسترسی سریع',
-                intro: 'این آیکون‌ها دسترسی سریع به خدمات پراستفاده مانند سامانه آموزشی، پذیرش، کتابخانه و تقویم را فراهم می‌کنند.'
-            },
-            {
-                element: document.querySelector('#chatbotBtn'),
-                title: '🤖 دستیار هوشمند',
-                intro: 'برای پرسش سریع درباره پذیرش، رشته‌ها و خدمات، روی این دکمه کلیک کنید و با دستیار هوشمند صحبت نمایید.'
-            }
-        ]
+        steps: steps
     }).start();
 }
 
@@ -224,4 +241,3 @@ document.addEventListener('DOMContentLoaded', function () {
         tourBtn.addEventListener('click', startSiteTour);
     }
 });
-

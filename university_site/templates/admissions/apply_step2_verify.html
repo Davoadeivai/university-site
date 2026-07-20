@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">تأیید کد پیامکی</h1></div></div>
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5" data-aos="fade-up">
+
+                <div class="d-flex align-items-center justify-content-center gap-3 mb-5">
+                    <div class="text-center">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 4px;"><i class="fas fa-check"></i></div>
+                        <small class="text-success fw-bold">تأیید موبایل</small>
+                    </div>
+                    <div style="flex:1;height:2px;background:var(--primary);"></div>
+                    <div class="text-center">
+                        <div style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 4px;">۲</div>
+                        <small class="text-primary fw-bold">کد تأیید</small>
+                    </div>
+                    <div style="flex:1;height:2px;background:#e5e7eb;"></div>
+                    <div class="text-center">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#e5e7eb;color:#adb5bd;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 4px;">۳</div>
+                        <small class="text-muted">تکمیل فرم</small>
+                    </div>
+                </div>
+
+                <div class="uni-card p-5">
+                    <div class="text-center mb-4">
+                        <div style="width:64px;height:64px;background:linear-gradient(135deg,#16a34a,#059669);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                            <i class="fas fa-shield-alt" style="font-size:28px;color:#fff;"></i>
+                        </div>
+                        <h4 class="fw-bold text-primary-uni">کد تأیید را وارد کنید</h4>
+                        <p class="text-muted" style="font-size:14px;">کد ۶ رقمی ارسال‌شده به <strong>{{ masked_phone }}</strong> را وارد کنید.</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" for="otp_code">کد ۶ رقمی</label>
+                            <input type="text" name="otp_code" id="otp_code" class="form-control form-control-lg text-center"
+                                   placeholder="------" maxlength="6" pattern="\d{6}" required
+                                   inputmode="numeric" autofocus style="font-size:2rem;letter-spacing:8px;">
+                        </div>
+                        <button type="submit" class="btn-primary-uni w-100" style="padding:14px;">
+                            <i class="fas fa-check-circle"></i> تأیید و ادامه
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="{% url 'admissions:apply_otp_send' %}" id="resendOtp" class="text-muted" style="font-size:13px;pointer-events:none;opacity:0.5;">
+                            <i class="fas fa-redo"></i> ارسال مجدد کد <span id="resendTimer">(۶۰)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+    var link = document.getElementById('resendOtp');
+    var timerEl = document.getElementById('resendTimer');
+    var left = 60;
+    var t = setInterval(function(){
+        left -= 1;
+        if(left <= 0){
+            clearInterval(t);
+            link.style.pointerEvents = '';
+            link.style.opacity = '1';
+            timerEl.textContent = '';
+        } else {
+            timerEl.textContent = '(' + left + ')';
+        }
+    }, 1000);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>پاسخ به درخواست</h2>
+    <a href="{% url 'dashboard:staff_requests' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+</div>
+
+<div class="uni-card p-4 mb-4">
+    <p class="mb-1"><strong>{{ student_request.title }}</strong></p>
+    <p class="text-muted mb-2">
+        {{ student_request.student.get_full_name|default:student_request.student.username }} |
+        {{ student_request.get_request_type_display }} |
+        {{ student_request.created_at|jalali_date }}
+    </p>
+    <p>{{ student_request.description }}</p>
+    {% if student_request.file %}
+    <a href="{{ student_request.file.url }}" target="_blank"><i class="fas fa-paperclip me-1"></i> پیوست</a>
+    {% endif %}
+</div>
+
+<div class="uni-card p-4" style="max-width:520px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3"><label class="form-label" for="id_status">وضعیت</label>{{ form.status }}</div>
+        <div class="mb-3"><label class="form-label" for="id_response">پاسخ</label>{{ form.response }}</div>
+        <button type="submit" class="btn btn-primary-uni">ثبت پاسخ</button>
+    </form>
+</div>
+{% endblock %}

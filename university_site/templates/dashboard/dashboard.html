@@ -192,10 +192,10 @@
                 <div class="uni-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-primary-uni mb-0">درخواست‌های دانشجویی</h5>
-                        <span class="badge bg-warning">{{ pending_requests }} در انتظار</span>
+                        <a href="{% url 'dashboard:staff_requests' %}" class="badge bg-warning text-decoration-none">{{ pending_requests }} در انتظار — رسیدگی</a>
                     </div>
                     {% for req in recent_requests %}
-                    <div class="announce-card mb-2">
+                    <a href="{% url 'dashboard:staff_request_respond' req.pk %}" class="announce-card mb-2 text-decoration-none d-flex">
                         <div class="flex-grow-1">
                             <div class="announce-title" style="font-size:13px;">{{ req.title }}</div>
                             <div class="announce-date">{{ req.student.get_full_name }} | {{ req.get_request_type_display }}</div>
@@ -203,7 +203,7 @@
                         <span class="badge bg-{% if req.status == 'pending' %}warning{% elif req.status == 'approved' %}success{% else %}secondary{% endif %}">
                             {{ req.get_status_display }}
                         </span>
-                    </div>
+                    </a>
                     {% empty %}<p class="text-muted text-center py-3">درخواستی موجود نیست</p>{% endfor %}
                 </div>
             </div>
@@ -240,7 +240,7 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a href="/admin/dashboard/studentrequest/" class="quick-link-card" style="padding:18px;">
+                        <a href="{% url 'dashboard:staff_requests' %}" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#3b82d4;"><i class="fas fa-tasks"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">درخواست‌های دانشجویی</div>
                         </a>
@@ -521,19 +521,19 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a href="/پذیرش/" class="quick-link-card" style="padding:18px;">
+                        <a href="{% url 'admissions:apply_otp_send' %}" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#10b981;"><i class="fas fa-file-signature"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">ثبت درخواست</div>
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a href="/اخبار/" class="quick-link-card" style="padding:18px;">
+                        <a href="{% url 'news:list' %}" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#f59e0b;"><i class="fas fa-newspaper"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">اخبار دانشگاه</div>
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a href="/تماس/" class="quick-link-card" style="padding:18px;">
+                        <a href="{% url 'contact:contact' %}" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#7c5cd8;"><i class="fas fa-envelope"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">تماس با دانشگاه</div>
                         </a>

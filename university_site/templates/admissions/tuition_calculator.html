@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">محاسبه‌گر آنلاین شهریه</h1></div></div>
+<section class="section">
+<div class="container">
+<div class="row g-4">
+
+<!-- فرم محاسبه -->
+<div class="col-lg-5" data-aos="fade-right">
+<div class="uni-card p-4">
+    <h5 class="fw-bold text-primary-uni mb-4"><i class="fas fa-calculator"></i> محاسبه شهریه</h5>
+    <form method="post" id="calcForm">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-bold">مقطع</label>
+            <select name="degree" class="form-select" id="degreeSelect" required>
+                <option value="">انتخاب کنید...</option>
+                {% for deg in degrees %}
+                <option value="{{ deg.code }}" {% if result and result.ts.degree_code == deg.code %}selected{% endif %}>
+                    {{ deg.label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">رشته</label>
+            <select name="major_id" class="form-select" id="majorSelect" required>
+                <option value="">ابتدا مقطع را انتخاب کنید</option>
+                {% for t in tuitions %}
+                <option value="{{ t.major_id }}" data-degree="{{ t.degree_code }}"
+                        {% if result and result.ts.major_id == t.major_id %}selected{% endif %}>
+                    {{ t.major.name }}{% if t.major.group %} — {{ t.major.group.name }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-4">
+                <label class="form-label">واحد نظری</label>
+                <input type="number" name="theory_units" class="form-control" min="0" max="24"
+                       value="{{ result.theory|default:0 }}">
+            </div>
+            <div class="col-4">
+                <label class="form-label">واحد عملی</label>
+                <input type="number" name="practical_units" class="form-control" min="0" max="10"
+                       value="{{ result.practical|default:0 }}">
+            </div>
+            <div class="col-4">
+                <label class="form-label">واحد آزمایشگاه</label>
+                <input type="number" name="lab_units" class="form-control" min="0" max="6"
+                       value="{{ result.lab|default:0 }}">
+            </div>
+        </div>
+        <button type="submit" class="btn-primary-uni w-100" style="padding:13px;">
+            <i class="fas fa-calculator"></i> محاسبه شهریه
+        </button>
+    </form>
+</div>
+
+<!-- تخفیف‌ها -->
+{% if discounts %}
+<div class="uni-card p-4 mt-4">
+    <h6 class="fw-bold text-primary-uni mb-3"><i class="fas fa-percent"></i> تخفیف‌های فعال</h6>
+    {% for d in discounts %}
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="font-size:13px;">
+        <div>
+            <div class="fw-bold">{{ d.title }}</div>
+            {% if d.description %}<div class="text-muted" style="font-size:11px;">{{ d.description }}</div>{% endif %}
+        </div>
+        <span class="badge bg-success">{{ d.percent }}%</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+</div>
+
+<!-- نتیجه -->
+<div class="col-lg-7" data-aos="fade-left">
+{% if result %}
+<div class="uni-card p-4 mb-4" style="border-right:4px solid var(--primary);">
+    <h5 class="fw-bold text-primary-uni mb-4">
+        <i class="fas fa-receipt"></i> رسید محاسبه شهریه
+        <small class="text-muted fw-normal" style="font-size:13px;margin-right:8px;">{{ result.ts.major.name }} — {{ result.ts.degree }} ({{ result.ts.academic_year }})</small>
+    </h5>
+
+    <div class="table-responsive">
+    <table class="table" style="font-size:14px;">
+        <tbody>
+            <tr>
+                <td class="text-muted">شهریه ثابت نیم‌سال</td>
+                <td class="text-end fw-bold">{{ result.ts.fixed_fee|floatformat:0 }} تومان</td>
+            </tr>
+            {% if result.theory > 0 %}
+            <tr>
+                <td class="text-muted">{{ result.theory }} واحد نظری × {{ result.ts.theory_fee|floatformat:0 }}</td>
+                <td class="text-end fw-bold">{{ result.theory_cost|floatformat:0 }} تومان</td>
+            </tr>
+            {% endif %}
+            {% if result.practical > 0 %}
+            <tr>
+                <td class="text-muted">{{ result.practical }} واحد عملی × {{ result.ts.practical_fee|floatformat:0 }}</td>
+                <td class="text-end fw-bold">{{ result.practical_cost|floatformat:0 }} تومان</td>
+            </tr>
+            {% endif %}
+            {% if result.lab > 0 %}
+            <tr>
+                <td class="text-muted">{{ result.lab }} واحد آزمایشگاه × {{ result.ts.lab_fee|floatformat:0 }}</td>
+                <td class="text-end fw-bold">{{ result.lab_cost|floatformat:0 }} تومان</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td class="text-muted">هزینه‌های جانبی (ثبت‌نام + بیمه + کارت)</td>
+                <td class="text-end fw-bold">{{ result.extra|floatformat:0 }} تومان</td>
+            </tr>
+            {% if result.discount_amount %}
+            <tr>
+                <td class="text-muted">تخفیف{% if result.discount %} ({{ result.discount.title }} — {{ result.discount.percent }}%){% endif %}</td>
+                <td class="text-end fw-bold text-success">− {{ result.discount_amount|floatformat:0 }} تومان</td>
+            </tr>
+            {% endif %}
+        </tbody>
+        <tfoot>
+            <tr style="background:#eff6ff;">
+                <td class="fw-bold text-primary" style="font-size:16px;">جمع کل این نیم‌سال</td>
+                <td class="text-end fw-bold text-primary" style="font-size:20px;">{{ result.total|floatformat:0 }} <small>تومان</small></td>
+            </tr>
+        </tfoot>
+    </table>
+    </div>
+    <div class="text-center mt-2">
+        <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni">
+            <i class="fas fa-file-alt"></i> ثبت درخواست پذیرش
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="uni-card p-5 text-center text-muted">
+    <i class="fas fa-calculator fa-3x mb-3 d-block opacity-25"></i>
+    <p>مقطع، رشته و تعداد واحدها را انتخاب کنید تا شهریه محاسبه شود.</p>
+</div>
+{% endif %}
+
+<!-- مقایسه رشته‌ها -->
+{% if tuitions %}
+<div class="uni-card p-4 mt-4" data-aos="fade-up">
+    <h6 class="fw-bold text-primary-uni mb-3"><i class="fas fa-table"></i> مقایسه شهریه ثابت رشته‌ها</h6>
+    <div class="table-responsive">
+    <table class="table table-sm" style="font-size:13px;">
+        <thead><tr><th>رشته</th><th>مقطع</th><th>شهریه ثابت</th><th>هر واحد نظری</th></tr></thead>
+        <tbody>
+            {% for t in tuitions %}
+            <tr>
+                <td>{{ t.major.name }}</td>
+                <td><span class="badge bg-secondary">{{ t.degree }}</span></td>
+                <td class="text-success fw-bold">{{ t.fixed_fee|floatformat:0 }} ت</td>
+                <td>{{ t.theory_fee|floatformat:0 }} ت</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted">اطلاعاتی ثبت نشده</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+</div>
+
+</div><!-- /row -->
+</div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var degSel = document.getElementById('degreeSelect');
+var majSel = document.getElementById('majorSelect');
+if(degSel && majSel){
+    var allOpts = Array.from(majSel.querySelectorAll('option[data-degree]'));
+    function filterMajors(){
+        var deg = degSel.value;
+        var current = majSel.value;
+        majSel.innerHTML = '<option value="">رشته را انتخاب کنید...</option>';
+        allOpts.forEach(function(o){
+            if(!deg || o.dataset.degree === deg){
+                majSel.appendChild(o.cloneNode(true));
+            }
+        });
+        if(current){
+            majSel.value = current;
+        }
+    }
+    degSel.addEventListener('change', filterMajors);
+    if(degSel.value) filterMajors();
+}
+</script>
+{% endblock %}

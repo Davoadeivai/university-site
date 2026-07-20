@@ -107,6 +107,22 @@ else:
 PASSWORD_RESET_TIMEOUT = 3600
 
 # -----------------------------------------------------------------------------
+# SMS / OTP
+# -----------------------------------------------------------------------------
+SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
+KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
+SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
+OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
+OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
+OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)
+
+# Harden cookies further when SSL is on
+if SECURE_SSL_REDIRECT:
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# -----------------------------------------------------------------------------
 # Logging
 # -----------------------------------------------------------------------------
 LOG_DIR = BASE_DIR / 'logs'

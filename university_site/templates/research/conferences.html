@@ -1,19 +1,75 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">همایش‌ها</h1></div></div>
-<section class="section"><div class="container"><div class="row g-4">
-{% for conf in conferences %}
-<div class="col-md-6 col-lg-4" data-aos="fade-up">
-<div class="uni-card">
-{% if conf.image %}<div class="uni-card-img"><img src="{{ conf.image.url }}" alt="{{ conf.title }}" loading="lazy"></div>{% else %}<div style="height:150px;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;border-radius:var(--radius) var(--radius) 0 0;"><i class="fas fa-podium" style="font-size:48px;color:rgba(255,255,255,0.3);"></i></div>{% endif %}
-<div class="uni-card-body">
-<h5 class="uni-card-title">{{ conf.title }}</h5>
-<div class="uni-card-meta"><i class="fas fa-calendar-alt"></i> {{ conf.date|jalali_date }}{% if conf.location %}<br><i class="fas fa-map-marker-alt"></i> {{ conf.location }}{% endif %}</div>
-{% if conf.website %}<a href="{{ conf.website }}" target="_blank" class="uni-card-link mt-2">وبسایت همایش <i class="fas fa-external-link-alt"></i></a>{% endif %}
-</div></div></div>
-{% empty %}
-<div class="col-12 text-center py-5 text-muted"><i class="fas fa-microphone fa-3x mb-3 d-block opacity-25"></i>همایشی ثبت نشده</div>
-{% endfor %}
-</div></div></section>
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">همایش‌ها و کنفرانس‌ها</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 mb-4">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <input type="search" name="q" value="{{ query }}" class="form-control" placeholder="عنوان، مکان یا برگزارکننده">
+                </div>
+                <div class="col-md-4">
+                    <select name="scope" class="form-select">
+                        <option value="all" {% if scope == 'all' %}selected{% endif %}>همه</option>
+                        <option value="upcoming" {% if scope == 'upcoming' %}selected{% endif %}>پیش رو</option>
+                        <option value="past" {% if scope == 'past' %}selected{% endif %}>برگزار شده</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn-primary-uni w-100">اعمال</button>
+                </div>
+            </form>
+            <div class="text-muted mt-2" style="font-size:13px;">{{ result_count }} همایش</div>
+        </div>
+
+        <div class="row g-4">
+            {% for conf in conferences %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <a href="{% url 'research:conference_detail' conf.pk %}" class="uni-card overflow-hidden text-decoration-none h-100 d-block">
+                    {% if conf.image %}
+                    <img src="{{ conf.image.url }}" alt="" style="width:100%;height:160px;object-fit:cover;">
+                    {% else %}
+                    <div style="height:120px;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-users fa-2x text-white opacity-75"></i>
+                    </div>
+                    {% endif %}
+                    <div class="p-3">
+                        <div class="mb-2">
+                            {% if conf.is_upcoming %}<span class="badge bg-success">پیش رو</span>
+                            {% else %}<span class="badge bg-secondary">برگزار شده</span>{% endif %}
+                        </div>
+                        <h5 class="fw-bold text-primary-uni mb-2" style="font-size:15px;">{{ conf.title }}</h5>
+                        <div class="text-muted" style="font-size:13px;">
+                            <i class="fas fa-calendar"></i> {{ conf.date|jalali_date }}
+                            {% if conf.location %}<br><i class="fas fa-map-marker-alt"></i> {{ conf.location }}{% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5 text-muted">همایشی یافت نشد</div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&scope={{ scope }}">قبلی</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&scope={{ scope }}">بعدی</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

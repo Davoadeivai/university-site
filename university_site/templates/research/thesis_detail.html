@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'research:theses' %}" class="text-white-50">پایان‌نامه‌ها</a></li>
+                <li class="breadcrumb-item active text-white">جزئیات</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title" style="font-size:1.45rem;">{{ thesis.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 p-md-5">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="uni-card-badge">{{ thesis.get_degree_display }}</span>
+                <span class="uni-card-badge">{{ thesis.year }}</span>
+                {% if thesis.department %}<span class="uni-card-badge">{{ thesis.department }}</span>{% endif %}
+            </div>
+            <dl class="row catalog-meta">
+                <dt class="col-sm-3">نویسنده</dt><dd class="col-sm-9">{{ thesis.author }}</dd>
+                <dt class="col-sm-3">استاد راهنما</dt><dd class="col-sm-9">{{ thesis.supervisor }}</dd>
+            </dl>
+            {% if keywords %}
+            <div class="mb-3">
+                {% for kw in keywords %}<span class="badge bg-light text-dark border me-1">{{ kw }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            <h5 class="fw-bold mb-2">چکیده</h5>
+            <p class="text-muted" style="line-height:2;">{{ thesis.abstract|linebreaksbr }}</p>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                {% if thesis.file %}
+                <a href="{{ thesis.file.url }}" class="btn-primary-uni" download><i class="fas fa-download me-1"></i> دانلود فایل</a>
+                {% endif %}
+                <a href="{% url 'research:theses' %}" class="btn btn-outline-secondary">بازگشت به آرشیو</a>
+            </div>
+        </div>
+
+        {% if related %}
+        <h5 class="fw-bold text-primary-uni mt-4 mb-3">پایان‌نامه‌های مرتبط</h5>
+        <div class="row g-3">
+            {% for t in related %}
+            <div class="col-md-4">
+                <a href="{% url 'research:thesis_detail' t.pk %}" class="uni-card p-3 d-block text-decoration-none">
+                    <div class="fw-bold text-primary-uni" style="font-size:13px;">{{ t.title|truncatechars:60 }}</div>
+                    <div class="text-muted" style="font-size:12px;">{{ t.author }} — {{ t.year }}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

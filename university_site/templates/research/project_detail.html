@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'research:projects' %}" class="text-white-50">پروژه‌ها</a></li>
+                <li class="breadcrumb-item active text-white">جزئیات</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title" style="font-size:1.5rem;">{{ project.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 p-md-5 mb-4">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-{% if project.status == 'ongoing' %}success{% elif project.status == 'completed' %}primary{% else %}warning{% endif %}">{{ project.get_status_display }}</span>
+                {% if project.is_featured %}<span class="badge bg-warning text-dark">منتخب</span>{% endif %}
+            </div>
+            <dl class="row catalog-meta">
+                <dt class="col-sm-3">محقق</dt><dd class="col-sm-9">{{ project.researcher }}</dd>
+                <dt class="col-sm-3">شروع</dt><dd class="col-sm-9">{{ project.start_date|jalali_date }}</dd>
+                {% if project.end_date %}<dt class="col-sm-3">پایان</dt><dd class="col-sm-9">{{ project.end_date|jalali_date }}</dd>{% endif %}
+                {% if project.budget %}<dt class="col-sm-3">بودجه</dt><dd class="col-sm-9">{{ project.budget|floatformat:0 }} ریال</dd>{% endif %}
+            </dl>
+            <h5 class="fw-bold mt-3 mb-2">شرح پروژه</h5>
+            <p class="text-muted mb-0" style="line-height:2;">{{ project.description|linebreaksbr }}</p>
+        </div>
+        {% if related %}
+        <h5 class="fw-bold text-primary-uni mb-3">پروژه‌های مشابه</h5>
+        <div class="row g-3">
+            {% for p in related %}
+            <div class="col-md-4">
+                <a href="{% url 'research:project_detail' p.pk %}" class="uni-card p-3 d-block text-decoration-none">
+                    <div class="fw-bold text-primary-uni" style="font-size:14px;">{{ p.title }}</div>
+                    <div class="text-muted" style="font-size:12px;">{{ p.researcher }}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>مدیریت تکالیف</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="uni-card p-4">
+            <h5 class="fw-bold text-primary-uni mb-3">ایجاد تکلیف</h5>
+            {% if has_courses %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3"><label class="form-label" for="id_course">درس</label>{{ form.course }}</div>
+                <div class="mb-3"><label class="form-label" for="id_title">عنوان</label>{{ form.title }}</div>
+                <div class="mb-3"><label class="form-label" for="id_description">توضیحات</label>{{ form.description }}</div>
+                <div class="mb-3"><label class="form-label" for="id_assignment_type">نوع</label>{{ form.assignment_type }}</div>
+                <div class="mb-3"><label class="form-label" for="id_due_date">مهلت</label>{{ form.due_date }}</div>
+                <div class="mb-3"><label class="form-label" for="id_max_score">سقف نمره</label>{{ form.max_score }}</div>
+                <div class="mb-3"><label class="form-label" for="id_file">فایل</label>{{ form.file }}</div>
+                <button type="submit" class="btn btn-primary-uni w-100">ثبت تکلیف</button>
+            </form>
+            {% else %}
+            <p class="text-muted mb-0">ابتدا باید درس تدریس برای شما تخصیص داده شود.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="uni-card p-0 overflow-hidden">
+            <div class="p-3 border-bottom"><strong>تکالیف من</strong></div>
+            {% if assignments %}
+            <div class="table-responsive">
+                <table class="panel-table">
+                    <thead><tr><th>عنوان</th><th>درس</th><th>مهلت</th><th></th></tr></thead>
+                    <tbody>
+                        {% for a in assignments %}
+                        <tr>
+                            <td>{{ a.title }}</td>
+                            <td>{{ a.course.name }}</td>
+                            <td>{{ a.due_date|date:"Y/m/d H:i" }}</td>
+                            <td><a href="{% url 'dashboard:professor_submissions' a.pk %}" class="btn btn-sm btn-outline-primary">تحویل‌ها</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="panel-empty">تکلیفی ثبت نشده است.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

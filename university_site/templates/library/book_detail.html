@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0" style="--bs-breadcrumb-divider-color:rgba(255,255,255,.5);">
+                <li class="breadcrumb-item"><a href="{% url 'library:library' %}" class="text-white-50">کتابخانه</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">جزئیات کتاب</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title" style="font-size:1.6rem;">{{ book.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="uni-card p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center">
+                            {% if book.cover %}
+                            <img src="{{ book.cover.url }}" alt="{{ book.title }}" class="book-detail-cover">
+                            {% else %}
+                            <div class="book-detail-cover book-detail-cover-ph"><i class="fas fa-book fa-3x"></i></div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h2 class="fw-bold text-primary-uni mb-3" style="font-size:1.35rem;">{{ book.title }}</h2>
+                            <dl class="row mb-0 catalog-meta">
+                                <dt class="col-sm-4">نویسنده</dt><dd class="col-sm-8">{{ book.author }}</dd>
+                                {% if book.translator %}<dt class="col-sm-4">مترجم</dt><dd class="col-sm-8">{{ book.translator }}</dd>{% endif %}
+                                {% if book.publisher %}<dt class="col-sm-4">ناشر</dt><dd class="col-sm-8">{{ book.publisher }}</dd>{% endif %}
+                                <dt class="col-sm-4">سال</dt><dd class="col-sm-8">{{ book.year }}</dd>
+                                {% if book.isbn %}<dt class="col-sm-4">شابک</dt><dd class="col-sm-8">{{ book.isbn }}</dd>{% endif %}
+                                {% if book.subject %}<dt class="col-sm-4">موضوع</dt><dd class="col-sm-8">{{ book.subject }}</dd>{% endif %}
+                                <dt class="col-sm-4">زبان</dt><dd class="col-sm-8">{{ book.language }}</dd>
+                                {% if book.location %}<dt class="col-sm-4">محل نگهداری</dt><dd class="col-sm-8">{{ book.location }}</dd>{% endif %}
+                                <dt class="col-sm-4">موجودی</dt>
+                                <dd class="col-sm-8">
+                                    {% if book.is_available and book.copies_available %}
+                                    <span class="badge bg-success">{{ book.copies_available }} نسخه موجود</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">ناموجود</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                    {% if book.description %}
+                    <hr>
+                    <h5 class="fw-bold mb-2">درباره کتاب</h5>
+                    <p class="text-muted mb-0" style="line-height:2;">{{ book.description|linebreaksbr }}</p>
+                    {% endif %}
+                </div>
+
+                {% if related %}
+                <h5 class="fw-bold text-primary-uni mt-4 mb-3">کتاب‌های مرتبط</h5>
+                <div class="row g-3">
+                    {% for b in related %}
+                    <div class="col-md-6">
+                        <a href="{% url 'library:book_detail' b.pk %}" class="uni-card p-3 d-block text-decoration-none h-100">
+                            <div class="fw-bold text-primary-uni" style="font-size:14px;">{{ b.title }}</div>
+                            <div class="text-muted" style="font-size:12px;">{{ b.author }} — {{ b.year }}</div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-4">
+                <div class="uni-card p-4 mb-3">
+                    <h5 class="fw-bold text-primary-uni mb-3">امانت و عضویت</h5>
+                    <p class="text-muted" style="font-size:13px;line-height:1.8;">
+                        برای امانت گرفتن کتاب، ابتدا عضو کتابخانه شوید. وضعیت موجودی بالا به‌روز است.
+                    </p>
+                    <a href="{% url 'library:membership' %}" class="btn-primary-uni w-100 text-center d-inline-block">عضویت کتابخانه</a>
+                    <a href="{% url 'library:library' %}" class="btn btn-outline-secondary w-100 mt-2">بازگشت به کاتالوگ</a>
+                </div>
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">منابع مرتبط</h5>
+                    <a href="{% url 'library:articles' %}" class="d-block mb-2 uni-card-link">مقالات علمی</a>
+                    <a href="{% url 'research:theses' %}" class="d-block uni-card-link">پایان‌نامه‌ها</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

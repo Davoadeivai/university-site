@@ -243,3 +243,23 @@ else:
     DEFAULT_FROM_EMAIL = 'دانشگاه جامع <noreply@localhost>'
 
 PASSWORD_RESET_TIMEOUT = 3600
+
+# -----------------------------------------------------------------------------
+# SMS / OTP (Kavenegar)
+# -----------------------------------------------------------------------------
+SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
+KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
+SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
+OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
+OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
+OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)
+
+# -----------------------------------------------------------------------------
+# Cache (OTP rate limits)
+# -----------------------------------------------------------------------------
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'university-otp',
+    }
+}

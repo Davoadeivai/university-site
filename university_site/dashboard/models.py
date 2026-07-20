@@ -107,6 +107,7 @@ class StudentRequest(models.Model):
 
 
 class Payment(models.Model):
+    """پرداخت‌های سامانه آموزشی (دانشجوی ثبت‌نام‌شده) — جدا از اقساط پذیرش."""
     PAYMENT_TYPE_CHOICES = [
         ('tuition', 'شهریه'),
         ('dorm', 'خوابگاه'),
@@ -131,8 +132,8 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = _('پرداخت')
-        verbose_name_plural = _('پرداخت‌ها')
+        verbose_name = _('پرداخت سامانه آموزشی')
+        verbose_name_plural = _('پرداخت‌های سامانه آموزشی')
         ordering = ['-created_at']
 
     def __str__(self):

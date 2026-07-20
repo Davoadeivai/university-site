@@ -1,0 +1,65 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>درخواست‌های من</h2>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="uni-card p-4">
+            <h5 class="fw-bold text-primary-uni mb-3">ثبت درخواست جدید</h5>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label" for="id_request_type">نوع</label>
+                    {{ form.request_type }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="id_title">عنوان</label>
+                    {{ form.title }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="id_description">توضیحات</label>
+                    {{ form.description }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="id_file">پیوست (اختیاری)</label>
+                    {{ form.file }}
+                </div>
+                <button type="submit" class="btn btn-primary-uni w-100">ارسال درخواست</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="uni-card p-0 overflow-hidden">
+            <div class="p-3 border-bottom"><strong>سوابق</strong></div>
+            {% if requests %}
+            <div class="table-responsive">
+                <table class="panel-table">
+                    <thead>
+                        <tr><th>عنوان</th><th>نوع</th><th>وضعیت</th><th>تاریخ</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr>
+                            <td>
+                                <strong>{{ req.title }}</strong>
+                                {% if req.response %}<div class="text-muted" style="font-size:12px;margin-top:4px;">پاسخ: {{ req.response|truncatechars:80 }}</div>{% endif %}
+                            </td>
+                            <td>{{ req.get_request_type_display }}</td>
+                            <td><span class="badge bg-{% if req.status == 'pending' %}warning{% elif req.status == 'approved' %}success{% elif req.status == 'rejected' %}danger{% else %}info{% endif %}">{{ req.get_status_display }}</span></td>
+                            <td>{{ req.created_at|jalali_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="panel-empty">هنوز درخواستی ثبت نکرده‌اید.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

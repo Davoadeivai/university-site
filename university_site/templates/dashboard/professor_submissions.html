@@ -1,0 +1,37 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <div>
+        <h2 class="mb-1">تحویل‌ها</h2>
+        <div class="text-muted" style="font-size:13px;">{{ assignment.title }} — {{ assignment.course.name }}</div>
+    </div>
+    <a href="{% url 'dashboard:professor_assignments' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+</div>
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if submissions %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr><th>دانشجو</th><th>تاریخ</th><th>وضعیت</th><th>نمره</th><th>فایل</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for s in submissions %}
+                <tr>
+                    <td>{{ s.student.get_full_name|default:s.student.username }}</td>
+                    <td>{{ s.submitted_at|date:"Y/m/d H:i" }}</td>
+                    <td>{{ s.get_status_display }}</td>
+                    <td>{% if s.grade %}{{ s.grade }}{% else %}—{% endif %}</td>
+                    <td>{% if s.file %}<a href="{{ s.file.url }}" target="_blank">دانلود</a>{% else %}—{% endif %}</td>
+                    <td><a href="{% url 'dashboard:professor_grade_submission' s.pk %}" class="btn btn-sm btn-outline-primary">نمره</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">هنوز تحویلی ثبت نشده است.</p>
+    {% endif %}
+</div>
+{% endblock %}

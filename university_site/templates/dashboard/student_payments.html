@@ -1,0 +1,33 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>پرداخت‌ها</h2>
+</div>
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if payments %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr><th>نوع</th><th>مبلغ</th><th>وضعیت</th><th>ترم</th><th>تاریخ</th></tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td>{{ p.get_payment_type_display }}</td>
+                    <td>{{ p.amount|floatformat:0 }} تومان</td>
+                    <td><span class="badge bg-{% if p.status == 'paid' %}success{% elif p.status == 'pending' %}warning{% else %}danger{% endif %}">{{ p.get_status_display }}</span></td>
+                    <td>{% if p.semester %}{{ p.semester.name }}{% else %}—{% endif %}</td>
+                    <td>{{ p.created_at|jalali_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">پرداختی ثبت نشده است.</p>
+    {% endif %}
+</div>
+{% endblock %}

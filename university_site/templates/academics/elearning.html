@@ -1,11 +1,108 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">آموزش الکترونیکی</h1></div></div>
-<section class="section"><div class="container">
-<div class="row g-4 mb-5">
-<div class="col-md-4" data-aos="fade-up"><div class="dept-card text-center"><div class="dept-icon"><i class="fas fa-video"></i></div><h3 class="dept-title">کلاس‌های آنلاین</h3><p class="text-muted" style="font-size:14px;">شرکت در کلاس‌های درسی بصورت آنلاین</p><a href="#" class="btn-primary-uni mt-3">ورود به کلاس</a></div></div>
-<div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card text-center"><div class="dept-icon"><i class="fas fa-laptop"></i></div><h3 class="dept-title">LMS آموزشی</h3><p class="text-muted" style="font-size:14px;">دسترسی به محتوای درسی و تکالیف</p><a href="#" class="btn-primary-uni mt-3">ورود به LMS</a></div></div>
-<div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card text-center"><div class="dept-icon"><i class="fas fa-pencil-alt"></i></div><h3 class="dept-title">آزمون آنلاین</h3><p class="text-muted" style="font-size:14px;">شرکت در آزمون‌های الکترونیکی</p><a href="#" class="btn-primary-uni mt-3">ورود به آزمون</a></div></div>
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">آموزش الکترونیکی</h1>
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">دسترسی به دروس، تکالیف و امتحانات از پنل کاربری</p>
+    </div>
 </div>
-</div></section>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 p-md-5 mb-5" data-aos="fade-up">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold text-primary-uni mb-2" style="font-size:1.4rem;">سامانه آموزشی دانشگاه</h2>
+                    <p class="text-muted mb-0" style="line-height:1.9;">
+                        آموزش الکترونیکی روی همان پنل دانشجو و استاد فعال است:
+                        مشاهده دروس ترم، ارسال تکلیف، برنامه امتحانات و کارنامه.
+                        کلاس و آزمون جداگانهٔ ساختگی وجود ندارد — همه از داخل پنل انجام می‌شود.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-start text-center">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:dashboard' %}" class="btn-primary-uni">
+                        <i class="fas fa-th-large me-1"></i> ورود به پنل من
+                    </a>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}?next={% url 'dashboard:dashboard' %}" class="btn-primary-uni">
+                        <i class="fas fa-sign-in-alt me-1"></i> ورود و ادامه
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title mb-4" style="font-size:1.2rem;">برای دانشجویان</h2>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4" data-aos="fade-up">
+                <a href="{% url 'dashboard:student_courses' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-book-open"></i></div>
+                    <h3 class="dept-title">دروس ترم</h3>
+                    <p class="text-muted" style="font-size:14px;">لیست دروس ثبت‌نام‌شده و وضعیت هر درس</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="80">
+                <a href="{% url 'dashboard:student_assignments' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-tasks"></i></div>
+                    <h3 class="dept-title">تکالیف</h3>
+                    <p class="text-muted" style="font-size:14px;">مشاهده مهلت و ارسال فایل تکلیف</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="160">
+                <a href="{% url 'dashboard:student_exams' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-calendar-check"></i></div>
+                    <h3 class="dept-title">امتحانات</h3>
+                    <p class="text-muted" style="font-size:14px;">برنامه میان‌ترم و پایان‌ترم</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up">
+                <a href="{% url 'dashboard:student_grades' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3 class="dept-title">نمرات</h3>
+                    <p class="text-muted" style="font-size:14px;">کارنامه و میانگین وزنی</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="80">
+                <a href="{% url 'dashboard:student_requests' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-inbox"></i></div>
+                    <h3 class="dept-title">درخواست‌ها</h3>
+                    <p class="text-muted" style="font-size:14px;">گواهی، کارنامه و سایر درخواست‌ها</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="160">
+                <a href="{% url 'academics:calendar' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <h3 class="dept-title">تقویم آموزشی</h3>
+                    <p class="text-muted" style="font-size:14px;">زمان‌بندی ترم و رویدادهای آموزشی</p>
+                </a>
+            </div>
+        </div>
+
+        <h2 class="section-title mb-4" style="font-size:1.2rem;">برای اساتید</h2>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <a href="{% url 'dashboard:professor_courses' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-chalkboard"></i></div>
+                    <h3 class="dept-title">دروس تدریس</h3>
+                    <p class="text-muted" style="font-size:14px;">لیست کلاس‌ها و دانشجویان</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="80">
+                <a href="{% url 'dashboard:professor_assignments' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-upload"></i></div>
+                    <h3 class="dept-title">مدیریت تکالیف</h3>
+                    <p class="text-muted" style="font-size:14px;">ایجاد تکلیف و نمره‌دهی تحویل‌ها</p>
+                </a>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="160">
+                <a href="{% url 'dashboard:dashboard' %}" class="dept-card text-center text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-pen"></i></div>
+                    <h3 class="dept-title">ثبت نمره</h3>
+                    <p class="text-muted" style="font-size:14px;">از صفحه هر درس در پنل استاد</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

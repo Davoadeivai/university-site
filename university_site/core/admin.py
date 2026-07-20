@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    SiteSettings, Slider, LandingSlider, QuickLink, Event, FAQ, PageView,
+    SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
     InstitutionGoal, BoardMember, CityInfo, CityAttraction,
     PresidencyOffice, DeputyVice,
     InternationalOffice, InternationalActivity,
@@ -45,30 +45,13 @@ class SliderAdmin(admin.ModelAdmin):
     search_fields = ['title', 'subtitle', 'badge_text']
     fieldsets = (
         ('تصویر و متن اصلی', {
-            'fields': ('title', 'subtitle', 'image', 'link', 'link_text', 'order', 'is_active')
-        }),
-        ('اعلان / خبر مهم روی تصویر', {
-            'description': 'اگر می‌خواهید یک اعلان مهم (مثلاً: شروع کلاس‌ها) روی این اسلاید نشان داده شود، فیلدهای زیر را پر کنید.',
-            'fields': ('badge_text', 'badge_color', 'badge_icon'),
-        }),
-    )
-
-
-@admin.register(LandingSlider)
-class LandingSliderAdmin(admin.ModelAdmin):
-    list_display  = ['title', 'badge_text', 'badge_color', 'order', 'is_active', 'created_at']
-    list_editable = ['order', 'is_active']
-    list_filter   = ['is_active', 'badge_color']
-    search_fields = ['title', 'subtitle', 'badge_text']
-    fieldsets = (
-        ('تصویر و متن اصلی', {
-            'fields': ('title', 'subtitle', 'image', 'order', 'is_active'),
+            'fields': ('title', 'subtitle', 'image', 'order', 'is_active')
         }),
         ('دکمه‌های اقدام', {
-            'fields': (('btn1_text', 'btn1_url'), ('btn2_text', 'btn2_url')),
+            'fields': (('link_text', 'link'), ('btn2_text', 'btn2_url')),
         }),
         ('اعلان / خبر مهم روی تصویر', {
-            'description': 'اگر می‌خواهید یک اعلان مهم (مثلاً: شروع کلاس‌ها، انتخاب واحد) روی این اسلاید نشان داده شود.',
+            'description': 'اگر می‌خواهید یک اعلان مهم روی این اسلاید نشان داده شود، فیلدهای زیر را پر کنید.',
             'fields': ('badge_text', 'badge_color', 'badge_icon'),
         }),
     )

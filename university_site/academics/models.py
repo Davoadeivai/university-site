@@ -31,12 +31,25 @@ class Department(models.Model):
 
 class Major(models.Model):
     DEGREE_CHOICES = [
+        ('associate_cont', 'کاردانی پیوسته'),
+        ('associate_disc', 'کاردانی ناپیوسته'),
         ('associate', 'کاردانی'),
+        ('bachelor_cont', 'کارشناسی پیوسته'),
+        ('bachelor_disc', 'کارشناسی ناپیوسته'),
         ('bachelor', 'کارشناسی'),
         ('master', 'کارشناسی ارشد'),
         ('phd', 'دکتری'),
     ]
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='majors', verbose_name=_('دانشکده'))
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE,
+        related_name='majors', verbose_name=_('دانشکده')
+    )
+    group = models.ForeignKey(
+        'AcademicGroup', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='majors',
+        verbose_name=_('گروه آموزشی'),
+        help_text=_('گروه آموزشی که این رشته زیر آن نمایش داده می‌شود'),
+    )
     name = models.CharField(_('نام رشته'), max_length=200)
     slug = models.SlugField(unique=True, allow_unicode=True)
     degree = models.CharField(_('مقطع تحصیلی'), max_length=20, choices=DEGREE_CHOICES)
@@ -48,18 +61,40 @@ class Major(models.Model):
     capacity = models.PositiveIntegerField(_('ظرفیت'), default=0)
     admission_requirements = models.TextField(_('شرایط پذیرش'), blank=True)
     tuition_fee = models.CharField(_('شهریه'), max_length=200, blank=True)
+    order = models.PositiveIntegerField(_('ترتیب نمایش'), default=0)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = _('رشته تحصیلی')
         verbose_name_plural = _('رشته‌های تحصیلی')
-        ordering = ['department', 'name']
+        ordering = ['group', 'degree', 'order', 'name']
 
     def __str__(self):
         return f"{self.name} - {self.get_degree_display()}"
 
     def get_absolute_url(self):
         return reverse('academics:major_detail', args=[self.slug])
+
+    @property
+    def admission_degree(self):
+        """مقطع پایه برای فرم پذیرش (بدون پیوسته/ناپیوسته)."""
+        if self.degree.startswith('associate'):
+            return 'associate'
+        if self.degree.startswith('bachelor'):
+            return 'bachelor'
+        return self.degree
+
+    @property
+    def current_tuition(self):
+        """ساختار شهریه فعال از کاتالوگ یکپارچه."""
+        return self.tuition_structures.filter(is_active=True).order_by('-academic_year').first()
+
+    @property
+    def tuition_display(self):
+        ts = self.current_tuition
+        if ts:
+            return f"{ts.fixed_fee:,} تومان (ثابت) — سال {ts.academic_year}"
+        return self.tuition_fee or '—'
 
 
 class Course(models.Model):

@@ -28,9 +28,13 @@ def department_detail(request, slug):
 
 def majors_list(request):
     degree = request.GET.get('degree')
-    majors = Major.objects.filter(is_active=True)
+    majors = Major.objects.filter(is_active=True).select_related('department', 'group')
     if degree:
-        majors = majors.filter(degree=degree)
+        # پشتیبانی از فیلتر پایه (کاردانی/کارشناسی) و دقیق (پیوسته/ناپیوسته)
+        if degree in ('associate', 'bachelor'):
+            majors = majors.filter(degree__startswith=degree)
+        else:
+            majors = majors.filter(degree=degree)
     context = {
         'majors': majors,
         'degree': degree,
@@ -93,11 +97,17 @@ def groups_list(request):
 def group_detail(request, slug):
     """صفحه جزئیات یک گروه آموزشی"""
     group = get_object_or_404(AcademicGroup, slug=slug, is_active=True)
-    majors = group.department.majors.filter(is_active=True)
-    professors = group.department.professors.filter(is_active=True)
+    majors = group.majors.filter(is_active=True).order_by('degree', 'order', 'name')
+    # گروه‌بندی رشته‌ها بر اساس مقطع (مثل عکس‌ها)
+    majors_by_degree = {}
+    for m in majors:
+        label = m.get_degree_display()
+        majors_by_degree.setdefault(label, []).append(m)
+    professors = group.department.professors.filter(is_active=True) if hasattr(group.department, 'professors') else []
     context = {
         'group': group,
         'majors': majors,
+        'majors_by_degree': majors_by_degree,
         'professors': professors,
         'page_title': group.name,
     }

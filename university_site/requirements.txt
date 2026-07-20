@@ -7,3 +7,4 @@ jdatetime==5.3.0
 python-decouple==3.8
 PyMySQL==1.1.1
 psycopg[binary]>=3.1
+kavenegar>=1.1.2

@@ -5,7 +5,11 @@
 <div class="d-flex gap-2 flex-wrap mb-4" data-aos="fade-up">
 <a href="{% url 'academics:majors' %}" class="tag-badge {% if not degree %}active{% endif %}">همه</a>
 <a href="?degree=associate" class="tag-badge {% if degree == 'associate' %}active{% endif %}">کاردانی</a>
+<a href="?degree=associate_cont" class="tag-badge {% if degree == 'associate_cont' %}active{% endif %}">کاردانی پیوسته</a>
+<a href="?degree=associate_disc" class="tag-badge {% if degree == 'associate_disc' %}active{% endif %}">کاردانی ناپیوسته</a>
 <a href="?degree=bachelor" class="tag-badge {% if degree == 'bachelor' %}active{% endif %}">کارشناسی</a>
+<a href="?degree=bachelor_cont" class="tag-badge {% if degree == 'bachelor_cont' %}active{% endif %}">کارشناسی پیوسته</a>
+<a href="?degree=bachelor_disc" class="tag-badge {% if degree == 'bachelor_disc' %}active{% endif %}">کارشناسی ناپیوسته</a>
 <a href="?degree=master" class="tag-badge {% if degree == 'master' %}active{% endif %}">ارشد</a>
 <a href="?degree=phd" class="tag-badge {% if degree == 'phd' %}active{% endif %}">دکتری</a>
 </div>

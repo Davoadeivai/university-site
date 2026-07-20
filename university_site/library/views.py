@@ -1,38 +1,167 @@
-from django.shortcuts import render
-from .models import Book, Article, LibraryMembership
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+
+from .models import Article, Book, LibraryMembership
 
 
 def library_home(request):
-    query = request.GET.get('q', '')
-    books = Book.objects.filter(is_available=True)
+    query = request.GET.get('q', '').strip()
+    subject = request.GET.get('subject', '').strip()
+    language = request.GET.get('language', '').strip()
+    availability = request.GET.get('availability', '').strip()
+    year = request.GET.get('year', '').strip()
+
+    books = Book.objects.all()
     if query:
-        books = books.filter(title__icontains=query) | books.filter(author__icontains=query)
-    recent_books = Book.objects.filter(is_available=True)[:8]
+        books = books.filter(
+            Q(title__icontains=query)
+            | Q(author__icontains=query)
+            | Q(isbn__icontains=query)
+            | Q(publisher__icontains=query)
+            | Q(subject__icontains=query)
+        )
+    if subject:
+        books = books.filter(subject=subject)
+    if language:
+        books = books.filter(language=language)
+    if year.isdigit():
+        books = books.filter(year=int(year))
+    if availability == 'available':
+        books = books.filter(is_available=True, copies_available__gt=0)
+    elif availability == 'unavailable':
+        books = books.filter(Q(is_available=False) | Q(copies_available=0))
+
+    paginator = Paginator(books.order_by('title'), 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    subjects = list(
+        Book.objects.exclude(subject='')
+        .values_list('subject', flat=True)
+        .distinct()
+        .order_by('subject')
+    )
+    languages = list(
+        Book.objects.exclude(language='')
+        .values_list('language', flat=True)
+        .distinct()
+        .order_by('language')
+    )
+    years = list(Book.objects.values_list('year', flat=True).distinct().order_by('-year'))
+
+    recent_articles = Article.objects.all()[:4]
+    stats = {
+        'books': Book.objects.count(),
+        'available': Book.objects.filter(is_available=True, copies_available__gt=0).count(),
+        'articles': Article.objects.count(),
+        'subjects': len(subjects),
+    }
+
     context = {
-        'books': books,
+        'page_obj': page_obj,
+        'books': page_obj.object_list,
         'query': query,
-        'recent_books': recent_books,
-        'page_title': 'کتابخانه',
+        'subject': subject,
+        'language': language,
+        'availability': availability,
+        'year': year,
+        'subjects': subjects,
+        'languages': languages,
+        'years': years,
+        'recent_articles': recent_articles,
+        'recent_books': Book.objects.filter(is_available=True).order_by('-id')[:6],
+        'stats': stats,
+        'page_title': 'کتابخانه دیجیتال',
+        'result_count': paginator.count,
     }
     return render(request, 'library/library.html', context)
 
 
-def membership(request):
-    if request.method == 'POST':
-        data = request.POST
-        if not LibraryMembership.objects.filter(student_id=data.get('student_id')).exists():
-            LibraryMembership.objects.create(
-                full_name=data.get('full_name', ''),
-                student_id=data.get('student_id', ''),
-                email=data.get('email', ''),
-                phone=data.get('phone', ''),
-            )
-            messages.success(request, 'درخواست عضویت شما ثبت شد.')
-        else:
-            messages.error(request, 'شماره دانشجویی قبلاً ثبت شده است.')
-        return redirect('library:library')
+def book_detail(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    related = Book.objects.filter(subject=book.subject).exclude(pk=book.pk)[:4] if book.subject else Book.objects.exclude(pk=book.pk)[:4]
+    context = {
+        'book': book,
+        'related': related,
+        'page_title': book.title,
+    }
+    return render(request, 'library/book_detail.html', context)
 
-    context = {'page_title': 'عضویت در کتابخانه'}
+
+def articles_list(request):
+    query = request.GET.get('q', '').strip()
+    year = request.GET.get('year', '').strip()
+    articles = Article.objects.all()
+    if query:
+        articles = articles.filter(
+            Q(title__icontains=query)
+            | Q(authors__icontains=query)
+            | Q(keywords__icontains=query)
+            | Q(journal__icontains=query)
+        )
+    if year.isdigit():
+        articles = articles.filter(year=int(year))
+
+    paginator = Paginator(articles, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    years = Article.objects.values_list('year', flat=True).distinct().order_by('-year')
+
+    context = {
+        'page_obj': page_obj,
+        'articles': page_obj.object_list,
+        'query': query,
+        'year': year,
+        'years': years,
+        'page_title': 'مقالات علمی',
+        'result_count': paginator.count,
+    }
+    return render(request, 'library/articles.html', context)
+
+
+def article_detail(request, pk):
+    article = get_object_or_404(Article, pk=pk)
+    keywords = [k.strip() for k in article.keywords.split(',') if k.strip()] if article.keywords else []
+    context = {
+        'article': article,
+        'keywords': keywords,
+        'page_title': article.title,
+    }
+    return render(request, 'library/article_detail.html', context)
+
+
+def membership(request):
+    membership_result = None
+    check_id = request.GET.get('check_id', '').strip()
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'register')
+        if action == 'check':
+            sid = request.POST.get('student_id', '').strip()
+            membership_result = LibraryMembership.objects.filter(student_id=sid).first()
+            if not membership_result:
+                messages.warning(request, 'عضویت‌ی با این شماره دانشجویی یافت نشد.')
+            check_id = sid
+        else:
+            student_id = request.POST.get('student_id', '').strip()
+            if LibraryMembership.objects.filter(student_id=student_id).exists():
+                messages.error(request, 'شماره دانشجویی قبلاً ثبت شده است. از بخش «پیگیری وضعیت» استفاده کنید.')
+            else:
+                LibraryMembership.objects.create(
+                    full_name=request.POST.get('full_name', '').strip(),
+                    student_id=student_id,
+                    email=request.POST.get('email', '').strip(),
+                    phone=request.POST.get('phone', '').strip(),
+                )
+                messages.success(request, 'درخواست عضویت ثبت شد و در انتظار تایید است.')
+                return redirect('library:membership')
+
+    elif check_id:
+        membership_result = LibraryMembership.objects.filter(student_id=check_id).first()
+
+    context = {
+        'page_title': 'عضویت در کتابخانه',
+        'membership_result': membership_result,
+        'check_id': check_id,
+    }
     return render(request, 'library/membership.html', context)

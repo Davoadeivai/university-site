@@ -1,0 +1,53 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <div>
+        <h2 class="mb-1">{{ teaching.course.name }}</h2>
+        <div class="text-muted" style="font-size:13px;">
+            {{ teaching.semester.name }} | کد {{ teaching.course.code }} | {{ student_count }} دانشجو
+            {% if teaching.classroom %} | کلاس {{ teaching.classroom }}{% endif %}
+        </div>
+    </div>
+    <a href="{% url 'dashboard:professor_courses' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+</div>
+
+{% if teaching.class_schedule %}
+<div class="uni-card p-3 mb-3"><strong>برنامه:</strong> {{ teaching.class_schedule }}</div>
+{% endif %}
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if enrollments %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>دانشجو</th>
+                    <th>وضعیت</th>
+                    <th>میان‌ترم</th>
+                    <th>نهایی</th>
+                    <th>حضور</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for en in enrollments %}
+                <tr>
+                    <td>{{ en.student.get_full_name|default:en.student.username }}</td>
+                    <td>{{ en.get_status_display }}</td>
+                    <td>{% if en.mid_term_grade %}{{ en.mid_term_grade }}{% else %}—{% endif %}</td>
+                    <td>{% if en.final_grade %}{{ en.final_grade }}{% else %}—{% endif %}</td>
+                    <td>{% if en.attendance_score %}{{ en.attendance_score }}{% else %}—{% endif %}</td>
+                    <td>
+                        <a href="{% url 'dashboard:professor_grade_edit' en.pk %}" class="btn btn-sm btn-outline-primary">ثبت نمره</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">دانشجویی در این درس ثبت‌نام نشده است.</p>
+    {% endif %}
+</div>
+{% endblock %}

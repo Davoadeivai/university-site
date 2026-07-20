@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">پروژه‌های پژوهشی</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 mb-4">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-6">
+                    <input type="search" name="q" value="{{ query }}" class="form-control" placeholder="جستجو در عنوان یا محقق">
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">همه وضعیت‌ها</option>
+                        <option value="ongoing" {% if status == 'ongoing' %}selected{% endif %}>در حال اجرا</option>
+                        <option value="completed" {% if status == 'completed' %}selected{% endif %}>تکمیل شده</option>
+                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>در انتظار</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn-primary-uni w-100">فیلتر</button>
+                </div>
+            </form>
+            <div class="text-muted mt-2" style="font-size:13px;">{{ result_count }} پروژه</div>
+        </div>
+
+        <div class="row g-4">
+            {% for proj in projects %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <a href="{% url 'research:project_detail' proj.pk %}" class="dept-card text-decoration-none h-100 d-block">
+                    <div class="dept-icon"><i class="fas fa-flask"></i></div>
+                    <h4 class="dept-title" style="font-size:16px;">{{ proj.title }}</h4>
+                    <div class="text-muted mb-2" style="font-size:13px;">{{ proj.researcher }}</div>
+                    <p class="text-muted" style="font-size:12px;">{{ proj.description|truncatewords:18 }}</p>
+                    <span class="badge bg-{% if proj.status == 'ongoing' %}success{% elif proj.status == 'completed' %}primary{% else %}warning{% endif %}">{{ proj.get_status_display }}</span>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5 text-muted">پروژه‌ای یافت نشد</div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status }}">قبلی</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status }}">بعدی</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

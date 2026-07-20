@@ -195,26 +195,16 @@ def password_reset_request(request):
 
                 sms_text = f'کد بازیابی رمز عبور شما: {otp.code}\nاین کد ۱۰ دقیقه اعتبار دارد.'
 
-                # ارسال پیامک — اگر کاوه‌نگار پیکربندی نشده باشد فقط لاگ می‌کنیم
-                api_key = getattr(django_settings, 'KAVENEGAR_API_KEY', '')
-                sms_enabled = getattr(django_settings, 'SMS_ENABLED', False)
-                if sms_enabled and api_key:
-                    try:
-                        import kavenegar
-                        api = kavenegar.KavenegarAPI(api_key)
-                        api.sms_send({
-                            'sender': getattr(django_settings, 'SMS_SENDER_NUMBER', ''),
-                            'receptor': phone,
-                            'message': sms_text,
-                        })
-                    except Exception:
-                        pass
-                else:
-                    # در محیط توسعه کد را در console نشان می‌دهیم
-                    import logging
-                    logging.getLogger('django').info(f'[SMS-DEV] {phone}: {sms_text}')
+                from core.sms import can_send_otp, mark_otp_sent, send_sms
+                ok, err = can_send_otp(phone, scope='reset')
+                if not ok:
+                    messages.error(request, err)
+                    return render(request, 'accounts/password_reset_request.html',
+                                  {'page_title': 'بازیابی رمز عبور', 'active_method': 'sms'})
 
-                # ذخیره شماره موبایل در session برای مرحله بعد
+                send_sms(phone, sms_text)
+                mark_otp_sent(phone, scope='reset')
+
                 request.session['otp_phone'] = phone
                 messages.success(request, f'کد تأیید به شماره {phone[:4]}****{phone[-3:]} ارسال شد.')
                 return redirect('accounts:password_reset_otp')
@@ -252,9 +242,16 @@ def password_reset_otp(request):
             return redirect('accounts:password_reset_request')
 
         user = profile_qs.first().user
-        otp  = OTPCode.objects.filter(user=user, code=code, is_used=False).order_by('-created_at').first()
+        from core.sms import can_verify_otp, mark_otp_verify_failed, clear_otp_verify_attempts
+        ok, err = can_verify_otp(phone, scope='reset')
+        if not ok:
+            messages.error(request, err)
+            return redirect('accounts:password_reset_request')
+
+        otp = OTPCode.objects.filter(user=user, code=code, is_used=False).order_by('-created_at').first()
 
         if not otp or not otp.is_valid():
+            mark_otp_verify_failed(phone, scope='reset')
             messages.error(request, 'کد تأیید نامعتبر یا منقضی شده است.')
             return render(request, 'accounts/password_reset_otp.html',
                           {'page_title': 'تأیید کد پیامکی', 'masked_phone': f'{phone[:4]}****{phone[-3:]}'})
@@ -268,6 +265,7 @@ def password_reset_otp(request):
         else:
             otp.is_used = True
             otp.save()
+            clear_otp_verify_attempts(phone, scope='reset')
             user.set_password(p1)
             user.save()
             del request.session['otp_phone']

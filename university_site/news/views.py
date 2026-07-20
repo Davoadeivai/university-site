@@ -56,11 +56,6 @@ def announcements(request):
 
 
 def gallery_media(request):
-    images = Gallery.objects.filter(is_active=True, media_type='image')
-    videos = Gallery.objects.filter(is_active=True, media_type='video')
-    context = {
-        'images': images,
-        'videos': videos,
-        'page_title': 'گالری تصاویر و ویدئوها',
-    }
-    return render(request, 'news/gallery.html', context)
+    """گالری یکپارچه — هدایت به مسیر اصلی."""
+    from django.shortcuts import redirect
+    return redirect('core:gallery')

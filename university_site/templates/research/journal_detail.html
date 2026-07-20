@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'research:journals' %}" class="text-white-50">مجلات</a></li>
+                <li class="breadcrumb-item active text-white">{{ journal.title }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title" style="font-size:1.5rem;">{{ journal.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 p-md-5">
+            <div class="row g-4 align-items-start">
+                <div class="col-md-3 text-center">
+                    {% if journal.cover %}
+                    <img src="{{ journal.cover.url }}" alt="" class="book-detail-cover">
+                    {% else %}
+                    <div class="book-detail-cover book-detail-cover-ph"><i class="fas fa-book-open fa-3x"></i></div>
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    {% if journal.issn %}<p class="mb-2"><strong>ISSN:</strong> {{ journal.issn }}</p>{% endif %}
+                    {% if journal.description %}
+                    <p class="text-muted" style="line-height:2;">{{ journal.description|linebreaksbr }}</p>
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        {% if journal.website %}
+                        <a href="{{ journal.website }}" class="btn-primary-uni" target="_blank" rel="noopener">وب‌سایت مجله</a>
+                        {% endif %}
+                        <a href="{% url 'research:journals' %}" class="btn btn-outline-secondary">بازگشت</a>
+                        <a href="{% url 'library:articles' %}" class="btn btn-outline-primary">مقالات کتابخانه</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -43,14 +43,18 @@ class Slider(models.Model):
         ('success', 'سبز (اطلاع)'),
         ('info',    'آبی روشن'),
         ('primary', 'آبی'),
+        ('gold',    'طلایی'),
         ('dark',    'تیره'),
     ]
     title = models.CharField(_('عنوان'), max_length=200)
-    subtitle = models.CharField(_('زیرعنوان'), max_length=300, blank=True)
+    subtitle = models.CharField(_('زیرعنوان'), max_length=400, blank=True)
     image = models.ImageField(_('تصویر'), upload_to='sliders/')
-    link = models.URLField(_('لینک'), blank=True)
-    link_text = models.CharField(_('متن لینک'), max_length=100, blank=True)
-    # ── خبر/اعلان مهم روی تصویر ──
+    # دکمه اول (اصلی)
+    link = models.CharField(_('لینک دکمه اول'), max_length=300, blank=True)
+    link_text = models.CharField(_('متن دکمه اول'), max_length=100, blank=True)
+    # دکمه دوم
+    btn2_text = models.CharField(_('متن دکمه دوم'), max_length=80, blank=True)
+    btn2_url = models.CharField(_('لینک دکمه دوم'), max_length=300, blank=True)
     badge_text = models.CharField(
         _('متن اعلان مهم'), max_length=150, blank=True,
         help_text=_('این متن به صورت برچسب روی تصویر اسلایدر نمایش داده می‌شود')
@@ -78,46 +82,7 @@ class Slider(models.Model):
         return self.title
 
 
-class LandingSlider(models.Model):
-    """اسلایدرهای صفحه اصلی (لندینگ پیج) — قابل مدیریت از ادمین"""
-    BADGE_COLOR_CHOICES = [
-        ('danger',  'قرمز (فوری)'),
-        ('warning', 'زرد (هشدار)'),
-        ('success', 'سبز (اطلاع)'),
-        ('info',    'آبی روشن'),
-        ('gold',    'طلایی'),
-        ('dark',    'تیره'),
-    ]
-    title = models.CharField(_('عنوان اصلی'), max_length=200)
-    subtitle = models.CharField(_('زیرعنوان'), max_length=400, blank=True)
-    image = models.ImageField(_('تصویر پس‌زمینه'), upload_to='landing_sliders/')
-    badge_text = models.CharField(
-        _('متن اعلان / خبر مهم'), max_length=150, blank=True,
-        help_text=_('این متن به صورت برچسب رنگی روی تصویر نمایش داده می‌شود (اختیاری)')
-    )
-    badge_color = models.CharField(
-        _('رنگ اعلان'), max_length=20, choices=BADGE_COLOR_CHOICES,
-        default='danger', blank=True
-    )
-    badge_icon = models.CharField(
-        _('آیکون اعلان'), max_length=80, blank=True, default='fas fa-bell',
-        help_text=_('کلاس FontAwesome — مثال: fas fa-calendar-alt')
-    )
-    btn1_text = models.CharField(_('متن دکمه اول'), max_length=80, blank=True, default='شروع پذیرش')
-    btn1_url = models.CharField(_('لینک دکمه اول'), max_length=200, blank=True, default='/admissions/')
-    btn2_text = models.CharField(_('متن دکمه دوم'), max_length=80, blank=True, default='کاوش در دانشگاه')
-    btn2_url = models.CharField(_('لینک دکمه دوم'), max_length=200, blank=True, default='/خانه/')
-    order = models.PositiveIntegerField(_('ترتیب نمایش'), default=0)
-    is_active = models.BooleanField(_('فعال'), default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = _('اسلایدر لندینگ')
-        verbose_name_plural = _('اسلایدرهای لندینگ')
-        ordering = ['order']
-
-    def __str__(self):
-        return self.title
+# LandingSlider حذف شد — همه اسلایدها در Slider یکپارچه شدند.
 
 
 class QuickLink(models.Model):

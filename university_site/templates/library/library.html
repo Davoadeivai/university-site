@@ -1,36 +1,195 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">کتابخانه</h1></div></div>
-<section class="section"><div class="container">
-<div class="row g-4 mb-5">
-<div class="col-lg-8">
-<form method="get" class="mb-4" data-aos="fade-up">
-<div class="input-group"><input type="search" name="q" value="{{ query }}" class="form-control form-control-lg" placeholder="جستجو در کتاب‌ها..." style="border-radius:25px 0 0 25px!important;"><button class="btn-search" type="submit"><i class="fas fa-search"></i></button></div>
-</form>
-<div class="row g-3">
-{% for book in books %}
-<div class="col-12" data-aos="fade-up">
-<div class="uni-card p-3">
-<div class="d-flex gap-3">
-{% if book.cover %}<img src="{{ book.cover.url }}" style="width:60px;height:80px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;" alt="{{ book.title }}">{% else %}<div style="width:60px;height:80px;background:var(--gradient-primary);border-radius:var(--radius-sm);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><i class="fas fa-book" style="color:rgba(255,255,255,0.5);font-size:24px;"></i></div>{% endif %}
-<div>
-<h5 class="mb-1 fw-bold" style="font-size:15px;">{{ book.title }}</h5>
-<div class="text-muted" style="font-size:13px;">{{ book.author }}{% if book.translator %} | مترجم: {{ book.translator }}{% endif %}</div>
-<div class="text-muted" style="font-size:12px; margin-top:4px;"><i class="fas fa-building"></i> {{ book.publisher }} | {{ book.year }}</div>
-<div class="mt-2">{% if book.is_available %}<span class="badge bg-success">موجود ({{ book.copies_available }})</span>{% else %}<span class="badge bg-danger">ناموجود</span>{% endif %}
-{% if book.isbn %}<span class="uni-card-badge">ISBN: {{ book.isbn }}</span>{% endif %}</div>
-</div></div></div></div>
-{% empty %}
-<div class="col-12 text-center py-5 text-muted"><i class="fas fa-book fa-3x mb-3 d-block opacity-25"></i>کتابی یافت نشد</div>
-{% endfor %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">کتابخانه دیجیتال</h1>
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">جستجو در کاتالوگ کتاب‌ها و مقالات علمی</p>
+    </div>
 </div>
-</div>
-<div class="col-lg-4">
-<div class="uni-card p-4 mb-4">
-<h5 class="fw-bold text-primary-uni mb-3">خدمات کتابخانه</h5>
-<a href="{% url 'library:membership' %}" class="quick-link-card mb-3 d-block text-center"><div class="quick-link-icon mx-auto"><i class="fas fa-id-card"></i></div><div class="quick-link-title">عضویت</div></a>
-<a href="{% url 'research:theses' %}" class="quick-link-card d-block text-center"><div class="quick-link-icon mx-auto"><i class="fas fa-scroll"></i></div><div class="quick-link-title">پایان‌نامه‌ها</div></a>
-</div>
-</div>
-</div></div></section>
+
+<section class="section" style="padding-top:1.5rem;">
+    <div class="container">
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#3b82d4,#2563eb)"><i class="fas fa-book"></i></div>
+                    <div><div class="dash-stat-num">{{ stats.books }}</div><div class="dash-stat-label">عنوان کتاب</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fas fa-check"></i></div>
+                    <div><div class="dash-stat-num">{{ stats.available }}</div><div class="dash-stat-label">موجود برای امانت</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="fas fa-file-alt"></i></div>
+                    <div><div class="dash-stat-num">{{ stats.articles }}</div><div class="dash-stat-label">مقاله</div></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{% url 'library:membership' %}" class="dash-stat-card text-decoration-none">
+                    <div class="dash-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><i class="fas fa-id-card"></i></div>
+                    <div><div class="dash-stat-num" style="font-size:18px;">عضویت</div><div class="dash-stat-label">ثبت یا پیگیری</div></div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="uni-card p-4 mb-4">
+                    <form method="get">
+                        <div class="input-group mb-3">
+                            <input type="search" name="q" value="{{ query }}" class="form-control form-control-lg"
+                                   placeholder="عنوان، نویسنده، شابک، موضوع یا ناشر..."
+                                   style="border-radius:25px 0 0 25px!important;">
+                            <button class="btn-search" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <select name="subject" class="form-select">
+                                    <option value="">همه موضوعات</option>
+                                    {% for s in subjects %}
+                                    <option value="{{ s }}" {% if subject == s %}selected{% endif %}>{{ s }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="language" class="form-select">
+                                    <option value="">همه زبان‌ها</option>
+                                    {% for lang in languages %}
+                                    <option value="{{ lang }}" {% if language == lang %}selected{% endif %}>{{ lang }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="year" class="form-select">
+                                    <option value="">همه سال‌ها</option>
+                                    {% for y in years %}
+                                    <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="availability" class="form-select">
+                                    <option value="">موجودی</option>
+                                    <option value="available" {% if availability == 'available' %}selected{% endif %}>موجود</option>
+                                    <option value="unavailable" {% if availability == 'unavailable' %}selected{% endif %}>ناموجود</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary">اعمال فیلتر</button>
+                            <span class="text-muted" style="font-size:13px;">{{ result_count }} نتیجه</span>
+                        </div>
+                    </form>
+                </div>
+
+                {% for book in books %}
+                <a href="{% url 'library:book_detail' book.pk %}" class="uni-card p-3 mb-3 d-block text-decoration-none catalog-item" data-aos="fade-up">
+                    <div class="d-flex gap-3">
+                        {% if book.cover %}
+                        <img src="{{ book.cover.url }}" class="catalog-cover" alt="{{ book.title }}">
+                        {% else %}
+                        <div class="catalog-cover catalog-cover-ph"><i class="fas fa-book"></i></div>
+                        {% endif %}
+                        <div class="flex-grow-1 min-w-0">
+                            <h5 class="mb-1 fw-bold text-primary-uni" style="font-size:15px;">{{ book.title }}</h5>
+                            <div class="text-muted" style="font-size:13px;">
+                                {{ book.author }}{% if book.translator %} | مترجم: {{ book.translator }}{% endif %}
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:12px;">
+                                {% if book.publisher %}<i class="fas fa-building"></i> {{ book.publisher }} | {% endif %}{{ book.year }}
+                                {% if book.subject %} | {{ book.subject }}{% endif %}
+                                {% if book.language %} | {{ book.language }}{% endif %}
+                            </div>
+                            <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
+                                {% if book.is_available and book.copies_available %}
+                                <span class="badge bg-success">موجود ({{ book.copies_available }})</span>
+                                {% else %}
+                                <span class="badge bg-danger">ناموجود</span>
+                                {% endif %}
+                                {% if book.location %}<span class="uni-card-badge">قفسه: {{ book.location }}</span>{% endif %}
+                                {% if book.isbn %}<span class="uni-card-badge">ISBN {{ book.isbn }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="uni-card p-5 text-center text-muted">
+                    <i class="fas fa-book fa-3x mb-3 d-block opacity-25"></i>
+                    کتابی با این مشخصات یافت نشد.
+                </div>
+                {% endfor %}
+
+                {% if page_obj.has_other_pages %}
+                <nav class="mt-4" aria-label="صفحه‌بندی">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&subject={{ subject }}&language={{ language }}&year={{ year }}&availability={{ availability }}">قبلی</a></li>
+                        {% endif %}
+                        <li class="page-item disabled"><span class="page-link">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&subject={{ subject }}&language={{ language }}&year={{ year }}&availability={{ availability }}">بعدی</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+                <div class="uni-card p-4 mb-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">خدمات کتابخانه</h5>
+                    <a href="{% url 'library:membership' %}" class="quick-link-card mb-2 d-block text-center" style="padding:14px;">
+                        <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-id-card"></i></div>
+                        <div class="quick-link-title" style="font-size:13px;">عضویت / پیگیری</div>
+                    </a>
+                    <a href="{% url 'library:articles' %}" class="quick-link-card mb-2 d-block text-center" style="padding:14px;">
+                        <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-file-alt"></i></div>
+                        <div class="quick-link-title" style="font-size:13px;">مقالات علمی</div>
+                    </a>
+                    <a href="{% url 'research:theses' %}" class="quick-link-card d-block text-center" style="padding:14px;">
+                        <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-scroll"></i></div>
+                        <div class="quick-link-title" style="font-size:13px;">پایان‌نامه‌ها</div>
+                    </a>
+                </div>
+
+                {% if recent_articles %}
+                <div class="uni-card p-4 mb-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="fw-bold text-primary-uni mb-0">مقالات تازه</h5>
+                        <a href="{% url 'library:articles' %}" class="uni-card-link" style="font-size:12px;">همه</a>
+                    </div>
+                    {% for art in recent_articles %}
+                    <a href="{% url 'library:article_detail' art.pk %}" class="d-block text-decoration-none mb-3">
+                        <div class="fw-bold text-primary-uni" style="font-size:13px;">{{ art.title|truncatechars:70 }}</div>
+                        <div class="text-muted" style="font-size:12px;">{{ art.authors|truncatechars:40 }} — {{ art.year }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if recent_books %}
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">تازه‌های قفسه</h5>
+                    {% for b in recent_books %}
+                    <a href="{% url 'library:book_detail' b.pk %}" class="d-flex gap-2 text-decoration-none mb-2 align-items-center">
+                        {% if b.cover %}
+                        <img src="{{ b.cover.url }}" alt="" style="width:36px;height:48px;object-fit:cover;border-radius:4px;">
+                        {% else %}
+                        <div style="width:36px;height:48px;background:var(--gradient-primary);border-radius:4px;"></div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-bold" style="font-size:12px;color:var(--primary);">{{ b.title|truncatechars:40 }}</div>
+                            <div class="text-muted" style="font-size:11px;">{{ b.author|truncatechars:30 }}</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

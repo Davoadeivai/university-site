@@ -1,18 +1,81 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">پنل دانشجویی</h1></div></div>
-<section class="section"><div class="container">
-<div class="row g-4">
-{% with links="سامانه آموزشی|fas fa-graduation-cap|#|primary,انتخاب واحد|fas fa-list-check|#|success,پرداخت شهریه|fas fa-credit-card|#|warning,درخواست‌ها|fas fa-file-alt|#|info,فرم‌ها|fas fa-file-pdf|#|danger,خوابگاه|fas fa-bed|#|secondary,تقویم آموزشی|fas fa-calendar|/آموزش/تقویم-آموزشی/|primary,امتحانات|fas fa-pencil-alt|#|warning,فارغ‌التحصیلی|fas fa-hat-graduation|#|success" %}
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up"><a href="{% url 'academics:calendar' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-graduation-cap"></i></div><div class="quick-link-title">سامانه آموزشی</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="50"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-list-check"></i></div><div class="quick-link-title">انتخاب واحد</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="100"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-credit-card"></i></div><div class="quick-link-title">پرداخت شهریه</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-file-alt"></i></div><div class="quick-link-title">درخواست‌ها</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-file-pdf"></i></div><div class="quick-link-title">فرم‌ها</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="250"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-bed"></i></div><div class="quick-link-title">خوابگاه</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300"><a href="{% url 'academics:calendar' %}" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-calendar-alt"></i></div><div class="quick-link-title">تقویم آموزشی</div></a></div>
-<div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="350"><a href="#" class="quick-link-card"><div class="quick-link-icon"><i class="fas fa-pencil-alt"></i></div><div class="quick-link-title">امتحانات</div></a></div>
-{% endwith %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">پنل دانشجویی</h1>
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">دروس، نمرات، تکالیف و درخواست‌ها</p>
+    </div>
 </div>
-</div></section>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 p-md-5 mb-4" data-aos="fade-up">
+            <h2 class="fw-bold text-primary-uni mb-2" style="font-size:1.35rem;">سامانه آموزشی دانشجو</h2>
+            <p class="text-muted mb-3" style="line-height:1.9;">
+                این صفحه ورودی پنل واقعی دانشجو است. پس از ورود می‌توانید دروس ترم، نمرات،
+                تکالیف، امتحانات، درخواست‌ها و سوابق پرداخت را مدیریت کنید.
+            </p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard:dashboard' %}" class="btn-primary-uni">
+                <i class="fas fa-th-large me-1"></i> ورود به پنل من
+            </a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'dashboard:dashboard' %}" class="btn-primary-uni">
+                <i class="fas fa-sign-in-alt me-1"></i> ورود به پنل
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
+                <a href="{% url 'dashboard:student_courses' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-book"></i></div>
+                    <div class="quick-link-title">دروس من</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="40">
+                <a href="{% url 'dashboard:student_grades' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="quick-link-title">نمرات</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+                <a href="{% url 'dashboard:student_assignments' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-tasks"></i></div>
+                    <div class="quick-link-title">تکالیف</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+                <a href="{% url 'dashboard:student_exams' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-pencil-alt"></i></div>
+                    <div class="quick-link-title">امتحانات</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="160">
+                <a href="{% url 'dashboard:student_requests' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-inbox"></i></div>
+                    <div class="quick-link-title">درخواست‌ها</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <a href="{% url 'dashboard:student_payments' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-credit-card"></i></div>
+                    <div class="quick-link-title">پرداخت‌ها</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="240">
+                <a href="{% url 'admissions:tuition_calc' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-calculator"></i></div>
+                    <div class="quick-link-title">محاسبه‌گر شهریه</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="280">
+                <a href="{% url 'academics:calendar' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="quick-link-title">تقویم آموزشی</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>ارسال تکلیف</h2>
+    <a href="{% url 'dashboard:student_assignments' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+</div>
+
+<div class="uni-card p-4 mb-4">
+    <h5 class="fw-bold mb-2">{{ assignment.title }}</h5>
+    <p class="text-muted mb-2">{{ assignment.course.name }} | مهلت: {{ assignment.due_date|date:"Y/m/d H:i" }} | سقف نمره: {{ assignment.max_score }}</p>
+    <p>{{ assignment.description }}</p>
+    {% if assignment.file %}
+    <a href="{{ assignment.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank"><i class="fas fa-download me-1"></i> فایل تکلیف</a>
+    {% endif %}
+</div>
+
+<div class="uni-card p-4" style="max-width:520px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label" for="id_file">فایل تحویل</label>
+            {{ form.file }}
+            {% if submission %}<div class="form-text">ارسال قبلی: {{ submission.submitted_at|date:"Y/m/d H:i" }}</div>{% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary-uni">ثبت ارسال</button>
+    </form>
+</div>
+{% endblock %}

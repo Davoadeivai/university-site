@@ -1,0 +1,42 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>نمرات و کارنامه</h2>
+    {% if grade_average %}<span class="badge bg-primary">میانگین وزنی: {{ grade_average }}</span>{% endif %}
+</div>
+
+{% for group in by_semester %}
+<div class="uni-card p-0 overflow-hidden mb-4">
+    <div class="p-3 border-bottom"><strong>{{ group.semester.name }}</strong> <span class="text-muted">{{ group.semester.academic_year }}</span></div>
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>درس</th>
+                    <th>واحد</th>
+                    <th>میان‌ترم</th>
+                    <th>نهایی</th>
+                    <th>حضور</th>
+                    <th>وضعیت</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for en in group.items %}
+                <tr>
+                    <td>{{ en.course.name }}</td>
+                    <td>{{ en.course.credits }}</td>
+                    <td>{% if en.mid_term_grade %}{{ en.mid_term_grade }}{% else %}—{% endif %}</td>
+                    <td>{% if en.final_grade %}<strong>{{ en.final_grade }}</strong>{% else %}—{% endif %}</td>
+                    <td>{% if en.attendance_score %}{{ en.attendance_score }}{% else %}—{% endif %}</td>
+                    <td>{{ en.get_status_display }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% empty %}
+<div class="uni-card"><p class="panel-empty">هنوز نمره‌ای ثبت نشده است.</p></div>
+{% endfor %}
+{% endblock %}

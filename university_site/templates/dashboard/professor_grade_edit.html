@@ -1,0 +1,31 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>ثبت نمره — {{ enrollment.student.get_full_name|default:enrollment.student.username }}</h2>
+</div>
+
+<div class="uni-card p-4" style="max-width:480px;">
+    <p class="text-muted mb-3">{{ enrollment.course.name }} | {{ enrollment.semester.name }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label" for="id_mid_term_grade">میان‌ترم</label>
+            {{ form.mid_term_grade }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="id_final_grade">نهایی</label>
+            {{ form.final_grade }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="id_attendance_score">حضور</label>
+            {{ form.attendance_score }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="id_status">وضعیت درس</label>
+            {{ form.status }}
+        </div>
+        <button type="submit" class="btn btn-primary-uni">ذخیره</button>
+    </form>
+</div>
+{% endblock %}

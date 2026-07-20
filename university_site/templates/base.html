@@ -18,11 +18,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Google Fonts - Vazirmatn -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <!-- Swiper -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <!-- IntroJS site tour -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs-rtl.min.css">
@@ -31,6 +29,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+<a class="skip-link" href="#mainContent">پرش به محتوای اصلی</a>
 
 <!-- Top Bar -->
 <div class="topbar">
@@ -45,19 +44,18 @@
             <div class="col-md-6 d-flex justify-content-end align-items-center gap-3">
                 <div class="social-links">
                     {% if site_settings %}
-                    {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" target="_blank"><i class="fab fa-telegram"></i></a>{% endif %}
-                    {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
-                    {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
-                    {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" target="_blank"><i class="fab fa-youtube"></i></a>{% endif %}
+                    {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" target="_blank" rel="noopener noreferrer" aria-label="تلگرام"><i class="fab fa-telegram"></i></a>{% endif %}
+                    {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام"><i class="fab fa-instagram"></i></a>{% endif %}
+                    {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" target="_blank" rel="noopener noreferrer" aria-label="لینکدین"><i class="fab fa-linkedin"></i></a>{% endif %}
+                    {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" target="_blank" rel="noopener noreferrer" aria-label="یوتیوب"><i class="fab fa-youtube"></i></a>{% endif %}
                     {% endif %}
                 </div>
                 <!-- Site Tour Button -->
-                <button id="startSiteTour" class="btn btn-sm btn-tour d-none d-md-inline-flex align-items-center gap-1" title="راهنمای سایت">
+                <button id="startSiteTour" class="btn btn-sm btn-tour d-none d-md-inline-flex align-items-center gap-1" title="راهنمای سایت" type="button" aria-label="راهنمای سایت">
                     <i class="fas fa-map-signs"></i> راهنمای سایت
                 </button>
-                <div class="lang-switch">
-                    <a href="?lang=fa" class="btn btn-sm btn-outline-light">FA</a>
-                    <a href="?lang=en" class="btn btn-sm btn-outline-light">EN</a>
+                <div class="lang-switch" aria-hidden="true" title="نسخه چندزبانه به‌زودی">
+                    <span class="btn btn-sm btn-outline-light disabled">FA</span>
                 </div>
                 {% if user.is_authenticated %}
                 <a href="{% url 'dashboard:dashboard' %}" class="btn btn-sm btn-warning">
@@ -79,21 +77,32 @@
 <!-- Main Navbar — طرح مطابق عکس: تیره، ساده، بدون آیکون -->
 <nav class="navbar navbar-expand-xl sticky-top main-navbar" id="mainNav">
     <div class="container-fluid px-0">
-        <button class="navbar-toggler ms-2 me-2 mt-1 mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="border-color:rgba(255,255,255,0.4);">
+        <button class="navbar-toggler ms-2 me-2 mt-1 mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="باز و بسته کردن منو" style="border-color:rgba(255,255,255,0.4);">
             <span class="navbar-toggler-icon" style="filter:invert(1);"></span>
         </button>
+        <div class="d-flex d-xl-none align-items-center gap-2 ms-auto me-2">
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard:dashboard' %}" class="btn btn-sm btn-warning" aria-label="داشبورد"><i class="fas fa-tachometer-alt"></i></a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-light" aria-label="ورود"><i class="fas fa-sign-in-alt"></i> ورود</a>
+            {% endif %}
+        </div>
 
         <div class="collapse navbar-collapse" id="navbarMain">
             <ul class="navbar-nav w-100 justify-content-center">
 
                 <!-- صفحه اصلی -->
                 <li class="nav-item">
-                    <a class="nav-link-flat {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">صفحه اصلی</a>
+                    <a class="nav-link-flat {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                        <i class="fas fa-home" style="font-size:13px;margin-left:3px;"></i> صفحه اصلی
+                    </a>
                 </li>
 
                 <!-- درباره موسسه -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">درباره موسسه</a>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-university" style="font-size:13px;margin-left:3px;"></i> درباره موسسه
+                    </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">معرفی و تاریخچه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم انداز و اهداف</a></li>
@@ -101,13 +110,15 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_founders' %}">هیات موسس دانشگاه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امنا دانشگاه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">آشنایی با شهر بهنمیر</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:city_behnammir' %}">آشنایی با شهر بهنمیر</a></li>
                     </ul>
                 </li>
 
                 <!-- حوزه ریاست -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">حوزه ریاست</a>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-user-tie" style="font-size:13px;margin-left:3px;"></i> حوزه ریاست
+                    </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency' %}">ریاست</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office' %}">دفتر ریاست</a></li>
@@ -120,7 +131,9 @@
 
                 <!-- معاونت‌ها -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">معاونت ها</a>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-sitemap" style="font-size:13px;margin-left:3px;"></i> معاونت ها
+                    </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'education' %}">معاونت آموزشی و تحصیلات تکمیلی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'student' %}">معاونت دانشجویی و فرهنگی</a></li>
@@ -132,7 +145,9 @@
 
                 <!-- گروه‌های آموزشی — dynamic از DB -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">گروه های آموزشی</a>
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-chalkboard-teacher" style="font-size:13px;margin-left:3px;"></i> گروه های آموزشی
+                    </a>
                     <ul class="dropdown-menu nav-dd" style="max-height:460px;overflow-y:auto;">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:groups_list' %}">همه گروه‌ها</a></li>
                         <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.15);margin:4px 0;"></li>
@@ -146,35 +161,123 @@
                     </ul>
                 </li>
 
-                <!-- تحصیلات تکمیلی -->
+                <!-- پذیرش دانشجو — همه مقاطع (کاردانی تا دکتری) -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">تحصیلات تکمیلی</a>
-                    <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=master">کارشناسی ارشد</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=phd">دکتری</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">پایان‌نامه‌ها</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:calendar' %}">تقویم آموزشی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:students_panel' %}">پنل دانشجویی</a></li>
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'admissions:admissions' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                       style="color:#f0d080!important;">
+                        <i class="fas fa-user-graduate" style="font-size:13px;margin-left:3px;"></i> پذیرش دانشجو
+                    </a>
+                    <ul class="dropdown-menu nav-dd" style="min-width:300px;">
+
+                        <li>
+                            <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
+                                <i class="fas fa-file-signature me-1"></i> پذیرش یکپارچه (همه مقاطع)
+                            </span>
+                        </li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:admissions' %}">
+                            <i class="fas fa-info-circle me-1" style="width:16px;"></i> اطلاعات پذیرش
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:apply_otp_send' %}">
+                            <i class="fas fa-user-plus me-1" style="width:16px;"></i> ثبت‌نام بدون آزمون
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:track' %}">
+                            <i class="fas fa-search me-1" style="width:16px;"></i> پیگیری وضعیت درخواست
+                        </a></li>
+
+                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
+
+                        <li>
+                            <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
+                                <i class="fas fa-graduation-cap me-1"></i> رشته‌ها و مقاطع
+                            </span>
+                        </li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=associate">
+                            <i class="fas fa-book me-1" style="width:16px;"></i> کاردانی
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=bachelor">
+                            <i class="fas fa-book-open me-1" style="width:16px;"></i> کارشناسی
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=master">
+                            <i class="fas fa-scroll me-1" style="width:16px;"></i> کارشناسی ارشد
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=phd">
+                            <i class="fas fa-university me-1" style="width:16px;"></i> دکتری
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">
+                            <i class="fas fa-book-reader me-1" style="width:16px;"></i> پایان‌نامه‌ها
+                        </a></li>
+
+                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
+
+                        <li>
+                            <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
+                                <i class="fas fa-laptop me-1"></i> خدمات دانشجویی
+                            </span>
+                        </li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:students_panel' %}">
+                            <i class="fas fa-desktop me-1" style="width:16px;"></i> پنل دانشجو
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:professors_panel' %}">
+                            <i class="fas fa-chalkboard-teacher me-1" style="width:16px;"></i> پنل استاد
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'dashboard:dashboard' %}">
+                            <i class="fas fa-th-large me-1" style="width:16px;"></i> ورود به سامانه آموزشی
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:calendar' %}">
+                            <i class="fas fa-calendar-alt me-1" style="width:16px;"></i> تقویم آموزشی
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:elearning' %}">
+                            <i class="fas fa-laptop me-1" style="width:16px;"></i> آموزش الکترونیکی
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:eservices' %}">
+                            <i class="fas fa-globe me-1" style="width:16px;"></i> همه خدمات الکترونیکی
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-id-badge me-1" style="width:16px;"></i> پروفایل من
+                        </a></li>
+
+                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
+
+                        <li>
+                            <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
+                                <i class="fas fa-money-bill-wave me-1"></i> شهریه
+                            </span>
+                        </li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:tuition' %}">
+                            <i class="fas fa-file-invoice-dollar me-1" style="width:16px;"></i> اطلاعات شهریه
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:tuition_calc' %}">
+                            <i class="fas fa-calculator me-1" style="width:16px;"></i> محاسبه‌گر آنلاین شهریه
+                        </a></li>
+
                     </ul>
                 </li>
 
                 <!-- بانک اطلاعات علمی -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">بانک اطلاعات علمی</a>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-database" style="font-size:13px;margin-left:3px;"></i> بانک اطلاعات علمی
+                    </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'research:research' %}">معاونت پژوهشی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:projects' %}">پروژه‌های پژوهشی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:journals' %}">مجلات علمی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">پایان‌نامه‌ها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'research:conferences' %}">همایش‌ها و کنفرانس‌ها</a></li>
+                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">کتابخانه دیجیتال</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:articles' %}">مقالات علمی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'faculty:list' %}">اعضای هیئت علمی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:elearning' %}">آموزش الکترونیکی</a></li>
                     </ul>
                 </li>
 
                 <!-- گالری تصاویر -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">گالری تصاویر</a>
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-images" style="font-size:13px;margin-left:3px;"></i> گالری تصاویر
+                    </a>
                     <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'news:gallery' %}">گالری تصاویر</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:gallery' %}">گالری تصاویر</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'news:list' %}">اخبار و رویدادها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'news:announcements' %}">اطلاعیه‌ها</a></li>
                     </ul>
@@ -182,7 +285,9 @@
 
                 <!-- تماس با ما -->
                 <li class="nav-item">
-                    <a class="nav-link-flat" href="{% url 'contact:contact' %}">تماس با ما</a>
+                    <a class="nav-link-flat" href="{% url 'contact:contact' %}">
+                        <i class="fas fa-phone-alt" style="font-size:13px;margin-left:3px;"></i> تماس با ما
+                    </a>
                 </li>
 
             </ul>
@@ -220,7 +325,7 @@
 {% endif %}
 
 <!-- Page Content -->
-<main class="main-content">
+<main class="main-content" id="mainContent">
     {% block content %}{% endblock %}
 </main>
 
@@ -242,10 +347,10 @@
                         <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}دانشگاه جامع علمی کاربردی با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
                         <div class="social-links mt-3">
                             {% if site_settings %}
-                            {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank"><i class="fab fa-telegram"></i></a>{% endif %}
-                            {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" class="social-btn instagram" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
-                            {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" class="social-btn linkedin" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
-                            {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" class="social-btn youtube" target="_blank"><i class="fab fa-youtube"></i></a>{% endif %}
+                            {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank" rel="noopener noreferrer" aria-label="تلگرام"><i class="fab fa-telegram"></i></a>{% endif %}
+                            {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" class="social-btn instagram" target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام"><i class="fab fa-instagram"></i></a>{% endif %}
+                            {% if site_settings.linkedin %}<a href="{{ site_settings.linkedin }}" class="social-btn linkedin" target="_blank" rel="noopener noreferrer" aria-label="لینکدین"><i class="fab fa-linkedin"></i></a>{% endif %}
+                            {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" class="social-btn youtube" target="_blank" rel="noopener noreferrer" aria-label="یوتیوب"><i class="fab fa-youtube"></i></a>{% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -273,12 +378,13 @@
                     <div class="footer-widget">
                         <h6 class="footer-title">خدمات الکترونیکی</h6>
                         <ul class="footer-links">
-                            <li><a href="{% url 'academics:students_panel' %}"><i class="fas fa-angle-left"></i> سامانه آموزشی</a></li>
+                            <li><a href="{% url 'dashboard:dashboard' %}"><i class="fas fa-angle-left"></i> سامانه آموزشی</a></li>
+                            <li><a href="{% url 'academics:students_panel' %}"><i class="fas fa-angle-left"></i> پنل دانشجو</a></li>
+                            <li><a href="{% url 'academics:professors_panel' %}"><i class="fas fa-angle-left"></i> پنل استاد</a></li>
                             <li><a href="{% url 'academics:elearning' %}"><i class="fas fa-angle-left"></i> آموزش الکترونیکی</a></li>
                             <li><a href="{% url 'library:library' %}"><i class="fas fa-angle-left"></i> کتابخانه دیجیتال</a></li>
-                            <li><a href="{% url 'research:theses' %}"><i class="fas fa-angle-left"></i> پایان‌نامه‌ها</a></li>
-                            <li><a href="{% url 'contact:alumni' %}"><i class="fas fa-angle-left"></i> فارغ‌التحصیلان</a></li>
-                            <li><a href="{% url 'contact:industry' %}"><i class="fas fa-angle-left"></i> ارتباط با صنعت</a></li>
+                            <li><a href="{% url 'admissions:apply_otp_send' %}"><i class="fas fa-angle-left"></i> پذیرش آنلاین</a></li>
+                            <li><a href="{% url 'core:eservices' %}"><i class="fas fa-angle-left"></i> همه خدمات</a></li>
                         </ul>
                     </div>
                 </div>
@@ -356,7 +462,6 @@
                 <div class="col-md-6 text-center text-md-end">
                     <a href="{% url 'core:faq' %}" class="footer-bottom-link">سوالات متداول</a>
                     <a href="{% url 'core:eservices' %}" class="footer-bottom-link">خدمات الکترونیکی</a>
-                    <a href="/admin/" class="footer-bottom-link">پنل مدیریت</a>
                 </div>
             </div>
         </div>
@@ -364,43 +469,44 @@
 </footer>
 
 <!-- Scroll to Top -->
-<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">
-    <i class="fas fa-chevron-up"></i>
+<button class="scroll-top" id="scrollTop" type="button" aria-label="بازگشت به بالا" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <i class="fas fa-chevron-up" aria-hidden="true"></i>
 </button>
 
 <!-- Chatbot Toggle -->
-<div class="chatbot-btn" id="chatbotBtn" onclick="toggleChatbot()">
-    <i class="fas fa-robot"></i>
+<button type="button" class="chatbot-btn" id="chatbotBtn" onclick="toggleChatbot()" aria-label="باز کردن دستیار هوشمند" aria-expanded="false" aria-controls="chatbotWidget">
+    <i class="fas fa-robot" aria-hidden="true"></i>
     <span class="chatbot-badge">AI</span>
-</div>
+</button>
 
 <!-- Chatbot Widget -->
-<div class="chatbot-widget" id="chatbotWidget" style="display:none;">
+<div class="chatbot-widget" id="chatbotWidget" style="display:none;" role="dialog" aria-label="دستیار هوشمند">
     <div class="chatbot-header">
         <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-robot"></i>
+            <i class="fas fa-robot" aria-hidden="true"></i>
             <div>
                 <div class="fw-bold">دستیار هوشمند</div>
                 <small>همیشه آنلاین</small>
             </div>
         </div>
-        <button onclick="toggleChatbot()" class="btn btn-sm btn-close-chatbot"><i class="fas fa-times"></i></button>
+        <button type="button" onclick="toggleChatbot()" class="btn btn-sm btn-close-chatbot" aria-label="بستن چت"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="chatbot-messages" id="chatMessages">
         <div class="chat-msg bot-msg">
-            <i class="fas fa-robot"></i>
+            <i class="fas fa-robot" aria-hidden="true"></i>
             <div class="msg-bubble">سلام! من دستیار هوشمند دانشگاه هستم. چطور می‌توانم کمکتان کنم؟</div>
         </div>
     </div>
     <div class="chatbot-quick-btns">
-        <button onclick="sendQuickMsg('پذیرش دانشجو')">پذیرش</button>
-        <button onclick="sendQuickMsg('رشته‌های تحصیلی')">رشته‌ها</button>
-        <button onclick="sendQuickMsg('شهریه')">شهریه</button>
-        <button onclick="sendQuickMsg('اساتید')">اساتید</button>
+        <button type="button" onclick="sendQuickMsg('پذیرش دانشجو')">پذیرش</button>
+        <button type="button" onclick="sendQuickMsg('رشته‌های تحصیلی')">رشته‌ها</button>
+        <button type="button" onclick="sendQuickMsg('شهریه')">شهریه</button>
+        <button type="button" onclick="sendQuickMsg('اساتید')">اساتید</button>
     </div>
     <div class="chatbot-input">
+        <label class="visually-hidden" for="chatInput">پیام</label>
         <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." onkeypress="if(event.key==='Enter') sendMsg()">
-        <button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+        <button type="button" onclick="sendMsg()" aria-label="ارسال پیام"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
     </div>
 </div>
 
@@ -408,8 +514,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <!-- AOS -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<!-- Swiper -->
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <!-- IntroJS -->
 <script src="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/intro.min.js"></script>
 <!-- Custom JS -->

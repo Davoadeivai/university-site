@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">مقالات علمی</h1>
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">بانک مقالات کتابخانه</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 mb-4">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-7">
+                    <label class="form-label">جستجو</label>
+                    <input type="search" name="q" value="{{ query }}" class="form-control" placeholder="عنوان، نویسنده، کلیدواژه یا مجله">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">سال</label>
+                    <select name="year" class="form-select">
+                        <option value="">همه</option>
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn-primary-uni w-100">جستجو</button>
+                </div>
+            </form>
+            <div class="text-muted mt-2" style="font-size:13px;">{{ result_count }} مقاله</div>
+        </div>
+
+        {% for art in articles %}
+        <a href="{% url 'library:article_detail' art.pk %}" class="uni-card p-4 mb-3 d-block text-decoration-none" data-aos="fade-up">
+            <div class="d-flex gap-3 align-items-start">
+                <div class="calendar-date-box flex-shrink-0">
+                    <span class="calendar-date-day" style="font-size:16px;">{{ art.year }}</span>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-primary-uni mb-1" style="font-size:15px;">{{ art.title }}</h5>
+                    <div class="text-muted" style="font-size:13px;">{{ art.authors }}</div>
+                    {% if art.journal %}<div class="text-muted" style="font-size:12px;"><i class="fas fa-book-open"></i> {{ art.journal }}</div>{% endif %}
+                    {% if art.abstract %}<p class="text-muted mt-2 mb-0" style="font-size:13px;">{{ art.abstract|truncatewords:30 }}</p>{% endif %}
+                    <div class="mt-2">
+                        {% if art.doi %}<span class="uni-card-badge">DOI</span>{% endif %}
+                        {% if art.file %}<span class="uni-card-badge">فایل</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="text-center py-5 text-muted"><i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>مقاله‌ای یافت نشد</div>
+        {% endfor %}
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&year={{ year }}">قبلی</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&year={{ year }}">بعدی</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>خلاصه تدریس</h2>
+    {% if active_semester %}<span class="badge bg-success">{{ active_semester.name }}</span>{% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <a href="{% url 'dashboard:professor_courses' %}" class="dash-stat-card text-decoration-none">
+            <div class="dash-stat-icon" style="background:linear-gradient(135deg,#7c5cd8,#6d28d9)"><i class="fas fa-book-open"></i></div>
+            <div><div class="dash-stat-num">{{ total_my_courses }}</div><div class="dash-stat-label">دروس من</div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon" style="background:linear-gradient(135deg,#3b82d4,#2563eb)"><i class="fas fa-user-graduate"></i></div>
+            <div><div class="dash-stat-num">{{ total_my_students }}</div><div class="dash-stat-label">دانشجویان</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'dashboard:professor_assignments' %}" class="dash-stat-card text-decoration-none">
+            <div class="dash-stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="fas fa-tasks"></i></div>
+            <div><div class="dash-stat-num">{{ my_assignments|length }}</div><div class="dash-stat-label">تکالیف فعال</div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626)"><i class="fas fa-pen"></i></div>
+            <div><div class="dash-stat-num">{{ ungraded_submissions }}</div><div class="dash-stat-label">تحویل بدون نمره</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="uni-card p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="fw-bold text-primary-uni mb-0">دروس این ترم</h5>
+                <a href="{% url 'dashboard:professor_courses' %}" class="uni-card-link" style="font-size:13px;">همه</a>
+            </div>
+            {% for ta in my_courses %}
+            <a href="{% url 'dashboard:professor_course_detail' ta.pk %}" class="announce-card mb-2 text-decoration-none d-flex">
+                <div class="flex-grow-1">
+                    <div class="announce-title" style="font-size:13px;">{{ ta.course.name }}</div>
+                    <div class="announce-date">کد: {{ ta.course.code }}{% if ta.classroom %} | کلاس: {{ ta.classroom }}{% endif %}</div>
+                </div>
+                <span class="badge bg-primary">{{ ta.course.credits }} واحد</span>
+            </a>
+            {% empty %}<p class="panel-empty">درسی در این ترم ندارید</p>{% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="uni-card p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="fw-bold text-primary-uni mb-0">تکالیف اخیر</h5>
+                <a href="{% url 'dashboard:professor_assignments' %}" class="uni-card-link" style="font-size:13px;">مدیریت</a>
+            </div>
+            {% for asgn in my_assignments %}
+            <a href="{% url 'dashboard:professor_submissions' asgn.pk %}" class="announce-card mb-2 text-decoration-none d-flex">
+                <div class="flex-grow-1">
+                    <div class="announce-title" style="font-size:13px;">{{ asgn.title }}</div>
+                    <div class="announce-date">{{ asgn.course.name }} | مهلت {{ asgn.due_date|date:"Y/m/d" }}</div>
+                </div>
+                <span class="badge bg-warning">تحویل‌ها</span>
+            </a>
+            {% empty %}<p class="panel-empty">تکلیفی ثبت نشده</p>{% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="uni-card p-4 mt-4">
+    <h5 class="fw-bold text-primary-uni mb-3">اطلاعیه‌ها</h5>
+    {% for ann in announcements %}
+    <div class="announce-card mb-2">
+        <div class="flex-grow-1">
+            <div class="announce-title" style="font-size:13px;">{% if ann.is_urgent %}<span class="badge bg-danger me-1">فوری</span>{% endif %}{{ ann.title }}</div>
+            <div class="announce-date">{{ ann.created_at|jalali_date }}</div>
+        </div>
+    </div>
+    {% empty %}<p class="panel-empty mb-0">اطلاعیه‌ای نیست</p>{% endfor %}
+</div>
+{% endblock %}

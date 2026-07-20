@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'library:articles' %}" class="text-white-50">مقالات</a></li>
+                <li class="breadcrumb-item active text-white">جزئیات</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title" style="font-size:1.5rem;">{{ article.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="uni-card p-4 p-md-5">
+            <div class="text-muted mb-3" style="font-size:14px;">
+                {{ article.authors }}
+                {% if article.journal %} | {{ article.journal }}{% endif %}
+                | {{ article.year }}
+            </div>
+            {% if keywords %}
+            <div class="mb-3">
+                {% for kw in keywords %}<span class="uni-card-badge me-1">{{ kw }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% if article.doi %}
+            <p class="mb-3"><strong>DOI:</strong> {{ article.doi }}</p>
+            {% endif %}
+            {% if article.abstract %}
+            <h5 class="fw-bold mb-2">چکیده</h5>
+            <p class="text-muted" style="line-height:2;">{{ article.abstract|linebreaksbr }}</p>
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                {% if article.file %}
+                <a href="{{ article.file.url }}" class="btn-primary-uni" download><i class="fas fa-download me-1"></i> دانلود مقاله</a>
+                {% endif %}
+                {% if article.url %}
+                <a href="{{ article.url }}" class="btn btn-outline-primary" target="_blank" rel="noopener">مشاهده آنلاین</a>
+                {% endif %}
+                <a href="{% url 'library:articles' %}" class="btn btn-outline-secondary">بازگشت</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

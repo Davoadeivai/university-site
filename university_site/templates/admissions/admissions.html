@@ -4,16 +4,23 @@
 <div class="page-header">
     <div class="container">
         <h1 class="page-header-title">پذیرش دانشجو</h1>
+        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;">فرم و فرآیند پذیرش برای همه مقاطع — کاردانی، کارشناسی، کارشناسی ارشد و دکتری — یکسان است.</p>
     </div>
 </div>
 <section class="section">
     <div class="container">
-        <!-- Degree Tabs -->
+        {% if admission_infos %}
         <ul class="nav nav-pills justify-content-center mb-5 gap-2" id="degreeTabs" data-aos="fade-up">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#associate" style="font-family:'Vazirmatn',sans-serif;">کاردانی</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bachelor" style="font-family:'Vazirmatn',sans-serif;">کارشناسی</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#master" style="font-family:'Vazirmatn',sans-serif;">ارشد</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#phd" style="font-family:'Vazirmatn',sans-serif;">دکتری</button></li>
+            {% for info in admission_infos %}
+            <li class="nav-item">
+                <button class="nav-link {% if forloop.first %}active{% endif %}"
+                        data-bs-toggle="tab"
+                        data-bs-target="#{{ info.degree }}"
+                        style="font-family:'Vazirmatn',sans-serif;">
+                    {{ info.get_degree_display }}
+                </button>
+            </li>
+            {% endfor %}
         </ul>
         <div class="tab-content">
             {% for info in admission_infos %}
@@ -34,6 +41,12 @@
                                 <i class="fas fa-calendar-alt"></i> <strong>مهلت ثبت‌نام:</strong> {{ info.deadline|jalali_date }}
                             </div>
                             {% endif %}
+                            {% if info.capacity %}
+                            <p class="text-muted mt-2" style="font-size:13px;"><i class="fas fa-users"></i> ظرفیت: {{ info.capacity }} نفر</p>
+                            {% endif %}
+                            {% if not info.is_open %}
+                            <div class="alert alert-secondary mt-3 mb-0">ثبت‌نام این مقطع در حال حاضر بسته است.</div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-lg-4">
@@ -41,25 +54,26 @@
                             <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-money-bill"></i> اطلاعات شهریه</h5>
                             {% if info.tuition_info %}<p style="font-size:14px; line-height:2;">{{ info.tuition_info }}</p>{% else %}<p class="text-muted">شهریه از طریق پنل مدیریت تنظیم می‌شود</p>{% endif %}
                             {% if info.registration_link %}
-                            <a href="{{ info.registration_link }}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3" target="_blank">
+                            <a href="{{ info.registration_link }}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3" target="_blank" rel="noopener noreferrer">
                                 <i class="fas fa-file-alt"></i> ثبت‌نام آنلاین
                             </a>
                             {% endif %}
-                            <a href="{% url 'admissions:apply' %}" class="btn-secondary-uni w-100 text-center text-decoration-none d-block mt-2">
+                            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-secondary-uni w-100 text-center text-decoration-none d-block mt-2">
                                 <i class="fas fa-edit"></i> ثبت درخواست
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>
-                <p>اطلاعات پذیرش از طریق پنل مدیریت تنظیم می‌شود</p>
-                <a href="{% url 'admissions:apply' %}" class="btn-primary-uni mt-3">ثبت درخواست پذیرش</a>
-            </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>
+            <p>اطلاعات پذیرش از طریق پنل مدیریت تنظیم می‌شود</p>
+            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni mt-3">ثبت درخواست پذیرش</a>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

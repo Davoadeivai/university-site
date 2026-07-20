@@ -1,0 +1,40 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>برنامه امتحانات</h2>
+</div>
+
+<div class="uni-card p-0 overflow-hidden">
+    {% if exams %}
+    <div class="table-responsive">
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>درس</th>
+                    <th>نوع</th>
+                    <th>تاریخ</th>
+                    <th>ساعت</th>
+                    <th>مکان</th>
+                    <th>ترم</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr {% if exam.date >= today %}style="background:rgba(16,185,129,.06);"{% endif %}>
+                    <td><strong>{{ exam.course.name }}</strong></td>
+                    <td><span class="badge bg-{% if exam.exam_type == 'final' %}danger{% else %}warning{% endif %}">{{ exam.get_exam_type_display }}</span></td>
+                    <td>{{ exam.date }}</td>
+                    <td>{{ exam.start_time }} — {{ exam.end_time }}</td>
+                    <td>{{ exam.location }}</td>
+                    <td>{{ exam.semester.name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="panel-empty">برنامه امتحانی ثبت نشده است.</p>
+    {% endif %}
+</div>
+{% endblock %}

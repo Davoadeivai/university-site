@@ -93,6 +93,7 @@
 .uni-slide-badge.badge-info    { background: rgba(14,165,233,.85); color: #fff; }
 .uni-slide-badge.badge-primary { background: rgba(37,99,235,.85);  color: #fff; }
 .uni-slide-badge.badge-dark    { background: rgba(15,23,42,.85);   color: #fff; }
+.uni-slide-badge.badge-gold    { background: rgba(201,168,76,.9);  color: #fff; }
 
 .uni-slide-title {
     font-size: clamp(26px, 4.5vw, 56px);
@@ -242,15 +243,26 @@
                     <p class="uni-slide-subtitle">{{ slide.subtitle }}</p>
                     {% endif %}
                     <div class="uni-slide-actions">
-                        {% if slide.link %}
+                        {% if slide.link_text and slide.link %}
+                        <a href="{{ slide.link }}" class="hero-btn">
+                            {{ slide.link_text }}
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        {% elif slide.link %}
                         <a href="{{ slide.link }}" class="hero-btn">
                             {{ slide.link_text|default:"بیشتر بدانید" }}
                             <i class="fas fa-arrow-left"></i>
                         </a>
                         {% endif %}
-                        <a href="{% url 'admissions:admissions' %}" class="hero-btn-outline">
+                        {% if slide.btn2_text and slide.btn2_url %}
+                        <a href="{{ slide.btn2_url }}" class="hero-btn-outline">
+                            {{ slide.btn2_text }}
+                        </a>
+                        {% else %}
+                        <a href="{% url 'admissions:apply_otp_send' %}" class="hero-btn-outline">
                             <i class="fas fa-file-alt"></i> ثبت‌نام
                         </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -259,8 +271,7 @@
         {% endfor %}
 
         {% else %}
-        <!-- ──── DEMO SLIDES (6 تصویر طبیعت) ──── -->
-        <!-- اسلاید ۱ — دریاچه کوهستانی -->
+        <!-- ──── DEMO SLIDES ──── -->
         <div class="uni-hero-slide is-active" data-index="0">
             <img class="slide-bg"
                  src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80"
@@ -299,7 +310,7 @@
                     <h1 class="uni-slide-title">انتخاب واحد<br>نیمسال اول</h1>
                     <p class="uni-slide-subtitle">انتخاب واحد نیمسال اول سال تحصیلی ۱۴۰۵-۱۴۰۴ از ۱۵ شهریور آغاز می‌شود</p>
                     <div class="uni-slide-actions">
-                        <a href="{% url 'academics:students_panel' %}" class="hero-btn">
+                        <a href="{% url 'dashboard:dashboard' %}" class="hero-btn">
                             <i class="fas fa-check-square"></i> سامانه آموزشی
                         </a>
                         <a href="{% url 'academics:calendar' %}" class="hero-btn-outline">
@@ -327,7 +338,7 @@
                         <a href="{% url 'research:research' %}" class="hero-btn">
                             <i class="fas fa-microscope"></i> پژوهش
                         </a>
-                        <a href="{% url 'admissions:apply' %}" class="hero-btn-outline">
+                        <a href="{% url 'admissions:apply_otp_send' %}" class="hero-btn-outline">
                             <i class="fas fa-file-signature"></i> ثبت‌نام
                         </a>
                     </div>
@@ -574,6 +585,60 @@
     </div>
 </section>
 
+<!-- ===== FEATURES (از لندینگ یکپارچه شد) ===== -->
+<section class="section" style="background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">مزایای تحصیل در دانشگاه جامع</h2>
+            <p class="section-subtitle">یک تجربه آموزشی کامل و آینده‌ساز</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="dept-card text-center h-100 py-4">
+                    <div class="dept-icon" style="color:#1a73e8;"><i class="fas fa-graduation-cap"></i></div>
+                    <h3 class="dept-title">اساتید برجسته</h3>
+                    <p class="text-muted" style="font-size:14px;">هیئت علمی با سابقه پژوهشی و تجربه عملی در صنعت</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="50">
+                <div class="dept-card text-center h-100 py-4">
+                    <div class="dept-icon" style="color:#0b9e6b;"><i class="fas fa-flask"></i></div>
+                    <h3 class="dept-title">آزمایشگاه‌های مجهز</h3>
+                    <p class="text-muted" style="font-size:14px;">فضاهای پژوهشی پیشرفته برای یادگیری عملی</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card text-center h-100 py-4">
+                    <div class="dept-icon" style="color:#a07820;"><i class="fas fa-handshake"></i></div>
+                    <h3 class="dept-title">ارتباط با صنعت</h3>
+                    <p class="text-muted" style="font-size:14px;">شبکه همکاری برای کارآموزی و اشتغال فارغ‌التحصیلان</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="150">
+                <div class="dept-card text-center h-100 py-4">
+                    <div class="dept-icon" style="color:#7c3aed;"><i class="fas fa-laptop-code"></i></div>
+                    <h3 class="dept-title">آموزش مجازی</h3>
+                    <p class="text-muted" style="font-size:14px;">یادگیری آنلاین در هر زمان و مکان</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="dept-card text-center h-100 py-4">
+                    <div class="dept-icon" style="color:#dc2626;"><i class="fas fa-book"></i></div>
+                    <h3 class="dept-title">کتابخانه دیجیتال</h3>
+                    <p class="text-muted" style="font-size:14px;">دسترسی به منابع علمی، مقالات و پایان‌نامه‌ها</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="250">
+                <div class="dept-card text-center h-100 py-4">
+                    <div class="dept-icon" style="color:#d97706;"><i class="fas fa-medal"></i></div>
+                    <h3 class="dept-title">رتبه ممتاز</h3>
+                    <p class="text-muted" style="font-size:14px;">ارزیابی‌های سالانه علمی و آموزشی در سطح کشور</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ===== QUICK LINKS ===== -->
 <section class="section">
     <div class="container">
@@ -594,7 +659,7 @@
             {% else %}
             <!-- Fallback static quick links -->
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
-                <a href="{% url 'academics:students_panel' %}" class="quick-link-card">
+                <a href="{% url 'dashboard:dashboard' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-graduation-cap"></i></div>
                     <div class="quick-link-title">سامانه آموزشی</div>
                 </a>
@@ -614,7 +679,7 @@
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150">
                 <a href="{% url 'academics:elearning' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-laptop"></i></div>
-                    <div class="quick-link-title">آموزش مجازی</div>
+                    <div class="quick-link-title">آموزش الکترونیکی</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
@@ -630,9 +695,9 @@
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300">
-                <a href="{% url 'contact:alumni' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-user-tie"></i></div>
-                    <div class="quick-link-title">فارغ‌التحصیلان</div>
+                <a href="{% url 'admissions:tuition_calc' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-calculator"></i></div>
+                    <div class="quick-link-title">محاسبه‌گر شهریه</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="350">
@@ -1024,7 +1089,7 @@
                 <p style="opacity:0.85; font-size:16px;">همین امروز ثبت‌نام کنید و آینده‌ای روشن را آغاز کنید</p>
             </div>
             <div class="col-lg-4 text-center text-lg-end">
-                <a href="{% url 'admissions:apply' %}" class="hero-btn" style="background: var(--gradient-gold);">
+                <a href="{% url 'admissions:apply_otp_send' %}" class="hero-btn" style="background: var(--gradient-gold);">
                     <i class="fas fa-file-alt"></i> شروع پذیرش
                 </a>
                 <a href="{% url 'contact:contact' %}" class="hero-btn-outline ms-2"

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.utils import timezone
 from core.models import (
-    SiteSettings, Slider, LandingSlider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     PresidencyOffice, DeputyVice,
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
@@ -18,19 +18,10 @@ from contact.models import Alumni
 from research.models import ResearchProject, Conference
 
 
-def landing(request):
-    latest_news = News.objects.filter(is_published=True)[:3]
-    landing_sliders = LandingSlider.objects.filter(is_active=True).order_by('order')
-    context = {
-        'latest_news': latest_news,
-        'landing_sliders': landing_sliders,
-    }
-    return render(request, 'core/landing.html', context)
-
-
 def home(request):
+    """صفحه اصلی یکپارچه سایت (جایگزین landing + home قبلی)."""
     settings = SiteSettings.objects.first()
-    sliders = Slider.objects.filter(is_active=True)[:5]
+    sliders = list(Slider.objects.filter(is_active=True).order_by('order')[:5])
     quick_links = QuickLink.objects.filter(is_active=True)[:8]
     featured_news = News.objects.filter(is_published=True, is_featured=True)[:3]
     latest_news = News.objects.filter(is_published=True)[:6]
@@ -73,6 +64,11 @@ def about(request):
         'page_title': 'معرفی دانشگاه',
     }
     return render(request, 'core/about.html', context)
+
+
+def city_behnammir(request):
+    context = {'page_title': 'آشنایی با شهر بهنمیر'}
+    return render(request, 'core/city_behnammir.html', context)
 
 
 def institution_goals(request):
