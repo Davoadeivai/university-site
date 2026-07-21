@@ -1,5 +1,0 @@
-Unify login into a single role-agnostic form
-
-- Remove role selection cards from login page; show one national-id/password form
-- Auto-detect user role on login and redirect (admin -> /admin, others -> dashboard)
-- Note that staff/professor/admin use the same form; simplify register link label
