@@ -59,6 +59,29 @@ def clear_otp_verify_attempts(phone: str, scope: str = 'default') -> None:
     cache.delete(_verify_key(scope, phone))
 
 
+def get_client_ip(request) -> str:
+    """آدرس IP کلاینت با در نظر گرفتن پراکسی (X-Forwarded-For)."""
+    xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if xff:
+        return xff.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', '') or 'unknown'
+
+
+def check_rate_limit(request, scope: str, limit: int = 10, window: int = 300) -> tuple[bool, str]:
+    """
+    محدودیت نرخ ساده مبتنی بر IP برای استعلام‌های عمومی (بدون احراز هویت).
+    برمی‌گرداند (مجاز؟, پیام‌خطا).
+    """
+    ip = get_client_ip(request)
+    key = f'rl:{scope}:{ip}'
+    count = cache.get(key, 0)
+    if count >= limit:
+        minutes = max(1, window // 60)
+        return False, f'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً {minutes} دقیقه دیگر تلاش کنید.'
+    cache.set(key, count + 1, timeout=window)
+    return True, ''
+
+
 def send_sms(phone: str, message: str) -> bool:
     """
     ارسال پیامک واقعی از طریق کاوه‌نگار در صورت فعال بودن SMS_ENABLED.

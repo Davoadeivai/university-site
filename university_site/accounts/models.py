@@ -1,4 +1,4 @@
-import random
+import secrets
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -79,6 +79,6 @@ class OTPCode(models.Model):
     def create_for_user(cls, user):
         """یک کد ۶ رقمی جدید برای کاربر می‌سازد و کدهای قبلی را باطل می‌کند."""
         cls.objects.filter(user=user, is_used=False).update(is_used=True)
-        code = str(random.randint(100000, 999999))
+        code = f'{secrets.randbelow(1000000):06d}'
         expires = timezone.now() + timezone.timedelta(minutes=10)
         return cls.objects.create(user=user, code=code, expires_at=expires)

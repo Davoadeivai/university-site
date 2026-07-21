@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Count
 from django.utils import timezone
 from django.db.models import Q
@@ -187,7 +188,11 @@ def payment_id(request):
     if request.method == 'POST':
         searched = True
         query = (request.POST.get('query') or '').strip()
-        if query:
+        from core.sms import check_rate_limit
+        allowed, rl_msg = check_rate_limit(request, scope='payment_id', limit=10, window=300)
+        if not allowed:
+            messages.error(request, rl_msg)
+        elif query:
             result = PaymentIdentifier.objects.filter(
                 is_active=True
             ).filter(

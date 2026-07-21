@@ -1,13 +1,14 @@
 ﻿import os
 import sys
 
-# مسیر ریشه پروژه (همان پوشه‌ای که manage.py داخلش است)
+# Deploy ONLY on a separate subdomain/app folder.
+# Do NOT place this project inside the main Allameh Amini public_html root.
+
 project_root = os.path.dirname(os.path.abspath(__file__))
 
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# .env را از ریشه پروژه بخوان
 os.chdir(project_root)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings_prod')
 

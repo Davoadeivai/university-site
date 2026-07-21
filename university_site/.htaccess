@@ -1,23 +1,23 @@
-# Passenger WSGI configuration for subdomain deployment
-PassengerAppRoot /home/cp29524/public_html/university
-PassengerBaseURI /
-PassengerPython /home/cp29524/virtualenv/university_site/3.11/bin/python
-PassengerAppEnv production
+# IMPORTANT: This app must NOT live in the main site document root.
+# Main Allameh Amini site files under public_html (primary domain) must stay untouched.
+# Deploy only on a dedicated subdomain document root / separate app folder.
+#
+# After creating the Python App in cPanel, replace paths below with YOUR new app paths
+# (not the main site). Example shape only:
 
-# Redirect HTTP to HTTPS (uncomment after SSL is configured)
-# RewriteEngine On
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# PassengerAppRoot /home/USERNAME/apps/university_site
+# PassengerBaseURI /
+# PassengerPython /home/USERNAME/virtualenv/university_site/3.11/bin/python
+# PassengerAppEnv production
 
-# Serve static files directly
 RewriteEngine On
+
+# Serve static/media files if present as real files
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^static/(.*)$ - [L]
 
-# Serve media files directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^media/(.*)$ - [L]
 
-# Pass all other requests to Django
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

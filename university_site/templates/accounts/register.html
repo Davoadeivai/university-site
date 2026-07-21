@@ -24,7 +24,7 @@
                         <div class="row g-3" id="role-cards">
 
                             <!-- دانشجو -->
-                            <div class="col-4">
+                            <div class="col-6">
                                 <div class="role-card text-center p-3 rounded border position-relative"
                                      onclick="selectRole('student')" id="card-student"
                                      style="cursor:pointer;transition:all .2s;border-color:#e5e7eb!important;">
@@ -40,7 +40,7 @@
                             </div>
 
                             <!-- استاد -->
-                            <div class="col-4">
+                            <div class="col-6">
                                 <div class="role-card text-center p-3 rounded border position-relative"
                                      onclick="selectRole('professor')" id="card-professor"
                                      style="cursor:pointer;transition:all .2s;border-color:#e5e7eb!important;">
@@ -52,22 +52,6 @@
                                     </div>
                                     <div class="fw-bold" style="font-size:14px;">استاد</div>
                                     <div class="text-muted" style="font-size:11px;">اعضای هیئت علمی</div>
-                                </div>
-                            </div>
-
-                            <!-- مدیر دانشگاه -->
-                            <div class="col-4">
-                                <div class="role-card text-center p-3 rounded border position-relative"
-                                     onclick="selectRole('staff')" id="card-staff"
-                                     style="cursor:pointer;transition:all .2s;border-color:#e5e7eb!important;">
-                                    <span class="role-check position-absolute top-0 end-0 m-2 text-success" id="check-staff" style="display:none;font-size:16px;">
-                                        <i class="fas fa-check-circle"></i>
-                                    </span>
-                                    <div class="mb-2" style="font-size:32px;color:#f97316;">
-                                        <i class="fas fa-building"></i>
-                                    </div>
-                                    <div class="fw-bold" style="font-size:14px;">مدیر دانشگاه</div>
-                                    <div class="text-muted" style="font-size:11px;">مدیران و کارکنان</div>
                                 </div>
                             </div>
 
@@ -134,14 +118,6 @@
                                 <div class="mb-3">
                                     <label class="form-label">دانشکده</label>
                                     <input type="text" name="department" class="form-control" placeholder="نام دانشکده">
-                                </div>
-                            </div>
-
-                            <!-- فیلد اختصاصی مدیر دانشگاه -->
-                            <div id="field-staff" style="display:none;">
-                                <div class="mb-3">
-                                    <label class="form-label">واحد سازمانی</label>
-                                    <input type="text" name="department" class="form-control" placeholder="واحد سازمانی">
                                 </div>
                             </div>
 
@@ -231,7 +207,7 @@ var currentRole = '';
 
 function selectRole(role) {
     // پاک کردن انتخاب قبلی
-    var roles = ['student', 'professor', 'staff'];
+    var roles = ['student', 'professor'];
     roles.forEach(function(r) {
         document.getElementById('card-' + r).classList.remove('selected');
         document.getElementById('check-' + r).style.display = 'none';

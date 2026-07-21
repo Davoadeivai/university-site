@@ -23,12 +23,25 @@ def _callback_absolute(request):
     return request.build_absolute_uri(reverse('dashboard:payment_callback'))
 
 
+def _mock_allowed():
+    """درگاه آزمایشی فقط زمانی مجاز است که DEBUG روشن باشد یا صراحتاً اجازه داده شود."""
+    return bool(getattr(settings, 'DEBUG', False)) or bool(
+        getattr(settings, 'ALLOW_MOCK_PAYMENT', False)
+    )
+
+
 def start_payment(request, payment):
     """
     شروع پرداخت برای یک رکورد dashboard.Payment (pending).
     برمی‌گرداند: dict با keys: redirect_url, authority
     """
     gateway = getattr(settings, 'PAYMENT_GATEWAY', 'mock') or 'mock'
+
+    if gateway != 'zarinpal' and not _mock_allowed():
+        raise PaymentGatewayError(
+            'درگاه پرداخت به‌درستی پیکربندی نشده است. لطفاً با پشتیبانی تماس بگیرید.'
+        )
+
     payment.gateway = gateway
     payment.save(update_fields=['gateway'])
 
@@ -44,6 +57,8 @@ def verify_payment(request, payment, authority=None):
 
     if gateway == 'zarinpal':
         return _zarinpal_verify(payment, authority)
+    if not _mock_allowed():
+        raise PaymentGatewayError('درگاه آزمایشی در محیط عملیاتی غیرفعال است.')
     return _mock_verify(request, payment, authority)
 
 

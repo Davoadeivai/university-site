@@ -1,19 +1,30 @@
-# دیپلوی روی ساب‌دامین (جدا از سایت قبلی)
+# دیپلوی جدا از سایت اصلی علامه امینی
 
-رمز و اطلاعات ورود را اینجا ننویسید.
+## قانون مهم
+به هیچ‌وجه این پروژه را داخل ریشه سایت اصلی (`public_html` دامنه اصلی) آپلود یا جایگزین نکنید.
+فایل‌های سایت علامه امینی باید دست‌نخورده بمانند.
 
-## ایده
-- سایت قبلی روی دامنه اصلی بماند
-- این پروژه روی مثلاً `university.yourdomain.ir` یا پوشه جدا
+## روش درست
+- دامنه اصلی / `public_html` → سایت فعلی علامه امینی (دست نزنید)
+- این پروژه → فقط روی **ساب‌دامین** با Document Root جدا
 
-## cPanel
-1. Domains → Create subdomain (مثلاً `university`) با document root جدا
-2. Setup Python App → Application URL = همان ساب‌دامین
-3. Application root را روی همان document root بگذارید
-4. Startup: `passenger_wsgi.py` / Entry: `application`
+مثال:
+- سایت اصلی: `https://yourdomain.ir` → `public_html/`
+- این پروژه: `https://new.yourdomain.ir` → مثلاً `public_html/new` یا بهتر: خارج از public_html مثل `/home/USERNAME/apps/university_site`
 
-## DNS (در صورت نیاز)
-اگر ساب‌دامین خودکار کار نکرد، در NIC یک رکورد A برای `university` به IP سرور بسازید.
+## cPanel (بدون دست زدن به سایت اصلی)
+1. Domains → Create a New Domain/Subdomain
+2. Document Root را مسیر **جدید و خالی** بگذارید (نه ریشه public_html)
+3. Setup Python App → Application URL = همان ساب‌دامین
+4. Application root = همان Document Root جدید
+5. Startup file: `passenger_wsgi.py` — Entry point: `application`
+6. دیتابیس MySQL **جدا** بسازید (نام جدا از دیتابیس سایت اصلی)
 
-## جداسازی دیتابیس
-دیتابیس و کاربر جدا برای این پروژه بسازید تا با سایت قبلی قاطی نشود.
+## DNS
+فقط برای ساب‌دامین رکورد A/CNAME بسازید؛ تنظیمات دامنه اصلی را تغییر ندهید مگر لازم باشد.
+
+## چیزهایی که نباید انجام دهید
+- آپلود zip روی `public_html` ریشه
+- جایگزینی `index.php` / فایل‌های Joomla/WordPress/سایت فعلی
+- استفاده از همان دیتابیس سایت اصلی
+- ویرایش فایل‌های موجود در ریشه دامنه اصلی

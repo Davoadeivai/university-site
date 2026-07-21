@@ -135,23 +135,34 @@ def membership(request):
     check_id = request.GET.get('check_id', '').strip()
 
     if request.method == 'POST':
+        from core.sms import check_rate_limit
+        allowed, rl_msg = check_rate_limit(request, scope='library_membership', limit=10, window=300)
         action = request.POST.get('action', 'register')
-        if action == 'check':
+        if not allowed:
+            messages.error(request, rl_msg)
+        elif action == 'check':
             sid = request.POST.get('student_id', '').strip()
             membership_result = LibraryMembership.objects.filter(student_id=sid).first()
             if not membership_result:
                 messages.warning(request, 'عضویت‌ی با این شماره دانشجویی یافت نشد.')
             check_id = sid
         else:
+            full_name = request.POST.get('full_name', '').strip()
             student_id = request.POST.get('student_id', '').strip()
-            if LibraryMembership.objects.filter(student_id=student_id).exists():
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            if not full_name or not student_id or not phone:
+                messages.error(request, 'لطفاً نام، شماره دانشجویی و شماره تماس را کامل وارد کنید.')
+            elif not student_id.isdigit():
+                messages.error(request, 'شماره دانشجویی باید عددی باشد.')
+            elif LibraryMembership.objects.filter(student_id=student_id).exists():
                 messages.error(request, 'شماره دانشجویی قبلاً ثبت شده است. از بخش «پیگیری وضعیت» استفاده کنید.')
             else:
                 LibraryMembership.objects.create(
-                    full_name=request.POST.get('full_name', '').strip(),
+                    full_name=full_name,
                     student_id=student_id,
-                    email=request.POST.get('email', '').strip(),
-                    phone=request.POST.get('phone', '').strip(),
+                    email=email,
+                    phone=phone,
                 )
                 messages.success(request, 'درخواست عضویت ثبت شد و در انتظار تایید است.')
                 return redirect('library:membership')

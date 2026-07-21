@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -366,6 +367,10 @@ def payment_start(request, pk):
 @role_required('student')
 def payment_mock(request, pk):
     """صفحه شبیه‌ساز درگاه (حالت mock)."""
+    from .payment_gateway import _mock_allowed
+    if not _mock_allowed():
+        messages.error(request, 'درگاه آزمایشی در محیط عملیاتی غیرفعال است.')
+        return redirect('dashboard:student_payments')
     payment = get_object_or_404(Payment, pk=pk, student=request.user)
     authority = request.GET.get('Authority', payment.authority)
     if request.method == 'POST':
@@ -408,8 +413,14 @@ def payment_callback(request):
         messages.success(request, 'پرداخت قبلاً تأیید شده است.')
         return redirect('dashboard:student_payments')
 
+    # قفل ردیف پرداخت تا فراخوانی‌های همزمان درگاه، پرداخت را دوباره پردازش نکنند
     try:
-        ok = verify_payment(request, payment, authority=authority)
+        with transaction.atomic():
+            locked = Payment.objects.select_for_update().get(pk=payment.pk)
+            if locked.status == 'paid':
+                messages.success(request, 'پرداخت قبلاً تأیید شده است.')
+                return redirect('dashboard:student_payments')
+            ok = verify_payment(request, locked, authority=authority)
     except PaymentGatewayError as e:
         messages.error(request, str(e))
         return redirect('dashboard:student_payments')
@@ -417,7 +428,7 @@ def payment_callback(request):
     if ok:
         messages.success(
             request,
-            f'پرداخت موفق — کد پیگیری: {payment.transaction_id or payment.authority}',
+            f'پرداخت موفق — کد پیگیری: {locked.transaction_id or locked.authority}',
         )
     else:
         messages.error(request, 'پرداخت ناموفق بود یا لغو شد.')

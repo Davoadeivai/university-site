@@ -301,12 +301,18 @@ def track_application(request):
     timeline = []
     if request.method == 'POST':
         query = request.POST.get('query', '').strip()
-        app = Application.objects.filter(
-            tracking_code=query
-        ).select_related('desired_major', 'desired_major2').first() or Application.objects.filter(
-            national_id=query
-        ).select_related('desired_major', 'desired_major2').first()
-        if not app:
+        from core.sms import check_rate_limit
+        allowed, rl_msg = check_rate_limit(request, scope='track_app', limit=10, window=300)
+        if not allowed:
+            messages.error(request, rl_msg)
+            query = ''
+        else:
+            app = Application.objects.filter(
+                tracking_code=query
+            ).select_related('desired_major', 'desired_major2').first() or Application.objects.filter(
+                national_id=query
+            ).select_related('desired_major', 'desired_major2').first()
+        if query and not app:
             messages.error(request, 'درخواستی با این اطلاعات یافت نشد.')
         else:
             flow = ['pending', 'reviewing', 'incomplete', 'interview', 'accepted']

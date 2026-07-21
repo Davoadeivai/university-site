@@ -7,9 +7,23 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, url_has_allowed_host_and_scheme
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.conf import settings as django_settings
 from .models import UserProfile, OTPCode
+
+
+def _safe_redirect_target(request, default='/dashboard/'):
+    """جلوگیری از Open Redirect: فقط مقصدهای داخلی همین دامنه مجازند."""
+    target = request.POST.get('next') or request.GET.get('next') or ''
+    if target and url_has_allowed_host_and_scheme(
+        target,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return target
+    return default
 
 
 def login_view(request):
@@ -45,7 +59,7 @@ def login_view(request):
                 messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
                 if user_role == 'admin' or user.is_staff:
                     return redirect('/admin/')
-                return redirect(request.GET.get('next', '/dashboard/'))
+                return redirect(_safe_redirect_target(request))
         else:
             messages.error(request, 'کد ملی یا رمز عبور اشتباه است.')
 
@@ -75,7 +89,15 @@ def register_view(request):
         department = request.POST.get('department', '').strip()
         phone = request.POST.get('phone', '').strip()
 
-        VALID_ROLES = ['student', 'professor', 'staff']
+        # نقش‌های مجاز برای ثبت‌نام عمومی؛ نقش‌های staff/admin فقط از پنل مدیریت داده می‌شوند
+        VALID_ROLES = ['student', 'professor']
+
+        pwd_error = None
+        if password1 and password1 == password2:
+            try:
+                validate_password(password1)
+            except ValidationError as e:
+                pwd_error = ' '.join(e.messages)
 
         if not national_id or not password1 or not password2:
             messages.error(request, 'لطفاً تمام فیلدهای الزامی را پر کنید.')
@@ -89,8 +111,8 @@ def register_view(request):
             messages.error(request, 'لطفاً نقش خود را انتخاب کنید.')
         elif password1 != password2:
             messages.error(request, 'رمز عبور و تکرار آن یکسان نیستند.')
-        elif len(password1) < 8:
-            messages.error(request, 'رمز عبور باید حداقل ۸ کاراکتر باشد.')
+        elif pwd_error:
+            messages.error(request, pwd_error)
         elif User.objects.filter(username=national_id).exists():
             messages.error(request, 'این کد ملی قبلاً ثبت‌نام شده است.')
         else:

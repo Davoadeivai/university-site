@@ -1,4 +1,4 @@
-import random
+import secrets
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
@@ -168,7 +168,7 @@ class Application(models.Model):
     @staticmethod
     def _gen_tracking():
         while True:
-            code = str(random.randint(100000000000, 999999999999))
+            code = f'{secrets.randbelow(900000000000) + 100000000000:012d}'
             if not Application.objects.filter(tracking_code=code).exists():
                 return code
 
@@ -305,6 +305,6 @@ class AdmissionOTP(models.Model):
     @classmethod
     def create_for_phone(cls, phone):
         cls.objects.filter(phone=phone, is_used=False).update(is_used=True)
-        code = str(random.randint(100000, 999999))
+        code = f'{secrets.randbelow(1000000):06d}'
         expires = timezone.now() + timezone.timedelta(minutes=10)
         return cls.objects.create(phone=phone, code=code, expires_at=expires)
