@@ -316,3 +316,19 @@ fieldset {
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: #c0cfe0; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--uni-primary); }
+
+/* === SIDEBAR: نام‌های بلند فارسی کامل دیده و قابل کلیک باشند === */
+.main-sidebar .nav-sidebar .nav-link p,
+.main-sidebar .nav-sidebar .nav-link span,
+.main-sidebar .nav-treeview > .nav-item > .nav-link p {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    line-height: 1.35 !important;
+    display: inline !important;
+}
+.main-sidebar .nav-sidebar .nav-link {
+    height: auto !important;
+    min-height: 2.2rem;
+    align-items: flex-start !important;
+}

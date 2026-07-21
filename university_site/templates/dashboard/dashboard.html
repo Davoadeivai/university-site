@@ -6,7 +6,7 @@
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <h1 class="page-header-title mb-0">{{ page_title }}</h1>
             <div class="d-flex align-items-center gap-2">
-                {% if role == 'admin' or request.user.is_staff %}
+                {% if role == 'admin' or request.user.is_superuser %}
                     <span class="badge" style="background:#ef4444;font-size:13px;padding:6px 14px;border-radius:20px;">
                         <i class="fas fa-user-shield me-1"></i> ادمین
                     </span>
@@ -35,7 +35,7 @@
 {# ══════════════════════════════════════════════════════════════════════ #}
 {#  ADMIN DASHBOARD                                                       #}
 {# ══════════════════════════════════════════════════════════════════════ #}
-{% if role == 'admin' or request.user.is_staff %}
+{% if role == 'admin' or request.user.is_superuser %}
 
         <!-- آمار ادمین -->
         <div class="row g-4 mb-4">
@@ -234,15 +234,21 @@
                 <h5 class="fw-bold text-primary-uni mb-4">دسترسی سریع</h5>
                 <div class="row g-3">
                     <div class="col-6 col-md-3">
+                        <a href="/admin/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#ef4444;"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">ورود به پنل مدیریت</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
                         <a href="/admin/admissions/application/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#f97316;"><i class="fas fa-file-alt"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">درخواست‌های پذیرش</div>
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a href="{% url 'dashboard:staff_requests' %}" class="quick-link-card" style="padding:18px;">
-                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#3b82d4;"><i class="fas fa-tasks"></i></div>
-                            <div class="quick-link-title" style="font-size:12px;">درخواست‌های دانشجویی</div>
+                        <a href="/admin/news/news/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#0ea5e9;"><i class="fas fa-newspaper"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">مدیریت اخبار</div>
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
@@ -252,9 +258,33 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
+                        <a href="{% url 'dashboard:staff_student_export' %}" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#16a34a;"><i class="fas fa-file-excel"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">خروجی دانشجویان</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{% url 'dashboard:staff_requests' %}" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#3b82d4;"><i class="fas fa-tasks"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">درخواست‌های دانشجویی</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
                         <a href="/admin/accounts/announcement/add/" class="quick-link-card" style="padding:18px;">
                             <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#7c5cd8;"><i class="fas fa-bullhorn"></i></div>
                             <div class="quick-link-title" style="font-size:12px;">اطلاعیه جدید</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/core/cityinfo/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#14b8a6;"><i class="fas fa-city"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">شهر بهنمیر</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="/admin/research/industrypartnership/" class="quick-link-card" style="padding:18px;">
+                            <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;color:#a855f7;"><i class="fas fa-industry"></i></div>
+                            <div class="quick-link-title" style="font-size:12px;">همکاری صنعتی</div>
                         </a>
                     </div>
                 </div>

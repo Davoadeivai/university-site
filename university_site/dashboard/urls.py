@@ -29,4 +29,5 @@ urlpatterns = [
     # کارکنان
     path('staff/requests/', views.staff_requests, name='staff_requests'),
     path('staff/requests/<int:pk>/', views.staff_request_respond, name='staff_request_respond'),
+    path('staff/students/export/', views.staff_student_export, name='staff_student_export'),
 ]

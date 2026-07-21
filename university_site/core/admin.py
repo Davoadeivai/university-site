@@ -132,6 +132,15 @@ class PresidencyOfficeAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return not PresidencyOffice.objects.exists()
 
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        obj = PresidencyOffice.objects.first()
+        if obj is None and self.has_add_permission(request):
+            return redirect('admin:core_presidencyoffice_add')
+        if obj is not None and PresidencyOffice.objects.count() == 1:
+            return redirect('admin:core_presidencyoffice_change', obj.pk)
+        return super().changelist_view(request, extra_context=extra_context)
+
 
 @admin.register(DeputyVice)
 class DeputyViceAdmin(admin.ModelAdmin):
@@ -145,9 +154,28 @@ class DeputyViceAdmin(admin.ModelAdmin):
 class InternationalOfficeAdmin(admin.ModelAdmin):
     list_display = ['manager_name', 'phone', 'email']
     search_fields = ['manager_name', 'description']
+    fieldsets = (
+        ('معرفی دفتر', {
+            'fields': ('description', 'address', 'phone', 'email'),
+            'description': 'اطلاعات صفحه «دفتر همکاری‌های علمی و بین‌الملل» در سایت از اینجا مدیریت می‌شود.',
+        }),
+        ('مدیر دفتر', {
+            'fields': ('manager_name', 'manager_photo', 'manager_email', 'manager_phone'),
+        }),
+    )
 
     def has_add_permission(self, request):
         return not InternationalOffice.objects.exists()
+
+    def changelist_view(self, request, extra_context=None):
+        """اگر هنوز رکوردی نیست، مستقیم به فرم افزودن برو."""
+        from django.shortcuts import redirect
+        obj = InternationalOffice.objects.first()
+        if obj is None and self.has_add_permission(request):
+            return redirect('admin:core_internationaloffice_add')
+        if obj is not None and InternationalOffice.objects.count() == 1:
+            return redirect('admin:core_internationaloffice_change', obj.pk)
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(InternationalActivity)
@@ -163,9 +191,22 @@ class InternationalActivityAdmin(admin.ModelAdmin):
 class PublicRelationsAdmin(admin.ModelAdmin):
     list_display = ['manager_name', 'phone', 'email']
     search_fields = ['manager_name', 'description', 'duties']
+    fieldsets = (
+        ('معرفی', {'fields': ('description', 'duties', 'phone', 'email', 'address')}),
+        ('مدیر', {'fields': ('manager_name', 'manager_photo', 'manager_email', 'manager_phone')}),
+    )
 
     def has_add_permission(self, request):
         return not PublicRelations.objects.exists()
+
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        obj = PublicRelations.objects.first()
+        if obj is None and self.has_add_permission(request):
+            return redirect('admin:core_publicrelations_add')
+        if obj is not None and PublicRelations.objects.count() == 1:
+            return redirect('admin:core_publicrelations_change', obj.pk)
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(PressRelease)
@@ -184,6 +225,15 @@ class SecurityOfficeAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not SecurityOffice.objects.exists()
+
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        obj = SecurityOffice.objects.first()
+        if obj is None and self.has_add_permission(request):
+            return redirect('admin:core_securityoffice_add')
+        if obj is not None and SecurityOffice.objects.count() == 1:
+            return redirect('admin:core_securityoffice_change', obj.pk)
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 # ─── معاونت‌ها ─────────────────────────────────────────────────

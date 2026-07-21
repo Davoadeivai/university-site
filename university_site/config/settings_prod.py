@@ -98,11 +98,11 @@ if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     DEFAULT_FROM_EMAIL = config(
         'DEFAULT_FROM_EMAIL',
-        default=f'دانشگاه جامع <{EMAIL_HOST_USER}>',
+        default=f'موسسه آموزش عالی علامه امینی بهنمیر <{EMAIL_HOST_USER}>',
     )
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = 'دانشگاه جامع <noreply@localhost>'
+    DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی بهنمیر <noreply@localhost>'
 
 PASSWORD_RESET_TIMEOUT = 3600
 
@@ -112,6 +112,9 @@ PASSWORD_RESET_TIMEOUT = 3600
 SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
 KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
 SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
+SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی بهنمیر')
+# نام الگوی تأیید (verify lookup) در پنل کاوه‌نگار؛ اگر پر باشد OTP از این روش ارسال می‌شود
+KAVENEGAR_OTP_TEMPLATE = config('KAVENEGAR_OTP_TEMPLATE', default='')
 OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
 OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
 OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)

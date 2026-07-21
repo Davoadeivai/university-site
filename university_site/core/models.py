@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class SiteSettings(models.Model):
-    university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='دانشگاه جامع علمی کاربردی')
+    university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی بهنمیر')
     university_name_en = models.CharField(_('نام دانشگاه (انگلیسی)'), max_length=200, default='Jame University')
     logo = models.ImageField(_('لوگو'), upload_to='site/', blank=True, null=True)
     favicon = models.ImageField(_('فاویکون'), upload_to='site/', blank=True, null=True)
@@ -226,7 +226,7 @@ class CityInfo(models.Model):
 
     class Meta:
         verbose_name = _('اطلاعات شهر')
-        verbose_name_plural = _('اطلاعات شهر بهنمیر')
+        verbose_name_plural = _('اطلاعات شهر')
         ordering = ['order']
 
     def __str__(self):
@@ -326,10 +326,10 @@ class InternationalOffice(models.Model):
 
     class Meta:
         verbose_name = _('دفتر بین‌الملل')
-        verbose_name_plural = _('دفتر همکاری‌های علمی و بین‌الملل')
+        verbose_name_plural = _('دفتر بین‌الملل')
 
     def __str__(self):
-        return 'دفتر همکاری‌های علمی و بین‌الملل'
+        return 'دفتر بین‌الملل'
 
 
 class InternationalActivity(models.Model):
@@ -375,7 +375,7 @@ class PublicRelations(models.Model):
 
     class Meta:
         verbose_name = _('روابط عمومی')
-        verbose_name_plural = _('مدیریت روابط عمومی')
+        verbose_name_plural = _('روابط عمومی')
 
     def __str__(self):
         return 'مدیریت روابط عمومی'
@@ -471,8 +471,8 @@ class ViceUnit(models.Model):
     is_active = models.BooleanField(_('فعال'), default=True)
 
     class Meta:
-        verbose_name = _('واحد زیرمجموعه معاونت')
-        verbose_name_plural = _('واحدهای زیرمجموعه معاونت')
+        verbose_name = _('واحد معاونت')
+        verbose_name_plural = _('واحدهای معاونت')
         ordering = ['vice', 'order']
 
     def __str__(self):
@@ -493,8 +493,8 @@ class ViceAchievement(models.Model):
     order       = models.PositiveIntegerField(_('ترتیب'), default=0)
 
     class Meta:
-        verbose_name = _('دستاورد / طرح معاونت')
-        verbose_name_plural = _('دستاوردها / طرح‌های معاونت')
+        verbose_name = _('دستاورد معاونت')
+        verbose_name_plural = _('دستاوردهای معاونت')
         ordering = ['vice', 'order']
 
     def __str__(self):

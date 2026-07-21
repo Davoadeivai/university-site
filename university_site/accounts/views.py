@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+﻿from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -44,8 +44,10 @@ def login_view(request):
 
             login(request, user)
             messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
-            # ادمین به پنل مدیریت جنگو، بقیه نقش‌ها به پنل کاربری هدایت می‌شوند
-            if user_role == 'admin' or user.is_staff:
+            # ادمین کامل و مدیر دانشگاه (با دسترسی محدود) به پنل ادمین؛ بقیه به داشبورد
+            if user_role == 'admin' or user.is_superuser:
+                return redirect('/admin/')
+            if user_role == 'staff':
                 return redirect('/admin/')
             return redirect(_safe_redirect_target(request))
         else:
@@ -108,13 +110,16 @@ def register_view(request):
                 first_name=first_name,
                 last_name=last_name,
             )
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.role = role
-            profile.national_id = national_id
-            profile.student_id = student_id
-            profile.department = department
-            profile.phone = phone
-            profile.save()
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={
+                    'role': role,
+                    'national_id': national_id,
+                    'student_id': student_id,
+                    'department': department,
+                    'phone': phone,
+                },
+            )
             login(request, user)
             messages.success(request, f'حساب کاربری با موفقیت ساخته شد. خوش آمدید، {user.get_full_name() or national_id}!')
             return redirect('dashboard:dashboard')
@@ -125,7 +130,29 @@ def register_view(request):
 
 @login_required
 def profile(request):
-    profile_obj, created = UserProfile.objects.get_or_create(user=request.user)
+    profile_obj, _created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        phone = request.POST.get('phone', '').strip()
+        department = request.POST.get('department', '').strip()
+        bio = request.POST.get('bio', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if phone and (not phone.isdigit() or len(phone) != 11 or not phone.startswith('09')):
+            messages.error(request, 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.')
+        elif phone and UserProfile.objects.filter(phone=phone).exclude(pk=profile_obj.pk).exists():
+            messages.error(request, 'این شماره موبایل قبلاً ثبت شده است.')
+        else:
+            profile_obj.phone = phone
+            profile_obj.department = department
+            profile_obj.bio = bio
+            profile_obj.save()
+            if email != request.user.email:
+                request.user.email = email
+                request.user.save(update_fields=['email'])
+            messages.success(request, 'پروفایل با موفقیت به‌روزرسانی شد.')
+            return redirect('accounts:profile')
+
     context = {
         'profile': profile_obj,
         'page_title': 'پروفایل من',
@@ -159,7 +186,7 @@ def password_reset_request(request):
                 reset_url = request.build_absolute_uri(
                     f'/accounts/password-reset/{uid}/{token}/'
                 )
-                subject = 'بازیابی رمز عبور — دانشگاه جامع'
+                subject = 'بازیابی رمز عبور — موسسه آموزش عالی علامه امینی بهنمیر'
                 html_body = render_to_string(
                     'accounts/email/password_reset_email.html',
                     {'user': user, 'reset_url': reset_url},
@@ -202,16 +229,20 @@ def password_reset_request(request):
 
                 sms_text = f'کد بازیابی رمز عبور شما: {otp.code}\nاین کد ۱۰ دقیقه اعتبار دارد.'
 
-                from core.sms import can_send_otp, mark_otp_sent, send_sms
+                from core.sms import can_send_otp, mark_otp_sent, send_otp
                 ok, err = can_send_otp(phone, scope='reset')
                 if not ok:
                     messages.error(request, err)
                     return render(request, 'accounts/password_reset_request.html',
                                   {'page_title': 'بازیابی رمز عبور', 'active_method': 'sms'})
 
-                send_sms(phone, sms_text)
-                mark_otp_sent(phone, scope='reset')
+                sent = send_otp(phone, otp.code, sms_text)
+                if not sent:
+                    messages.error(request, 'ارسال پیامک ناموفق بود. لطفاً چند لحظه دیگر تلاش کنید.')
+                    return render(request, 'accounts/password_reset_request.html',
+                                  {'page_title': 'بازیابی رمز عبور', 'active_method': 'sms'})
 
+                mark_otp_sent(phone, scope='reset')
                 request.session['otp_phone'] = phone
                 messages.success(request, f'کد تأیید به شماره {phone[:4]}****{phone[-3:]} ارسال شد.')
                 return redirect('accounts:password_reset_otp')

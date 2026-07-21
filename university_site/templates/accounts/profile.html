@@ -11,11 +11,29 @@
 <div class="text-muted">{{ profile.get_role_display }}</div>
 {% if profile.student_id %}<div class="text-muted" style="font-size:13px;">{{ profile.student_id }}</div>{% endif %}</div>
 </div>
-<div class="row g-3">
-<div class="col-md-6"><div class="p-3 bg-light rounded"><label class="text-muted" style="font-size:12px;">ایمیل</label><div>{{ request.user.email }}</div></div></div>
-{% if profile.phone %}<div class="col-md-6"><div class="p-3 bg-light rounded"><label class="text-muted" style="font-size:12px;">تلفن</label><div>{{ profile.phone }}</div></div></div>{% endif %}
-{% if profile.department %}<div class="col-md-6"><div class="p-3 bg-light rounded"><label class="text-muted" style="font-size:12px;">دانشکده</label><div>{{ profile.department }}</div></div></div>{% endif %}
+
+<form method="post" class="row g-3">
+{% csrf_token %}
+<div class="col-md-6">
+    <label class="form-label text-muted" style="font-size:12px;">ایمیل</label>
+    <input type="email" name="email" class="form-control" value="{{ request.user.email }}">
 </div>
-<div class="mt-4"><a href="{% url 'accounts:logout' %}" class="btn-primary-uni"><i class="fas fa-sign-out-alt"></i> خروج</a></div>
+<div class="col-md-6">
+    <label class="form-label text-muted" style="font-size:12px;">تلفن همراه</label>
+    <input type="text" name="phone" class="form-control" value="{{ profile.phone }}" maxlength="11" placeholder="09xxxxxxxxx" dir="ltr">
+</div>
+<div class="col-md-6">
+    <label class="form-label text-muted" style="font-size:12px;">دانشکده / واحد</label>
+    <input type="text" name="department" class="form-control" value="{{ profile.department }}">
+</div>
+<div class="col-12">
+    <label class="form-label text-muted" style="font-size:12px;">بیوگرافی</label>
+    <textarea name="bio" class="form-control" rows="3">{{ profile.bio }}</textarea>
+</div>
+<div class="col-12 d-flex gap-2 mt-2">
+    <button type="submit" class="btn-primary-uni"><i class="fas fa-save"></i> ذخیره تغییرات</button>
+    <a href="{% url 'accounts:logout' %}" class="btn-secondary-uni"><i class="fas fa-sign-out-alt"></i> خروج</a>
+</div>
+</form>
 </div></div></div></div></section>
 {% endblock %}

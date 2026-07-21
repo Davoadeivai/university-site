@@ -41,5 +41,10 @@ def alumni(request):
 
 
 def industry(request):
-    context = {'page_title': 'ارتباط با صنعت'}
+    from research.models import IndustryPartnership
+    partners = IndustryPartnership.objects.filter(is_active=True).order_by('company_name')
+    context = {
+        'page_title': 'ارتباط با صنعت',
+        'partners': partners,
+    }
     return render(request, 'contact/industry.html', context)

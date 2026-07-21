@@ -1,14 +1,115 @@
 {% extends 'base.html' %}
 {% load custom_filters %}
+{% block extra_css %}
+<style>
+.admit-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 auto 2rem;
+    max-width: 720px;
+}
+.admit-step {
+    text-align: center;
+    min-width: 110px;
+}
+.admit-step-num {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin: 0 auto 6px;
+    font-size: 15px;
+}
+.admit-step small {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+.admit-step-line {
+    flex: 1;
+    height: 2px;
+    background: #e2e8f0;
+    min-width: 24px;
+    max-width: 80px;
+}
+.admit-status-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.admit-status-closed {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.admit-cta-wrap {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+@media (max-width: 576px) {
+    .admit-step-line { display: none; }
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="page-header">
     <div class="container">
         <h1 class="page-header-title">پذیرش دانشجو</h1>
-        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;">فرم و فرآیند پذیرش برای همه مقاطع — کاردانی، کارشناسی، کارشناسی ارشد و دکتری — یکسان است.</p>
+        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;">فرآیند یکسان برای کاردانی، کارشناسی، کارشناسی ارشد و دکتری</p>
     </div>
 </div>
 <section class="section">
     <div class="container">
+
+        <div class="admit-steps" data-aos="fade-up">
+            <div class="admit-step">
+                <div class="admit-step-num">۱</div>
+                <small>تأیید موبایل</small>
+            </div>
+            <div class="admit-step-line"></div>
+            <div class="admit-step">
+                <div class="admit-step-num">۲</div>
+                <small>تکمیل فرم</small>
+            </div>
+            <div class="admit-step-line"></div>
+            <div class="admit-step">
+                <div class="admit-step-num">۳</div>
+                <small>دریافت کد رهگیری</small>
+            </div>
+        </div>
+
+        <div class="admit-cta-wrap" data-aos="fade-up">
+            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni">
+                <i class="fas fa-user-graduate"></i> شروع ثبت درخواست
+            </a>
+            <a href="{% url 'admissions:track' %}" class="btn-secondary-uni ms-2">
+                <i class="fas fa-search"></i> پیگیری وضعیت
+            </a>
+        </div>
+
         {% if admission_infos %}
         <ul class="nav nav-pills justify-content-center mb-5 gap-2" id="degreeTabs" data-aos="fade-up">
             {% for info in admission_infos %}
@@ -18,6 +119,11 @@
                         data-bs-target="#{{ info.degree }}"
                         style="font-family:'Vazirmatn',sans-serif;">
                     {{ info.get_degree_display }}
+                    {% if info.is_open %}
+                    <span class="badge bg-success ms-1" style="font-size:10px;">باز</span>
+                    {% else %}
+                    <span class="badge bg-secondary ms-1" style="font-size:10px;">بسته</span>
+                    {% endif %}
                 </button>
             </li>
             {% endfor %}
@@ -28,7 +134,14 @@
                 <div class="row g-4">
                     <div class="col-lg-8">
                         <div class="uni-card p-4">
-                            <h3 class="fw-bold text-primary-uni mb-3">{{ info.title }}</h3>
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                <h3 class="fw-bold text-primary-uni mb-0">{{ info.title }}</h3>
+                                {% if info.is_open %}
+                                <span class="admit-status-open"><i class="fas fa-check-circle"></i> مهلت ثبت‌نام باز است</span>
+                                {% else %}
+                                <span class="admit-status-closed"><i class="fas fa-lock"></i> ثبت‌نام این مقطع بسته است</span>
+                                {% endif %}
+                            </div>
                             {% if info.description %}<p class="text-muted" style="font-size:15px; line-height:2;">{{ info.description }}</p>{% endif %}
                             <h5 class="fw-bold mt-4 mb-2"><i class="fas fa-check-circle text-success"></i> شرایط پذیرش</h5>
                             <div style="font-size:14px; line-height:2;">{{ info.requirements|linebreaks }}</div>
@@ -37,15 +150,14 @@
                             <div style="font-size:14px; line-height:2;">{{ info.documents_required|linebreaks }}</div>
                             {% endif %}
                             {% if info.deadline %}
-                            <div class="alert alert-warning mt-4">
-                                <i class="fas fa-calendar-alt"></i> <strong>مهلت ثبت‌نام:</strong> {{ info.deadline|jalali_date }}
+                            <div class="alert {% if info.is_open %}alert-warning{% else %}alert-secondary{% endif %} mt-4 mb-0">
+                                <i class="fas fa-calendar-alt"></i>
+                                <strong>مهلت ثبت‌نام:</strong> {{ info.deadline|jalali_date }}
+                                {% if info.is_open %} — هنوز فرصت دارید{% else %} — منقضی شده{% endif %}
                             </div>
                             {% endif %}
                             {% if info.capacity %}
-                            <p class="text-muted mt-2" style="font-size:13px;"><i class="fas fa-users"></i> ظرفیت: {{ info.capacity }} نفر</p>
-                            {% endif %}
-                            {% if not info.is_open %}
-                            <div class="alert alert-secondary mt-3 mb-0">ثبت‌نام این مقطع در حال حاضر بسته است.</div>
+                            <p class="text-muted mt-3 mb-0" style="font-size:13px;"><i class="fas fa-users"></i> ظرفیت: {{ info.capacity }} نفر</p>
                             {% endif %}
                         </div>
                     </div>
@@ -53,13 +165,17 @@
                         <div class="uni-card p-4">
                             <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-money-bill"></i> اطلاعات شهریه</h5>
                             {% if info.tuition_info %}<p style="font-size:14px; line-height:2;">{{ info.tuition_info }}</p>{% else %}<p class="text-muted">شهریه از طریق پنل مدیریت تنظیم می‌شود</p>{% endif %}
-                            {% if info.registration_link %}
-                            <a href="{{ info.registration_link }}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3" target="_blank" rel="noopener noreferrer">
-                                <i class="fas fa-file-alt"></i> ثبت‌نام آنلاین
+                            {% if info.is_open %}
+                            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3">
+                                <i class="fas fa-edit"></i> ثبت درخواست این مقطع
                             </a>
+                            {% else %}
+                            <button type="button" class="btn-secondary-uni w-100 mt-3" disabled style="opacity:.6;cursor:not-allowed;">
+                                <i class="fas fa-lock"></i> ثبت‌نام بسته است
+                            </button>
                             {% endif %}
-                            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-secondary-uni w-100 text-center text-decoration-none d-block mt-2">
-                                <i class="fas fa-edit"></i> ثبت درخواست
+                            <a href="{% url 'admissions:tuition_calc' %}" class="btn-secondary-uni w-100 text-center text-decoration-none d-block mt-2">
+                                <i class="fas fa-calculator"></i> محاسبه‌گر شهریه
                             </a>
                         </div>
                     </div>
@@ -70,8 +186,8 @@
         {% else %}
         <div class="text-center py-5 text-muted">
             <i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>
-            <p>اطلاعات پذیرش از طریق پنل مدیریت تنظیم می‌شود</p>
-            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni mt-3">ثبت درخواست پذیرش</a>
+            <p>اطلاعات مقاطع از طریق پنل مدیریت تنظیم می‌شود. می‌توانید همین حالا درخواست ثبت کنید.</p>
+            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni mt-3">شروع ثبت درخواست</a>
         </div>
         {% endif %}
     </div>

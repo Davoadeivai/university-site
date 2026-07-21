@@ -34,7 +34,7 @@ class Command(BaseCommand):
         settings_obj, _ = SiteSettings.objects.get_or_create(
             pk=1,
             defaults={
-                'university_name_fa': 'موسسه آموزش عالی علامه امینی',
+                'university_name_fa': 'موسسه آموزش عالی علامه امینی بهنمیر',
                 'university_name_en': 'Allameh Amini Higher Education Institute',
             },
         )

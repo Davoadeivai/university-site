@@ -82,34 +82,79 @@ def check_rate_limit(request, scope: str, limit: int = 10, window: int = 300) ->
     return True, ''
 
 
+def _mask(phone: str) -> str:
+    """پنهان‌سازی شماره برای لاگ‌ها."""
+    if len(phone) >= 6:
+        return f'{phone[:4]}****{phone[-2:]}'
+    return '****'
+
+
+def normalize_phone(phone: str) -> str:
+    """نرمال‌سازی شماره موبایل ایران به فرمت 09xxxxxxxxx."""
+    if not phone:
+        return ''
+    trans = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
+    phone = phone.translate(trans)
+    phone = ''.join(ch for ch in phone if ch.isdigit())
+    if phone.startswith('98') and len(phone) == 12:
+        phone = '0' + phone[2:]
+    elif phone.startswith('0098') and len(phone) == 14:
+        phone = '0' + phone[4:]
+    return phone
+
+
 def send_sms(phone: str, message: str) -> bool:
     """
-    ارسال پیامک واقعی از طریق کاوه‌نگار در صورت فعال بودن SMS_ENABLED.
-    در توسعه یا خطا: لاگ بدون افشای کامل کد در production.
+    ارسال پیامک متنی از طریق کاوه‌نگار (متد sms_send؛ نیازمند خط ارسال).
+    همان الگوی نمونهٔ پنل:
+        api = KavenegarAPI(api_key)
+        api.sms_send({'sender': ..., 'receptor': ..., 'message': ...})
     """
+    phone = normalize_phone(phone)
     sms_enabled = getattr(settings, 'SMS_ENABLED', False)
-    api_key = getattr(settings, 'KAVENEGAR_API_KEY', '') or ''
-    sender = getattr(settings, 'SMS_SENDER_NUMBER', '') or ''
+    api_key = (getattr(settings, 'KAVENEGAR_API_KEY', '') or '').strip()
 
     if sms_enabled and api_key:
         try:
-            import kavenegar
-            kavenegar.KavenegarAPI(api_key).sms_send({
-                'sender': sender,
-                'receptor': phone,
-                'message': message,
-            })
+            from core.kavenegar_client import kavenegar_sms_send
+            kavenegar_sms_send(receptor=phone, message=message)
             return True
         except Exception:
-            logger.exception('SMS send failed for %s****%s', phone[:4], phone[-2:])
+            logger.exception('SMS send failed for %s', _mask(phone))
             return False
 
     # محیط توسعه
     if settings.DEBUG:
         logger.info('[SMS-DEV] → %s | %s', phone, message)
     else:
-        logger.warning(
-            'SMS disabled; message not delivered to %s****%s',
-            phone[:4], phone[-2:],
-        )
+        logger.warning('SMS disabled; message not delivered to %s', _mask(phone))
     return not sms_enabled  # در dev موفقیت ساختگی برای ادامه فلو
+
+
+def send_otp(phone: str, code: str, message: str | None = None) -> bool:
+    """
+    ارسال کد یک‌بارمصرف (OTP).
+
+    اگر KAVENEGAR_OTP_TEMPLATE تنظیم شده باشد از متد verify_lookup کاوه‌نگار
+    استفاده می‌کند (بدون نیاز به خط اختصاصی، تحویل سریع‌تر و مطمئن‌تر برای OTP).
+    در غیر این صورت به پیامک متنی معمولی (send_sms) برمی‌گردد — مثل نمونه پنل:
+    sender + receptor + message.
+    """
+    phone = normalize_phone(phone)
+    sms_enabled = getattr(settings, 'SMS_ENABLED', False)
+    api_key = (getattr(settings, 'KAVENEGAR_API_KEY', '') or '').strip()
+    template = (getattr(settings, 'KAVENEGAR_OTP_TEMPLATE', '') or '').strip()
+
+    if sms_enabled and api_key and template:
+        try:
+            from core.kavenegar_client import kavenegar_verify_lookup
+            kavenegar_verify_lookup(receptor=phone, token=code, template=template)
+            return True
+        except Exception:
+            logger.exception('OTP verify_lookup failed for %s', _mask(phone))
+            return False
+
+    # بدون الگو یا در حالت پیامک متنی: از send_sms استفاده کن
+    if message is None:
+        message = f'کد تأیید شما: {code}'
+    return send_sms(phone, message)

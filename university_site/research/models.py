@@ -86,11 +86,11 @@ class Conference(models.Model):
 
 class IndustryPartnership(models.Model):
     company_name = models.CharField(_('نام شرکت'), max_length=200)
-    description = models.TextField(blank=True)
-    logo = models.ImageField(upload_to='partners/', blank=True, null=True)
-    website = models.URLField(blank=True)
+    description = models.TextField(_('توضیحات'), blank=True)
+    logo = models.ImageField(_('لوگو'), upload_to='partners/', blank=True, null=True)
+    website = models.URLField(_('وب‌سایت'), blank=True)
     partnership_type = models.CharField(_('نوع همکاری'), max_length=200, blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(_('فعال'), default=True)
 
     class Meta:
         verbose_name = _('همکاری صنعتی')

@@ -1,0 +1,75 @@
+# Persian overrides for Django admin / Jazzmin (Django 5.x strings)
+msgid ""
+msgstr ""
+"Project-Id-Version: university_site\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Dashboard"
+msgstr "داشبورد"
+
+msgid "Home"
+msgstr "خانه"
+
+msgid "Search"
+msgstr "جستجو"
+
+msgid "Add"
+msgstr "افزودن"
+
+msgid "Change"
+msgstr "ویرایش"
+
+msgid "View"
+msgstr "مشاهده"
+
+msgid "Go"
+msgstr "برو"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Recent actions"
+msgstr "فعالیت‌های اخیر"
+
+msgid "None available"
+msgstr "موردی موجود نیست"
+
+msgid "Users"
+msgstr "کاربران"
+
+msgid "Groups"
+msgstr "گروه‌ها"
+
+msgid "Authentication and Authorization"
+msgstr "احراز هویت و دسترسی‌ها"
+
+# Django 5.x LogEntry (curly quotes)
+msgid "Added “%(object)s”."
+msgstr "«%(object)s» اضافه شد."
+
+msgid "Changed “%(object)s” — %(changes)s"
+msgstr "«%(object)s» تغییر کرد — %(changes)s"
+
+msgid "Deleted “%(object)s.”"
+msgstr "«%(object)s» حذف شد."
+
+# Older/alternate LogEntry forms
+msgid "Added \"%(object)s\"."
+msgstr "«%(object)s» اضافه شد."
+
+msgid "Changed \"%(object)s\" - %(changes)s"
+msgstr "«%(object)s» تغییر کرد - %(changes)s"
+
+msgid "Deleted \"%(object)s.\""
+msgstr "«%(object)s» حذف شد."
+
+# Jazzmin recent actions time suffix
+msgid "%(timesince)s ago"
+msgstr "%(timesince)s پیش"
+
+msgid "{{ timesince }} ago"
+msgstr "{{ timesince }} پیش"

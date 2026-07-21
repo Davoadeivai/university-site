@@ -58,7 +58,7 @@ def admissions_view(request):
 # ─────────────────────────────────────────────
 def apply_otp_send(request):
     """ارسال کد OTP برای تأیید موبایل"""
-    from core.sms import can_send_otp, mark_otp_sent, send_sms
+    from core.sms import can_send_otp, mark_otp_sent, send_otp
 
     if request.method == 'POST':
         phone = _normalize_digits(request.POST.get('phone', ''))
@@ -75,9 +75,13 @@ def apply_otp_send(request):
 
         otp = AdmissionOTP.create_for_phone(phone)
         msg = f'کد تأیید پذیرش دانشگاه: {otp.code}\nاعتبار ۱۰ دقیقه'
-        send_sms(phone, msg)
-        mark_otp_sent(phone, scope='admission')
+        sent = send_otp(phone, otp.code, msg)
+        if not sent:
+            messages.error(request, 'ارسال پیامک ناموفق بود. لطفاً چند لحظه دیگر تلاش کنید.')
+            return render(request, 'admissions/apply_step1_otp.html',
+                          {'page_title': 'ثبت درخواست پذیرش'})
 
+        mark_otp_sent(phone, scope='admission')
         request.session['apply_phone'] = phone
         messages.success(request, f'کد تأیید به {phone[:4]}****{phone[-3:]} ارسال شد.')
         return redirect('admissions:apply_otp_verify')

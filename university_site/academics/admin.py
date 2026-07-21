@@ -87,6 +87,22 @@ class MajorAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ['name', 'code', 'major', 'credits', 'course_type', 'semester']
+    list_filter = ['course_type', 'semester', 'major__degree', 'major']
+    search_fields = ['name', 'code', 'major__name']
+    autocomplete_fields = ['major']
+    fieldsets = (
+        ('اطلاعات درس', {
+            'fields': ('major', 'name', 'code', 'credits', 'course_type', 'semester', 'prerequisites')
+        }),
+        ('توضیحات', {
+            'fields': ('description',),
+        }),
+    )
+
+
 @admin.register(AcademicCalendar)
 class AcademicCalendarAdmin(admin.ModelAdmin):
     list_display  = ['title', 'semester', 'academic_year', 'start_date', 'end_date', 'is_important']

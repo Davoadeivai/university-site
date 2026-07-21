@@ -98,7 +98,7 @@ def dashboard(request):
     context = panel_context(request, 'داشبورد', 'home')
     context['role'] = role
 
-    if role == 'admin' or user.is_staff:
+    if role == 'admin' or user.is_superuser:
         context.update({
             'page_title': 'داشبورد ادمین',
             'is_panel': False,
@@ -611,3 +611,71 @@ def staff_request_respond(request, pk):
     ctx = panel_context(request, 'پاسخ به درخواست', 'requests')
     ctx.update({'form': form, 'student_request': req})
     return render(request, 'dashboard/staff_request_respond.html', ctx)
+
+
+@role_required('staff', 'admin')
+def staff_student_export(request):
+    """لیست دانشجویان بر اساس رشته — پیش‌نمایش و خروجی اکسل/ورد."""
+    from accounts.models import UserProfile
+    from academics.models import Major
+    from dashboard.student_export import excel_response, word_response
+
+    majors = Major.objects.filter(is_active=True).select_related('group', 'department').order_by('degree', 'name')
+    major_id = (request.GET.get('major') or '').strip()
+    degree = (request.GET.get('degree') or '').strip()
+    download = (request.GET.get('download') or '').strip().lower()
+
+    students = (
+        UserProfile.objects.filter(role='student')
+        .select_related('user', 'major', 'major__group', 'major__department')
+        .order_by('user__last_name', 'user__first_name')
+    )
+    if degree:
+        students = students.filter(major__degree=degree)
+    if major_id:
+        by_profile = students.filter(major_id=major_id)
+        if by_profile.exists():
+            students = by_profile
+        else:
+            user_ids = (
+                Enrollment.objects.filter(
+                    student__profile__role='student',
+                    course__major_id=major_id,
+                )
+                .values_list('student_id', flat=True)
+                .distinct()
+            )
+            students = (
+                UserProfile.objects.filter(role='student', user_id__in=user_ids)
+                .select_related('user', 'major', 'major__group', 'major__department')
+                .order_by('user__last_name', 'user__first_name')
+            )
+
+    selected_major = majors.filter(pk=major_id).first() if major_id else None
+
+    title = 'لیست دانشجویان ثبت‌نام‌شده'
+    if selected_major:
+        title = f'لیست دانشجویان رشته {selected_major.name} ({selected_major.get_degree_display()})'
+    elif degree:
+        labels = dict(Major._meta.get_field('degree').choices)
+        title = f'لیست دانشجویان مقطع {labels.get(degree, degree)}'
+
+    stamp = timezone.localtime().strftime('%Y%m%d')
+    if download == 'excel':
+        return excel_response(list(students), filename=f'students_{stamp}.xlsx', title=title)
+    if download == 'word':
+        return word_response(list(students), filename=f'students_{stamp}.docx', title=title)
+
+    degrees = Major._meta.get_field('degree').choices
+    ctx = panel_context(request, 'خروجی لیست دانشجویان', 'student_export')
+    ctx.update({
+        'majors': majors,
+        'degrees': degrees,
+        'selected_major_id': str(major_id) if major_id else '',
+        'selected_degree': degree,
+        'students': students[:500],
+        'student_count': students.count(),
+        'selected_major': selected_major,
+        'export_title': title,
+    })
+    return render(request, 'dashboard/staff_student_export.html', ctx)

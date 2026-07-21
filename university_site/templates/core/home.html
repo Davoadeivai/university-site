@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static custom_filters %}
 
 {% block extra_css %}
@@ -274,15 +274,15 @@
         <!-- ──── DEMO SLIDES ──── -->
         <div class="uni-hero-slide is-active" data-index="0">
             <img class="slide-bg"
-                 src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80"
-                 alt="دریاچه کوهستانی" loading="eager">
+                 src="{% static 'images/hero-campus-01.png' %}"
+                 alt="پردیس دانشگاهی" loading="eager">
             <div class="uni-slide-body">
                 <div class="container">
                     <div class="uni-slide-badge badge-danger">
                         <i class="fas fa-calendar-alt"></i>
                         تاریخ شروع کلاس‌ها: ۱ مهرماه ۱۴۰۴
                     </div>
-                    <h1 class="uni-slide-title">دانشگاه جامع<br>علمی کاربردی</h1>
+                    <h1 class="uni-slide-title">موسسه آموزش عالی<br>علامه امینی بهنمیر</h1>
                     <p class="uni-slide-subtitle">مرکز برتر آموزش عالی؛ جایی که دانش، نوآوری و توسعه فردی با هم تلاقی می‌یابند</p>
                     <div class="uni-slide-actions">
                         <a href="{% url 'admissions:admissions' %}" class="hero-btn">
@@ -333,7 +333,7 @@
                         ثبت‌نام آزمون جامع دکتری آغاز شد
                     </div>
                     <h1 class="uni-slide-title">پژوهش و نوآوری<br>در دانشگاه</h1>
-                    <p class="uni-slide-subtitle">دانشگاه جامع با ۵۰ رشته تحصیلی آماده پذیرش دانشجویان نخبه در مقاطع کارشناسی، ارشد و دکتری است</p>
+                    <p class="uni-slide-subtitle">موسسه آموزش عالی علامه امینی بهنمیر با ۵۰ رشته تحصیلی آماده پذیرش دانشجویان نخبه در مقاطع کارشناسی، ارشد و دکتری است</p>
                     <div class="uni-slide-actions">
                         <a href="{% url 'research:research' %}" class="hero-btn">
                             <i class="fas fa-microscope"></i> پژوهش
@@ -589,7 +589,7 @@
 <section class="section" style="background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);">
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title">مزایای تحصیل در دانشگاه جامع</h2>
+            <h2 class="section-title">مزایای تحصیل در موسسه آموزش عالی علامه امینی بهنمیر</h2>
             <p class="section-subtitle">یک تجربه آموزشی کامل و آینده‌ساز</p>
         </div>
         <div class="row g-4">

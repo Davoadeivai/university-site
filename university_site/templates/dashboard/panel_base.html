@@ -147,6 +147,9 @@
                 <a href="{% url 'dashboard:staff_requests' %}" class="{% if active_nav == 'requests' %}active{% endif %}">
                     <i class="fas fa-inbox"></i> درخواست‌های دانشجو
                 </a>
+                <a href="{% url 'dashboard:staff_student_export' %}" class="{% if active_nav == 'student_export' %}active{% endif %}">
+                    <i class="fas fa-file-export"></i> خروجی دانشجویان
+                </a>
                 {% endif %}
                 <a href="{% url 'accounts:profile' %}">
                     <i class="fas fa-user"></i> پروفایل

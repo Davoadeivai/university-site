@@ -7,6 +7,7 @@ from django.db.models import Q
 
 from core.models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    CityInfo, CityAttraction,
     PresidencyOffice, DeputyVice,
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
@@ -83,7 +84,19 @@ def about(request):
 
 
 def city_behnammir(request):
-    context = {'page_title': 'آشنایی با شهر بهنمیر'}
+    city_info = CityInfo.objects.filter(is_active=True).order_by('order')
+    attractions = CityAttraction.objects.filter(is_active=True).order_by('order')
+    categories = (
+        attractions.exclude(category='')
+        .values_list('category', flat=True)
+        .distinct()
+    )
+    context = {
+        'page_title': 'آشنایی با شهر بهنمیر',
+        'city_info': city_info,
+        'attractions': attractions,
+        'categories': categories,
+    }
     return render(request, 'core/city_behnammir.html', context)
 
 

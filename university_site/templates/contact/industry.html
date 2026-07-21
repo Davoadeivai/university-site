@@ -1,14 +1,73 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">ارتباط با صنعت</h1></div></div>
-<section class="section"><div class="container">
-<div class="row g-4 mb-5">
-<div class="col-md-4" data-aos="fade-up"><div class="dept-card"><div class="dept-icon"><i class="fas fa-handshake"></i></div><h3 class="dept-title">پروژه‌های مشترک</h3><p class="text-muted">همکاری در پروژه‌های صنعتی و پژوهشی</p></div></div>
-<div class="col-md-4" data-aos="fade-up" data-aos-delay="100"><div class="dept-card"><div class="dept-icon"><i class="fas fa-briefcase"></i></div><h3 class="dept-title">کارآموزی</h3><p class="text-muted">فرصت‌های کارآموزی در شرکت‌های معتبر</p></div></div>
-<div class="col-md-4" data-aos="fade-up" data-aos-delay="200"><div class="dept-card"><div class="dept-icon"><i class="fas fa-lightbulb"></i></div><h3 class="dept-title">نوآوری و استارتاپ</h3><p class="text-muted">حمایت از ایده‌ها و استارتاپ‌های دانشجویی</p></div></div>
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-header-title">ارتباط با صنعت</h1>
+    </div>
 </div>
-<div class="text-center mt-3" data-aos="fade-up">
-<a href="{% url 'contact:contact' %}" class="btn-primary-uni"><i class="fas fa-envelope"></i> تماس با واحد ارتباط با صنعت</a>
-</div>
-</div></section>
+<section class="section">
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="dept-card">
+                    <div class="dept-icon"><i class="fas fa-handshake"></i></div>
+                    <h3 class="dept-title">پروژه‌های مشترک</h3>
+                    <p class="text-muted">همکاری در پروژه‌های صنعتی و پژوهشی</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="dept-card">
+                    <div class="dept-icon"><i class="fas fa-briefcase"></i></div>
+                    <h3 class="dept-title">کارآموزی</h3>
+                    <p class="text-muted">فرصت‌های کارآموزی در شرکت‌های معتبر</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="dept-card">
+                    <div class="dept-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3 class="dept-title">نوآوری و استارتاپ</h3>
+                    <p class="text-muted">حمایت از ایده‌ها و استارتاپ‌های دانشجویی</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title text-center mb-4">شرکای صنعتی و همکاری‌ها</h2>
+        {% if partners %}
+        <div class="row g-4 mb-5">
+            {% for p in partners %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="dept-card h-100 text-center">
+                    {% if p.logo %}
+                    <img src="{{ p.logo.url }}" alt="{{ p.company_name }}"
+                         class="mb-3" style="max-height:72px;max-width:100%;object-fit:contain;">
+                    {% else %}
+                    <div class="dept-icon mx-auto"><i class="fas fa-industry"></i></div>
+                    {% endif %}
+                    <h3 class="dept-title">{{ p.company_name }}</h3>
+                    {% if p.partnership_type %}
+                    <span class="badge bg-primary mb-2">{{ p.partnership_type }}</span>
+                    {% endif %}
+                    {% if p.description %}
+                    <p class="text-muted" style="font-size:13px;line-height:1.8;">{{ p.description|truncatewords:30 }}</p>
+                    {% endif %}
+                    {% if p.website %}
+                    <a href="{{ p.website }}" class="btn btn-sm btn-outline-primary mt-2" target="_blank" rel="noopener">وب‌سایت</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center mb-5">
+            هنوز همکاری صنعتی ثبت نشده است. از پنل مدیریت بخش «همکاری‌های صنعتی» را تکمیل کنید.
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-3" data-aos="fade-up">
+            <a href="{% url 'contact:contact' %}" class="btn-primary-uni">
+                <i class="fas fa-envelope"></i> تماس با واحد ارتباط با صنعت
+            </a>
+        </div>
+    </div>
+</section>
 {% endblock %}

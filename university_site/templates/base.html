@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 {% load i18n %}
 {% load custom_filters %}
 <!DOCTYPE html>
@@ -6,10 +6,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}موسسه آموزش عالی - آموزش کارشناسی، کارشناسی ارشد و کاردانی - پذیرش دانشجو{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}موسسه آموزش عالی، دانشگاه، کارشناسی، کارشناسی ارشد، کاردانی، پذیرش دانشجو{% endblock %}">
+    <meta name="description" content="{% block meta_description %}موسسه آموزش عالی علامه امینی بهنمیر - آموزش کارشناسی، کارشناسی ارشد و کاردانی - پذیرش دانشجو{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}موسسه آموزش عالی علامه امینی بهنمیر، کارشناسی، کارشناسی ارشد، کاردانی، پذیرش دانشجو{% endblock %}">
     <meta name="robots" content="index, follow">
-    <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %} | موسسه آموزش عالی{% endblock %}</title>
+    <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر{% endif %}{% endblock %}</title>
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <!-- Bootstrap 5 RTL -->
@@ -25,10 +25,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs-rtl.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260721f">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %}">
 <a class="skip-link" href="#mainContent">پرش به محتوای اصلی</a>
 
 <!-- Top Bar -->
@@ -74,8 +74,18 @@
     </div>
 </div>
 
+<!-- Sticky header: banner + navbar -->
+<header class="site-header" id="siteHeader">
+
+<!-- Institution banner (all pages; larger on home) -->
+<div class="site-banner">
+    <a href="{% url 'core:home' %}" aria-label="موسسه آموزش عالی علامه امینی بهنمیر">
+        <img src="{% static 'images/site-header.png' %}?v=20260721e" alt="موسسه آموزش عالی علامه امینی بهنمیر">
+    </a>
+</div>
+
 <!-- Main Navbar — طرح مطابق عکس: تیره، ساده، بدون آیکون -->
-<nav class="navbar navbar-expand-xl sticky-top main-navbar" id="mainNav">
+<nav class="navbar navbar-expand-xl main-navbar" id="mainNav">
     <div class="container-fluid px-0">
         <button class="navbar-toggler ms-2 me-2 mt-1 mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="باز و بسته کردن منو" style="border-color:rgba(255,255,255,0.4);">
             <span class="navbar-toggler-icon" style="filter:invert(1);"></span>
@@ -150,6 +160,7 @@
                     </a>
                     <ul class="dropdown-menu nav-dd" style="max-height:460px;overflow-y:auto;">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:groups_list' %}">همه گروه‌ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_studies' %}">تحصیلات تکمیلی</a></li>
                         <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.15);margin:4px 0;"></li>
                         {% if nav_groups %}
                             {% for group in nav_groups %}
@@ -161,34 +172,32 @@
                     </ul>
                 </li>
 
-                <!-- پذیرش دانشجو — همه مقاطع (کاردانی تا دکتری) -->
+                <!-- پذیرش دانشجو — ۳ بلوک کوتاه -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="{% url 'admissions:admissions' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside"
-                       style="color:#f0d080!important;">
+                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="fas fa-user-graduate" style="font-size:13px;margin-left:3px;"></i> پذیرش دانشجو
                     </a>
-                    <ul class="dropdown-menu nav-dd" style="min-width:300px;">
-
+                    <ul class="dropdown-menu nav-dd" style="min-width:280px;">
                         <li>
                             <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
-                                <i class="fas fa-file-signature me-1"></i> پذیرش یکپارچه (همه مقاطع)
+                                <i class="fas fa-play me-1"></i> شروع پذیرش
                             </span>
                         </li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:admissions' %}">
                             <i class="fas fa-info-circle me-1" style="width:16px;"></i> اطلاعات پذیرش
                         </a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:apply_otp_send' %}">
-                            <i class="fas fa-user-plus me-1" style="width:16px;"></i> ثبت‌نام بدون آزمون
+                            <i class="fas fa-user-plus me-1" style="width:16px;"></i> ثبت درخواست
                         </a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:track' %}">
-                            <i class="fas fa-search me-1" style="width:16px;"></i> پیگیری وضعیت درخواست
+                            <i class="fas fa-search me-1" style="width:16px;"></i> پیگیری وضعیت
                         </a></li>
 
                         <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
 
                         <li>
                             <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
-                                <i class="fas fa-graduation-cap me-1"></i> رشته‌ها و مقاطع
+                                <i class="fas fa-graduation-cap me-1"></i> انتخاب رشته
                             </span>
                         </li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=associate">
@@ -203,54 +212,19 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=phd">
                             <i class="fas fa-university me-1" style="width:16px;"></i> دکتری
                         </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_studies' %}">
-                            <i class="fas fa-user-graduate me-1" style="width:16px;"></i> تحصیلات تکمیلی
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">
-                            <i class="fas fa-book-reader me-1" style="width:16px;"></i> پایان‌نامه‌ها
-                        </a></li>
 
                         <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
 
                         <li>
                             <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
-                                <i class="fas fa-laptop me-1"></i> خدمات دانشجویی
-                            </span>
-                        </li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:students_panel' %}">
-                            <i class="fas fa-desktop me-1" style="width:16px;"></i> پنل دانشجو
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:professors_panel' %}">
-                            <i class="fas fa-chalkboard-teacher me-1" style="width:16px;"></i> پنل استاد
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'dashboard:dashboard' %}">
-                            <i class="fas fa-th-large me-1" style="width:16px;"></i> ورود به سامانه آموزشی
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:calendar' %}">
-                            <i class="fas fa-calendar-alt me-1" style="width:16px;"></i> تقویم آموزشی
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:elearning' %}">
-                            <i class="fas fa-laptop me-1" style="width:16px;"></i> آموزش الکترونیکی
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:eservices' %}">
-                            <i class="fas fa-globe me-1" style="width:16px;"></i> همه خدمات الکترونیکی
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'accounts:profile' %}">
-                            <i class="fas fa-id-badge me-1" style="width:16px;"></i> پروفایل من
-                        </a></li>
-
-                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
-
-                        <li>
-                            <span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">
-                                <i class="fas fa-money-bill-wave me-1"></i> شهریه
+                                <i class="fas fa-money-bill-wave me-1"></i> شهریه و مدارک
                             </span>
                         </li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:tuition' %}">
                             <i class="fas fa-file-invoice-dollar me-1" style="width:16px;"></i> اطلاعات شهریه
                         </a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'admissions:tuition_calc' %}">
-                            <i class="fas fa-calculator me-1" style="width:16px;"></i> محاسبه‌گر آنلاین شهریه
+                            <i class="fas fa-calculator me-1" style="width:16px;"></i> محاسبه‌گر شهریه
                         </a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:payment_id' %}">
                             <i class="fas fa-university me-1" style="width:16px;"></i> شناسه واریز
@@ -258,7 +232,6 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:documents' %}">
                             <i class="fas fa-file-alt me-1" style="width:16px;"></i> آیین‌نامه‌ها و فرم‌ها
                         </a></li>
-
                     </ul>
                 </li>
 
@@ -305,6 +278,7 @@
         </div>
     </div>
 </nav>
+</header>
 
 <!-- Urgent Announcements -->
 {% if urgent_announcements %}
@@ -351,11 +325,11 @@
                         <div class="footer-logo mb-3">
                             <i class="fas fa-university footer-logo-icon"></i>
                             <div>
-                                <h5 class="mb-0">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %}</h5>
-                                <small>موسسه آموزش عالی</small>
+                                <h5 class="mb-0">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر{% endif %}</h5>
+                                <small>بهنمیر — مازندران</small>
                             </div>
                         </div>
-                        <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}دانشگاه جامع علمی کاربردی با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
+                        <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
                         <div class="social-links mt-3">
                             {% if site_settings %}
                             {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank" rel="noopener noreferrer" aria-label="تلگرام"><i class="fab fa-telegram"></i></a>{% endif %}
@@ -375,11 +349,11 @@
                             <li><a href="{% url 'core:home' %}"><i class="fas fa-angle-left"></i> صفحه اصلی</a></li>
                             <li><a href="{% url 'core:about' %}"><i class="fas fa-angle-left"></i> درباره ما</a></li>
                             <li><a href="{% url 'academics:departments' %}"><i class="fas fa-angle-left"></i> دانشکده‌ها</a></li>
+                            <li><a href="{% url 'core:graduate_studies' %}"><i class="fas fa-angle-left"></i> تحصیلات تکمیلی</a></li>
+                            <li><a href="{% url 'research:theses' %}"><i class="fas fa-angle-left"></i> پایان‌نامه‌ها</a></li>
                             <li><a href="{% url 'faculty:list' %}"><i class="fas fa-angle-left"></i> اساتید</a></li>
                             <li><a href="{% url 'news:list' %}"><i class="fas fa-angle-left"></i> اخبار</a></li>
-                            <li><a href="{% url 'admissions:admissions' %}"><i class="fas fa-angle-left"></i> پذیرش</a></li>
                             <li><a href="{% url 'contact:contact' %}"><i class="fas fa-angle-left"></i> تماس با ما</a></li>
-                            <li><a href="{% url 'core:faq' %}"><i class="fas fa-angle-left"></i> سوالات متداول</a></li>
                         </ul>
                     </div>
                 </div>
@@ -390,11 +364,10 @@
                         <h6 class="footer-title">خدمات الکترونیکی</h6>
                         <ul class="footer-links">
                             <li><a href="{% url 'dashboard:dashboard' %}"><i class="fas fa-angle-left"></i> سامانه آموزشی</a></li>
+                            <li><a href="{% url 'admissions:apply_otp_send' %}"><i class="fas fa-angle-left"></i> پذیرش دانشجو</a></li>
+                            <li><a href="{% url 'admissions:track' %}"><i class="fas fa-angle-left"></i> پیگیری پذیرش</a></li>
                             <li><a href="{% url 'core:payment_id' %}"><i class="fas fa-angle-left"></i> شناسه واریز</a></li>
                             <li><a href="{% url 'core:documents' %}"><i class="fas fa-angle-left"></i> آیین‌نامه‌ها و فرم‌ها</a></li>
-                            <li><a href="{% url 'core:events' %}"><i class="fas fa-angle-left"></i> رویدادها</a></li>
-                            <li><a href="{% url 'core:graduate_studies' %}"><i class="fas fa-angle-left"></i> تحصیلات تکمیلی</a></li>
-                            <li><a href="{% url 'admissions:apply_otp_send' %}"><i class="fas fa-angle-left"></i> پذیرش آنلاین</a></li>
                             <li><a href="{% url 'core:eservices' %}"><i class="fas fa-angle-left"></i> همه خدمات</a></li>
                         </ul>
                     </div>
@@ -457,8 +430,8 @@
                     <a href="{% url 'contact:contact' %}?to=presidency" class="payment-link">فرم ارتباطی</a>
                 </div>
                 <div class="col-md-4 text-center text-md-end">
-                    <a href="{% url 'admissions:admissions' %}" class="btn btn-sm btn-warning fw-bold">
-                        <i class="fas fa-file-alt"></i> پذیرش دانشجو مهر ۱۴۰۴
+                    <a href="{% url 'admissions:apply_otp_send' %}" class="btn btn-sm btn-warning fw-bold">
+                        <i class="fas fa-user-graduate"></i> پذیرش دانشجو
                     </a>
                 </div>
             </div>
@@ -466,13 +439,12 @@
     </div>
     <div class="footer-bottom">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0">&copy; ۱۴۰۳ {% if site_settings %}{{ site_settings.university_name_fa }}{% else %}دانشگاه جامع{% endif %} - تمامی حقوق محفوظ است</p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="{% url 'core:faq' %}" class="footer-bottom-link">سوالات متداول</a>
-                    <a href="{% url 'core:eservices' %}" class="footer-bottom-link">خدمات الکترونیکی</a>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">
+                        طراحی، اجرا و پشتیبانی توسط شرکت آرکاروناک
+                        <a href="https://arkaronak.ir" class="footer-bottom-link" target="_blank" rel="noopener noreferrer">arkaronak.ir</a>
+                    </p>
                 </div>
             </div>
         </div>

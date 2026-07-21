@@ -7,4 +7,7 @@ jdatetime==5.3.0
 python-decouple==3.8
 PyMySQL==1.1.1
 psycopg[binary]>=3.1
-kavenegar>=1.1.2
+openpyxl>=3.1.0
+python-docx>=1.1.0
+# آخرین SDK رسمی کاوه‌نگار (GitHub release 1.2.1) — روی PyPI فقط تا 1.1.2 موجود است
+kavenegar @ git+https://github.com/kavenegar/kavenegar-python.git@1.2.1

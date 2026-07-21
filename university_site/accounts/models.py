@@ -18,6 +18,14 @@ class UserProfile(models.Model):
     phone = models.CharField(_('تلفن'), max_length=15, blank=True)
     student_id = models.CharField(_('شماره دانشجویی/کارمندی'), max_length=50, blank=True)
     department = models.CharField(_('دانشکده/واحد'), max_length=200, blank=True)
+    major = models.ForeignKey(
+        'academics.Major',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+        verbose_name=_('رشته تحصیلی'),
+    )
     bio = models.TextField(_('بیوگرافی'), blank=True)
     national_id = models.CharField(_('کد ملی'), max_length=10, blank=True)
     birth_date = models.DateField(_('تاریخ تولد'), blank=True, null=True)
@@ -43,10 +51,10 @@ class Announcement(models.Model):
     content = models.TextField(_('محتوا'))
     target = models.CharField(_('مخاطب'), max_length=20, choices=TARGET_CHOICES, default='all')
     file = models.FileField(_('فایل پیوست'), upload_to='announcements/', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(_('فعال'), default=True)
     is_urgent = models.BooleanField(_('فوری'), default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(_('زمان ایجاد'), auto_now_add=True)
+    expires_at = models.DateField(_('تاریخ انقضا'), blank=True, null=True)
 
     class Meta:
         verbose_name = _('اطلاعیه')
@@ -58,11 +66,11 @@ class Announcement(models.Model):
 
 
 class OTPCode(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes', verbose_name=_('کاربر'))
     code = models.CharField(_('کد تأیید'), max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(_('زمان ایجاد'), auto_now_add=True)
+    expires_at = models.DateTimeField(_('انقضا'))
+    is_used = models.BooleanField(_('استفاده‌شده'), default=False)
 
     class Meta:
         verbose_name = _('کد تأیید')

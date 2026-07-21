@@ -24,22 +24,23 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'crispy_forms',
     'crispy_bootstrap5',
-    'core',
-    'accounts',
-    'news',
-    'academics',
-    'faculty',
-    'research',
-    'library',
-    'admissions',
-    'contact',
-    'dashboard',
+    'core.apps.CoreConfig',
+    'accounts.apps.AccountsConfig',
+    'news.apps.NewsConfig',
+    'academics.apps.AcademicsConfig',
+    'faculty.apps.FacultyConfig',
+    'research.apps.ResearchConfig',
+    'library.apps.LibraryConfig',
+    'admissions.apps.AdmissionsConfig',
+    'contact.apps.ContactConfig',
+    'dashboard.apps.DashboardConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'core.middleware.ForcePersianMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -128,7 +129,7 @@ USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = [
-    ('fa', 'Persian'),
+    ('fa', 'فارسی'),
     ('en', 'English'),
 ]
 
@@ -163,38 +164,154 @@ LOGOUT_REDIRECT_URL = '/'
 # Jazzmin
 # -----------------------------------------------------------------------------
 JAZZMIN_SETTINGS = {
-    'site_title': 'دانشگاه جامع',
-    'site_header': 'پنل مدیریت',
-    'site_brand': 'دانشگاه',
-    'welcome_sign': 'به پنل مدیریت دانشگاه خوش آمدید',
-    'copyright': 'دانشگاه جامع © 2026',
-    'search_model': ['auth.user', 'news.news'],
+    'site_title': 'پنل مدیریت | علامه امینی',
+    'site_header': 'موسسه آموزش عالی علامه امینی بهنمیر',
+    'site_brand': 'علامه امینی',
+    'welcome_sign': 'به پنل مدیریت موسسه خوش آمدید',
+    'copyright': 'طراحی، اجرا و پشتیبانی توسط شرکت آرکاروناک — arkaronak.ir',
+    'search_model': [
+        'admissions.Application',
+        'auth.User',
+        'news.News',
+        'academics.Major',
+        'faculty.Professor',
+    ],
     'topmenu_links': [
         {'name': 'مشاهده سایت', 'url': '/', 'new_window': True},
-        {'name': 'داشبورد', 'url': '/dashboard/'},
+        {'name': 'داشبورد کاربران', 'url': '/dashboard/'},
+        {'name': 'درخواست‌های پذیرش', 'url': 'admin:admissions_application_changelist'},
+        {'name': 'پیام‌های تماس', 'url': 'admin:contact_contactmessage_changelist'},
     ],
     'show_sidebar': True,
     'navigation_expanded': True,
+    # ترتیب نمایش بخش‌ها در صفحه اصلی ادمین
+    'order_with_respect_to': [
+        'core',
+        'admissions',
+        'academics',
+        'faculty',
+        'news',
+        'library',
+        'research',
+        'dashboard',
+        'accounts',
+        'contact',
+        'auth',
+    ],
     'icons': {
         'auth': 'fas fa-users-cog',
-        'auth.user': 'fas fa-user',
+        'auth.User': 'fas fa-user',
         'auth.Group': 'fas fa-users',
-        'news.News': 'fas fa-newspaper',
-        'academics.Department': 'fas fa-building',
-        'faculty.Professor': 'fas fa-chalkboard-teacher',
-        'library.Book': 'fas fa-book',
+
+        'core': 'fas fa-globe',
+        'core.SiteSettings': 'fas fa-cog',
+        'core.Slider': 'fas fa-images',
+        'core.QuickLink': 'fas fa-link',
+        'core.Event': 'fas fa-calendar-alt',
+        'core.FAQ': 'fas fa-question-circle',
+        'core.PageView': 'fas fa-chart-line',
+        'core.InstitutionGoal': 'fas fa-bullseye',
+        'core.BoardMember': 'fas fa-user-tie',
+        'core.CityInfo': 'fas fa-map-marker-alt',
+        'core.CityAttraction': 'fas fa-camera',
+        'core.PresidencyOffice': 'fas fa-landmark',
+        'core.DeputyVice': 'fas fa-user-friends',
+        'core.InternationalOffice': 'fas fa-plane',
+        'core.InternationalActivity': 'fas fa-handshake',
+        'core.PublicRelations': 'fas fa-bullhorn',
+        'core.PressRelease': 'fas fa-newspaper',
+        'core.SecurityOffice': 'fas fa-shield-alt',
+        'core.VicePresidency': 'fas fa-sitemap',
+        'core.ViceUnit': 'fas fa-building',
+        'core.ViceAchievement': 'fas fa-trophy',
+        'core.OrganizationalChart': 'fas fa-project-diagram',
+        'core.BankAccount': 'fas fa-university',
+        'core.PaymentIdentifier': 'fas fa-barcode',
+        'core.DownloadableDocument': 'fas fa-file-download',
+
+        'admissions': 'fas fa-user-graduate',
+        'admissions.AdmissionInfo': 'fas fa-info-circle',
         'admissions.Application': 'fas fa-file-alt',
-        'contact.ContactMessage': 'fas fa-envelope',
+        'admissions.TuitionStructure': 'fas fa-money-bill-wave',
+        'admissions.TuitionDiscount': 'fas fa-percent',
+        'admissions.StudentPayment': 'fas fa-receipt',
+        'admissions.AdmissionOTP': 'fas fa-sms',
+
+        'academics': 'fas fa-graduation-cap',
+        'academics.Department': 'fas fa-building',
+        'academics.AcademicGroup': 'fas fa-layer-group',
+        'academics.Major': 'fas fa-book-open',
+        'academics.Course': 'fas fa-chalkboard',
+        'academics.AcademicCalendar': 'fas fa-calendar',
+        'academics.Laboratory': 'fas fa-flask',
+
+        'faculty': 'fas fa-chalkboard-teacher',
+        'faculty.Professor': 'fas fa-user-tie',
+        'faculty.Publication': 'fas fa-book',
+
+        'news': 'fas fa-newspaper',
+        'news.Category': 'fas fa-tags',
+        'news.News': 'fas fa-newspaper',
+        'news.Gallery': 'fas fa-image',
+
+        'library': 'fas fa-book-reader',
+        'library.Book': 'fas fa-book',
+        'library.Article': 'fas fa-file-alt',
+        'library.LibraryMembership': 'fas fa-id-card',
+
+        'research': 'fas fa-microscope',
         'research.ResearchProject': 'fas fa-flask',
+        'research.Journal': 'fas fa-journal-whills',
+        'research.Thesis': 'fas fa-scroll',
+        'research.Conference': 'fas fa-users',
+        'research.IndustryPartnership': 'fas fa-industry',
+
+        'dashboard': 'fas fa-tachometer-alt',
+        'dashboard.Semester': 'fas fa-calendar-check',
+        'dashboard.Enrollment': 'fas fa-user-plus',
+        'dashboard.TeachingAssignment': 'fas fa-tasks',
+        'dashboard.StudentRequest': 'fas fa-envelope-open-text',
+        'dashboard.Payment': 'fas fa-credit-card',
+        'dashboard.ExamSchedule': 'fas fa-clock',
+        'dashboard.Assignment': 'fas fa-clipboard-list',
+        'dashboard.AssignmentSubmission': 'fas fa-upload',
+        'dashboard.Attendance': 'fas fa-user-check',
+
+        'accounts': 'fas fa-id-badge',
+        'accounts.UserProfile': 'fas fa-address-card',
+        'accounts.Announcement': 'fas fa-bell',
+        'accounts.OTPCode': 'fas fa-key',
+
+        'contact': 'fas fa-phone-alt',
+        'contact.ContactMessage': 'fas fa-envelope',
+        'contact.Alumni': 'fas fa-user-friends',
     },
-    'default_icon_parents': 'fas fa-chevron-circle-right',
+    'default_icon_parents': 'fas fa-folder',
     'default_icon_children': 'fas fa-circle',
     'related_modal_active': True,
     'custom_css': 'admin/css/rtl_admin.css',
-    'custom_js': None,
+    'custom_js': 'admin/js/fa_admin.js',
     'show_ui_builder': False,
     'changeform_format': 'collapsible',
     'language_chooser': False,
+    # مدل‌های کم‌کاربرد/فنی که شلوغ می‌کنند — در صورت نیاز از URL مستقیم قابل دسترس‌اند
+    'hide_models': [
+        'core.PageView',
+    ],
+    'custom_links': {
+        'admissions': [{
+            'name': 'ثبت‌نام آنلاین (سایت)',
+            'url': '/پذیرش/تایید-موبایل/',
+            'icon': 'fas fa-external-link-alt',
+            'new_window': True,
+        }],
+        'core': [{
+            'name': 'صفحه اصلی سایت',
+            'url': '/',
+            'icon': 'fas fa-home',
+            'new_window': True,
+        }],
+    },
 }
 
 JAZZMIN_UI_TWEAKS = {
@@ -236,11 +353,11 @@ if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     DEFAULT_FROM_EMAIL = config(
         'DEFAULT_FROM_EMAIL',
-        default=f'دانشگاه جامع <{EMAIL_HOST_USER}>',
+        default=f'موسسه آموزش عالی علامه امینی بهنمیر <{EMAIL_HOST_USER}>',
     )
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = 'دانشگاه جامع <noreply@localhost>'
+    DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی بهنمیر <noreply@localhost>'
 
 PASSWORD_RESET_TIMEOUT = 3600
 
@@ -250,6 +367,10 @@ PASSWORD_RESET_TIMEOUT = 3600
 SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
 KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
 SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
+# پیشوند متن پیامک‌های اطلاع‌رسانی
+SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی بهنمیر')
+# نام الگوی تأیید (verify lookup) در پنل کاوه‌نگار؛ اگر پر باشد OTP از این روش ارسال می‌شود
+KAVENEGAR_OTP_TEMPLATE = config('KAVENEGAR_OTP_TEMPLATE', default='')
 OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
 OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
 OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)

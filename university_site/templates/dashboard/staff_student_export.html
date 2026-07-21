@@ -1,0 +1,120 @@
+{% extends 'dashboard/panel_base.html' %}
+{% block panel_content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h2 class="h5 mb-1 fw-bold">خروجی لیست دانشجویان</h2>
+        <p class="text-muted mb-0" style="font-size:13px;">بر اساس مقطع و رشته، پیش‌نمایش بگیرید و فایل اکسل یا ورد دریافت کنید.</p>
+    </div>
+</div>
+
+<form method="get" class="uni-card p-4 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label fw-bold">مقطع</label>
+            <select name="degree" class="form-select" onchange="this.form.submit()">
+                <option value="">همه مقاطع</option>
+                {% for code, label in degrees %}
+                <option value="{{ code }}" {% if selected_degree == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label fw-bold">رشته</label>
+            <select name="major" class="form-select" id="majorSelect">
+                <option value="">همه رشته‌ها</option>
+                {% for m in majors %}
+                <option value="{{ m.pk }}" data-degree="{{ m.degree }}"
+                        {% if selected_major_id == m.pk|stringformat:'s' %}selected{% endif %}>
+                    {{ m.name }} — {{ m.get_degree_display }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn-primary-uni w-100"><i class="fas fa-filter"></i> اعمال فیلتر</button>
+        </div>
+    </div>
+</form>
+
+<div class="uni-card p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <strong>{{ export_title }}</strong>
+            <span class="badge bg-primary ms-2">{{ student_count }} نفر</span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-success btn-sm"
+               href="?degree={{ selected_degree }}&major={{ selected_major_id }}&download=excel">
+                <i class="fas fa-file-excel"></i> دانلود اکسل
+            </a>
+            <a class="btn btn-primary btn-sm"
+               href="?degree={{ selected_degree }}&major={{ selected_major_id }}&download=word">
+                <i class="fas fa-file-word"></i> دانلود ورد
+            </a>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                <i class="fas fa-print"></i> پرینت صفحه
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle" style="font-size:13px;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>نام و نام خانوادگی</th>
+                    <th>کد ملی</th>
+                    <th>شماره دانشجویی</th>
+                    <th>موبایل</th>
+                    <th>ایمیل</th>
+                    <th>رشته</th>
+                    <th>مقطع</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ s.user.get_full_name|default:s.user.username }}</td>
+                    <td dir="ltr">{{ s.national_id|default:s.user.username }}</td>
+                    <td dir="ltr">{{ s.student_id|default:'—' }}</td>
+                    <td dir="ltr">{{ s.phone|default:'—' }}</td>
+                    <td dir="ltr">{{ s.user.email|default:'—' }}</td>
+                    <td>{% if s.major %}{{ s.major.name }}{% else %}—{% endif %}</td>
+                    <td>{% if s.major %}{{ s.major.get_degree_display }}{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        دانشجویی با این فیلتر یافت نشد.
+                        {% if not selected_major_id %}
+                        <br><small>برای دانشجویان، فیلد «رشته تحصیلی» را در پروفایل ادمین تنظیم کنید.</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if student_count > 500 %}
+    <p class="text-muted mb-0" style="font-size:12px;">پیش‌نمایش حداکثر ۵۰۰ ردیف است؛ فایل دانلود شامل همهٔ {{ student_count }} نفر می‌شود.</p>
+    {% endif %}
+</div>
+
+<script>
+(function () {
+    var degree = document.querySelector('select[name="degree"]');
+    var major = document.getElementById('majorSelect');
+    if (!degree || !major) return;
+    function filterMajors() {
+        var d = degree.value;
+        Array.prototype.forEach.call(major.options, function (opt) {
+            if (!opt.value) { opt.hidden = false; return; }
+            opt.hidden = d && opt.getAttribute('data-degree') !== d;
+        });
+    }
+    degree.addEventListener('change', filterMajors);
+    filterMajors();
+})();
+</script>
+{% endblock %}

@@ -21,7 +21,7 @@ class AdmissionInfo(models.Model):
     tuition_info = models.TextField(_('اطلاعات شهریه'), blank=True)
     documents_required = models.TextField(_('مدارک لازم'), blank=True)
     registration_link = models.URLField(_('لینک ثبت‌نام'), blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(_('فعال'), default=True)
     deadline = models.DateField(_('مهلت ثبت‌نام'), blank=True, null=True)
     capacity = models.PositiveIntegerField(_('ظرفیت کل'), default=0,
         help_text=_('۰ = نامحدود'))
@@ -281,12 +281,12 @@ class StudentPayment(models.Model):
 #  کد OTP موبایل برای پذیرش
 # ─────────────────────────────────────────────
 class AdmissionOTP(models.Model):
-    phone      = models.CharField(max_length=15)
-    code       = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-    is_used    = models.BooleanField(default=False)
-    attempts   = models.PositiveSmallIntegerField(_('تلاش ناموفق'), default=0)
+    phone = models.CharField(_('شماره موبایل'), max_length=15)
+    code = models.CharField(_('کد تأیید'), max_length=6)
+    created_at = models.DateTimeField(_('زمان ایجاد'), auto_now_add=True)
+    expires_at = models.DateTimeField(_('انقضا'))
+    is_used = models.BooleanField(_('استفاده‌شده'), default=False)
+    attempts = models.PositiveSmallIntegerField(_('تلاش ناموفق'), default=0)
 
     class Meta:
         verbose_name = _('کد تأیید پذیرش')

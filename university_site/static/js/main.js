@@ -1,5 +1,5 @@
-// ============================================================
-//  دانشگاه جامع - اسکریپت اصلی
+﻿// ============================================================
+//  موسسه آموزش عالی علامه امینی بهنمیر - اسکریپت اصلی
 // ============================================================
 
 function escapeHtml(str) {
@@ -20,13 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---- Navbar Scroll Effect ----
     const navbar = document.getElementById('mainNav');
-    if (navbar) {
+    const siteHeader = document.getElementById('siteHeader');
+    if (navbar || siteHeader) {
         window.addEventListener('scroll', function () {
-            if (window.scrollY > 60) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            const scrolled = window.scrollY > 60;
+            if (navbar) navbar.classList.toggle('scrolled', scrolled);
+            if (siteHeader) siteHeader.classList.toggle('compact', scrolled);
         });
     }
 

@@ -1,5 +1,5 @@
-/* ============================================================
-   دانشگاه جامع - استایل اصلی - Vazirmatn Font
+﻿/* ============================================================
+   موسسه آموزش عالی علامه امینی بهنمیر - استایل اصلی - Vazirmatn Font
    ============================================================ */
 
 :root {
@@ -74,6 +74,41 @@ body {
     border-bottom-color: var(--secondary, #c9a227);
 }
 
+/* ---- Sticky header (banner + navbar) ---- */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 6px 18px rgba(2, 28, 48, 0.22);
+}
+.site-banner {
+    position: relative;
+    width: 100%;
+    line-height: 0;
+    /* modern blue gradient behind the banner (matches the image background) */
+    background: linear-gradient(105deg, #0a4a74 0%, #063a5c 55%, #04263f 100%);
+}
+.site-banner a { display: block; width: 100%; }
+/* full-width banner: image always spans edge to edge, height follows aspect ratio,
+   so there is never a black/empty area on the sides. */
+.site-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* richer, bolder logo/text/emblem colors */
+    filter: saturate(1.08) contrast(1.03);
+}
+/* modern gold accent line under the banner */
+.site-banner::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #c9a227 0%, #f6d97c 50%, #c9a227 100%);
+}
+
 /* لینک‌های navbar — متن gradient سفید‌مایل */
 .nav-link-flat {
     display: block;
@@ -115,8 +150,7 @@ body {
 /* گروه‌های آموزشی — نارنجی */
 .nav-item:nth-child(5) .nav-link-flat i { color: #fb923c; }
 
-/* پذیرش دانشجو — طلایی (منوی یکپارچه همه مقاطع) */
-.nav-item:nth-child(6) .nav-link-flat { color: #f0d080 !important; }
+/* پذیرش دانشجو */
 .nav-item:nth-child(6) .nav-link-flat i { color: #f0d080; }
 
 /* بانک اطلاعات علمی — سبز زیتونی */
