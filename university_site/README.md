@@ -1,94 +1,18 @@
-﻿# 🎓 موسسه آموزش عالی علامه امینی بهنمیر - وبسایت رسمی
+﻿# Allameh Amini Higher Education Institute — Application
 
-یک وبسایت دانشگاهی فوق حرفه‌ای ساخته شده با **Django 5** و **Bootstrap 5 RTL**
+This folder contains the Django application.
 
----
+For the full project documentation (features, setup, SMS, deployment), see the repository root:
 
-## 🚀 نصب و راه‌اندازی
+**[../README.md](../README.md)**
 
 ```bash
 cd university_site
+python -m venv venv
+venv\Scripts\activate          # Windows
 pip install -r requirements.txt
+copy .env.example .env
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
-
-**ورود به پنل مدیریت:** `http://127.0.0.1:8000/admin/`
-- نام کاربری: `admin`
-- رمز عبور: `admin1234`
-
----
-
-## 📋 بخش‌های سایت
-
-| بخش | آدرس |
-|-----|------|
-| صفحه اصلی | `/` |
-| درباره دانشگاه | `/درباره-ما/` |
-| دانشکده‌ها | `/آموزش/دانشکده‌ها/` |
-| رشته‌های تحصیلی | `/آموزش/رشته‌ها/` |
-| هیئت علمی | `/اساتید/` |
-| اخبار | `/اخبار/` |
-| پژوهش | `/پژوهش/` |
-| کتابخانه | `/کتابخانه/` |
-| پذیرش | `/پذیرش/` |
-| تماس با ما | `/تماس-با-ما/` |
-| فارغ‌التحصیلان | `/فارغ-التحصیلان/` |
-| خدمات الکترونیکی | `/درباره-ما/خدمات-الکترونیکی/` |
-| سوالات متداول | `/درباره-ما/سوالات-متداول/` |
-| داشبورد | `/dashboard/` |
-
----
-
-## 🏗️ معماری پروژه
-
-```
-university_site/
-├── config/          # تنظیمات Django
-├── core/            # صفحه اصلی، تنظیمات سایت، FAQ
-├── accounts/        # ورود/خروج، پروفایل
-├── news/            # اخبار، اطلاعیه‌ها، گالری
-├── academics/       # دانشکده‌ها، رشته‌ها، تقویم
-├── faculty/         # اساتید و انتشارات
-├── research/        # پژوهش، پایان‌نامه، همایش
-├── library/         # کتابخانه
-├── admissions/      # پذیرش
-├── contact/         # تماس، فارغ‌التحصیلان
-├── dashboard/       # داشبورد مدیریتی
-├── templates/       # قالب‌های HTML
-└── static/          # CSS، JS، تصاویر
-```
-
----
-
-## ✨ ویژگی‌ها
-
-- ✅ **طراحی RTL** کاملاً فارسی با فونت وزیرمتن
-- ✅ **Responsive** و سازگار با موبایل
-- ✅ **سلایدر هوشمند** با Swiper.js
-- ✅ **انیمیشن‌های حرفه‌ای** با AOS
-- ✅ **جستجوی هوشمند** در اخبار، اساتید، رشته‌ها
-- ✅ **چت‌بات هوش مصنوعی** ساده
-- ✅ **دسترسی سریع** به خدمات
-- ✅ **پنل مدیریت Jazzmin** زیبا
-- ✅ **داشبورد آمار** برای مدیران
-- ✅ **فرم پذیرش** آنلاین
-- ✅ **فرم تماس** با پیگیری
-- ✅ **کتابخانه** با جستجو
-- ✅ **تقویم آموزشی**
-- ✅ **گالری تصاویر** با lightbox
-- ✅ **صفحه فارغ‌التحصیلان**
-- ✅ **پنل دانشجویی** و اساتید
-- ✅ **آموزش الکترونیکی**
-- ✅ **سوالات متداول** accordion
-- ✅ **دوزبانه** (فارسی/انگلیسی آماده)
-
----
-
-## 🛠️ تکنولوژی‌ها
-
-- **Backend:** Django 5.2
-- **Database:** SQLite (قابل تغییر به PostgreSQL)
-- **Frontend:** Bootstrap 5 RTL, AOS, Swiper.js
-- **Admin:** Django Jazzmin
-- **Font:** Vazirmatn (Google Fonts)
