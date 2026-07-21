@@ -33,33 +33,21 @@ def login_view(request):
     if request.method == 'POST':
         national_id = request.POST.get('national_id', '').strip()
         password = request.POST.get('password')
-        role = request.POST.get('role', '')
 
         user = authenticate(request, username=national_id, password=password)
         if user:
-            # بررسی تطابق نقش انتخاب‌شده با نقش واقعی کاربر
+            # نقش کاربر خودکار از روی حساب تشخیص داده می‌شود
             try:
                 user_role = user.profile.role
             except Exception:
                 user_role = ''
 
-            role_labels = {
-                'student': 'دانشجو',
-                'professor': 'استاد',
-                'staff': 'مدیر دانشگاه',
-                'admin': 'ادمین',
-            }
-            if role and user_role and role != user_role:
-                messages.error(
-                    request,
-                    f'شما با نقش «{role_labels.get(user_role, user_role)}» ثبت‌نام کرده‌اید. لطفاً نقش صحیح را انتخاب کنید.'
-                )
-            else:
-                login(request, user)
-                messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
-                if user_role == 'admin' or user.is_staff:
-                    return redirect('/admin/')
-                return redirect(_safe_redirect_target(request))
+            login(request, user)
+            messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
+            # ادمین به پنل مدیریت جنگو، بقیه نقش‌ها به پنل کاربری هدایت می‌شوند
+            if user_role == 'admin' or user.is_staff:
+                return redirect('/admin/')
+            return redirect(_safe_redirect_target(request))
         else:
             messages.error(request, 'کد ملی یا رمز عبور اشتباه است.')
 
