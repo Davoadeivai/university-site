@@ -84,13 +84,12 @@ def register_view(request):
         last_name = request.POST.get('last_name', '').strip()
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        role = request.POST.get('role', 'student')
         student_id = request.POST.get('student_id', '').strip()
         department = request.POST.get('department', '').strip()
         phone = request.POST.get('phone', '').strip()
 
-        # نقش‌های مجاز برای ثبت‌نام عمومی؛ نقش‌های staff/admin فقط از پنل مدیریت داده می‌شوند
-        VALID_ROLES = ['student', 'professor']
+        # ثبت‌نام عمومی فقط برای دانشجو است؛ اساتید/مدیر/ادمین از پنل مدیریت ساخته می‌شوند
+        role = 'student'
 
         pwd_error = None
         if password1 and password1 == password2:
@@ -107,8 +106,6 @@ def register_view(request):
             messages.error(request, 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.')
         elif UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'این شماره موبایل قبلاً ثبت‌نام شده است.')
-        elif role not in VALID_ROLES:
-            messages.error(request, 'لطفاً نقش خود را انتخاب کنید.')
         elif password1 != password2:
             messages.error(request, 'رمز عبور و تکرار آن یکسان نیستند.')
         elif pwd_error:
