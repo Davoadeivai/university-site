@@ -216,52 +216,171 @@ function appendMsg(text, type) {
     container.scrollTop = container.scrollHeight;
 }
 
-// ---- Site Tour (Intro.js) ----
-function startSiteTour() {
-    if (typeof introJs === 'undefined') return;
-    const steps = [
-        {
-            title: 'به سایت خوش آمدید',
-            intro: 'این راهنما شما را با بخش‌های اصلی سایت آموزش عالی آشنا می‌کند.'
-        }
-    ];
-    const nav = document.querySelector('#mainNav .navbar-nav');
-    if (nav) {
-        steps.push({
-            element: nav,
-            title: 'منوی اصلی',
-            intro: 'از این منو می‌توانید به تمام بخش‌های سایت دسترسی داشته باشید.'
-        });
-    }
-    const quick = document.querySelector('.quick-link-card');
-    if (quick) {
-        steps.push({
-            element: quick,
-            title: 'دسترسی سریع',
-            intro: 'این آیکون‌ها دسترسی سریع به خدمات پراستفاده را فراهم می‌کنند.'
-        });
-    }
-    const chatBtn = document.querySelector('#chatbotBtn');
-    if (chatBtn) {
-        steps.push({
-            element: chatBtn,
-            title: 'دستیار هوشمند',
-            intro: 'برای پرسش سریع درباره پذیرش، رشته‌ها و خدمات، روی این دکمه کلیک کنید.'
-        });
-    }
-    introJs().setOptions({
-        nextLabel: 'بعدی ›',
-        prevLabel: '‹ قبلی',
-        skipLabel: '✕ بستن',
-        doneLabel: '✓ اتمام',
-        buttonClass: 'introjs-button',
-        steps: steps
-    }).start();
-}
+/* ---- Live site search (topbar) ---- */
+(function () {
+    var TYPE_LABEL = {
+        page: 'صفحه',
+        news: 'خبر',
+        professor: 'استاد',
+        faculty: 'استاد',
+        major: 'رشته',
+        academics: 'رشته',
+        faq: 'FAQ',
+        event: 'رویداد'
+    };
 
-document.addEventListener('DOMContentLoaded', function () {
-    const tourBtn = document.getElementById('startSiteTour');
-    if (tourBtn) {
-        tourBtn.addEventListener('click', startSiteTour);
+    function badgeClass(type, filter) {
+        var key = (type || filter || 'page').toLowerCase();
+        return 'is-' + key;
     }
-});
+
+    function initSiteLiveSearch() {
+        var root = document.getElementById('siteTopSearch');
+        var input = document.getElementById('siteLiveSearch');
+        var results = document.getElementById('siteSearchResults');
+        var clearBtn = document.getElementById('siteSearchClear');
+        if (!root || !input || !results) return;
+
+        var timer = null;
+        var lastQ = '';
+        var activeIndex = -1;
+
+        function syncClear() {
+            if (!clearBtn) return;
+            clearBtn.hidden = !input.value.trim();
+        }
+
+        function hideResults() {
+            results.hidden = true;
+            results.innerHTML = '';
+            activeIndex = -1;
+            root.classList.remove('is-open');
+        }
+
+        function showEmpty() {
+            results.hidden = false;
+            root.classList.add('is-open');
+            results.innerHTML =
+                '<div class="site-search-empty">' +
+                '<div class="site-search-empty-title">نتیجه‌ای یافت نشد</div>' +
+                '<div class="site-search-empty-text">یکی از پیشنهادها را امتحان کنید</div>' +
+                '<div class="site-search-suggest">' +
+                '<button type="button" data-q="پذیرش">پذیرش</button>' +
+                '<button type="button" data-q="اخبار">اخبار</button>' +
+                '<button type="button" data-q="رشته">رشته‌ها</button>' +
+                '<button type="button" data-q="اساتید">اساتید</button>' +
+                '</div></div>';
+            results.querySelectorAll('[data-q]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    input.value = btn.getAttribute('data-q') || '';
+                    syncClear();
+                    runSearch(input.value.trim());
+                    input.focus();
+                });
+            });
+        }
+
+        function renderItems(items) {
+            results.hidden = false;
+            root.classList.add('is-open');
+            results.innerHTML = items.map(function (item, idx) {
+                var type = item.type || item.filter || 'page';
+                var label = TYPE_LABEL[type] || TYPE_LABEL[item.filter] || 'نتیجه';
+                return '<a class="site-search-hit" role="option" data-index="' + idx + '" href="' + escapeHtml(item.url) + '">' +
+                    '<span class="site-search-badge ' + badgeClass(item.type, item.filter) + '">' + escapeHtml(label) + '</span>' +
+                    '<span class="site-search-hit-title">' + escapeHtml(item.title) + '</span>' +
+                    '<span class="site-search-hit-meta">' + escapeHtml(item.hint || '') + '</span>' +
+                    '</a>';
+            }).join('');
+            activeIndex = -1;
+        }
+
+        function runSearch(q) {
+            lastQ = q;
+            if (!q) {
+                hideResults();
+                return;
+            }
+            var url = '/api/live-search/?q=' + encodeURIComponent(q) + '&filter=all';
+            fetch(url, { credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (input.value.trim() !== lastQ) return;
+                    var items = (data && data.results) || [];
+                    if (!items.length) {
+                        showEmpty();
+                        return;
+                    }
+                    renderItems(items);
+                })
+                .catch(function () {
+                    results.hidden = false;
+                    root.classList.add('is-open');
+                    results.innerHTML = '<div class="site-search-empty"><div class="site-search-empty-title">خطا در جستجو</div></div>';
+                });
+        }
+
+        function moveActive(delta) {
+            var hits = results.querySelectorAll('.site-search-hit');
+            if (!hits.length) return;
+            activeIndex = (activeIndex + delta + hits.length) % hits.length;
+            hits.forEach(function (el, i) {
+                el.classList.toggle('is-active', i === activeIndex);
+            });
+            hits[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+
+        input.addEventListener('input', function () {
+            syncClear();
+            clearTimeout(timer);
+            var q = input.value.trim();
+            timer = setTimeout(function () { runSearch(q); }, 200);
+        });
+
+        input.addEventListener('focus', function () {
+            root.classList.add('is-open');
+            if (input.value.trim()) runSearch(input.value.trim());
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                hideResults();
+                input.blur();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                moveActive(1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                moveActive(-1);
+            } else if (e.key === 'Enter') {
+                var hits = results.querySelectorAll('.site-search-hit');
+                if (activeIndex >= 0 && hits[activeIndex]) {
+                    e.preventDefault();
+                    window.location.href = hits[activeIndex].getAttribute('href');
+                } else if (hits[0]) {
+                    e.preventDefault();
+                    window.location.href = hits[0].getAttribute('href');
+                } else if (input.value.trim()) {
+                    window.location.href = '/search/?q=' + encodeURIComponent(input.value.trim());
+                }
+            }
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                syncClear();
+                hideResults();
+                input.focus();
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#siteTopSearch')) hideResults();
+        });
+
+        syncClear();
+    }
+
+    document.addEventListener('DOMContentLoaded', initSiteLiveSearch);
+})();

@@ -4,8 +4,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 
+from core.admin_search import admin_live_counters, admin_nav_search_index, public_live_search
+
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
+    path('admin/nav-search.json', admin_nav_search_index, name='admin_nav_search'),
+    path('admin/live-counters.json', admin_live_counters, name='admin_live_counters'),
+    path('api/live-search/', public_live_search, name='public_live_search'),
     path('admin/', admin.site.urls),
     path('', include('core.urls', namespace='core')),
     path('اخبار/', include('news.urls', namespace='news')),
