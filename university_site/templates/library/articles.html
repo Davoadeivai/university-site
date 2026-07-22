@@ -2,8 +2,12 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
-        <h1 class="page-header-title">مقالات علمی</h1>
+        <h1 class="page-header-title">{{ page_title|default:"مقالات علمی" }}</h1>
+        {% if section == 'faculty' or section == 'conference' %}
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">بانک اطلاعات علمی</p>
+        {% else %}
         <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">بانک مقالات کتابخانه</p>
+        {% endif %}
     </div>
 </div>
 
@@ -50,7 +54,10 @@
             </div>
         </a>
         {% empty %}
-        <div class="text-center py-5 text-muted"><i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>مقاله‌ای یافت نشد</div>
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>
+            {% if empty_hint %}{{ empty_hint }}{% else %}مقاله‌ای یافت نشد{% endif %}
+        </div>
         {% endfor %}
 
         {% if page_obj.has_other_pages %}

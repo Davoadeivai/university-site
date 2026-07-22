@@ -28,17 +28,27 @@ class ResearchProject(models.Model):
 
 
 class Journal(models.Model):
+    CATEGORY_CHOICES = [
+        ('scientific', _('نشریه‌های علمی - پژوهشی')),
+        ('online_sub', _('نشریات دارای اشتراک on-line')),
+        ('other', _('سایر')),
+    ]
     title = models.CharField(_('عنوان مجله'), max_length=300)
     slug = models.SlugField(unique=True, allow_unicode=True)
     description = models.TextField(blank=True)
+    category = models.CharField(
+        _('دسته'), max_length=20, choices=CATEGORY_CHOICES, default='scientific',
+    )
     issn = models.CharField(_('ISSN'), max_length=20, blank=True)
     website = models.URLField(blank=True)
     cover = models.ImageField(upload_to='journals/', blank=True, null=True)
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = _('مجله علمی')
         verbose_name_plural = _('مجلات علمی')
+        ordering = ['category', 'order', 'title']
 
     def __str__(self):
         return self.title

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:presidency' %}">حوزه ریاست</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:presidency_office' %}">دفتر ریاست</a></li>
+                <li class="breadcrumb-item active">{{ unit.title }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{{ unit.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="dept-card" data-aos="fade-up">
+                    {% if unit.content %}
+                    <div class="text-muted" style="font-size:15px;line-height:2.3;">{{ unit.content|linebreaksbr }}</div>
+                    {% else %}
+                    <p class="text-muted mb-0">محتوای این بخش به‌زودی تکمیل می‌شود.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="dept-card" data-aos="fade-up">
+                    <h5 class="dept-title mb-3">واحدهای دفتر ریاست</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for u in units %}
+                        <li class="mb-2">
+                            <a href="{% url 'core:presidency_office_unit' u.slug %}" class="{% if u.slug == unit.slug %}fw-bold text-primary{% else %}text-decoration-none text-dark{% endif %}">
+                                <i class="fas fa-angle-left me-1"></i>{{ u.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{% url 'core:presidency_office' %}" class="btn btn-sm btn-outline-primary mt-3 w-100">صفحه دفتر ریاست</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

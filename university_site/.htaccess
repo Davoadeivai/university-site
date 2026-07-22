@@ -1,23 +1,19 @@
-# IMPORTANT: This app must NOT live in the main site document root.
-# Main Allameh Amini site files under public_html (primary domain) must stay untouched.
-# Deploy only on a dedicated subdomain document root / separate app folder.
-#
-# After creating the Python App in cPanel, replace paths below with YOUR new app paths
-# (not the main site). Example shape only:
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/cp29524/apps/university_site"
+PassengerBaseURI "/"
+PassengerPython "/home/cp29524/virtualenv/apps/university_site/3.11/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 
-# PassengerAppRoot /home/USERNAME/apps/university_site
-# PassengerBaseURI /
-# PassengerPython /home/USERNAME/virtualenv/university_site/3.11/bin/python
-# PassengerAppEnv production
+PassengerAppEnv production
+Options -Indexes
 
+<IfModule mod_rewrite.c>
 RewriteEngine On
 
-# Serve static/media files if present as real files
+# Serve existing static/media files directly when present on disk
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^static/(.*)$ - [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^media/(.*)$ - [L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+</IfModule>

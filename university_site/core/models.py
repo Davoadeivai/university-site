@@ -4,7 +4,10 @@ from django.utils.translation import gettext_lazy as _
 
 class SiteSettings(models.Model):
     university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی بهنمیر')
-    university_name_en = models.CharField(_('نام دانشگاه (انگلیسی)'), max_length=200, default='Jame University')
+    university_name_en = models.CharField(
+        _('نام دانشگاه (انگلیسی)'), max_length=200,
+        default='Allameh Amini Higher Education Institute',
+    )
     logo = models.ImageField(_('لوگو'), upload_to='site/', blank=True, null=True)
     favicon = models.ImageField(_('فاویکون'), upload_to='site/', blank=True, null=True)
     address = models.TextField(_('آدرس'), blank=True)
@@ -22,15 +25,24 @@ class SiteSettings(models.Model):
     map_embed = models.TextField(_('کد نقشه'), blank=True)
     established_year = models.CharField(_('سال تأسیس'), max_length=10, blank=True)
 
-    # لینک سامانه‌های خارجی (مثل سامانه آموزشی / اتوماسیون اداری — بدون تغذیه و خوابگاه)
+    # آمار نوار صفحه اصلی (قابل ویرایش از ادمین)
+    stat_students = models.PositiveIntegerField(_('تعداد دانشجوی فعال'), default=5000)
+    stat_faculty = models.PositiveIntegerField(_('تعداد عضو هیئت علمی'), default=200)
+    stat_majors = models.PositiveIntegerField(_('تعداد رشته تحصیلی'), default=50)
+    stat_years = models.PositiveIntegerField(_('سال سابقه'), default=30)
+
+    # لینک سامانه‌های خارجی مطابق سایت رسمی
     external_lms_url = models.URLField(
         _('لینک سامانه آموزشی خارجی'), blank=True,
-        help_text=_('در صورت خالی بودن، به پنل داخلی هدایت می‌شود'),
+        help_text=_('مثلاً سامانه خدمات آموزشی samaweb'),
     )
     external_admin_url = models.URLField(
         _('لینک اتوماسیون اداری'), blank=True,
-        help_text=_('سامانه مکاتبات/اتوماسیون اداری؛ تغذیه و خوابگاه پشتیبانی نمی‌شود'),
+        help_text=_('سامانه مکاتبات/اتوماسیون اداری'),
     )
+    external_food_url = models.URLField(_('لینک اتوماسیون تغذیه'), blank=True)
+    external_dorm_url = models.URLField(_('لینک اتوماسیون خوابگاه'), blank=True)
+    external_publications_url = models.URLField(_('لینک سامانه نشریات'), blank=True)
 
     # About page content
     history_text = models.TextField(_('تاریخچه دانشگاه'), blank=True)
@@ -96,17 +108,26 @@ class Slider(models.Model):
 
 
 class QuickLink(models.Model):
+    CATEGORY_CHOICES = [
+        ('eservice', _('خدمات الکترونیکی')),
+        ('quick_access', _('دسترسی سریع')),
+        ('home', _('صفحه اصلی')),
+    ]
     title = models.CharField(_('عنوان'), max_length=100)
     icon = models.CharField(_('آیکون (FontAwesome)'), max_length=100, default='fas fa-link')
-    url = models.CharField(_('آدرس'), max_length=200)
+    url = models.CharField(_('آدرس'), max_length=300)
+    category = models.CharField(
+        _('دسته'), max_length=20, choices=CATEGORY_CHOICES, default='home',
+    )
     color = models.CharField(_('رنگ'), max_length=20, default='primary')
+    open_in_new_tab = models.BooleanField(_('باز شدن در تب جدید'), default=False)
     order = models.PositiveIntegerField(_('ترتیب'), default=0)
     is_active = models.BooleanField(_('فعال'), default=True)
 
     class Meta:
         verbose_name = _('دسترسی سریع')
         verbose_name_plural = _('دسترسی‌های سریع')
-        ordering = ['order']
+        ordering = ['category', 'order']
 
     def __str__(self):
         return self.title
@@ -265,6 +286,8 @@ class PresidencyOffice(models.Model):
     president_email = models.EmailField(_('ایمیل'), blank=True)
     president_phone = models.CharField(_('تلفن'), max_length=50, blank=True)
     president_message = models.TextField(_('پیام رئیس'), blank=True)
+    office_manager_name = models.CharField(_('مدیر دفتر ریاست'), max_length=200, blank=True)
+    office_duties = models.TextField(_('شرح وظایف دفتر ریاست'), blank=True)
     office_address = models.TextField(_('آدرس دفتر'), blank=True)
     office_phone = models.CharField(_('تلفن دفتر'), max_length=100, blank=True)
     office_fax = models.CharField(_('فکس'), max_length=100, blank=True)
@@ -277,6 +300,36 @@ class PresidencyOffice(models.Model):
 
     def __str__(self):
         return self.president_name or 'دفتر ریاست'
+
+
+class PresidencyOfficeUnit(models.Model):
+    """زیرصفحه‌های دفتر ریاست مطابق سایت رسمی"""
+    slug = models.SlugField(_('اسلاگ'), max_length=80, unique=True, allow_unicode=True)
+    title = models.CharField(_('عنوان'), max_length=200)
+    content = models.TextField(_('محتوا'), blank=True)
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('واحد دفتر ریاست')
+        verbose_name_plural = _('واحدهای دفتر ریاست')
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.title
+
+
+class GraduateStudiesInfo(models.Model):
+    """اطلاعات صفحه تحصیلات تکمیلی (تک‌رکوردی)"""
+    manager_name = models.CharField(_('مدیر تحصیلات تکمیلی'), max_length=200, blank=True)
+    intro = models.TextField(_('معرفی'), blank=True)
+
+    class Meta:
+        verbose_name = _('تحصیلات تکمیلی')
+        verbose_name_plural = _('تحصیلات تکمیلی')
+
+    def __str__(self):
+        return self.manager_name or 'تحصیلات تکمیلی'
 
 
 class DeputyVice(models.Model):
@@ -614,8 +667,16 @@ class DownloadableDocument(models.Model):
         ('guide', _('راهنما')),
         ('other', _('سایر')),
     ]
+    SECTION_CHOICES = [
+        ('', _('عمومی')),
+        ('graduate', _('تحصیلات تکمیلی')),
+    ]
     title = models.CharField(_('عنوان'), max_length=300)
     category = models.CharField(_('دسته'), max_length=20, choices=CATEGORY_CHOICES, default='form')
+    section = models.CharField(
+        _('بخش'), max_length=20, choices=SECTION_CHOICES, blank=True, default='',
+        help_text=_('مثلاً آیین‌نامه/فرم ویژه تحصیلات تکمیلی'),
+    )
     description = models.TextField(_('توضیحات'), blank=True)
     file = models.FileField(_('فایل'), upload_to='documents/', blank=True, null=True)
     external_url = models.URLField(_('لینک خارجی'), blank=True,
@@ -627,7 +688,7 @@ class DownloadableDocument(models.Model):
     class Meta:
         verbose_name = _('آیین‌نامه / فرم')
         verbose_name_plural = _('آیین‌نامه‌ها و فرم‌ها')
-        ordering = ['category', 'order', '-created_at']
+        ordering = ['section', 'category', 'order', '-created_at']
 
     def __str__(self):
         return self.title

@@ -2,8 +2,8 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
-        <h1 class="page-header-title">کتابخانه دیجیتال</h1>
-        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">جستجو در کاتالوگ کتاب‌ها و مقالات علمی</p>
+        <h1 class="page-header-title">مرکز اطلاع رسانی و کتابخانه مرکزی</h1>
+        <p class="mb-0 mt-2" style="font-size:15px;opacity:.85;">جستجو در کاتالوگ کتاب‌ها و منابع علمی</p>
     </div>
 </div>
 
@@ -145,13 +145,17 @@
                         <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-id-card"></i></div>
                         <div class="quick-link-title" style="font-size:13px;">عضویت / پیگیری</div>
                     </a>
-                    <a href="{% url 'library:articles' %}" class="quick-link-card mb-2 d-block text-center" style="padding:14px;">
+                    <a href="{% url 'library:faculty_articles' %}" class="quick-link-card mb-2 d-block text-center" style="padding:14px;">
                         <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-file-alt"></i></div>
-                        <div class="quick-link-title" style="font-size:13px;">مقالات علمی</div>
+                        <div class="quick-link-title" style="font-size:13px;">مقالات اعضای هیات علمی</div>
                     </a>
-                    <a href="{% url 'research:theses' %}" class="quick-link-card d-block text-center" style="padding:14px;">
-                        <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-scroll"></i></div>
-                        <div class="quick-link-title" style="font-size:13px;">پایان‌نامه‌ها</div>
+                    <a href="{% url 'library:conference_articles' %}" class="quick-link-card mb-2 d-block text-center" style="padding:14px;">
+                        <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-users"></i></div>
+                        <div class="quick-link-title" style="font-size:13px;">بانک مقالات همایش ها</div>
+                    </a>
+                    <a href="{% url 'research:journals' %}" class="quick-link-card d-block text-center" style="padding:14px;">
+                        <div class="quick-link-icon mx-auto" style="width:40px;height:40px;font-size:16px;"><i class="fas fa-book-open"></i></div>
+                        <div class="quick-link-title" style="font-size:13px;">نشریات علمی</div>
                     </a>
                 </div>
 

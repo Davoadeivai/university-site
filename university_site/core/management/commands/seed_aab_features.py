@@ -38,45 +38,45 @@ class Command(BaseCommand):
                 'university_name_en': 'Allameh Amini Higher Education Institute',
             },
         )
-        updated = []
         if not settings_obj.external_lms_url:
             settings_obj.external_lms_url = 'http://127.0.0.1:8000/dashboard/'
-            updated.append('external_lms_url')
         if not settings_obj.external_admin_url:
             settings_obj.external_admin_url = 'http://127.0.0.1:8000/admin/'
-            updated.append('external_admin_url')
-        if not settings_obj.phone:
-            settings_obj.phone = '011-35750810'
-            updated.append('phone')
-        if not settings_obj.address:
-            settings_obj.address = 'مازندران - بابلسر - بهنمیر - بلوار امام خمینی (ره) - گلستان ۱۵'
-            updated.append('address')
-        if not settings_obj.postal_code:
-            settings_obj.postal_code = '4744135161'
-            updated.append('postal_code')
-        if updated:
-            settings_obj.save(update_fields=updated + (['university_name_fa', 'university_name_en'] if settings_obj.pk else []))
-            self.stdout.write(self.style.SUCCESS(f'SiteSettings به‌روز شد: {", ".join(updated)}'))
+        # همیشه با اطلاعات رسمی aab.ac.ir هم‌خوان شود
+        settings_obj.phone = '011-35750810 (الی 15)'
+        settings_obj.address = (
+            'مازندران - بابلسر - بهنمیر - بلوار امام خمینی (ره) - '
+            'گلستان ۱۵ - موسسه آموزش عالی علامه امینی'
+        )
+        settings_obj.postal_code = '4744135161'
+        if settings_obj.email in ('info@university.ac.ir', 'info@example.com'):
+            settings_obj.email = ''
+        settings_obj.save()
+        self.stdout.write(self.style.SUCCESS('SiteSettings تماس رسمی به‌روز شد.'))
 
-        if not BankAccount.objects.exists():
-            BankAccount.objects.create(
-                title='شماره حساب موسسه جهت واریز شهریه',
-                bank_name='بانک ملت',
-                account_number='1849113/24',
-                iban='IR120120000000001849113024',
-                account_holder='موسسه آموزش عالی',
-                description='برای واریز شهریه حتماً از شناسه واریز اختصاصی استفاده کنید.',
-                order=1,
+        for spec in (
+            {
+                'title': 'شماره حساب موسسه علامه امینی',
+                'bank_name': 'بانک ملت',
+                'account_number': '1849113/24',
+                'account_holder': 'موسسه آموزش عالی علامه امینی',
+                'description': 'برای واریز شهریه حتماً از شناسه واریز اختصاصی استفاده کنید.',
+                'order': 1,
+            },
+            {
+                'title': 'شماره حساب دانشگاه مازندران جهت فیش واریزی فارغ‌التحصیلی',
+                'bank_name': 'بانک ملی',
+                'account_number': '2177395006002',
+                'account_holder': 'دانشگاه مازندران',
+                'description': 'ویژه فیش واریزی فارغ‌التحصیلی',
+                'order': 2,
+            },
+        ):
+            BankAccount.objects.update_or_create(
+                account_number=spec['account_number'],
+                defaults={**{k: v for k, v in spec.items() if k != 'account_number'}, 'is_active': True},
             )
-            BankAccount.objects.create(
-                title='شماره حساب جهت فیش فارغ‌التحصیلی',
-                bank_name='بانک ملی',
-                account_number='2177395006002',
-                account_holder='موسسه آموزش عالی',
-                description='ویژه فیش واریزی فارغ‌التحصیلی',
-                order=2,
-            )
-            self.stdout.write(self.style.SUCCESS('حساب‌های بانکی نمونه اضافه شد.'))
+        self.stdout.write(self.style.SUCCESS('حساب‌های بانکی رسمی به‌روز شد.'))
 
         if not PaymentIdentifier.objects.exists():
             PaymentIdentifier.objects.create(

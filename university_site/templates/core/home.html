@@ -556,28 +556,28 @@
             <div class="col-6 col-md-3">
                 <div class="stat-item" data-aos="fade-up">
                     <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                    <div class="stat-number" data-target="5000">۰</div>
+                    <div class="stat-number" data-target="{% if site_settings %}{{ site_settings.stat_students }}{% else %}5000{% endif %}">۰</div>
                     <div class="stat-label">دانشجوی فعال</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
                     <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                    <div class="stat-number" data-target="200">۰</div>
+                    <div class="stat-number" data-target="{% if site_settings %}{{ site_settings.stat_faculty }}{% else %}200{% endif %}">۰</div>
                     <div class="stat-label">عضو هیئت علمی</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
                     <div class="stat-icon"><i class="fas fa-book-open"></i></div>
-                    <div class="stat-number" data-target="50">۰</div>
+                    <div class="stat-number" data-target="{% if site_settings %}{{ site_settings.stat_majors }}{% else %}50{% endif %}">۰</div>
                     <div class="stat-label">رشته تحصیلی</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
                     <div class="stat-icon"><i class="fas fa-award"></i></div>
-                    <div class="stat-number" data-target="30">۰</div>
+                    <div class="stat-number" data-target="{% if site_settings %}{{ site_settings.stat_years }}{% else %}30{% endif %}">۰</div>
                     <div class="stat-label">سال سابقه</div>
                 </div>
             </div>
@@ -650,60 +650,60 @@
             {% if quick_links %}
             {% for link in quick_links %}
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
-                <a href="{{ link.url }}" class="quick-link-card">
+                <a href="{{ link.url }}" class="quick-link-card"{% if link.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}>
                     <div class="quick-link-icon"><i class="{{ link.icon }}"></i></div>
                     <div class="quick-link-title">{{ link.title }}</div>
                 </a>
             </div>
             {% endfor %}
             {% else %}
-            <!-- Fallback static quick links -->
+            <!-- Fallback: خدمات الکترونیکی مطابق سایت رسمی -->
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
-                <a href="{% url 'dashboard:dashboard' %}" class="quick-link-card">
+                <a href="{% if site_settings and site_settings.external_lms_url %}{{ site_settings.external_lms_url }}{% else %}{% url 'dashboard:dashboard' %}{% endif %}" class="quick-link-card"{% if site_settings and site_settings.external_lms_url %} target="_blank" rel="noopener"{% endif %}>
                     <div class="quick-link-icon"><i class="fas fa-graduation-cap"></i></div>
-                    <div class="quick-link-title">سامانه آموزشی</div>
+                    <div class="quick-link-title">سامانه خدمات آموزشی</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="50">
-                <a href="{% url 'admissions:admissions' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
-                    <div class="quick-link-title">پذیرش</div>
+                <a href="{% if site_settings and site_settings.external_admin_url %}{{ site_settings.external_admin_url }}{% else %}{% url 'core:eservices' %}{% endif %}" class="quick-link-card"{% if site_settings and site_settings.external_admin_url %} target="_blank" rel="noopener"{% endif %}>
+                    <div class="quick-link-icon"><i class="fas fa-network-wired"></i></div>
+                    <div class="quick-link-title">اتوماسیون اداری</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="100">
                 <a href="{% url 'library:library' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-book"></i></div>
-                    <div class="quick-link-title">کتابخانه</div>
+                    <div class="quick-link-title">کتابخانه دیجیتال</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150">
-                <a href="{% url 'academics:elearning' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-laptop"></i></div>
-                    <div class="quick-link-title">آموزش الکترونیکی</div>
+                <a href="{% url 'core:documents' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="quick-link-title">آیین نامه ها و فرمها</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
-                <a href="{% url 'research:theses' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-scroll"></i></div>
-                    <div class="quick-link-title">پایان‌نامه‌ها</div>
+                <a href="{% url 'research:journals' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="quick-link-title">سامانه نشریات</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="250">
-                <a href="{% url 'academics:calendar' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-calendar-alt"></i></div>
-                    <div class="quick-link-title">تقویم آموزشی</div>
+                <a href="{% url 'core:payment_id' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-university"></i></div>
+                    <div class="quick-link-title">شناسه واریز شهریه</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="300">
-                <a href="{% url 'admissions:tuition_calc' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-calculator"></i></div>
-                    <div class="quick-link-title">محاسبه‌گر شهریه</div>
+                <a href="{% url 'admissions:admissions' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="quick-link-title">پذیرش دانشجو</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="350">
                 <a href="{% url 'core:eservices' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-globe"></i></div>
-                    <div class="quick-link-title">خدمات الکترونیکی</div>
+                    <div class="quick-link-title">همه خدمات</div>
                 </a>
             </div>
             {% endif %}

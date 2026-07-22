@@ -12,9 +12,11 @@ class ResearchProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Journal)
 class JournalAdmin(admin.ModelAdmin):
-    list_display = ['title', 'issn', 'is_active']
-    list_editable = ['is_active']
+    list_display = ['title', 'category', 'issn', 'order', 'is_active']
+    list_filter = ['category', 'is_active']
+    list_editable = ['order', 'is_active']
     prepopulated_fields = {'slug': ('title',)}
+    search_fields = ['title', 'description']
 
 
 @admin.register(Thesis)

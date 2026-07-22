@@ -8,13 +8,14 @@ from django.db.models import Q
 from core.models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     CityInfo, CityAttraction,
-    PresidencyOffice, DeputyVice,
+    PresidencyOffice, PresidencyOfficeUnit, DeputyVice,
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
     OrganizationalChart,
     BankAccount, PaymentIdentifier, DownloadableDocument,
+    GraduateStudiesInfo,
 )
 from news.models import News, Category, Gallery
 from academics.models import Department, Major, AcademicCalendar
@@ -27,18 +28,22 @@ def home(request):
     """صفحه اصلی یکپارچه سایت (جایگزین landing + home قبلی)."""
     settings = SiteSettings.objects.first()
     sliders = list(Slider.objects.filter(is_active=True).order_by('order')[:5])
-    quick_links = QuickLink.objects.filter(is_active=True)[:8]
+    quick_links = QuickLink.objects.filter(is_active=True, category='home')[:8]
+    if not quick_links.exists():
+        quick_links = QuickLink.objects.filter(is_active=True, category='eservice')[:8]
     featured_news = News.objects.filter(is_published=True, is_featured=True)[:3]
     latest_news = News.objects.filter(is_published=True)[:6]
     announcements_qs = News.objects.filter(is_published=True, news_type='announcement')
     announcements = announcements_qs[:8]
+    news_events_qs = News.objects.filter(is_published=True).order_by('-published_at')
     # تب‌های اطلاعیه شبیه aab.ac.ir
     announcement_tabs = [
         ('all', 'همه', announcements_qs[:8]),
+        ('news_events', 'اخبار و رویدادها', news_events_qs[:8]),
         ('academic', 'آموزش', announcements_qs.filter(category__category_type='academic')[:8]),
         ('cultural', 'دانشجویی و فرهنگی', announcements_qs.filter(category__category_type='cultural')[:8]),
         ('administrative', 'اداری و مالی', announcements_qs.filter(category__category_type='administrative')[:8]),
-        ('research', 'پژوهشی', announcements_qs.filter(category__category_type='research')[:8]),
+        ('research', 'پژوهشی و فناوری', announcements_qs.filter(category__category_type='research')[:8]),
     ]
     upcoming_events = Event.objects.filter(is_active=True, date__gte=timezone.now().date()).order_by('date')[:4]
     departments = Department.objects.filter(is_active=True)[:6]
@@ -132,7 +137,7 @@ def board_trustees(request):
     trustees = BoardMember.objects.filter(is_active=True, board_type='trustee')
     context = {
         'trustees': trustees,
-        'page_title': 'هیات امنا دانشگاه',
+        'page_title': 'هیات امناء دانشگاه',
     }
     return render(request, 'core/board_trustees.html', context)
 
@@ -185,9 +190,11 @@ def faq_view(request):
 
 def eservices(request):
     settings = SiteSettings.objects.first()
+    eservice_links = QuickLink.objects.filter(is_active=True, category='eservice')
     context = {
         'page_title': 'خدمات الکترونیکی',
         'settings': settings,
+        'eservice_links': eservice_links,
     }
     return render(request, 'core/eservices.html', context)
 
@@ -250,24 +257,86 @@ def events_list(request):
 
 
 def graduate_studies(request):
-    """هاب تحصیلات تکمیلی (کارشناسی ارشد و دکتری)"""
-    master_majors = Major.objects.filter(is_active=True, degree='master').select_related('group')
-    phd_majors = Major.objects.filter(is_active=True, degree='phd').select_related('group')
+    """هاب تحصیلات تکمیلی مطابق سایت رسمی"""
+    info = GraduateStudiesInfo.objects.first()
     context = {
-        'master_majors': master_majors,
-        'phd_majors': phd_majors,
+        'info': info,
         'page_title': 'تحصیلات تکمیلی',
     }
     return render(request, 'core/graduate_studies.html', context)
 
 
+def graduate_majors(request):
+    """رشته‌های تحصیلات تکمیلی (کارشناسی ارشد)"""
+    qs = (
+        Major.objects.filter(is_active=True, degree='master')
+        .select_related('group')
+        .order_by('group__order', 'group__name', 'order', 'name')
+    )
+    # جلوگیری از نمایش تکراری هم‌نام
+    seen = set()
+    majors = []
+    for m in qs:
+        key = m.name.replace('\u200c', '').strip()
+        if key in seen:
+            continue
+        seen.add(key)
+        majors.append(m)
+    context = {
+        'master_majors': majors,
+        'page_title': 'رشته‌های تحصیلات تکمیلی',
+    }
+    return render(request, 'core/graduate_majors.html', context)
+
+
+def graduate_manager(request):
+    """مدیر تحصیلات تکمیلی"""
+    info = GraduateStudiesInfo.objects.first()
+    context = {
+        'info': info,
+        'page_title': 'مدیر تحصیلات تکمیلی',
+    }
+    return render(request, 'core/graduate_manager.html', context)
+
+
+def graduate_news(request):
+    """اخبار تحصیلات تکمیلی"""
+    news_list = News.objects.filter(
+        is_published=True
+    ).filter(
+        Q(title__icontains='ارشد')
+        | Q(title__icontains='تحصیلات تکمیلی')
+        | Q(title__icontains='پایان نامه')
+        | Q(title__icontains='پایان‌نامه')
+        | Q(category__slug__icontains='takmili')
+        | Q(category__name__icontains='تحصیلات تکمیلی')
+    ).distinct().order_by('-published_at')[:40]
+    context = {
+        'news_list': news_list,
+        'page_title': 'اخبار تحصیلات تکمیلی',
+    }
+    return render(request, 'core/graduate_news.html', context)
+
+
+def graduate_regulations(request):
+    """آیین‌نامه‌ها و فرم‌های تحصیلات تکمیلی"""
+    docs = DownloadableDocument.objects.filter(is_active=True, section='graduate')
+    category = request.GET.get('category', '')
+    if category in ('regulation', 'form', 'guide', 'other'):
+        docs = docs.filter(category=category)
+    context = {
+        'documents': docs,
+        'current_category': category,
+        'page_title': 'آیین‌نامه‌ها و فرم‌های تحصیلات تکمیلی',
+    }
+    return render(request, 'core/graduate_regulations.html', context)
+
+
 def gallery_view(request):
     images = Gallery.objects.filter(is_active=True, media_type='image')
-    videos = Gallery.objects.filter(is_active=True, media_type='video')
     context = {
         'images': images,
-        'videos': videos,
-        'page_title': 'گالری',
+        'page_title': 'گالری تصاویر',
     }
     return render(request, 'core/gallery.html', context)
 
@@ -280,18 +349,33 @@ def presidency(request):
     context = {
         'office': office,
         'deputies': deputies,
-        'page_title': 'ریاست',
+        'page_title': 'ریاست موسسه',
     }
     return render(request, 'core/presidency.html', context)
 
 
 def presidency_office(request):
     office = PresidencyOffice.objects.first()
+    units = PresidencyOfficeUnit.objects.filter(is_active=True)
     context = {
         'office': office,
+        'units': units,
         'page_title': 'دفتر ریاست',
     }
     return render(request, 'core/presidency_office.html', context)
+
+
+def presidency_office_unit(request, slug):
+    unit = get_object_or_404(PresidencyOfficeUnit, slug=slug, is_active=True)
+    office = PresidencyOffice.objects.first()
+    units = PresidencyOfficeUnit.objects.filter(is_active=True)
+    context = {
+        'unit': unit,
+        'office': office,
+        'units': units,
+        'page_title': unit.title,
+    }
+    return render(request, 'core/presidency_office_unit.html', context)
 
 
 def deputies(request):

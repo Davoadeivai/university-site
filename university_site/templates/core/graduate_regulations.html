@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:graduate_studies' %}">تحصیلات تکمیلی</a></li>
+                <li class="breadcrumb-item active">آیین نامه ها و فرمها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">آیین نامه ها و فرمها</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a href="{% url 'core:graduate_regulations' %}" class="btn btn-sm {% if not current_category %}btn-primary{% else %}btn-outline-primary{% endif %}">همه</a>
+            <a href="{% url 'core:graduate_regulations' %}?category=regulation" class="btn btn-sm {% if current_category == 'regulation' %}btn-primary{% else %}btn-outline-primary{% endif %}">آیین نامه ها</a>
+            <a href="{% url 'core:graduate_regulations' %}?category=form" class="btn btn-sm {% if current_category == 'form' %}btn-primary{% else %}btn-outline-primary{% endif %}">فرم ها</a>
+        </div>
+
+        <div class="row g-3">
+            {% for doc in documents %}
+            <div class="col-md-6" data-aos="fade-up">
+                <div class="uni-card p-3 h-100 d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <div class="fw-bold" style="font-size:14px;">{{ doc.title }}</div>
+                        <small class="text-muted">{{ doc.get_category_display }}</small>
+                        {% if doc.description %}<p class="text-muted mb-0 mt-2" style="font-size:13px;">{{ doc.description|truncatewords:24 }}</p>{% endif %}
+                    </div>
+                    {% if doc.download_url %}
+                    <a href="{{ doc.download_url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank" rel="noopener">
+                        <i class="fas fa-download"></i> دریافت
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12"><div class="alert alert-info mb-0">موردی ثبت نشده است.</div></div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'core:graduate_studies' %}" class="btn btn-outline-primary">بازگشت به تحصیلات تکمیلی</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

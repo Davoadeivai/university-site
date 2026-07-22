@@ -72,7 +72,7 @@ def library_home(request):
         'recent_articles': recent_articles,
         'recent_books': Book.objects.filter(is_available=True).order_by('-id')[:6],
         'stats': stats,
-        'page_title': 'کتابخانه دیجیتال',
+        'page_title': 'مرکز اطلاع رسانی و کتابخانه مرکزی',
         'result_count': paginator.count,
     }
     return render(request, 'library/library.html', context)
@@ -89,10 +89,13 @@ def book_detail(request, pk):
     return render(request, 'library/book_detail.html', context)
 
 
-def articles_list(request):
+def articles_list(request, section=''):
     query = request.GET.get('q', '').strip()
     year = request.GET.get('year', '').strip()
+    section = section or request.GET.get('section', '').strip()
     articles = Article.objects.all()
+    if section in dict(Article.SECTION_CHOICES):
+        articles = articles.filter(section=section)
     if query:
         articles = articles.filter(
             Q(title__icontains=query)
@@ -107,16 +110,36 @@ def articles_list(request):
     page_obj = paginator.get_page(request.GET.get('page'))
     years = Article.objects.values_list('year', flat=True).distinct().order_by('-year')
 
+    titles = {
+        'faculty': 'مقالات اعضای هیات علمی',
+        'conference': 'بانک مقالات همایش ها',
+    }
+    empty_hint = (
+        'هیچ مقاله‌ای در این دسته موجود نیست؛ اگر نام زیر‌دسته‌ها نمایش داده می‌شود، '
+        'آن‌ها دارای مقالاتی هستند.'
+        if section in ('faculty', 'conference') else ''
+    )
+
     context = {
         'page_obj': page_obj,
         'articles': page_obj.object_list,
         'query': query,
         'year': year,
         'years': years,
-        'page_title': 'مقالات علمی',
+        'section': section,
+        'empty_hint': empty_hint,
+        'page_title': titles.get(section, 'مقالات علمی'),
         'result_count': paginator.count,
     }
     return render(request, 'library/articles.html', context)
+
+
+def faculty_articles(request):
+    return articles_list(request, section='faculty')
+
+
+def conference_articles(request):
+    return articles_list(request, section='conference')
 
 
 def article_detail(request, pk):

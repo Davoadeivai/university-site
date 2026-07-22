@@ -1,19 +1,62 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">گالری</h1></div></div>
-<section class="section"><div class="container">
-<ul class="nav nav-pills justify-content-center mb-5 gap-2" data-aos="fade-up">
-<li><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#imgs" style="font-family:'Vazirmatn',sans-serif;">تصاویر</button></li>
-<li><button class="nav-link" data-bs-toggle="tab" data-bs-target="#vids" style="font-family:'Vazirmatn',sans-serif;">ویدئوها</button></li>
-</ul>
-<div class="tab-content">
-<div class="tab-pane fade show active" id="imgs">
-<div class="row g-2">
-{% for img in images %}<div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'30' }}"><div class="gallery-item"><img src="{{ img.image.url }}" alt="{{ img.title }}" loading="lazy"></div></div>{% empty %}<div class="col-12 text-center py-5 text-muted"><i class="fas fa-images fa-3x mb-3 d-block opacity-25"></i>تصویری ثبت نشده</div>{% endfor %}
-</div></div>
-<div class="tab-pane fade" id="vids">
-<div class="row g-3">
-{% for vid in videos %}<div class="col-md-4" data-aos="fade-up"><div class="uni-card"><div class="uni-card-img" style="background:#000;display:flex;align-items:center;justify-content:center;"><i class="fas fa-play-circle fa-4x" style="color:rgba(255,255,255,0.5);"></i></div><div class="uni-card-body"><div class="uni-card-title">{{ vid.title }}</div>{% if vid.video_url %}<a href="{{ vid.video_url }}" target="_blank" rel="noopener noreferrer" class="uni-card-link">تماشا <i class="fas fa-play"></i></a>{% endif %}</div></div></div>{% empty %}<div class="col-12 text-center py-5 text-muted"><i class="fas fa-film fa-3x mb-3 d-block opacity-25"></i>ویدئویی ثبت نشده</div>{% endfor %}
-</div></div>
-</div></div></section>
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">گالری تصاویر</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">گالری تصاویر</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if images %}
+        <div id="galleryCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-aos="fade-up">
+            <div class="carousel-inner rounded-3 overflow-hidden shadow">
+                {% for img in images %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ img.title }}"
+                         style="max-height:520px;object-fit:cover;">
+                    {% if img.title or img.description %}
+                    <div class="carousel-caption d-none d-md-block" style="background:rgba(0,0,0,.35);border-radius:8px;padding:8px 14px;">
+                        {% if img.title %}<h5 class="mb-1">{{ img.title }}</h5>{% endif %}
+                        {% if img.description %}<p class="mb-0" style="font-size:13px;">{{ img.description|truncatewords:20 }}</p>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% if images|length > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">قبلی</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">بعدی</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="row g-2">
+            {% for img in images %}
+            <div class="col-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'20' }}">
+                <div class="gallery-item">
+                    <img src="{{ img.image.url }}" alt="{{ img.title }}" loading="lazy">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-images fa-3x mb-3 d-block opacity-25"></i>
+            تصویری در گالری ثبت نشده است.
+        </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

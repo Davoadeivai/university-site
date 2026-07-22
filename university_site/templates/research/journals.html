@@ -2,12 +2,42 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
-        <h1 class="page-header-title">مجلات علمی</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">نشریات علمی</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">نشریات علمی</h1>
     </div>
 </div>
 
 <section class="section">
     <div class="container">
+        {% if show_hub %}
+        <div class="row g-4">
+            <div class="col-md-6" data-aos="fade-up">
+                <a href="{% url 'research:journals' %}?category=scientific" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-flask"></i></div>
+                    <div class="quick-link-title">نشریه های علمی - پژوهشی</div>
+                    <div class="text-muted mt-2" style="font-size:13px;">{{ scientific|length }} مورد</div>
+                </a>
+            </div>
+            <div class="col-md-6" data-aos="fade-up" data-aos-delay="40">
+                <a href="{% url 'research:journals' %}?category=online_sub" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-globe"></i></div>
+                    <div class="quick-link-title">نشریات دارای اشتراک on-line</div>
+                    <div class="text-muted mt-2" style="font-size:13px;">{{ online_sub|length }} مورد</div>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a href="{% url 'research:journals' %}" class="btn btn-sm btn-outline-primary">همه دسته‌ها</a>
+            <a href="{% url 'research:journals' %}?category=scientific" class="btn btn-sm {% if current_category == 'scientific' %}btn-primary{% else %}btn-outline-primary{% endif %}">علمی - پژوهشی</a>
+            <a href="{% url 'research:journals' %}?category=online_sub" class="btn btn-sm {% if current_category == 'online_sub' %}btn-primary{% else %}btn-outline-primary{% endif %}">اشتراک on-line</a>
+        </div>
+
         <div class="row g-4">
             {% for j in journals %}
             <div class="col-md-6 col-lg-4" data-aos="fade-up">
@@ -20,6 +50,7 @@
                         {% endif %}
                         <div>
                             <h5 class="fw-bold text-primary-uni mb-1" style="font-size:15px;">{{ j.title }}</h5>
+                            <div class="text-muted" style="font-size:12px;">{{ j.get_category_display }}</div>
                             {% if j.issn %}<div class="text-muted" style="font-size:12px;">ISSN {{ j.issn }}</div>{% endif %}
                             {% if j.description %}<p class="text-muted mb-0 mt-2" style="font-size:12px;">{{ j.description|truncatewords:20 }}</p>{% endif %}
                         </div>
@@ -27,9 +58,12 @@
                 </a>
             </div>
             {% empty %}
-            <div class="col-12 text-center py-5 text-muted">مجله‌ای ثبت نشده</div>
+            <div class="col-12">
+                <div class="alert alert-info mb-0">موردی در این دسته ثبت نشده است.</div>
+            </div>
             {% endfor %}
         </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

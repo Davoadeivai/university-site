@@ -31,10 +31,28 @@ def login_view(request):
         return redirect('dashboard:dashboard')
 
     if request.method == 'POST':
-        national_id = request.POST.get('national_id', '').strip()
+        login_id = request.POST.get('national_id', '').strip()
         password = request.POST.get('password')
 
-        user = authenticate(request, username=national_id, password=password)
+        user = None
+        if login_id and password:
+            # ۱) ورود مستقیم با نام کاربری (مثلاً admin)
+            user = authenticate(request, username=login_id, password=password)
+            # ۲) ورود با کد ملی ذخیره‌شده در پروفایل
+            if user is None:
+                profile = (
+                    UserProfile.objects
+                    .select_related('user')
+                    .filter(national_id=login_id)
+                    .first()
+                )
+                if profile:
+                    user = authenticate(
+                        request,
+                        username=profile.user.username,
+                        password=password,
+                    )
+
         if user:
             # نقش کاربر خودکار از روی حساب تشخیص داده می‌شود
             try:
@@ -51,7 +69,7 @@ def login_view(request):
                 return redirect('/admin/')
             return redirect(_safe_redirect_target(request))
         else:
-            messages.error(request, 'کد ملی یا رمز عبور اشتباه است.')
+            messages.error(request, 'کد ملی / نام کاربری یا رمز عبور اشتباه است.')
 
     context = {'page_title': 'ورود به سامانه'}
     return render(request, 'accounts/login.html', context)

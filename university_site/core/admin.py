@@ -2,13 +2,14 @@ from django.contrib import admin
 from .models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
     InstitutionGoal, BoardMember, CityInfo, CityAttraction,
-    PresidencyOffice, DeputyVice,
+    PresidencyOffice, PresidencyOfficeUnit, DeputyVice,
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
     OrganizationalChart,
     BankAccount, PaymentIdentifier, DownloadableDocument,
+    GraduateStudiesInfo,
 )
 
 
@@ -23,12 +24,18 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('اطلاعات تماس', {
             'fields': ('address', 'phone', 'fax', 'email', 'postal_code')
         }),
+        ('آمار صفحه اصلی', {
+            'fields': ('stat_students', 'stat_faculty', 'stat_majors', 'stat_years'),
+        }),
         ('شبکه‌های اجتماعی', {
             'fields': ('telegram', 'instagram', 'twitter', 'linkedin', 'youtube')
         }),
         ('سامانه‌های خارجی', {
-            'fields': ('external_lms_url', 'external_admin_url'),
-            'description': 'اتوماسیون تغذیه و خوابگاه در این پروژه پشتیبانی نمی‌شود.',
+            'fields': (
+                'external_lms_url', 'external_admin_url',
+                'external_food_url', 'external_dorm_url', 'external_publications_url',
+            ),
+            'description': 'لینک‌های سامانه‌های رسمی (samaweb، تغذیه، خوابگاه، نشریات و …).',
         }),
         ('محتوای صفحه معرفی', {
             'fields': ('about_short', 'history_text', 'vision_text', 'mission_text', 'values_text')
@@ -64,8 +71,10 @@ class SliderAdmin(admin.ModelAdmin):
 
 @admin.register(QuickLink)
 class QuickLinkAdmin(admin.ModelAdmin):
-    list_display = ['title', 'url', 'color', 'order', 'is_active']
+    list_display = ['title', 'category', 'url', 'order', 'open_in_new_tab', 'is_active']
     list_editable = ['order', 'is_active']
+    list_filter = ['category', 'is_active']
+    search_fields = ['title', 'url']
 
 
 @admin.register(Event)
@@ -126,8 +135,24 @@ class CityAttractionAdmin(admin.ModelAdmin):
 
 @admin.register(PresidencyOffice)
 class PresidencyOfficeAdmin(admin.ModelAdmin):
-    list_display = ['president_name', 'president_title', 'president_phone', 'office_email']
-    search_fields = ['president_name', 'president_bio']
+    list_display = ['president_name', 'office_manager_name', 'president_phone', 'office_email']
+    search_fields = ['president_name', 'president_bio', 'office_manager_name']
+    fieldsets = (
+        ('ریاست موسسه', {
+            'fields': (
+                'president_name', 'president_title', 'president_photo',
+                'president_bio', 'president_education', 'president_resume',
+                'president_email', 'president_phone', 'president_message',
+            ),
+        }),
+        ('دفتر ریاست', {
+            'fields': (
+                'office_manager_name', 'office_duties',
+                'office_address', 'office_phone', 'office_fax',
+                'office_email', 'office_hours',
+            ),
+        }),
+    )
 
     def has_add_permission(self, request):
         return not PresidencyOffice.objects.exists()
@@ -139,6 +164,31 @@ class PresidencyOfficeAdmin(admin.ModelAdmin):
             return redirect('admin:core_presidencyoffice_add')
         if obj is not None and PresidencyOffice.objects.count() == 1:
             return redirect('admin:core_presidencyoffice_change', obj.pk)
+        return super().changelist_view(request, extra_context=extra_context)
+
+
+@admin.register(PresidencyOfficeUnit)
+class PresidencyOfficeUnitAdmin(admin.ModelAdmin):
+    list_display = ['title', 'slug', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    prepopulated_fields = {'slug': ('title',)}
+    search_fields = ['title', 'content']
+
+
+@admin.register(GraduateStudiesInfo)
+class GraduateStudiesInfoAdmin(admin.ModelAdmin):
+    list_display = ['manager_name']
+
+    def has_add_permission(self, request):
+        return not GraduateStudiesInfo.objects.exists()
+
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        obj = GraduateStudiesInfo.objects.first()
+        if obj is None and self.has_add_permission(request):
+            return redirect('admin:core_graduatestudiesinfo_add')
+        if obj is not None and GraduateStudiesInfo.objects.count() == 1:
+            return redirect('admin:core_graduatestudiesinfo_change', obj.pk)
         return super().changelist_view(request, extra_context=extra_context)
 
 
@@ -332,7 +382,7 @@ class PaymentIdentifierAdmin(admin.ModelAdmin):
 
 @admin.register(DownloadableDocument)
 class DownloadableDocumentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'order', 'is_active', 'created_at']
-    list_filter = ['category', 'is_active']
+    list_display = ['title', 'category', 'section', 'order', 'is_active', 'created_at']
+    list_filter = ['category', 'section', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'description']

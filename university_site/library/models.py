@@ -27,6 +27,11 @@ class Book(models.Model):
 
 
 class Article(models.Model):
+    SECTION_CHOICES = [
+        ('general', _('عمومی')),
+        ('faculty', _('مقالات اعضای هیات علمی')),
+        ('conference', _('بانک مقالات همایش‌ها')),
+    ]
     title = models.CharField(_('عنوان مقاله'), max_length=400)
     authors = models.CharField(_('نویسندگان'), max_length=400)
     journal = models.CharField(_('مجله'), max_length=200, blank=True)
@@ -34,6 +39,9 @@ class Article(models.Model):
     doi = models.CharField(max_length=200, blank=True)
     keywords = models.CharField(_('کلیدواژه'), max_length=300, blank=True)
     abstract = models.TextField(_('چکیده'), blank=True)
+    section = models.CharField(
+        _('بخش بانک علمی'), max_length=20, choices=SECTION_CHOICES, default='general',
+    )
     file = models.FileField(_('فایل'), upload_to='articles/', blank=True, null=True)
     url = models.URLField(blank=True)
 

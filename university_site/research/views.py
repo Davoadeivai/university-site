@@ -166,10 +166,22 @@ def conference_detail(request, pk):
 
 
 def journals_list(request):
+    """نشریات علمی — مطابق سایت رسمی با دو دسته اصلی"""
+    category = request.GET.get('category', '').strip()
     journals = Journal.objects.filter(is_active=True)
+    if category in dict(Journal.CATEGORY_CHOICES):
+        journals = journals.filter(category=category)
+
+    scientific = Journal.objects.filter(is_active=True, category='scientific')
+    online_sub = Journal.objects.filter(is_active=True, category='online_sub')
+
     context = {
         'journals': journals,
-        'page_title': 'مجلات علمی',
+        'scientific': scientific,
+        'online_sub': online_sub,
+        'current_category': category,
+        'page_title': 'نشریات علمی',
+        'show_hub': not category,
     }
     return render(request, 'research/journals.html', context)
 

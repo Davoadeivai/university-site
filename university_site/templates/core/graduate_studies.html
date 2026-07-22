@@ -2,65 +2,49 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">تحصیلات تکمیلی</li>
+            </ol>
+        </nav>
         <h1 class="page-header-title">تحصیلات تکمیلی</h1>
-        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;opacity:.85;">کارشناسی ارشد و دکتری</p>
     </div>
 </div>
 
 <section class="section">
     <div class="container">
-        <div class="row g-4 mb-5">
-            <div class="col-md-4" data-aos="fade-up">
-                <a href="{% url 'admissions:apply_otp_send' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-file-signature"></i></div>
-                    <div class="quick-link-title">ثبت‌نام آنلاین</div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up">
+                <a href="{% url 'core:graduate_majors' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-book-open"></i></div>
+                    <div class="quick-link-title">رشته ها</div>
                 </a>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="40">
-                <a href="{% url 'admissions:tuition' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-                    <div class="quick-link-title">شهریه مقاطع تکمیلی</div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="40">
+                <a href="{% url 'core:graduate_manager' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="quick-link-title">مدیر تحصیلات تکمیلی</div>
                 </a>
             </div>
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="80">
-                <a href="{% url 'research:theses' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-scroll"></i></div>
-                    <div class="quick-link-title">پایان‌نامه‌ها</div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+                <a href="{% url 'core:graduate_news' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="quick-link-title">اخبار تحصیلات تکمیلی</div>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+                <a href="{% url 'core:graduate_regulations' %}" class="quick-link-card">
+                    <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="quick-link-title">آیین نامه ها و فرمها</div>
                 </a>
             </div>
         </div>
-
-        <h2 class="section-title mb-4" style="font-size:1.2rem;">رشته‌های کارشناسی ارشد</h2>
-        <div class="row g-3 mb-5">
-            {% for major in master_majors %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                <a href="{{ major.get_absolute_url }}" class="text-decoration-none">
-                    <div class="uni-card p-3 h-100">
-                        <div class="fw-bold text-dark" style="font-size:14px;">{{ major.name }}</div>
-                        {% if major.group %}<div class="text-muted mt-1" style="font-size:12px;">{{ major.group.name }}</div>{% endif %}
-                    </div>
-                </a>
-            </div>
-            {% empty %}
-            <div class="col-12"><p class="text-muted">رشته ارشدی ثبت نشده. <a href="{% url 'academics:majors' %}?degree=master">فهرست رشته‌ها</a></p></div>
-            {% endfor %}
+        {% if info and info.intro %}
+        <div class="dept-card mt-5" data-aos="fade-up">
+            <p class="text-muted mb-0" style="font-size:15px;line-height:2.2;">{{ info.intro|linebreaksbr }}</p>
         </div>
-
-        <h2 class="section-title mb-4" style="font-size:1.2rem;">رشته‌های دکتری</h2>
-        <div class="row g-3">
-            {% for major in phd_majors %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                <a href="{{ major.get_absolute_url }}" class="text-decoration-none">
-                    <div class="uni-card p-3 h-100">
-                        <div class="fw-bold text-dark" style="font-size:14px;">{{ major.name }}</div>
-                        {% if major.group %}<div class="text-muted mt-1" style="font-size:12px;">{{ major.group.name }}</div>{% endif %}
-                    </div>
-                </a>
-            </div>
-            {% empty %}
-            <div class="col-12"><p class="text-muted">رشته دکتری ثبت نشده. <a href="{% url 'academics:majors' %}?degree=phd">فهرست رشته‌ها</a></p></div>
-            {% endfor %}
-        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

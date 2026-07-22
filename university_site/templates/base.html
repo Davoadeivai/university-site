@@ -36,8 +36,8 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-6 d-none d-md-flex align-items-center gap-3">
-                {% if site_settings %}
-                <span class="topbar-info"><i class="fas fa-phone-alt"></i> {{ site_settings.phone }}</span>
+                <span class="topbar-info"><i class="fas fa-phone-alt"></i> {% if site_settings and site_settings.phone %}{{ site_settings.phone }}{% else %}۰۱۱-۳۵۷۵۰۸۱۰ (الی ۱۵){% endif %}</span>
+                {% if site_settings and site_settings.email %}
                 <span class="topbar-info"><i class="fas fa-envelope"></i> {{ site_settings.email }}</span>
                 {% endif %}
             </div>
@@ -118,7 +118,7 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم انداز و اهداف</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_founders' %}">هیات موسس دانشگاه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امنا دانشگاه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امناء دانشگاه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:city_behnammir' %}">آشنایی با شهر بهنمیر</a></li>
                     </ul>
@@ -130,10 +130,14 @@
                         <i class="fas fa-user-tie" style="font-size:13px;margin-left:3px;"></i> حوزه ریاست
                     </a>
                     <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency' %}">ریاست</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency' %}">ریاست موسسه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office' %}">دفتر ریاست</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'modir-daftar' %}">مدیر دفتر ریاست</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-raise' %}">دبیرخانه هیأت رئیسه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-jazb' %}">دبیرخانه هیأت اجرایی جذب هیأت علمی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:deputies' %}">معاونین دانشگاه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:international_office' %}">دفتر همکاری‌های علمی و بین الملل</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:international_office' %}">دفتر همکاریهای علمی و بین المللی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:public_relations' %}">مدیریت روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:security_office' %}">حراست</a></li>
                     </ul>
@@ -153,15 +157,12 @@
                     </ul>
                 </li>
 
-                <!-- گروه‌های آموزشی — dynamic از DB -->
+                <!-- گروه‌های آموزشی — dynamic از DB (مطابق سایت رسمی؛ بدون موارد اضافه) -->
                 <li class="nav-item dropdown">
                     <a class="nav-link-flat dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="fas fa-chalkboard-teacher" style="font-size:13px;margin-left:3px;"></i> گروه های آموزشی
                     </a>
                     <ul class="dropdown-menu nav-dd" style="max-height:460px;overflow-y:auto;">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:groups_list' %}">همه گروه‌ها</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_studies' %}">تحصیلات تکمیلی</a></li>
-                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.15);margin:4px 0;"></li>
                         {% if nav_groups %}
                             {% for group in nav_groups %}
                             <li><a class="dropdown-item nav-dd-item" href="{{ group.get_absolute_url }}">{{ group.name }}</a></li>
@@ -169,6 +170,21 @@
                         {% else %}
                         <li><span class="dropdown-item nav-dd-item" style="opacity:.6;">گروهی ثبت نشده</span></li>
                         {% endif %}
+                    </ul>
+                </li>
+
+                <!-- تحصیلات تکمیلی — منوی سطح‌بالا مطابق سایت رسمی -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'core:graduate_studies' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-graduation-cap" style="font-size:13px;margin-left:3px;"></i> تحصیلات تکمیلی
+                    </a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_majors' %}">رشته ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_manager' %}">مدیر تحصیلات تکمیلی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_news' %}">اخبار تحصیلات تکمیلی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_regulations' %}">آیین نامه ها و فرمها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_regulations' %}?category=regulation">آیین نامه ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_regulations' %}?category=form">فرم ها</a></li>
                     </ul>
                 </li>
 
@@ -235,36 +251,24 @@
                     </ul>
                 </li>
 
-                <!-- بانک اطلاعات علمی -->
+                <!-- بانک اطلاعات علمی — مطابق سایت رسمی -->
                 <li class="nav-item dropdown">
                     <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="fas fa-database" style="font-size:13px;margin-left:3px;"></i> بانک اطلاعات علمی
                     </a>
                     <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:research' %}">معاونت پژوهشی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:projects' %}">پروژه‌های پژوهشی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:journals' %}">مجلات علمی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:theses' %}">پایان‌نامه‌ها</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:conferences' %}">همایش‌ها و کنفرانس‌ها</a></li>
-                        <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">کتابخانه دیجیتال</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:articles' %}">مقالات علمی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'faculty:list' %}">اعضای هیئت علمی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">مرکز اطلاع رسانی و کتابخانه مرکزی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:faculty_articles' %}">مقالات اعضای هیات علمی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:conference_articles' %}">بانک مقالات همایش ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'research:journals' %}">نشریات علمی</a></li>
                     </ul>
                 </li>
 
-                <!-- گالری تصاویر -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                <!-- گالری تصاویر — لینک ساده مطابق سایت رسمی -->
+                <li class="nav-item">
+                    <a class="nav-link-flat" href="{% url 'core:gallery' %}">
                         <i class="fas fa-images" style="font-size:13px;margin-left:3px;"></i> گالری تصاویر
                     </a>
-                    <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:gallery' %}">گالری تصاویر</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'news:list' %}">اخبار و رویدادها</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:events' %}">تقویم رویدادها</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'news:announcements' %}">اطلاعیه‌ها</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:documents' %}">آیین‌نامه‌ها و فرم‌ها</a></li>
-                    </ul>
                 </li>
 
                 <!-- تماس با ما -->
@@ -341,19 +345,23 @@
                     </div>
                 </div>
 
-                <!-- Quick Links -->
+                <!-- Quick Links / دسترسی سریع مطابق سایت رسمی -->
                 <div class="col-lg-2 col-md-6">
                     <div class="footer-widget">
                         <h6 class="footer-title">دسترسی سریع</h6>
                         <ul class="footer-links">
-                            <li><a href="{% url 'core:home' %}"><i class="fas fa-angle-left"></i> صفحه اصلی</a></li>
-                            <li><a href="{% url 'core:about' %}"><i class="fas fa-angle-left"></i> درباره ما</a></li>
-                            <li><a href="{% url 'academics:departments' %}"><i class="fas fa-angle-left"></i> دانشکده‌ها</a></li>
-                            <li><a href="{% url 'core:graduate_studies' %}"><i class="fas fa-angle-left"></i> تحصیلات تکمیلی</a></li>
-                            <li><a href="{% url 'research:theses' %}"><i class="fas fa-angle-left"></i> پایان‌نامه‌ها</a></li>
-                            <li><a href="{% url 'faculty:list' %}"><i class="fas fa-angle-left"></i> اساتید</a></li>
-                            <li><a href="{% url 'news:list' %}"><i class="fas fa-angle-left"></i> اخبار</a></li>
+                            {% if footer_quick_access %}
+                                {% for link in footer_quick_access %}
+                                <li><a href="{{ link.url }}"{% if link.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}><i class="fas fa-angle-left"></i> {{ link.title }}</a></li>
+                                {% endfor %}
+                            {% else %}
+                            <li><a href="http://www.leader.ir/langs/fa" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> دفتر مقام معظم رهبری</a></li>
+                            <li><a href="http://www.president.ir/fa" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> پایگاه اینترنتی ریاست جمهوری</a></li>
+                            <li><a href="http://www.msrt.ir/fa/pages/Home.aspx" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> وزارت علوم</a></li>
+                            <li><a href="http://www.sanjesh.org" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> سازمان سنجش</a></li>
+                            <li><a href="http://www.mjazb.ir" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> مرکز جذب هیأت علمی</a></li>
                             <li><a href="{% url 'contact:contact' %}"><i class="fas fa-angle-left"></i> تماس با ما</a></li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -363,11 +371,11 @@
                     <div class="footer-widget">
                         <h6 class="footer-title">خدمات الکترونیکی</h6>
                         <ul class="footer-links">
-                            <li><a href="{% url 'dashboard:dashboard' %}"><i class="fas fa-angle-left"></i> سامانه آموزشی</a></li>
-                            <li><a href="{% url 'admissions:apply_otp_send' %}"><i class="fas fa-angle-left"></i> پذیرش دانشجو</a></li>
-                            <li><a href="{% url 'admissions:track' %}"><i class="fas fa-angle-left"></i> پیگیری پذیرش</a></li>
-                            <li><a href="{% url 'core:payment_id' %}"><i class="fas fa-angle-left"></i> شناسه واریز</a></li>
+                            <li><a href="{% if site_settings and site_settings.external_lms_url %}{{ site_settings.external_lms_url }}{% else %}{% url 'dashboard:dashboard' %}{% endif %}"{% if site_settings and site_settings.external_lms_url %} target="_blank" rel="noopener"{% endif %}><i class="fas fa-angle-left"></i> سامانه خدمات آموزشی</a></li>
+                            <li><a href="{% if site_settings and site_settings.external_admin_url %}{{ site_settings.external_admin_url }}{% else %}{% url 'core:eservices' %}{% endif %}"{% if site_settings and site_settings.external_admin_url %} target="_blank" rel="noopener"{% endif %}><i class="fas fa-angle-left"></i> اتوماسیون اداری</a></li>
+                            <li><a href="{% url 'library:library' %}"><i class="fas fa-angle-left"></i> کتابخانه دیجیتال</a></li>
                             <li><a href="{% url 'core:documents' %}"><i class="fas fa-angle-left"></i> آیین‌نامه‌ها و فرم‌ها</a></li>
+                            <li><a href="{% url 'research:journals' %}"><i class="fas fa-angle-left"></i> سامانه نشریات</a></li>
                             <li><a href="{% url 'core:eservices' %}"><i class="fas fa-angle-left"></i> همه خدمات</a></li>
                         </ul>
                     </div>
@@ -377,40 +385,32 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="footer-widget">
                         <h6 class="footer-title">اطلاعات تماس</h6>
-                        {% if site_settings %}
                         <ul class="footer-contact">
-                            {% if site_settings.address %}
                             <li>
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span>{{ site_settings.address }}</span>
+                                <span>{% if site_settings and site_settings.address %}{{ site_settings.address }}{% else %}مازندران - بابلسر - بهنمیر - بلوار امام خمینی (ره) - گلستان ۱۵ - موسسه آموزش عالی علامه امینی{% endif %}</span>
                             </li>
-                            {% endif %}
-                            {% if site_settings.phone %}
                             <li>
                                 <i class="fas fa-phone-alt"></i>
-                                <span>{{ site_settings.phone }}</span>
+                                <span>{% if site_settings and site_settings.phone %}{{ site_settings.phone }}{% else %}۰۱۱-۳۵۷۵۰۸۱۰ (الی ۱۵){% endif %}</span>
                             </li>
-                            {% endif %}
-                            {% if site_settings.email %}
+                            <li>
+                                <i class="fas fa-mail-bulk"></i>
+                                <span>کد پستی: {% if site_settings and site_settings.postal_code %}{{ site_settings.postal_code }}{% else %}۴۷۴۴۱۳۵۱۶۱{% endif %}</span>
+                            </li>
+                            {% if site_settings and site_settings.email %}
                             <li>
                                 <i class="fas fa-envelope"></i>
                                 <span>{{ site_settings.email }}</span>
                             </li>
                             {% endif %}
-                            {% if site_settings.working_hours %}
+                            {% if site_settings and site_settings.working_hours %}
                             <li>
                                 <i class="fas fa-clock"></i>
                                 <span>{{ site_settings.working_hours }}</span>
                             </li>
                             {% endif %}
                         </ul>
-                        {% else %}
-                        <ul class="footer-contact">
-                            <li><i class="fas fa-map-marker-alt"></i><span>تهران، ایران</span></li>
-                            <li><i class="fas fa-phone-alt"></i><span>۰۲۱-۱۲۳۴۵۶۷۸</span></li>
-                            <li><i class="fas fa-envelope"></i><span>info@university.ac.ir</span></li>
-                        </ul>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -500,7 +500,7 @@
 <!-- IntroJS -->
 <script src="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/intro.min.js"></script>
 <!-- Custom JS -->
-<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/main.js' %}?v=20260722a"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -58,28 +58,53 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ---- Counter Animation ----
     const counters = document.querySelectorAll('.stat-number[data-target]');
-    const observerOptions = { threshold: 0.5 };
-    const counterObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-                const el = entry.target;
-                const target = parseInt(el.getAttribute('data-target'), 10);
-                const duration = 2000;
-                const step = target / (duration / 16);
-                let current = 0;
-                const timer = setInterval(function () {
-                    current += step;
-                    if (current >= target) {
-                        current = target;
-                        clearInterval(timer);
-                    }
-                    el.textContent = Math.floor(current).toLocaleString('fa-IR');
-                }, 16);
-                counterObserver.unobserve(el);
+    const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -10% 0px' };
+
+    function setPersianCount(el, value) {
+        el.textContent = Math.floor(value).toLocaleString('fa-IR');
+    }
+
+    function animateCounter(el) {
+        if (el.dataset.animated === '1') return;
+        el.dataset.animated = '1';
+        const target = parseInt(el.getAttribute('data-target'), 10) || 0;
+        const duration = 1600;
+        const start = performance.now();
+        function frame(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setPersianCount(el, target * eased);
+            if (progress < 1) {
+                requestAnimationFrame(frame);
+            } else {
+                setPersianCount(el, target);
             }
-        });
-    }, observerOptions);
-    counters.forEach(function (counter) { counterObserver.observe(counter); });
+        }
+        requestAnimationFrame(frame);
+    }
+
+    if (counters.length) {
+        if ('IntersectionObserver' in window) {
+            const counterObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            counters.forEach(function (counter) { counterObserver.observe(counter); });
+        }
+        // Fallback: if still zero after load (observer miss / off-screen quirks)
+        window.setTimeout(function () {
+            counters.forEach(function (el) {
+                const raw = (el.textContent || '').replace(/[^\d۰-۹0-9]/g, '');
+                if (!raw || raw === '0' || raw === '۰') {
+                    animateCounter(el);
+                }
+            });
+        }, 1200);
+    }
 
     // ---- Gallery Lightbox (safe DOM, no innerHTML for user-controlled URLs beyond img src attr) ----
     const galleryItems = document.querySelectorAll('.gallery-item');
