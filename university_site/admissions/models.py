@@ -97,7 +97,7 @@ class Application(models.Model):
                                    choices=MILITARY_CHOICES, default='na', blank=True)
 
     # ── اطلاعات تماس ──
-    phone           = models.CharField(_('موبایل'), max_length=15, default='')
+    phone           = models.CharField(_('موبایل'), max_length=15, blank=True, default='')
     phone_emergency = models.CharField(_('تلفن اضطراری'), max_length=15, blank=True)
     email           = models.EmailField(_('ایمیل'), blank=True)
     address         = models.TextField(_('آدرس'), default='')

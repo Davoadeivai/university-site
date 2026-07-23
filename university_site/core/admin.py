@@ -33,9 +33,9 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('سامانه‌های خارجی', {
             'fields': (
                 'external_lms_url', 'external_admin_url',
-                'external_food_url', 'external_dorm_url', 'external_publications_url',
+                'external_publications_url',
             ),
-            'description': 'لینک‌های سامانه‌های رسمی (samaweb، تغذیه، خوابگاه، نشریات و …).',
+            'description': 'لینک‌های سامانه‌های رسمی (samaweb، اتوماسیون اداری، نشریات و …).',
         }),
         ('محتوای صفحه معرفی', {
             'fields': ('about_short', 'history_text', 'vision_text', 'mission_text', 'values_text')

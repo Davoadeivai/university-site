@@ -1,4 +1,4 @@
-﻿"""
+"""
 Production settings for cPanel.
 
 On server:
@@ -118,6 +118,8 @@ KAVENEGAR_OTP_TEMPLATE = config('KAVENEGAR_OTP_TEMPLATE', default='')
 OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
 OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
 OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)
+# موقتاً False: مرحله تأیید موبایل پذیرش غیرفعال است. برای فعال‌سازی دوباره True کنید.
+ADMISSION_REQUIRE_MOBILE_OTP = config('ADMISSION_REQUIRE_MOBILE_OTP', default=False, cast=bool)
 
 # Harden cookies further when SSL is on
 if SECURE_SSL_REDIRECT:

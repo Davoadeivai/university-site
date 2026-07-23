@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.conf import settings
 from django.utils import timezone
 from academics.models import Major
 from .models import (
@@ -18,6 +19,10 @@ _JALALI_MONTHS = [
     (7, 'مهر'), (8, 'آبان'), (9, 'آذر'),
     (10, 'دی'), (11, 'بهمن'), (12, 'اسفند'),
 ]
+
+
+def _require_mobile_otp():
+    return bool(getattr(settings, 'ADMISSION_REQUIRE_MOBILE_OTP', False))
 
 
 def _normalize_digits(value):
@@ -58,6 +63,9 @@ def admissions_view(request):
 # ─────────────────────────────────────────────
 def apply_otp_send(request):
     """ارسال کد OTP برای تأیید موبایل"""
+    if not _require_mobile_otp():
+        return redirect('admissions:apply')
+
     from core.sms import can_send_otp, mark_otp_sent, send_otp
 
     if request.method == 'POST':
@@ -92,6 +100,9 @@ def apply_otp_send(request):
 
 def apply_otp_verify(request):
     """تأیید کد OTP"""
+    if not _require_mobile_otp():
+        return redirect('admissions:apply')
+
     from core.sms import can_verify_otp, mark_otp_verify_failed, clear_otp_verify_attempts
 
     phone = request.session.get('apply_phone', '')
@@ -131,10 +142,11 @@ def apply_otp_verify(request):
 #  مرحله ۳: فرم اصلی پذیرش
 # ─────────────────────────────────────────────
 def apply(request):
+    require_otp = _require_mobile_otp()
     phone = request.session.get('apply_phone', '')
     verified = request.session.get('apply_phone_verified', False)
 
-    if not phone or not verified:
+    if require_otp and (not phone or not verified):
         messages.warning(request, 'لطفاً ابتدا شماره موبایل خود را تأیید کنید.')
         return redirect('admissions:apply_otp_send')
 
@@ -145,6 +157,7 @@ def apply(request):
         ctx = {
             'page_title': 'فرم ثبت درخواست پذیرش',
             'phone': phone,
+            'require_mobile_otp': require_otp,
             'all_majors': all_majors,
             'post': post,
             **jalali_ctx,
@@ -170,6 +183,22 @@ def apply(request):
             errors.append('کد ملی باید ۱۰ رقم باشد.')
         if not p.get('address', '').strip(): errors.append('آدرس الزامی است.')
         if not p.get('degree'):     errors.append('مقطع را انتخاب کنید.')
+
+        # موبایل: از session (اگر OTP فعال) یا از فرم
+        form_phone = _normalize_digits(p.get('phone', ''))
+        if require_otp:
+            submit_phone = phone
+            phone_verified = True
+        else:
+            submit_phone = form_phone
+            phone_verified = False
+            if submit_phone and (
+                not submit_phone.isdigit()
+                or len(submit_phone) != 11
+                or not submit_phone.startswith('09')
+            ):
+                errors.append('شماره موبایل معتبر وارد کنید (مثال: 09123456789).')
+
         major_id = p.get('desired_major')
         major2_id = p.get('desired_major2') or None
         major_obj = None
@@ -249,7 +278,7 @@ def apply(request):
             birth_date=birth_date,
             gender=p.get('gender', 'male'),
             military=p.get('military', 'na'),
-            phone=phone,
+            phone=submit_phone,
             phone_emergency=p.get('phone_emergency', ''),
             email=p.get('email', ''),
             address=p.get('address', ''),
@@ -266,7 +295,7 @@ def apply(request):
             know_from=p.get('know_from', 'site'),
             special_needs=p.get('special_needs', ''),
             agreed_terms=bool(p.get('agreed_terms')),
-            phone_verified=True,
+            phone_verified=phone_verified,
         )
 
         # آپلود مدارک
@@ -277,8 +306,8 @@ def apply(request):
         app.save()
 
         # پاک کردن session
-        del request.session['apply_phone']
-        del request.session['apply_phone_verified']
+        request.session.pop('apply_phone', None)
+        request.session.pop('apply_phone_verified', None)
 
         messages.success(request, f'درخواست شما با کد رهگیری {app.tracking_code} ثبت شد.')
         return redirect('admissions:apply_success', code=app.tracking_code)

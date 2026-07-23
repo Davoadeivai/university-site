@@ -4,12 +4,12 @@
 Run: python manage.py sync_official_eservices
 """
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
 from academics.models import AcademicGroup, Department
 from core.models import QuickLink, SiteSettings
 
 SAMAWEB = 'http://2.181.0.151/samaweb/'
-FOOD_DORM = 'https://www.aab.ac.ir/index.php/2-uncategorised/22-2016-07-23-07-34-30'
 
 ESERVICES = [
     {
@@ -27,38 +27,24 @@ ESERVICES = [
         'open_in_new_tab': True,
     },
     {
-        'title': 'اتوماسیون تغذیه',
-        'icon': 'fas fa-utensils',
-        'url': FOOD_DORM,
-        'order': 3,
-        'open_in_new_tab': True,
-    },
-    {
         'title': 'کتابخانه دیجیتال',
         'icon': 'fas fa-book',
         'url': '/کتابخانه/',
-        'order': 4,
+        'order': 3,
         'open_in_new_tab': False,
-    },
-    {
-        'title': 'اتوماسیون خوابگاه',
-        'icon': 'fas fa-bed',
-        'url': FOOD_DORM,
-        'order': 5,
-        'open_in_new_tab': True,
     },
     {
         'title': 'آیین نامه ها و فرمها',
         'icon': 'fas fa-file-alt',
         'url': '/آیین-نامه-ها-و-فرم-ها/',
-        'order': 6,
+        'order': 4,
         'open_in_new_tab': False,
     },
     {
         'title': 'سامانه نشریات',
         'icon': 'fas fa-newspaper',
         'url': '/پژوهش/مجلات/',
-        'order': 7,
+        'order': 5,
         'open_in_new_tab': False,
     },
 ]
@@ -95,11 +81,18 @@ class Command(BaseCommand):
             settings_obj.university_name_en = 'Allameh Amini Higher Education Institute'
         settings_obj.external_lms_url = SAMAWEB
         settings_obj.external_admin_url = SAMAWEB
-        settings_obj.external_food_url = FOOD_DORM
-        settings_obj.external_dorm_url = FOOD_DORM
         settings_obj.external_publications_url = ''  # internal journals page
         settings_obj.save()
         self.stdout.write(self.style.SUCCESS('SiteSettings external URLs updated'))
+
+        # حذف لینک‌های قدیمی اتوماسیون تغذیه/خوابگاه (اگر مانده باشند)
+        removed = QuickLink.objects.filter(
+            Q(title__icontains='اتوماسیون تغذیه')
+            | Q(title__icontains='اتوماسیون خوابگاه')
+            | Q(title__iexact='تغذیه')
+            | Q(title__iexact='خوابگاه')
+        ).delete()
+        self.stdout.write(f'Removed food/dorm automation links: {removed[0]}')
 
         # پاک‌سازی لینک‌های قبلی این دسته‌ها و seed مجدد
         QuickLink.objects.filter(category__in=['eservice', 'quick_access', 'home']).delete()

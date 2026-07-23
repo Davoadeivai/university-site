@@ -40,8 +40,6 @@ class SiteSettings(models.Model):
         _('لینک اتوماسیون اداری'), blank=True,
         help_text=_('سامانه مکاتبات/اتوماسیون اداری'),
     )
-    external_food_url = models.URLField(_('لینک اتوماسیون تغذیه'), blank=True)
-    external_dorm_url = models.URLField(_('لینک اتوماسیون خوابگاه'), blank=True)
     external_publications_url = models.URLField(_('لینک سامانه نشریات'), blank=True)
 
     # About page content

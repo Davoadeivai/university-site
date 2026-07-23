@@ -16,6 +16,7 @@
 <div class="container">
 
 <!-- steps bar -->
+{% if require_mobile_otp %}
 <div class="d-flex align-items-center justify-content-center gap-3 mb-5" data-aos="fade-up">
     <div class="text-center"><div style="width:38px;height:38px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 4px;"><i class="fas fa-check" style="font-size:14px;"></i></div><small class="text-success fw-bold" style="font-size:11px;">تأیید موبایل</small></div>
     <div style="flex:1;max-width:60px;height:2px;background:#16a34a;"></div>
@@ -23,6 +24,7 @@
     <div style="flex:1;max-width:60px;height:2px;background:var(--primary);"></div>
     <div class="text-center"><div style="width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 4px;">۳</div><small class="text-primary fw-bold" style="font-size:11px;">تکمیل فرم</small></div>
 </div>
+{% endif %}
 
 <form method="post" enctype="multipart/form-data" id="applyForm">
 {% csrf_token %}
@@ -105,10 +107,18 @@
     <h6 class="fw-bold mb-3"><i class="fas fa-phone text-primary"></i> اطلاعات تماس</h6>
     <div class="row g-3">
         <div class="col-md-4">
-            <label class="form-label" for="phone_display">موبایل <span class="text-danger">*</span></label>
+            <label class="form-label" for="{% if require_mobile_otp %}phone_display{% else %}phone{% endif %}">موبایل{% if require_mobile_otp %} <span class="text-danger">*</span>{% endif %}</label>
+            {% if require_mobile_otp %}
             <input type="text" id="phone_display" class="form-control" value="{{ phone }}" readonly
                    style="background:#f0f9ff;font-weight:700;">
             <div class="form-text text-success"><i class="fas fa-check-circle"></i> تأیید شده</div>
+            {% else %}
+            <input type="tel" name="phone" id="phone" class="form-control"
+                   value="{{ post.phone|default:phone|default:'' }}"
+                   placeholder="09123456789 (اختیاری)" maxlength="11" inputmode="numeric"
+                   pattern="09[0-9]{9}">
+            <div class="form-text">اختیاری — در صورت وارد کردن، ۱۱ رقمی با ۰۹</div>
+            {% endif %}
         </div>
         <div class="col-md-4">
             <label class="form-label" for="phone_emergency">تلفن اضطراری</label>

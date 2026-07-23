@@ -40,30 +40,18 @@
                     </a>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="60">
-                    <a href="{% if settings.external_food_url %}{{ settings.external_food_url }}{% else %}#{% endif %}" class="quick-link-card" {% if settings.external_food_url %}target="_blank" rel="noopener"{% endif %}>
-                        <div class="quick-link-icon"><i class="fas fa-utensils"></i></div>
-                        <div class="quick-link-title">اتوماسیون تغذیه</div>
-                    </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="90">
                     <a href="{% url 'library:library' %}" class="quick-link-card">
                         <div class="quick-link-icon"><i class="fas fa-book"></i></div>
                         <div class="quick-link-title">کتابخانه دیجیتال</div>
                     </a>
                 </div>
-                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="120">
-                    <a href="{% if settings.external_dorm_url %}{{ settings.external_dorm_url }}{% else %}#{% endif %}" class="quick-link-card" {% if settings.external_dorm_url %}target="_blank" rel="noopener"{% endif %}>
-                        <div class="quick-link-icon"><i class="fas fa-bed"></i></div>
-                        <div class="quick-link-title">اتوماسیون خوابگاه</div>
-                    </a>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150">
+                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="90">
                     <a href="{% url 'core:documents' %}" class="quick-link-card">
                         <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
                         <div class="quick-link-title">آیین نامه ها و فرمها</div>
                     </a>
                 </div>
-                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="180">
+                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="120">
                     <a href="{% if settings.external_publications_url %}{{ settings.external_publications_url }}{% else %}{% url 'research:journals' %}{% endif %}" class="quick-link-card" {% if settings.external_publications_url %}target="_blank" rel="noopener"{% endif %}>
                         <div class="quick-link-icon"><i class="fas fa-newspaper"></i></div>
                         <div class="quick-link-title">سامانه نشریات</div>
