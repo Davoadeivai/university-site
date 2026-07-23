@@ -208,8 +208,14 @@ def admin_dashboard_catalog(dashboard_list):
             seen_apps.add(label)
             apps.append(label)
 
+    mid = (len(items) + 1) // 2
+    left_col = items[:mid]
+    right_col = items[mid:]
+
     return {
         'items': items,
+        'left_col': left_col,
+        'right_col': right_col,
         'alpha_groups': alpha_groups,
         'letters': letters,
         'quick': quick,

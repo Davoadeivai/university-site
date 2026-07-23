@@ -675,6 +675,168 @@ fieldset {
     .admin-mega-kbd { display: none; }
 }
 
+/* === Dual-column large admin dashboard === */
+.admin-dash-page .content-wrapper .content .container-fluid,
+.admin-dash-page #content {
+    max-width: 100%;
+}
+.admin-dash-full {
+    max-width: 100%;
+    padding-inline: .25rem;
+}
+.admin-dash-top {
+    background: linear-gradient(180deg, #f8fafc 0%, rgba(248,250,252,0.92) 70%, transparent 100%);
+    padding: .35rem 0 .85rem;
+    margin-bottom: .75rem;
+    z-index: 40;
+}
+.admin-dash-top .admin-mega-search {
+    padding: .7rem 1.1rem;
+}
+.admin-dash-top .admin-mega-input {
+    font-size: 1.1rem !important;
+    font-weight: 500;
+}
+.admin-dash-top .admin-live-counters {
+    margin-top: .85rem;
+}
+.admin-dash-top .admin-counter-num {
+    font-size: 1.75rem;
+}
+.admin-dash-top .admin-counter-label {
+    font-size: .9rem;
+}
+
+.admin-fav-bar,
+.admin-recent-bar {
+    margin-top: .75rem;
+    padding: .7rem .9rem;
+    background: #fff;
+    border: 1px solid var(--uni-border);
+    border-radius: 12px;
+}
+.admin-fav-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: .45rem;
+    color: var(--uni-text);
+}
+.admin-fav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+.admin-fav-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: .4rem .85rem;
+    border-radius: 999px;
+    background: #eef5ff;
+    border: 1px solid #cfe0ff;
+    color: #1e40af !important;
+    text-decoration: none !important;
+    font-size: .92rem;
+    font-weight: 600;
+}
+.admin-fav-chip:hover {
+    background: #dbeafe;
+}
+
+.admin-dual-tables .admin-side-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+}
+.admin-dual-tables .admin-side-card .card-header h5 {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+}
+.admin-side-count {
+    font-size: .85rem;
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-radius: 999px;
+    padding: .2rem .65rem;
+}
+
+.admin-xl-table {
+    font-size: 1.05rem !important;
+}
+.admin-xl-table thead th {
+    background: #eef3fb !important;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    padding: .85rem .9rem !important;
+    white-space: nowrap;
+    border-bottom: 2px solid #d7e3f4 !important;
+}
+.admin-xl-table td {
+    padding: .85rem .9rem !important;
+    vertical-align: middle !important;
+    font-size: 1.02rem !important;
+    line-height: 1.55 !important;
+}
+.admin-xl-table .admin-feature-name {
+    font-size: 1.12rem !important;
+    font-weight: 800 !important;
+    color: #0b57d0 !important;
+    text-decoration: none !important;
+}
+.admin-xl-table .admin-feature-name:hover {
+    text-decoration: underline !important;
+}
+.admin-xl-table .admin-feature-name.muted {
+    color: #94a3b8 !important;
+}
+.admin-xl-table .admin-feature-app {
+    font-size: .88rem !important;
+    padding: .28rem .55rem !important;
+}
+.admin-xl-table .admin-feature-help {
+    font-size: .95rem !important;
+    color: #475569 !important;
+    max-width: none;
+    line-height: 1.55;
+}
+.admin-xl-table .btn {
+    font-size: .92rem !important;
+    padding: .4rem .75rem !important;
+    font-weight: 600 !important;
+}
+.admin-xl-table tbody tr:hover {
+    background: #f5f9ff !important;
+}
+
+.admin-star-btn {
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 .15rem;
+}
+.admin-star-btn.is-on,
+.admin-star-btn:hover {
+    color: #eab308;
+}
+
+.admin-dash-ideas .card-body {
+    font-size: 1.02rem;
+    line-height: 1.8;
+}
+.admin-ideas-list {
+    padding-right: 1.2rem;
+    padding-left: 0;
+}
+.admin-ideas-list li { margin-bottom: .45rem; }
+
+@media (max-width: 991px) {
+    .admin-xl-table { font-size: .95rem !important; }
+    .admin-xl-table .admin-feature-name { font-size: 1rem !important; }
+}
+
 /* === SCROLLBAR === */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }

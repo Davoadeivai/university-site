@@ -2,7 +2,7 @@
 {% load i18n static jazzmin admin_dashboard %}
 {% get_jazzmin_ui_tweaks as jazzmin_ui %}
 
-{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard admin-dash-page{% endblock %}
 
 {% block content_title %}داشبورد مدیریت{% endblock %}
 
@@ -17,236 +17,195 @@
     {% get_side_menu using="app_list" as dashboard_list %}
     {% admin_dashboard_catalog dashboard_list as catalog %}
 
-    <div class="col-lg-9 col-12">
+    <div class="col-12 admin-dash-full">
 
-        {# --- جستجوی سراسری با ذره‌بین --- #}
-        <div class="admin-mega-search-wrap mb-3" id="adminMegaSearch">
-            <div class="admin-mega-search">
-                <span class="admin-mega-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2"/>
-                        <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                    </svg>
-                </span>
-                <input type="search" id="admin-global-search" class="admin-mega-input"
-                       placeholder="جستجوی سریع همه بخش‌ها… (مثلاً پذیرش، اخبار، حساب بانکی)"
-                       autocomplete="off" aria-label="جستجوی بخش‌های ادمین">
-                <kbd class="admin-mega-kbd">Ctrl K</kbd>
-            </div>
-            <div class="admin-mega-filters" id="adminSearchFilters">
-                <button type="button" class="admin-filter-chip active" data-filter="all">همه</button>
-                {% for app in catalog.apps %}
-                <button type="button" class="admin-filter-chip" data-filter="{{ app }}">{{ app }}</button>
-                {% endfor %}
-            </div>
-            <div class="admin-mega-results" id="adminSearchResults" hidden></div>
-        </div>
-
-        {# --- شمارنده‌های زنده --- #}
-        {% if catalog.counters %}
-        <div class="admin-live-counters mb-3">
-            <a class="admin-counter-card {% if catalog.counters.messages_new %}has-count{% endif %}"
-               href="{{ catalog.counters.messages_url|default:'#' }}">
-                <span class="admin-counter-num" id="cnt-messages">{{ catalog.counters.messages_new }}</span>
-                <span class="admin-counter-label">پیام خوانده‌نشده</span>
-            </a>
-            <a class="admin-counter-card {% if catalog.counters.applications_pending %}has-count{% endif %}"
-               href="{{ catalog.counters.applications_url|default:'#' }}">
-                <span class="admin-counter-num" id="cnt-apps">{{ catalog.counters.applications_pending }}</span>
-                <span class="admin-counter-label">درخواست پذیرش در انتظار</span>
-            </a>
-            <div class="admin-counter-card soft">
-                <span class="admin-counter-num">{{ catalog.total }}</span>
-                <span class="admin-counter-label">بخش فعال در پنل</span>
-            </div>
-        </div>
-        {% endif %}
-
-        {# --- میانبرهای پرتکرار --- #}
-        <div class="card admin-dash-hero mb-3">
-            <div class="card-body">
-                <h4 class="admin-dash-hero-title mb-1">میانبرهای روزمره</h4>
-                <p class="admin-dash-hero-text mb-3">
-                    کارهای پرتکرار را با یک کلیک باز کنید. برای بقیه بخش‌ها از جستجو یا فهرست الفبایی استفاده کنید.
-                </p>
-                {% if catalog.quick %}
-                <div class="admin-dash-quick">
-                    {% for item in catalog.quick %}
-                        {% if item.url %}
-                        <a class="admin-dash-chip" href="{{ item.url }}">
-                            <span>{{ item.name }}</span>
-                            <small>{{ item.app_name }}</small>
-                        </a>
-                        {% endif %}
+        {# جستجو + شمارنده + علاقه‌مندی #}
+        <div class="admin-dash-top sticky-top">
+            <div class="admin-mega-search-wrap" id="adminMegaSearch">
+                <div class="admin-mega-search">
+                    <span class="admin-mega-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2"/>
+                            <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <input type="search" id="admin-global-search" class="admin-mega-input"
+                           placeholder="جستجوی سریع همه بخش‌ها… (Ctrl+K)"
+                           autocomplete="off" aria-label="جستجوی بخش‌های ادمین">
+                    <kbd class="admin-mega-kbd">Ctrl K</kbd>
+                </div>
+                <div class="admin-mega-filters" id="adminSearchFilters">
+                    <button type="button" class="admin-filter-chip active" data-filter="all">همه</button>
+                    {% for app in catalog.apps %}
+                    <button type="button" class="admin-filter-chip" data-filter="{{ app }}">{{ app }}</button>
                     {% endfor %}
                 </div>
-                {% endif %}
+                <div class="admin-mega-results" id="adminSearchResults" hidden></div>
             </div>
-        </div>
 
-        {# --- فهرست الفبایی --- #}
-        <div class="card mb-3" id="admin-alpha-guide">
-            <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
-                <h5 class="m-0">فهرست الفبایی بخش‌ها</h5>
-            </div>
-            <div class="card-body">
-                {% if catalog.letters %}
-                <nav class="admin-alpha-nav" aria-label="پرش به حرف">
-                    {% for letter in catalog.letters %}
-                        <a href="#letter-{{ letter }}" class="admin-alpha-letter">{{ letter }}</a>
-                    {% endfor %}
-                </nav>
-
-                {% for letter, models in catalog.alpha_groups %}
-                <section class="admin-alpha-block" id="letter-{{ letter }}" data-letter="{{ letter }}">
-                    <h6 class="admin-alpha-heading">{{ letter }}</h6>
-                    <ul class="admin-alpha-list">
-                        {% for item in models %}
-                        <li class="admin-alpha-item" data-name="{{ item.name }}" data-app="{{ item.app_name }}" data-help="{{ item.help }}">
-                            {% if item.url %}
-                                <a href="{{ item.url }}" class="admin-alpha-link">
-                                    <strong>{{ item.name }}</strong>
-                                    <span class="admin-alpha-meta">{{ item.app_name }}</span>
-                                </a>
-                            {% else %}
-                                <span class="admin-alpha-link muted">
-                                    <strong>{{ item.name }}</strong>
-                                    <span class="admin-alpha-meta">بدون دسترسی</span>
-                                </span>
-                            {% endif %}
-                            {% if item.add_url %}
-                                <a href="{{ item.add_url }}" class="admin-alpha-add" title="افزودن">+</a>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </section>
-                {% endfor %}
-                {% else %}
-                <p class="mb-0 text-muted">بخشی برای نمایش وجود ندارد.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        {# --- جدول کامل --- #}
-        <div class="card mb-3" id="admin-feature-table">
-            <div class="card-header">
-                <h5 class="m-0">جدول بخش‌ها و امکانات</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover admin-feature-table mb-0">
-                        <thead>
-                        <tr>
-                            <th scope="col">بخش</th>
-                            <th scope="col">گروه</th>
-                            <th scope="col">کاربرد</th>
-                            <th scope="col" class="text-center">عملیات</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for item in catalog.items %}
-                            <tr class="admin-feature-row" data-name="{{ item.name }}" data-app="{{ item.app_name }}" data-help="{{ item.help }}">
-                                <td>
-                                    {% if item.url %}
-                                        <a href="{{ item.url }}" class="admin-feature-name">{{ item.name }}</a>
-                                    {% else %}
-                                        {{ item.name }}
-                                    {% endif %}
-                                </td>
-                                <td><span class="admin-feature-app">{{ item.app_name }}</span></td>
-                                <td class="admin-feature-help">{{ item.help }}</td>
-                                <td class="text-center text-nowrap">
-                                    <div class="btn-group">
-                                        {% if item.add_url %}
-                                            <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}">افزودن</a>
-                                        {% endif %}
-                                        {% if item.url %}
-                                            {% if item.view_only %}
-                                                <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">مشاهده</a>
-                                            {% else %}
-                                                <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">{% if item.custom %}برو{% else %}ویرایش{% endif %}</a>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="text-muted small">—</span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr><td colspan="4" class="text-center text-muted py-4">موردی موجود نیست</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+            {% if catalog.counters %}
+            <div class="admin-live-counters">
+                <a class="admin-counter-card {% if catalog.counters.messages_new %}has-count{% endif %}"
+                   href="{{ catalog.counters.messages_url|default:'#' }}">
+                    <span class="admin-counter-num" id="cnt-messages">{{ catalog.counters.messages_new }}</span>
+                    <span class="admin-counter-label">پیام خوانده‌نشده</span>
+                </a>
+                <a class="admin-counter-card {% if catalog.counters.applications_pending %}has-count{% endif %}"
+                   href="{{ catalog.counters.applications_url|default:'#' }}">
+                    <span class="admin-counter-num" id="cnt-apps">{{ catalog.counters.applications_pending }}</span>
+                    <span class="admin-counter-label">پذیرش در انتظار</span>
+                </a>
+                <div class="admin-counter-card soft">
+                    <span class="admin-counter-num">{{ catalog.total }}</span>
+                    <span class="admin-counter-label">بخش فعال</span>
                 </div>
             </div>
+            {% endif %}
+
+            <div class="admin-fav-bar" id="adminFavBar" hidden>
+                <div class="admin-fav-title">⭐ علاقه‌مندی‌های من</div>
+                <div class="admin-fav-list" id="adminFavList"></div>
+            </div>
+
+            <div class="admin-recent-bar" id="adminRecentBar" hidden>
+                <div class="admin-fav-title">🕒 اخیراً بازشده</div>
+                <div class="admin-fav-list" id="adminRecentList"></div>
+            </div>
         </div>
 
-    </div>
-
-    <div class="col-lg-3 col-12">
-        <div id="content-related">
-            <div class="module" id="recent-actions-module">
-                <h4 class="mb-3">فعالیت‌های اخیر</h4>
-                {% load log %}
-                {% get_admin_log 8 as admin_log for_user user %}
-                {% if not admin_log %}
-                    <p>موردی موجود نیست</p>
-                {% else %}
-                    <div class="timeline">
-                        {% for entry in admin_log %}
-                            <div>
-                                {% if entry.is_change %}
-                                    <i class="fas fa-edit bg-gray text-xs"></i>
-                                {% elif entry.is_deletion %}
-                                    <i class="fas fa-trash bg-danger text-xs"></i>
-                                {% elif entry.is_addition %}
-                                    <i class="fas fa-plus-circle bg-success text-xs"></i>
-                                {% endif %}
-                                <div class="timeline-item">
-                                    <span class="time"><i class="fas fa-clock"></i> {{ entry.action_time|timesince }} پیش</span>
-                                    <h3 class="timeline-header no-border">
-                                        {% if entry.is_deletion or not entry.get_admin_url %}
-                                            {{ entry.object_repr }}
-                                        {% else %}
-                                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-                                        {% endif %}
-                                        {% if entry.model %}
-                                            <span class="mini quiet">{% filter capfirst %}{{ entry.model }}{% endfilter %}</span>
-                                        {% endif %}
-                                    </h3>
-                                    {% if not entry.is_deletion %}
-                                        <div class="timeline-body">
-                                            {% if entry.is_addition %}
-                                                اضافه شد: {{ entry.object_repr }}
-                                            {% else %}
-                                                <ul style="list-style: none; padding: 0;">
-                                                    {% action_message_to_list entry as action_message_list %}
-                                                    {% for action_message in action_message_list %}
-                                                        <li>{{ action_message.msg|style_bold_first_word }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                        <div><i class="fa fa-clock bg-gray"></i></div>
+        {# دو ستون جدولی تمام‌عرض #}
+        <div class="row admin-dual-tables">
+            <div class="col-lg-6 col-12 mb-3">
+                <div class="card admin-side-card">
+                    <div class="card-header">
+                        <h5 class="m-0">بخش‌ها — ستون راست</h5>
+                        <span class="admin-side-count">{{ catalog.left_col|length }} مورد</span>
                     </div>
-                {% endif %}
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover admin-xl-table mb-0">
+                                <thead>
+                                <tr>
+                                    <th style="width:2.2rem"></th>
+                                    <th>بخش</th>
+                                    <th>گروه</th>
+                                    <th>کاربرد</th>
+                                    <th class="text-center">عملیات</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for item in catalog.left_col %}
+                                    <tr class="admin-feature-row"
+                                        data-key="{{ item.key }}"
+                                        data-name="{{ item.name }}"
+                                        data-app="{{ item.app_name }}"
+                                        data-help="{{ item.help }}"
+                                        data-url="{{ item.url }}"
+                                        data-add="{{ item.add_url }}">
+                                        <td>
+                                            <button type="button" class="admin-star-btn" data-key="{{ item.key }}" title="افزودن به علاقه‌مندی‌ها" aria-label="علاقه‌مندی">☆</button>
+                                        </td>
+                                        <td>
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" class="admin-feature-name admin-track-link">{{ item.name }}</a>
+                                            {% else %}
+                                                <span class="admin-feature-name muted">{{ item.name }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="admin-feature-app">{{ item.app_name }}</span></td>
+                                        <td class="admin-feature-help">{{ item.help }}</td>
+                                        <td class="text-center text-nowrap">
+                                            <div class="btn-group">
+                                                {% if item.add_url %}
+                                                    <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}">افزودن</a>
+                                                {% endif %}
+                                                {% if item.url %}
+                                                    <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }} admin-track-link">{% if item.view_only %}مشاهده{% elif item.custom %}برو{% else %}ویرایش{% endif %}</a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="5" class="text-center text-muted py-4">موردی نیست</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="card mt-3 admin-dash-tips">
-                <div class="card-header"><h5 class="m-0">پیشنهاد استفاده</h5></div>
-                <div class="card-body small">
-                    <ol class="mb-0 pr-3">
-                        <li class="mb-2">از <strong>جستجوی ذره‌بین</strong> یا <kbd>Ctrl+K</kbd> برای پرش سریع استفاده کنید.</li>
-                        <li class="mb-2">شمارنده‌های بالا وضعیت پیام و پذیرش را نشان می‌دهند.</li>
-                        <li class="mb-2">میانبرهای ۱۰تایی کارهای روزمره را یک‌کلیک می‌کنند.</li>
-                        <li>ستون «کاربرد» راهنمای کوتاه هر بخش است.</li>
-                    </ol>
+            <div class="col-lg-6 col-12 mb-3">
+                <div class="card admin-side-card">
+                    <div class="card-header">
+                        <h5 class="m-0">بخش‌ها — ستون چپ</h5>
+                        <span class="admin-side-count">{{ catalog.right_col|length }} مورد</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover admin-xl-table mb-0">
+                                <thead>
+                                <tr>
+                                    <th style="width:2.2rem"></th>
+                                    <th>بخش</th>
+                                    <th>گروه</th>
+                                    <th>کاربرد</th>
+                                    <th class="text-center">عملیات</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for item in catalog.right_col %}
+                                    <tr class="admin-feature-row"
+                                        data-key="{{ item.key }}"
+                                        data-name="{{ item.name }}"
+                                        data-app="{{ item.app_name }}"
+                                        data-help="{{ item.help }}"
+                                        data-url="{{ item.url }}"
+                                        data-add="{{ item.add_url }}">
+                                        <td>
+                                            <button type="button" class="admin-star-btn" data-key="{{ item.key }}" title="افزودن به علاقه‌مندی‌ها" aria-label="علاقه‌مندی">☆</button>
+                                        </td>
+                                        <td>
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" class="admin-feature-name admin-track-link">{{ item.name }}</a>
+                                            {% else %}
+                                                <span class="admin-feature-name muted">{{ item.name }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="admin-feature-app">{{ item.app_name }}</span></td>
+                                        <td class="admin-feature-help">{{ item.help }}</td>
+                                        <td class="text-center text-nowrap">
+                                            <div class="btn-group">
+                                                {% if item.add_url %}
+                                                    <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}">افزودن</a>
+                                                {% endif %}
+                                                {% if item.url %}
+                                                    <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }} admin-track-link">{% if item.view_only %}مشاهده{% elif item.custom %}برو{% else %}ویرایش{% endif %}</a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="5" class="text-center text-muted py-4">موردی نیست</td></tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="admin-dash-ideas card mb-3">
+            <div class="card-header"><h5 class="m-0">ایده‌های طلایی این داشبورد</h5></div>
+            <div class="card-body">
+                <ul class="admin-ideas-list mb-0">
+                    <li><strong>دو ستون جدولی:</strong> همه بخش‌ها در یک نگاه، بدون اسکرول بی‌نهایت یک‌ستونه.</li>
+                    <li><strong>ستاره‌گذاری:</strong> بخش‌های پرکاربرد را ★ کنید تا همیشه بالای صفحه بمانند.</li>
+                    <li><strong>اخیراً بازشده:</strong> آخرین بخش‌هایی که کلیک کردید خودکار ذخیره می‌شود.</li>
+                    <li><strong>جستجوی چسبان + Ctrl+K:</strong> بدون برگشت به بالا، سریع به هر بخش بپرید.</li>
+                    <li><strong>شمارنده زنده:</strong> پیام و پذیرش معطل را قبل از ورود به لیست ببینید.</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -255,6 +214,8 @@
 
     <script>
     (function () {
+        var FAV_KEY = 'adminDashFavorites';
+        var RECENT_KEY = 'adminDashRecent';
         var input = document.getElementById('admin-global-search');
         var resultsEl = document.getElementById('adminSearchResults');
         var filter = 'all';
@@ -263,24 +224,79 @@
             catalog = JSON.parse(document.getElementById('admin-catalog-data').textContent || '[]');
         } catch (e) { catalog = []; }
 
+        var byKey = {};
+        catalog.forEach(function (item) { byKey[item.key] = item; });
+
         function norm(s) {
             return (s || '').toString().trim().toLowerCase()
                 .replace(/ي/g, 'ی').replace(/ك/g, 'ک');
         }
 
+        function loadList(key) {
+            try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+            catch (e) { return []; }
+        }
+        function saveList(key, arr) {
+            localStorage.setItem(key, JSON.stringify(arr));
+        }
+
+        function renderChipBar(barId, listId, keys, emptyHide) {
+            var bar = document.getElementById(barId);
+            var list = document.getElementById(listId);
+            if (!bar || !list) return;
+            var html = '';
+            keys.forEach(function (k) {
+                var item = byKey[k];
+                if (!item || !item.url) return;
+                html += '<a class="admin-fav-chip" href="' + item.url + '">' + item.name + '</a>';
+            });
+            list.innerHTML = html;
+            bar.hidden = emptyHide && !html;
+        }
+
+        function refreshStars() {
+            var favs = loadList(FAV_KEY);
+            document.querySelectorAll('.admin-star-btn').forEach(function (btn) {
+                var on = favs.indexOf(btn.getAttribute('data-key')) !== -1;
+                btn.textContent = on ? '★' : '☆';
+                btn.classList.toggle('is-on', on);
+            });
+            renderChipBar('adminFavBar', 'adminFavList', favs, true);
+            renderChipBar('adminRecentBar', 'adminRecentList', loadList(RECENT_KEY), true);
+        }
+
+        document.querySelectorAll('.admin-star-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var key = btn.getAttribute('data-key');
+                var favs = loadList(FAV_KEY);
+                var i = favs.indexOf(key);
+                if (i === -1) favs.unshift(key);
+                else favs.splice(i, 1);
+                saveList(FAV_KEY, favs.slice(0, 12));
+                refreshStars();
+            });
+        });
+
+        document.querySelectorAll('.admin-track-link').forEach(function (a) {
+            a.addEventListener('click', function () {
+                var row = a.closest('.admin-feature-row');
+                if (!row) return;
+                var key = row.getAttribute('data-key');
+                if (!key) return;
+                var recent = loadList(RECENT_KEY).filter(function (k) { return k !== key; });
+                recent.unshift(key);
+                saveList(RECENT_KEY, recent.slice(0, 8));
+            });
+        });
+
         function applyPageFilter(q, appFilter) {
-            document.querySelectorAll('.admin-alpha-item, .admin-feature-row').forEach(function (el) {
+            document.querySelectorAll('.admin-feature-row').forEach(function (el) {
                 var hay = norm(el.getAttribute('data-name') + ' ' + el.getAttribute('data-app') + ' ' + (el.getAttribute('data-help') || ''));
                 var appOk = (appFilter === 'all') || norm(el.getAttribute('data-app')) === norm(appFilter);
                 var qOk = !q || hay.indexOf(q) !== -1;
                 el.style.display = (appOk && qOk) ? '' : 'none';
-            });
-            document.querySelectorAll('.admin-alpha-block').forEach(function (block) {
-                var any = false;
-                block.querySelectorAll('.admin-alpha-item').forEach(function (li) {
-                    if (li.style.display !== 'none') any = true;
-                });
-                block.style.display = any ? '' : 'none';
             });
         }
 
@@ -341,7 +357,6 @@
             });
         });
 
-        // refresh counters occasionally
         function refreshCounters() {
             fetch('/admin/live-counters.json', {credentials: 'same-origin'})
                 .then(function (r) { return r.ok ? r.json() : null; })
@@ -354,6 +369,7 @@
                 }).catch(function () {});
         }
         setInterval(refreshCounters, 60000);
+        refreshStars();
     })();
     </script>
 {% endblock %}
