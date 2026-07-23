@@ -10,10 +10,7 @@ Options -Indexes
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
-# Serve existing static/media files directly when present on disk
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^static/(.*)$ - [L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^media/(.*)$ - [L]
+# Map /static/ and /media/ to collectstatic/media roots (Jazzmin lives in public/static)
+RewriteRule ^static/(.*)$ public/static/$1 [L]
+RewriteRule ^media/(.*)$ public/media/$1 [L]
 </IfModule>

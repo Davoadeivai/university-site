@@ -121,6 +121,12 @@ class CityInfoAdmin(admin.ModelAdmin):
     list_display = ['title', 'order', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'content']
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'content', 'image', 'icon', 'order', 'is_active'),
+            'description': 'بخش‌های معرفی شهر بهنمیر که در صفحه «شهر بهنمیر» نمایش داده می‌شوند.',
+        }),
+    )
 
 
 @admin.register(CityAttraction)
@@ -128,7 +134,15 @@ class CityAttractionAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'order', 'is_active']
     list_editable = ['order', 'is_active']
     list_filter = ['category', 'is_active']
-    search_fields = ['name', 'description']
+    search_fields = ['name', 'description', 'address']
+    fieldsets = (
+        (None, {
+            'fields': (
+                'name', 'description', 'image', 'category',
+                'address', 'order', 'is_active',
+            ),
+        }),
+    )
 
 
 # ─── حوزه ریاست ───────────────────────────────────────────────

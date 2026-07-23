@@ -23,7 +23,8 @@ MODEL_HELP = {
     'cityattraction': 'جاذبه‌های گردشگری بهنمیر',
     'presidencyoffice': 'دفتر ریاست و شرح وظایف',
     'officeunit': 'واحدهای دفتر ریاست (دبیرخانه‌ها)',
-    'deputyvice': 'معاونت‌ها',
+    'presidencyofficeunit': 'واحدهای دفتر ریاست (دبیرخانه‌ها)',
+    'deputyvice': 'معاونین دانشگاه',
     'internationaloffice': 'دفتر امور بین‌الملل',
     'internationalactivity': 'فعالیت‌های بین‌المللی',
     'publicrelations': 'روابط عمومی',
@@ -35,7 +36,7 @@ MODEL_HELP = {
     'organizationalchart': 'چارت سازمانی',
     'bankaccount': 'شماره حساب‌های بانکی موسسه',
     'paymentidentifier': 'شناسه‌های واریز',
-    'downloadabledocument': 'فرم‌ها و فایل‌های قابل دانلود',
+    'downloadabledocument': 'فرم‌ها و آیین‌نامه‌های قابل دانلود (عمومی / تحصیلات تکمیلی)',
     'graduatestudiesinfo': 'اطلاعات تحصیلات تکمیلی و مدیر بخش',
     'graduatemajor': 'رشته‌های کارشناسی ارشد',
     'graduatedocument': 'آیین‌نامه‌ها و فرم‌های تحصیلات تکمیلی',
@@ -47,7 +48,7 @@ MODEL_HELP = {
     'admissionotp': 'کدهای تأیید پیامکی پذیرش',
     'department': 'دانشکده‌ها / گروه‌های اصلی',
     'academicgroup': 'گروه‌های آموزشی',
-    'major': 'رشته‌های تحصیلی',
+    'major': 'رشته‌های تحصیلی (کاردانی تا ارشد)',
     'course': 'دروس',
     'academiccalendar': 'تقویم آموزشی',
     'laboratory': 'آزمایشگاه‌ها',
@@ -60,7 +61,7 @@ MODEL_HELP = {
     'article': 'مقالات کتابخانه / بانک علمی',
     'librarymembership': 'عضویت کتابخانه',
     'researchproject': 'طرح‌های پژوهشی',
-    'journal': 'نشریات علمی',
+    'journal': 'نشریات علمی / بانک اطلاعات علمی',
     'thesis': 'پایان‌نامه‌ها',
     'conference': 'همایش‌ها',
     'industrypartnership': 'همکاری با صنعت',
@@ -81,6 +82,7 @@ MODEL_HELP = {
     'user': 'حساب‌های کاربری سیستم',
     'group': 'گروه‌های دسترسی',
     'logentry': 'لاگ فعالیت‌های ادمین',
+    'pageview': 'آمار بازدید صفحات (فنی)',
 }
 
 # میانبرهای پیشنهادی داشبورد (object_name lowercase)
@@ -136,6 +138,13 @@ def _flatten_models(dashboard_list) -> list[dict]:
             key = _model_key(model)
             name = model.get('name') or key
             url = model.get('url') or model.get('admin_url') or ''
+            perms = model.get('perms') or {}
+            view_only = bool(model.get('view_only'))
+            custom = bool(model.get('custom'))
+            # حذف برای همه مدل‌های واقعی قابل‌دسترس (نه لینک سفارشی/view_only)
+            can_delete = bool(url) and not view_only and not custom
+            if perms and perms.get('delete') is False:
+                can_delete = False
             items.append({
                 'name': name,
                 'app_name': app_name,
@@ -143,8 +152,11 @@ def _flatten_models(dashboard_list) -> list[dict]:
                 'object_name': model.get('object_name') or '',
                 'url': url,
                 'add_url': model.get('add_url') or '',
-                'view_only': bool(model.get('view_only')),
-                'custom': bool(model.get('custom')),
+                'view_only': view_only,
+                'custom': custom,
+                'can_add': bool(model.get('add_url') or perms.get('add')),
+                'can_change': bool(perms.get('change', not view_only)),
+                'can_delete': can_delete,
                 'help': MODEL_HELP.get(key, f'مدیریت بخش «{name}» در {app_name}'),
                 'letter': _first_letter(name),
                 'key': key,

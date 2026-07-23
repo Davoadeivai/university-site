@@ -29,6 +29,62 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ---- Navbar: هاور دسکتاپ برای زیرمنوها (موبایل همچنان با کلیک) ----
+    (function setupNavbarHoverDropdowns() {
+        const mq = window.matchMedia('(min-width: 1200px) and (hover: hover)');
+        const items = document.querySelectorAll('#mainNav .nav-item.dropdown');
+
+        function onEnter(e) {
+            const item = e.currentTarget;
+            item.classList.add('show');
+            const toggle = item.querySelector('.dropdown-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'true');
+            const menu = item.querySelector('.dropdown-menu');
+            if (menu) menu.classList.add('show');
+        }
+
+        function onLeave(e) {
+            const item = e.currentTarget;
+            item.classList.remove('show');
+            const toggle = item.querySelector('.dropdown-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            const menu = item.querySelector('.dropdown-menu');
+            if (menu) menu.classList.remove('show');
+        }
+
+        function applyMode() {
+            items.forEach(function (item) {
+                const toggle = item.querySelector(':scope > .dropdown-toggle');
+                if (!toggle) return;
+
+                item.removeEventListener('mouseenter', onEnter);
+                item.removeEventListener('mouseleave', onLeave);
+
+                if (mq.matches) {
+                    if (toggle.hasAttribute('data-bs-toggle')) {
+                        toggle.setAttribute('data-hover-toggle', toggle.getAttribute('data-bs-toggle'));
+                        toggle.removeAttribute('data-bs-toggle');
+                    }
+                    toggle.setAttribute('aria-expanded', 'false');
+                    item.addEventListener('mouseenter', onEnter);
+                    item.addEventListener('mouseleave', onLeave);
+                } else {
+                    const saved = toggle.getAttribute('data-hover-toggle') || 'dropdown';
+                    if (!toggle.hasAttribute('data-bs-toggle')) {
+                        toggle.setAttribute('data-bs-toggle', saved);
+                    }
+                    item.classList.remove('show');
+                    const menu = item.querySelector('.dropdown-menu');
+                    if (menu) menu.classList.remove('show');
+                }
+            });
+        }
+
+        applyMode();
+        if (mq.addEventListener) mq.addEventListener('change', applyMode);
+        else if (mq.addListener) mq.addListener(applyMode);
+    })();
+
     // ---- Scroll to Top Button ----
     const scrollBtn = document.getElementById('scrollTop');
     if (scrollBtn) {

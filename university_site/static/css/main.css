@@ -318,7 +318,8 @@ body {
     background: rgba(255,255,255,0.10);
     color: #ffffff !important;
 }
-.nav-item.dropdown.show > .nav-link-flat {
+.nav-item.dropdown.show > .nav-link-flat,
+.main-navbar .navbar-nav > .nav-item.dropdown:hover > .nav-link-flat {
     background: rgba(255,255,255,0.13);
     color: #ffffff !important;
 }
@@ -355,7 +356,8 @@ body {
 /* hover → آیکون‌ها سفید می‌شوند */
 .nav-link-flat:hover i,
 .nav-link-flat.active i,
-.nav-item.dropdown.show > .nav-link-flat i {
+.nav-item.dropdown.show > .nav-link-flat i,
+.main-navbar .navbar-nav > .nav-item.dropdown:hover > .nav-link-flat i {
     color: #ffffff !important;
     transition: color 0.2s;
 }
@@ -370,6 +372,31 @@ body {
     min-width: 240px;
     margin-top: 0 !important;
     border-top: 2px solid rgba(96,180,255,0.25) !important;
+}
+
+/* دسکتاپ: باز شدن زیرمنو با هاور (بدون کلیک) */
+@media (min-width: 1200px) and (hover: hover) {
+    .main-navbar .navbar-nav > .nav-item.dropdown {
+        position: relative;
+    }
+    .main-navbar .navbar-nav > .nav-item.dropdown > .dropdown-menu.nav-dd {
+        top: 100%;
+        inset-inline-end: 0;
+        inset-inline-start: auto;
+    }
+    .main-navbar .navbar-nav > .nav-item.dropdown:hover > .dropdown-menu.nav-dd,
+    .main-navbar .navbar-nav > .nav-item.dropdown:focus-within > .dropdown-menu.nav-dd {
+        display: block !important;
+    }
+    /* پل نامرئی تا با حرکت موس به زیرمنو، منو بسته نشود */
+    .main-navbar .navbar-nav > .nav-item.dropdown > .dropdown-menu.nav-dd::before {
+        content: '';
+        position: absolute;
+        top: -12px;
+        left: 0;
+        right: 0;
+        height: 12px;
+    }
 }
 .nav-dd-item {
     color: #b8cce4 !important;

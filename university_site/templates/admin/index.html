@@ -115,12 +115,15 @@
                                         <td><span class="admin-feature-app">{{ item.app_name }}</span></td>
                                         <td class="admin-feature-help">{{ item.help }}</td>
                                         <td class="text-center text-nowrap">
-                                            <div class="btn-group">
+                                            <div class="btn-group admin-action-btns">
                                                 {% if item.add_url %}
-                                                    <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}">افزودن</a>
+                                                    <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}" title="افزودن مورد جدید">افزودن</a>
                                                 {% endif %}
                                                 {% if item.url %}
-                                                    <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }} admin-track-link">{% if item.view_only %}مشاهده{% elif item.custom %}برو{% else %}ویرایش{% endif %}</a>
+                                                    <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }} admin-track-link" title="مشاهده / ویرایش">{% if item.view_only %}مشاهده{% elif item.custom %}برو{% else %}ویرایش{% endif %}</a>
+                                                {% endif %}
+                                                {% if item.can_delete or item.url and not item.view_only and not item.custom %}
+                                                    <a href="{{ item.url }}" class="btn btn-sm btn-danger admin-track-link admin-delete-link" title="ورود به لیست برای انتخاب و حذف موارد">حذف</a>
                                                 {% endif %}
                                             </div>
                                         </td>
@@ -175,12 +178,15 @@
                                         <td><span class="admin-feature-app">{{ item.app_name }}</span></td>
                                         <td class="admin-feature-help">{{ item.help }}</td>
                                         <td class="text-center text-nowrap">
-                                            <div class="btn-group">
+                                            <div class="btn-group admin-action-btns">
                                                 {% if item.add_url %}
-                                                    <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}">افزودن</a>
+                                                    <a href="{{ item.add_url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}" title="افزودن مورد جدید">افزودن</a>
                                                 {% endif %}
                                                 {% if item.url %}
-                                                    <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }} admin-track-link">{% if item.view_only %}مشاهده{% elif item.custom %}برو{% else %}ویرایش{% endif %}</a>
+                                                    <a href="{{ item.url }}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }} admin-track-link" title="مشاهده / ویرایش">{% if item.view_only %}مشاهده{% elif item.custom %}برو{% else %}ویرایش{% endif %}</a>
+                                                {% endif %}
+                                                {% if item.can_delete or item.url and not item.view_only and not item.custom %}
+                                                    <a href="{{ item.url }}" class="btn btn-sm btn-danger admin-track-link admin-delete-link" title="ورود به لیست برای انتخاب و حذف موارد">حذف</a>
                                                 {% endif %}
                                             </div>
                                         </td>

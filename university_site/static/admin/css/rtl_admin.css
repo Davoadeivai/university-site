@@ -15,11 +15,14 @@
     --uni-radius: 12px;
 }
 
-/* --- Font & Direction --- */
-body, html, *, *::before, *::after {
+/* --- Font & Direction (do NOT force direction on every * — breaks Jazzmin layout) --- */
+html, body {
     font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
     direction: rtl;
     text-align: right;
+}
+body, body * {
+    font-family: 'Vazirmatn', 'Tahoma', 'Arial', sans-serif !important;
 }
 
 /* --- Sidebar RTL --- */
@@ -804,6 +807,17 @@ fieldset {
     padding: .4rem .75rem !important;
     font-weight: 600 !important;
 }
+.admin-action-btns {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .25rem;
+}
+.admin-action-btns .btn {
+    border-radius: 8px !important;
+}
+.admin-delete-link {
+    min-width: 3.4rem;
+}
 .admin-xl-table tbody tr:hover {
     background: #f5f9ff !important;
 }
@@ -835,6 +849,33 @@ fieldset {
 @media (max-width: 991px) {
     .admin-xl-table { font-size: .95rem !important; }
     .admin-xl-table .admin-feature-name { font-size: 1rem !important; }
+}
+
+/* === CHANGELIST ACTIONS (حذف گروهی و …) === */
+.change-list-actions,
+#changelist .actions {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1rem;
+    background: #fff7f7;
+    border: 1px solid #f5c2c7;
+    border-radius: 10px;
+    padding: .75rem 1rem !important;
+    margin-bottom: 1rem !important;
+}
+#changelist .actions select {
+    min-width: 220px;
+    padding: .4rem .6rem;
+    border-radius: 8px;
+}
+#changelist .actions .btn {
+    font-weight: 600;
+}
+#result_list td .btn-danger {
+    white-space: nowrap;
+    padding: .2rem .65rem !important;
+    font-size: .8rem !important;
 }
 
 /* === SCROLLBAR === */

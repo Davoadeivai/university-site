@@ -215,6 +215,8 @@ JAZZMIN_SETTINGS = {
         'core.CityInfo': 'fas fa-map-marker-alt',
         'core.CityAttraction': 'fas fa-camera',
         'core.PresidencyOffice': 'fas fa-landmark',
+        'core.PresidencyOfficeUnit': 'fas fa-door-open',
+        'core.GraduateStudiesInfo': 'fas fa-user-graduate',
         'core.DeputyVice': 'fas fa-user-friends',
         'core.InternationalOffice': 'fas fa-plane',
         'core.InternationalActivity': 'fas fa-handshake',
@@ -228,6 +230,7 @@ JAZZMIN_SETTINGS = {
         'core.BankAccount': 'fas fa-university',
         'core.PaymentIdentifier': 'fas fa-barcode',
         'core.DownloadableDocument': 'fas fa-file-download',
+        'core.PageView': 'fas fa-chart-line',
 
         'admissions': 'fas fa-user-graduate',
         'admissions.AdmissionInfo': 'fas fa-info-circle',
@@ -294,7 +297,7 @@ JAZZMIN_SETTINGS = {
     'show_ui_builder': False,
     'changeform_format': 'collapsible',
     'language_chooser': False,
-    # مدل‌های کم‌کاربرد/فنی که شلوغ می‌کنند — در صورت نیاز از URL مستقیم قابل دسترس‌اند
+    # مدل‌های کم‌کاربرد/فنی — در صورت نیاز از URL مستقیم قابل دسترس‌اند
     'hide_models': [
         'core.PageView',
     ],
@@ -305,11 +308,31 @@ JAZZMIN_SETTINGS = {
             'icon': 'fas fa-external-link-alt',
             'new_window': True,
         }],
-        'core': [{
-            'name': 'صفحه اصلی سایت',
-            'url': '/',
-            'icon': 'fas fa-home',
-            'new_window': True,
+        'core': [
+            {
+                'name': 'صفحه اصلی سایت',
+                'url': '/',
+                'icon': 'fas fa-home',
+                'new_window': True,
+            },
+            {
+                'name': 'رشته‌های تحصیلات تکمیلی',
+                'url': '/admin/academics/major/?degree__exact=master',
+                'icon': 'fas fa-graduation-cap',
+                'permissions': ['academics.view_major'],
+            },
+            {
+                'name': 'آیین‌نامه‌های تحصیلات تکمیلی',
+                'url': '/admin/core/downloadabledocument/?section__exact=graduate',
+                'icon': 'fas fa-file-alt',
+                'permissions': ['core.view_downloadabledocument'],
+            },
+        ],
+        'academics': [{
+            'name': 'فقط رشته‌های ارشد',
+            'url': '/admin/academics/major/?degree__exact=master',
+            'icon': 'fas fa-user-graduate',
+            'permissions': ['academics.view_major'],
         }],
     },
 }

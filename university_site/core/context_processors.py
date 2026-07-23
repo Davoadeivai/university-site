@@ -13,7 +13,14 @@ def global_context(request):
     urgent_announcements = Announcement.objects.filter(is_active=True, is_urgent=True)[:3]
 
     # گروه‌های آموزشی برای نمایش در navbar — ادمین می‌تواند از پنل مدیریت ویرایش کند
-    nav_groups = AcademicGroup.objects.filter(is_active=True).select_related('department').order_by('order', 'name')
+    # اسلاگ‌های دمو/لاتین کوتاه (مثل bargh) را از منو حذف می‌کنیم
+    nav_groups = (
+        AcademicGroup.objects.filter(is_active=True)
+        .exclude(slug__iexact='bargh')
+        .exclude(name__iexact='bargh')
+        .select_related('department')
+        .order_by('order', 'name')
+    )
     nav_departments = Department.objects.filter(is_active=True).prefetch_related('groups').order_by('order')
 
     return {
