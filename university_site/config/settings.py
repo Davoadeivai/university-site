@@ -293,10 +293,13 @@ JAZZMIN_SETTINGS = {
     'default_icon_children': 'fas fa-circle',
     'related_modal_active': True,
     'custom_css': 'admin/css/rtl_admin.css',
-    'custom_js': 'admin/js/document_upload_hint.js',
     'custom_js': 'admin/js/fa_admin.js',
     'show_ui_builder': False,
     'changeform_format': 'collapsible',
+    'changeform_format_overrides': {
+        # فرم اسناد باید تک‌صفحه‌ای باشد تا فیلدهای آپلود PDF/Word دیده شوند
+        'core.downloadabledocument': 'single',
+    },
     'language_chooser': False,
     # مدل‌های کم‌کاربرد/فنی — در صورت نیاز از URL مستقیم قابل دسترس‌اند
     'hide_models': [

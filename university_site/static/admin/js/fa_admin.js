@@ -124,5 +124,27 @@
     faSearchPlaceholders();
     faButtons();
     injectAdminNavSearch();
+    revealFileInputs();
   });
+  window.addEventListener('load', revealFileInputs);
+
+  function revealFileInputs() {
+    document.querySelectorAll('input[type="file"]').forEach(function (el) {
+      el.style.display = 'block';
+      el.style.visibility = 'visible';
+      el.style.opacity = '1';
+      el.style.width = '100%';
+      el.style.maxWidth = '520px';
+      el.style.padding = '12px';
+      el.style.border = '2px dashed #1a73e8';
+      el.style.borderRadius = '10px';
+      el.style.background = '#f0f7ff';
+      el.style.cursor = 'pointer';
+    });
+    document.querySelectorAll('.custom-file, .custom-file-input, .field-file, .field-word_file').forEach(function (el) {
+      el.style.opacity = '1';
+      el.style.display = 'block';
+      el.style.visibility = 'visible';
+    });
+  }
 })();
