@@ -23,3 +23,7 @@ logs/
 .vscode/
 .DS_Store
 Thumbs.db
+
+!media/**/*.docx
+!media/**/*.doc
+!media/**/*.pdf

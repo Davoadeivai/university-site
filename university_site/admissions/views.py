@@ -183,6 +183,8 @@ def apply(request):
             errors.append('کد ملی باید ۱۰ رقم باشد.')
         if not p.get('address', '').strip(): errors.append('آدرس الزامی است.')
         if not p.get('degree'):     errors.append('مقطع را انتخاب کنید.')
+        if 'doc_national_id' not in request.FILES:
+            errors.append('تصویر کارت ملی الزامی است.')
 
         # موبایل: از session (اگر OTP فعال) یا از فرم
         form_phone = _normalize_digits(p.get('phone', ''))
@@ -228,20 +230,20 @@ def apply(request):
         target_degree = p.get('degree', '')
         allowed_prev = {
             'associate': {'diploma', 'associate'},
-            'bachelor':  {'diploma', 'associate', 'bachelor'},
-            'master':    {'bachelor', 'master'},
+            'bachelor':  {'diploma', 'associate', 'bachelor', 'discontinuous_bachelor'},
+            'master':    {'bachelor', 'discontinuous_bachelor', 'master'},
             'phd':       {'master'},
         }
         if target_degree in allowed_prev and prev_degree not in allowed_prev[target_degree]:
             labels = {
                 'associate': 'کاردانی', 'bachelor': 'کارشناسی',
                 'master': 'کارشناسی ارشد', 'phd': 'دکتری',
-                'diploma': 'دیپلم',
+                'diploma': 'دیپلم', 'discontinuous_bachelor': 'کارشناسی ناپیوسته',
             }
             need = {
                 'associate': 'دیپلم یا کاردانی',
-                'bachelor': 'دیپلم، کاردانی یا کارشناسی',
-                'master': 'کارشناسی یا کارشناسی ارشد',
+                'bachelor': 'دیپلم، کاردانی، کارشناسی یا کارشناسی ناپیوسته',
+                'master': 'کارشناسی، کارشناسی ناپیوسته یا کارشناسی ارشد',
                 'phd': 'کارشناسی ارشد',
             }
             errors.append(

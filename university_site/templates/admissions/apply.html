@@ -156,6 +156,7 @@
                 <option value="diploma"   {% if post.prev_degree == 'diploma' or not post %}selected{% endif %}>دیپلم</option>
                 <option value="associate" {% if post.prev_degree == 'associate' %}selected{% endif %}>کاردانی</option>
                 <option value="bachelor"  {% if post.prev_degree == 'bachelor' %}selected{% endif %}>کارشناسی</option>
+                <option value="discontinuous_bachelor" {% if post.prev_degree == 'discontinuous_bachelor' %}selected{% endif %}>کارشناسی ناپیوسته</option>
                 <option value="master"    {% if post.prev_degree == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
             </select>
             <div class="form-text" id="prevDegreeHint">مثلاً برای ارشد، مدرک کارشناسی لازم است.</div>
@@ -237,8 +238,8 @@
     <p class="text-muted mb-3" style="font-size:13px;">فرمت مجاز: تصویر (JPG/PNG). حداکثر پیشنهاد: ۲ مگابایت برای هر فایل.</p>
     <div class="row g-3">
         <div class="col-md-3">
-            <label class="form-label" for="doc_national_id">تصویر کارت ملی</label>
-            <input type="file" name="doc_national_id" id="doc_national_id" class="form-control" accept="image/*">
+            <label class="form-label" for="doc_national_id">تصویر کارت ملی <span class="text-danger">*</span></label>
+            <input type="file" name="doc_national_id" id="doc_national_id" class="form-control" accept="image/*" required>
         </div>
         <div class="col-md-3">
             <label class="form-label" for="doc_prev_degree">تصویر مدرک تحصیلی</label>
@@ -262,7 +263,7 @@
                 <option value="social"     {% if post.know_from == 'social' %}selected{% endif %}>شبکه‌های اجتماعی</option>
                 <option value="friend"     {% if post.know_from == 'friend' %}selected{% endif %}>معرفی دوست/آشنا</option>
                 <option value="site"       {% if post.know_from == 'site' or not post %}selected{% endif %}>وب‌سایت دانشگاه</option>
-                <option value="exhibition" {% if post.know_from == 'exhibition' %}selected{% endif %}>نمایشگاه</option>
+                <option value="exhibition" {% if post.know_from == 'exhibition' %}selected{% endif %}>موتورهای جستجو</option>
                 <option value="other"      {% if post.know_from == 'other' %}selected{% endif %}>سایر</option>
             </select>
         </div>

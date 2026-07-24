@@ -400,3 +400,12 @@ class DownloadableDocumentAdmin(admin.ModelAdmin):
     list_filter = ['category', 'section', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'description']
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('title', 'category', 'section', 'description', 'order', 'is_active'),
+        }),
+        ('فایل‌ها', {
+            'fields': ('file', 'word_file', 'external_url'),
+            'description': 'می‌توانید هم فایل PDF و هم فایل Word را همزمان آپلود کنید.',
+        }),
+    )

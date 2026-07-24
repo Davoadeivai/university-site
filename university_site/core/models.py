@@ -676,7 +676,8 @@ class DownloadableDocument(models.Model):
         help_text=_('مثلاً آیین‌نامه/فرم ویژه تحصیلات تکمیلی'),
     )
     description = models.TextField(_('توضیحات'), blank=True)
-    file = models.FileField(_('فایل'), upload_to='documents/', blank=True, null=True)
+    file = models.FileField(_('فایل PDF'), upload_to='documents/', blank=True, null=True)
+    word_file = models.FileField(_('فایل Word'), upload_to='documents/word/', blank=True, null=True)
     external_url = models.URLField(_('لینک خارجی'), blank=True,
                                    help_text=_('اگر فایل آپلود نشده، از این لینک استفاده می‌شود'))
     order = models.PositiveIntegerField(_('ترتیب'), default=0)

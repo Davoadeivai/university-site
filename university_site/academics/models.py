@@ -82,6 +82,8 @@ class Major(models.Model):
             return 'associate'
         if self.degree.startswith('bachelor'):
             return 'bachelor'
+        if self.degree == 'phd':
+            return 'phd'
         return self.degree
 
     @property
