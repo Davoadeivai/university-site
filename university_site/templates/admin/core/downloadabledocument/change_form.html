@@ -5,19 +5,7 @@
 {{ block.super }}
 <div class="alert alert-info mb-3" style="font-family:Tahoma,sans-serif;line-height:1.9;">
   <strong>آپلود فایل:</strong>
-  فیلدهای <b>فایل PDF</b> و <b>فایل Word</b> را انتخاب کنید.
-  برای <b>مقطع / پوشه</b> یکی از گزینه‌ها (مثلاً کارشناسی ارشد) را انتخاب کنید.
-  <br>نام فایل می‌تواند فارسی باشد؛ سیستم هنگام ذخیره نام امن می‌سازد.
-  {% if change %}
-  <br>برای حذف: از دکمه قرمز زیر استفاده کنید یا در لیست اسناد روی «حذف» بزنید.
-  {% endif %}
+  فیلدهای <b>فایل PDF</b> و <b>فایل Word</b> را انتخاب کنید و برای <b>مقطع / پوشه</b> یکی از گزینه‌ها را بزنید.
+  <br>برای حذف سند از دکمه قرمز <b>حذف</b> در ستون دکمه‌ها استفاده کنید.
 </div>
-{% if change %}
-<p class="mb-3">
-  <a href="../delete/" class="btn btn-danger"
-     onclick="return confirm('آیا از حذف این سند مطمئن هستید؟');">
-    <i class="fas fa-trash"></i> حذف این سند
-  </a>
-</p>
-{% endif %}
 {% endblock %}
