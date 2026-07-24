@@ -670,7 +670,7 @@ class DownloadableDocument(models.Model):
         ('graduate', _('تحصیلات تکمیلی')),
     ]
     DEGREE_LEVEL_CHOICES = [
-        ('', _('عمومی (بدون پوشه مقطع)')),
+        ('general', _('عمومی (بدون پوشه مقطع)')),
         ('master', _('کارشناسی ارشد')),
         ('bachelor_continuous', _('کارشناسی پیوسته')),
         ('bachelor_discontinuous', _('کارشناسی ناپیوسته')),
@@ -684,8 +684,8 @@ class DownloadableDocument(models.Model):
         help_text=_('مثلاً آیین‌نامه/فرم ویژه تحصیلات تکمیلی'),
     )
     degree_level = models.CharField(
-        _('مقطع / پوشه'), max_length=40, choices=DEGREE_LEVEL_CHOICES, blank=True, default='',
-        help_text=_('سند در کدام پوشه مقطع نمایش داده شود'),
+        _('مقطع / پوشه'), max_length=40, choices=DEGREE_LEVEL_CHOICES, default='general',
+        help_text=_('سند در کدام پوشه مقطع نمایش داده شود — حتماً یکی را انتخاب کنید'),
         db_index=True,
     )
     description = models.TextField(_('توضیحات'), blank=True)
@@ -720,11 +720,11 @@ class DownloadableDocument(models.Model):
             'bachelor_discontinuous': 'fas fa-book-reader',
             'associate': 'fas fa-certificate',
             'associate_tech': 'fas fa-cogs',
-            '': 'fas fa-folder-open',
+            'general': 'fas fa-folder-open',
         }
         folders = []
         for key, label in cls.DEGREE_LEVEL_CHOICES:
-            if key == '':
+            if key == 'general':
                 continue
             folders.append({
                 'key': key,
@@ -734,6 +734,6 @@ class DownloadableDocument(models.Model):
         folders.append({
             'key': 'general',
             'label': 'عمومی و سایر فایل‌ها',
-            'icon': icons[''],
+            'icon': icons['general'],
         })
         return folders

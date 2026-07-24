@@ -125,6 +125,7 @@
     faButtons();
     injectAdminNavSearch();
     revealFileInputs();
+    fixAdminSelectDisplay();
   });
   window.addEventListener('load', revealFileInputs);
 
@@ -145,6 +146,21 @@
       el.style.opacity = '1';
       el.style.display = 'block';
       el.style.visibility = 'visible';
+    });
+  }
+
+  function fixAdminSelectDisplay() {
+    document.querySelectorAll('select').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        // همگام‌سازی Select2 با مقدار واقعی
+        if (window.jQuery && jQuery(sel).data('select2')) {
+          jQuery(sel).trigger('change.select2');
+        }
+        var opt = sel.options[sel.selectedIndex];
+        if (opt) {
+          sel.setAttribute('data-selected-label', opt.text);
+        }
+      });
     });
   }
 })();

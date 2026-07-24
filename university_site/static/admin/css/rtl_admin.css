@@ -164,11 +164,41 @@ textarea {
 }
 
 select {
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: left 12px center !important;
-    padding-left: 2.5rem !important;
+    appearance: auto !important;
+    -webkit-appearance: menulist !important;
+    -moz-appearance: menulist !important;
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    padding-left: 1rem !important;
+    min-height: 42px !important;
+}
+/* حالت تاریک Jazzmin — متن انتخاب‌شده باید دیده شود */
+[data-bs-theme="dark"] select,
+body.dark-mode select,
+.dark-mode select {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+}
+/* Select2: نمایش مقدار انتخاب‌شده */
+.select2-container--default .select2-selection--single,
+.select2-container--bootstrap4 .select2-selection--single {
+    min-height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+    color: #0f172a !important;
+    line-height: 42px !important;
+    padding-right: 12px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+[data-bs-theme="dark"] .select2-selection__rendered,
+.dark-mode .select2-selection__rendered {
+    color: #f8fafc !important;
 }
 
 /* === CHECKBOX STYLE === */

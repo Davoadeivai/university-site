@@ -234,8 +234,8 @@ def documents(request):
     degree = request.GET.get('degree', '')
     category = request.GET.get('category', '')
 
-    degree_keys = {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES if k}
-    show_folders = degree not in (degree_keys | {'general'})
+    degree_keys = {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES}
+    show_folders = degree not in degree_keys
 
     folders = []
     if show_folders:
@@ -244,21 +244,13 @@ def documents(request):
             for row in docs.values('degree_level').annotate(n=Count('id'))
         }
         for folder in DownloadableDocument.degree_folder_meta():
-            if folder['key'] == 'general':
-                n = counts.get('', 0)
-            else:
-                n = counts.get(folder['key'], 0)
-            folder = {**folder, 'count': n}
+            folder = {**folder, 'count': counts.get(folder['key'], 0)}
             folders.append(folder)
         documents = []
         current_degree_label = ''
     else:
-        if degree == 'general':
-            documents = docs.filter(degree_level='')
-            current_degree_label = 'عمومی و سایر فایل‌ها'
-        else:
-            documents = docs.filter(degree_level=degree)
-            current_degree_label = dict(DownloadableDocument.DEGREE_LEVEL_CHOICES).get(degree, degree)
+        documents = docs.filter(degree_level=degree)
+        current_degree_label = dict(DownloadableDocument.DEGREE_LEVEL_CHOICES).get(degree, degree)
         if category in dict(DownloadableDocument.CATEGORY_CHOICES):
             documents = documents.filter(category=category)
 
