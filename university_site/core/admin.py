@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from .models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
     InstitutionGoal, BoardMember, CityInfo, CityAttraction,
@@ -408,10 +410,14 @@ class DownloadableDocumentAdmin(admin.ModelAdmin):
         'order',
         'is_active',
     )
-    list_display = ['title', 'category', 'section', 'has_pdf', 'has_word', 'order', 'is_active', 'created_at']
+    list_display = [
+        'title', 'category', 'section', 'has_pdf', 'has_word',
+        'order', 'is_active', 'created_at', 'delete_button',
+    ]
     list_filter = ['category', 'section', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'description']
+    actions = ['delete_selected_documents']
 
     @admin.display(boolean=True, description='PDF')
     def has_pdf(self, obj):
@@ -420,3 +426,21 @@ class DownloadableDocumentAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description='Word')
     def has_word(self, obj):
         return bool(obj.word_file)
+
+    @admin.display(description='حذف')
+    def delete_button(self, obj):
+        url = reverse('admin:core_downloadabledocument_delete', args=[obj.pk])
+        return format_html(
+            '<a class="btn btn-sm btn-danger" href="{}" title="حذف این سند">حذف</a>',
+            url,
+        )
+
+    @admin.action(description='حذف اسناد انتخاب‌شده')
+    def delete_selected_documents(self, request, queryset):
+        from django.contrib.admin.actions import delete_selected
+        return delete_selected(self, request, queryset)
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions.pop('delete_selected', None)
+        return actions
