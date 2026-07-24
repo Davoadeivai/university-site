@@ -267,6 +267,42 @@ def documents(request):
     return render(request, 'core/documents.html', context)
 
 
+def document_detail(request, pk):
+    """صفحه مشاهده آیین‌نامه/فرم — اولویت با نمایش داخل سایت، سپس انتخاب PDF یا Word."""
+    doc = get_object_or_404(DownloadableDocument, pk=pk, is_active=True)
+    fmt = (request.GET.get('view') or '').lower()
+    has_pdf = bool(doc.file)
+    has_word = bool(doc.word_file)
+    has_external = bool(doc.external_url) and not has_pdf and not has_word
+
+    if fmt not in ('pdf', 'word', 'link'):
+        if has_pdf:
+            fmt = 'pdf'
+        elif has_word:
+            fmt = 'word'
+        elif has_external:
+            fmt = 'link'
+        else:
+            fmt = ''
+
+    if fmt == 'pdf' and not has_pdf:
+        fmt = 'word' if has_word else ('link' if has_external else '')
+    if fmt == 'word' and not has_word:
+        fmt = 'pdf' if has_pdf else ('link' if has_external else '')
+
+    back_degree = doc.degree_level or 'general'
+    context = {
+        'doc': doc,
+        'view_format': fmt,
+        'has_pdf': has_pdf,
+        'has_word': has_word,
+        'has_external': has_external,
+        'back_degree': back_degree,
+        'page_title': doc.title,
+    }
+    return render(request, 'core/document_detail.html', context)
+
+
 def events_list(request):
     """فهرست رویدادها"""
     today = timezone.now().date()

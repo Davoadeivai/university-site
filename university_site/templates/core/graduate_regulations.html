@@ -24,30 +24,17 @@
         <div class="row g-3">
             {% for doc in documents %}
             <div class="col-md-6" data-aos="fade-up">
-                <div class="uni-card p-3 h-100 d-flex justify-content-between align-items-start gap-3">
+                <a href="{% url 'core:document_detail' doc.pk %}" class="uni-card p-3 h-100 d-flex justify-content-between align-items-start gap-3 text-decoration-none"
+                   style="color:inherit;">
                     <div>
                         <div class="fw-bold" style="font-size:14px;">{{ doc.title }}</div>
                         <small class="text-muted">{{ doc.get_category_display }}</small>
                         {% if doc.description %}<p class="text-muted mb-0 mt-2" style="font-size:13px;">{{ doc.description|truncatewords:24 }}</p>{% endif %}
                     </div>
-                    <div class="d-flex flex-column gap-1">
-                        {% if doc.file %}
-                        <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary text-nowrap" download>
-                            <i class="fas fa-file-pdf"></i> PDF
-                        </a>
-                        {% endif %}
-                        {% if doc.word_file %}
-                        <a href="{{ doc.word_file.url }}" class="btn btn-sm btn-outline-secondary text-nowrap" download>
-                            <i class="fas fa-file-word"></i> Word
-                        </a>
-                        {% endif %}
-                        {% if not doc.file and not doc.word_file and doc.external_url %}
-                        <a href="{{ doc.external_url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank" rel="noopener">
-                            <i class="fas fa-download"></i> دریافت
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
+                    <span class="btn btn-sm btn-outline-primary text-nowrap">
+                        <i class="fas fa-eye"></i> مشاهده
+                    </span>
+                </a>
             </div>
             {% empty %}
             <div class="col-12"><div class="alert alert-info mb-0">موردی ثبت نشده است.</div></div>

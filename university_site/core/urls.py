@@ -22,6 +22,7 @@ urlpatterns = [
     path('گالری/', views.gallery_view, name='gallery'),
     path('شناسه-واریز/', views.payment_id, name='payment_id'),
     path('آیین-نامه-ها-و-فرم-ها/', views.documents, name='documents'),
+    path('آیین-نامه-ها-و-فرم-ها/<int:pk>/', views.document_detail, name='document_detail'),
     path('رویدادها/', views.events_list, name='events'),
     path('تحصیلات-تکمیلی/', views.graduate_studies, name='graduate_studies'),
     path('تحصیلات-تکمیلی/رشته-ها/', views.graduate_majors, name='graduate_majors'),

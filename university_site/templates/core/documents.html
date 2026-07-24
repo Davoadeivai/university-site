@@ -59,33 +59,20 @@
         <div class="row g-3">
             {% for doc in documents %}
             <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                <div class="uni-card p-4 h-100 d-flex flex-column">
+                <a href="{% url 'core:document_detail' doc.pk %}" class="uni-card p-4 h-100 d-flex flex-column text-decoration-none doc-item-card"
+                   style="color:inherit;transition:transform .2s,box-shadow .2s;">
                     <div class="mb-2">
                         <span class="badge bg-secondary">{{ doc.get_category_display }}</span>
                     </div>
                     <h5 class="fw-bold mb-2" style="font-size:15px;">{{ doc.title }}</h5>
                     {% if doc.description %}<p class="text-muted flex-grow-1 mb-3" style="font-size:13px;">{{ doc.description|truncatewords:25 }}</p>{% else %}<div class="flex-grow-1"></div>{% endif %}
-                    <div class="d-flex flex-wrap gap-2 align-self-start">
-                        {% if doc.file %}
-                        <a href="{{ doc.file.url }}" class="btn-primary-uni btn-sm" download>
-                            <i class="fas fa-file-pdf me-1"></i> دانلود PDF
-                        </a>
-                        {% endif %}
-                        {% if doc.word_file %}
-                        <a href="{{ doc.word_file.url }}" class="btn-secondary-uni btn-sm" download>
-                            <i class="fas fa-file-word me-1"></i> دانلود Word
-                        </a>
-                        {% endif %}
-                        {% if not doc.file and not doc.word_file and doc.external_url %}
-                        <a href="{{ doc.external_url }}" class="btn-primary-uni btn-sm" target="_blank" rel="noopener">
-                            <i class="fas fa-external-link-alt me-1"></i> لینک دانلود
-                        </a>
-                        {% endif %}
-                        {% if not doc.file and not doc.word_file and not doc.external_url %}
-                        <span class="text-muted" style="font-size:13px;">فایل هنوز بارگذاری نشده</span>
-                        {% endif %}
+                    <div class="d-flex flex-wrap gap-2 align-items-center" style="font-size:12px;">
+                        {% if doc.file %}<span class="text-danger"><i class="fas fa-file-pdf me-1"></i>PDF</span>{% endif %}
+                        {% if doc.word_file %}<span class="text-primary"><i class="fas fa-file-word me-1"></i>Word</span>{% endif %}
+                        {% if not doc.file and not doc.word_file and doc.external_url %}<span class="text-muted"><i class="fas fa-link me-1"></i>لینک</span>{% endif %}
+                        <span class="text-primary ms-auto"><i class="fas fa-eye me-1"></i> مشاهده در سایت</span>
                     </div>
-                </div>
+                </a>
             </div>
             {% empty %}
             <div class="col-12 text-center text-muted py-5">در این پوشه فایلی ثبت نشده است.</div>
@@ -96,6 +83,7 @@
     </div>
 </section>
 <style>
-.doc-folder-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(13,27,62,.12); }
+.doc-folder-card:hover,
+.doc-item-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(13,27,62,.12); }
 </style>
 {% endblock %}
