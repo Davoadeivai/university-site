@@ -396,16 +396,27 @@ class PaymentIdentifierAdmin(admin.ModelAdmin):
 
 @admin.register(DownloadableDocument)
 class DownloadableDocumentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'section', 'order', 'is_active', 'created_at']
+    list_display = ['title', 'category', 'section', 'has_pdf', 'has_word', 'order', 'is_active', 'created_at']
     list_filter = ['category', 'section', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'description']
     fieldsets = (
-        ('اطلاعات اصلی', {
-            'fields': ('title', 'category', 'section', 'description', 'order', 'is_active'),
+        ('آپلود فایل (PDF / Word)', {
+            'fields': ('file', 'word_file'),
+            'description': (
+                'از دکمه‌های «Choose File / انتخاب فایل» زیر، فایل PDF و/یا Word را انتخاب کنید. '
+                'هر دو اختیاری‌اند و می‌توانید همزمان هر دو را آپلود کنید.'
+            ),
         }),
-        ('فایل‌ها', {
-            'fields': ('file', 'word_file', 'external_url'),
-            'description': 'می‌توانید هم فایل PDF و هم فایل Word را همزمان آپلود کنید.',
+        ('اطلاعات اصلی', {
+            'fields': ('title', 'category', 'section', 'description', 'order', 'is_active', 'external_url'),
         }),
     )
+
+    @admin.display(boolean=True, description='PDF')
+    def has_pdf(self, obj):
+        return bool(obj.file)
+
+    @admin.display(boolean=True, description='Word')
+    def has_word(self, obj):
+        return bool(obj.word_file)

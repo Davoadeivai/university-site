@@ -30,11 +30,23 @@
                         <small class="text-muted">{{ doc.get_category_display }}</small>
                         {% if doc.description %}<p class="text-muted mb-0 mt-2" style="font-size:13px;">{{ doc.description|truncatewords:24 }}</p>{% endif %}
                     </div>
-                    {% if doc.download_url %}
-                    <a href="{{ doc.download_url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank" rel="noopener">
-                        <i class="fas fa-download"></i> دریافت
-                    </a>
-                    {% endif %}
+                    <div class="d-flex flex-column gap-1">
+                        {% if doc.file %}
+                        <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary text-nowrap" download>
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        {% endif %}
+                        {% if doc.word_file %}
+                        <a href="{{ doc.word_file.url }}" class="btn btn-sm btn-outline-secondary text-nowrap" download>
+                            <i class="fas fa-file-word"></i> Word
+                        </a>
+                        {% endif %}
+                        {% if not doc.file and not doc.word_file and doc.external_url %}
+                        <a href="{{ doc.external_url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank" rel="noopener">
+                            <i class="fas fa-download"></i> دریافت
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% empty %}

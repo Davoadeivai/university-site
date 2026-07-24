@@ -29,13 +29,26 @@
                     </div>
                     <h5 class="fw-bold mb-2" style="font-size:15px;">{{ doc.title }}</h5>
                     {% if doc.description %}<p class="text-muted flex-grow-1 mb-3" style="font-size:13px;">{{ doc.description|truncatewords:25 }}</p>{% else %}<div class="flex-grow-1"></div>{% endif %}
-                    {% if doc.download_url %}
-                    <a href="{{ doc.download_url }}" class="btn-primary-uni btn-sm align-self-start" {% if doc.external_url and not doc.file %}target="_blank" rel="noopener"{% else %}download{% endif %}>
-                        <i class="fas fa-download me-1"></i> دانلود
-                    </a>
-                    {% else %}
-                    <span class="text-muted" style="font-size:13px;">فایل هنوز بارگذاری نشده</span>
-                    {% endif %}
+                    <div class="d-flex flex-wrap gap-2 align-self-start">
+                        {% if doc.file %}
+                        <a href="{{ doc.file.url }}" class="btn-primary-uni btn-sm" download>
+                            <i class="fas fa-file-pdf me-1"></i> دانلود PDF
+                        </a>
+                        {% endif %}
+                        {% if doc.word_file %}
+                        <a href="{{ doc.word_file.url }}" class="btn-secondary-uni btn-sm" download>
+                            <i class="fas fa-file-word me-1"></i> دانلود Word
+                        </a>
+                        {% endif %}
+                        {% if not doc.file and not doc.word_file and doc.external_url %}
+                        <a href="{{ doc.external_url }}" class="btn-primary-uni btn-sm" target="_blank" rel="noopener">
+                            <i class="fas fa-external-link-alt me-1"></i> لینک دانلود
+                        </a>
+                        {% endif %}
+                        {% if not doc.file and not doc.word_file and not doc.external_url %}
+                        <span class="text-muted" style="font-size:13px;">فایل هنوز بارگذاری نشده</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% empty %}

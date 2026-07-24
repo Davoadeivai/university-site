@@ -117,6 +117,36 @@ select {
     width: 100% !important;
 }
 
+/* آپلود فایل — واضح و قابل کلیک */
+input[type="file"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    max-width: 520px !important;
+    padding: .75rem 1rem !important;
+    margin: .35rem 0 .75rem !important;
+    border: 2px dashed #1a73e8 !important;
+    border-radius: 10px !important;
+    background: #f0f7ff !important;
+    color: #0d1b3e !important;
+    cursor: pointer !important;
+    font-size: .9rem !important;
+    direction: ltr !important;
+    text-align: left !important;
+}
+input[type="file"]:hover {
+    background: #e8f1ff !important;
+    border-color: #0b57d0 !important;
+}
+.field-file .form-row,
+.field-word_file .form-row,
+.form-group.field-file,
+.form-group.field-word_file {
+    display: block !important;
+    visibility: visible !important;
+}
+
 .form-control:focus,
 input[type="text"]:focus,
 input[type="email"]:focus,
