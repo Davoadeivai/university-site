@@ -658,7 +658,7 @@ class PaymentIdentifier(models.Model):
 # ─── آیین‌نامه‌ها و فرم‌ها ───────────────────────────────────────
 
 class DownloadableDocument(models.Model):
-    """فایل‌های قابل دانلود: آیین‌نامه، فرم، راهنما"""
+    """فایل‌های قابل دانلود: آیین‌نامه، فرم، راهنما — گروه‌بندی بر اساس مقطع"""
     CATEGORY_CHOICES = [
         ('regulation', _('آیین‌نامه')),
         ('form', _('فرم')),
@@ -669,11 +669,24 @@ class DownloadableDocument(models.Model):
         ('', _('عمومی')),
         ('graduate', _('تحصیلات تکمیلی')),
     ]
+    DEGREE_LEVEL_CHOICES = [
+        ('', _('عمومی (بدون پوشه مقطع)')),
+        ('master', _('کارشناسی ارشد')),
+        ('bachelor_continuous', _('کارشناسی پیوسته')),
+        ('bachelor_discontinuous', _('کارشناسی ناپیوسته')),
+        ('associate', _('کاردانی ناپیوسته')),
+        ('associate_tech', _('کاردانی فنی')),
+    ]
     title = models.CharField(_('عنوان'), max_length=300)
     category = models.CharField(_('دسته'), max_length=20, choices=CATEGORY_CHOICES, default='form')
     section = models.CharField(
         _('بخش'), max_length=20, choices=SECTION_CHOICES, blank=True, default='',
         help_text=_('مثلاً آیین‌نامه/فرم ویژه تحصیلات تکمیلی'),
+    )
+    degree_level = models.CharField(
+        _('مقطع / پوشه'), max_length=40, choices=DEGREE_LEVEL_CHOICES, blank=True, default='',
+        help_text=_('سند در کدام پوشه مقطع نمایش داده شود'),
+        db_index=True,
     )
     description = models.TextField(_('توضیحات'), blank=True)
     file = models.FileField(_('فایل PDF'), upload_to='documents/', blank=True, null=True)
@@ -687,7 +700,7 @@ class DownloadableDocument(models.Model):
     class Meta:
         verbose_name = _('آیین‌نامه / فرم')
         verbose_name_plural = _('آیین‌نامه‌ها و فرم‌ها')
-        ordering = ['section', 'category', 'order', '-created_at']
+        ordering = ['degree_level', 'section', 'category', 'order', '-created_at']
 
     def __str__(self):
         return self.title
@@ -697,3 +710,30 @@ class DownloadableDocument(models.Model):
         if self.file:
             return self.file.url
         return self.external_url or ''
+
+    @classmethod
+    def degree_folder_meta(cls):
+        """پوشه‌های مقطع برای نمایش در سایت (به‌ترتیب)."""
+        icons = {
+            'master': 'fas fa-user-graduate',
+            'bachelor_continuous': 'fas fa-graduation-cap',
+            'bachelor_discontinuous': 'fas fa-book-reader',
+            'associate': 'fas fa-certificate',
+            'associate_tech': 'fas fa-cogs',
+            '': 'fas fa-folder-open',
+        }
+        folders = []
+        for key, label in cls.DEGREE_LEVEL_CHOICES:
+            if key == '':
+                continue
+            folders.append({
+                'key': key,
+                'label': label,
+                'icon': icons.get(key, 'fas fa-folder'),
+            })
+        folders.append({
+            'key': 'general',
+            'label': 'عمومی و سایر فایل‌ها',
+            'icon': icons[''],
+        })
+        return folders

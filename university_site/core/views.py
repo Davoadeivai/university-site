@@ -229,13 +229,45 @@ def payment_id(request):
 
 
 def documents(request):
-    """آیین‌نامه‌ها و فرم‌ها"""
+    """آیین‌نامه‌ها و فرم‌ها — ابتدا پوشه‌های مقطع، سپس فایل‌های داخل هر پوشه."""
     docs = DownloadableDocument.objects.filter(is_active=True)
+    degree = request.GET.get('degree', '')
     category = request.GET.get('category', '')
-    if category in dict(DownloadableDocument.CATEGORY_CHOICES):
-        docs = docs.filter(category=category)
+
+    degree_keys = {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES if k}
+    show_folders = degree not in (degree_keys | {'general'})
+
+    folders = []
+    if show_folders:
+        counts = {
+            row['degree_level']: row['n']
+            for row in docs.values('degree_level').annotate(n=Count('id'))
+        }
+        for folder in DownloadableDocument.degree_folder_meta():
+            if folder['key'] == 'general':
+                n = counts.get('', 0)
+            else:
+                n = counts.get(folder['key'], 0)
+            folder = {**folder, 'count': n}
+            folders.append(folder)
+        documents = []
+        current_degree_label = ''
+    else:
+        if degree == 'general':
+            documents = docs.filter(degree_level='')
+            current_degree_label = 'عمومی و سایر فایل‌ها'
+        else:
+            documents = docs.filter(degree_level=degree)
+            current_degree_label = dict(DownloadableDocument.DEGREE_LEVEL_CHOICES).get(degree, degree)
+        if category in dict(DownloadableDocument.CATEGORY_CHOICES):
+            documents = documents.filter(category=category)
+
     context = {
-        'documents': docs,
+        'show_folders': show_folders,
+        'folders': folders,
+        'documents': documents if not show_folders else [],
+        'current_degree': degree,
+        'current_degree_label': current_degree_label if not show_folders else '',
         'current_category': category,
         'categories': DownloadableDocument.CATEGORY_CHOICES,
         'page_title': 'آیین‌نامه‌ها و فرم‌ها',

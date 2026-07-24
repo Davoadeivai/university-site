@@ -3,22 +3,58 @@
 <div class="page-header">
     <div class="container">
         <h1 class="page-header-title">آیین‌نامه‌ها و فرم‌ها</h1>
-        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;opacity:.85;">دانلود آیین‌نامه‌ها، فرم‌ها و راهنماها</p>
+        <p class="text-white-50 mb-0 mt-2" style="font-size:15px;opacity:.85;">
+            {% if show_folders %}
+            پوشه مقطع را انتخاب کنید
+            {% else %}
+            {{ current_degree_label }}
+            {% endif %}
+        </p>
     </div>
 </div>
 
 <section class="section">
     <div class="container">
-        <ul class="nav nav-pills justify-content-center mb-4 gap-2 flex-wrap" data-aos="fade-up">
-            <li class="nav-item">
-                <a class="nav-link {% if not current_category %}active{% endif %}" href="{% url 'core:documents' %}" style="font-family:'Vazirmatn',sans-serif;">همه</a>
-            </li>
-            {% for key, label in categories %}
-            <li class="nav-item">
-                <a class="nav-link {% if current_category == key %}active{% endif %}" href="?category={{ key }}" style="font-family:'Vazirmatn',sans-serif;">{{ label }}</a>
-            </li>
+
+        {% if show_folders %}
+        <div class="row g-3" data-aos="fade-up">
+            {% for folder in folders %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="?degree={{ folder.key }}" class="uni-card p-4 h-100 text-decoration-none d-block doc-folder-card"
+                   style="transition:transform .2s,box-shadow .2s;">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;">
+                            <i class="{{ folder.icon }}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark" style="font-size:14px;line-height:1.5;">{{ folder.label }}</div>
+                            <small class="text-muted">{{ folder.count }} فایل</small>
+                        </div>
+                    </div>
+                    <div class="text-primary" style="font-size:12px;"><i class="fas fa-folder-open me-1"></i> باز کردن پوشه</div>
+                </a>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
+
+        {% else %}
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4" data-aos="fade-up">
+            <a href="{% url 'core:documents' %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-arrow-right me-1"></i> بازگشت به پوشه‌ها
+            </a>
+            <ul class="nav nav-pills gap-1 flex-wrap mb-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if not current_category %}active{% endif %}"
+                       href="?degree={{ current_degree }}" style="font-family:'Vazirmatn',sans-serif;font-size:13px;">همه</a>
+                </li>
+                {% for key, label in categories %}
+                <li class="nav-item">
+                    <a class="nav-link {% if current_category == key %}active{% endif %}"
+                       href="?degree={{ current_degree }}&category={{ key }}" style="font-family:'Vazirmatn',sans-serif;font-size:13px;">{{ label }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
         <div class="row g-3">
             {% for doc in documents %}
@@ -52,9 +88,14 @@
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center text-muted py-5">موردی ثبت نشده است.</div>
+            <div class="col-12 text-center text-muted py-5">در این پوشه فایلی ثبت نشده است.</div>
             {% endfor %}
         </div>
+        {% endif %}
+
     </div>
 </section>
+<style>
+.doc-folder-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(13,27,62,.12); }
+</style>
 {% endblock %}
