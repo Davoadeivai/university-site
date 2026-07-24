@@ -657,6 +657,31 @@ class PaymentIdentifier(models.Model):
 
 # ─── آیین‌نامه‌ها و فرم‌ها ───────────────────────────────────────
 
+def _safe_upload_filename(filename):
+    """نام فایل را برای filesystem سرور (ASCII) امن می‌کند؛ پسوند حفظ می‌شود."""
+    import os
+    import re
+    import uuid
+    from django.utils.text import get_valid_filename
+
+    filename = get_valid_filename(filename or 'file')
+    name, ext = os.path.splitext(filename)
+    ext = (ext or '').lower()[:12]
+    # فقط حروف/عدد انگلیسی و خط تیره
+    safe = re.sub(r'[^A-Za-z0-9_-]+', '-', name).strip('-_')
+    if not safe or not re.search(r'[A-Za-z0-9]', safe):
+        safe = f'doc-{uuid.uuid4().hex[:10]}'
+    return f'{safe[:80]}{ext}'
+
+
+def _document_pdf_upload_to(instance, filename):
+    return f'documents/{_safe_upload_filename(filename)}'
+
+
+def _document_word_upload_to(instance, filename):
+    return f'documents/word/{_safe_upload_filename(filename)}'
+
+
 class DownloadableDocument(models.Model):
     """فایل‌های قابل دانلود: آیین‌نامه، فرم، راهنما — گروه‌بندی بر اساس مقطع"""
     CATEGORY_CHOICES = [
@@ -689,8 +714,8 @@ class DownloadableDocument(models.Model):
         db_index=True,
     )
     description = models.TextField(_('توضیحات'), blank=True)
-    file = models.FileField(_('فایل PDF'), upload_to='documents/', blank=True, null=True)
-    word_file = models.FileField(_('فایل Word'), upload_to='documents/word/', blank=True, null=True)
+    file = models.FileField(_('فایل PDF'), upload_to=_document_pdf_upload_to, blank=True, null=True)
+    word_file = models.FileField(_('فایل Word'), upload_to=_document_word_upload_to, blank=True, null=True)
     external_url = models.URLField(_('لینک خارجی'), blank=True,
                                    help_text=_('اگر فایل آپلود نشده، از این لینک استفاده می‌شود'))
     order = models.PositiveIntegerField(_('ترتیب'), default=0)
