@@ -114,9 +114,13 @@
                     <ol style="padding-right:1.2rem;margin:0;">
                         {% for major in degree_majors %}
                         <li class="mb-2" style="color:#e5e7eb;">
+                            {% if major.slug %}
                             <a href="{{ major.get_absolute_url }}" class="text-decoration-none" style="color:#f3f4f6;">
                                 {{ major.name }}
                             </a>
+                            {% else %}
+                            <span>{{ major.name }}</span>
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ol>

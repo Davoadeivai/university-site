@@ -72,7 +72,21 @@ class Major(models.Model):
     def __str__(self):
         return f"{self.name} - {self.get_degree_display()}"
 
+    def save(self, *args, **kwargs):
+        if not (self.slug or '').strip():
+            from django.utils.text import slugify
+            base = slugify(self.name, allow_unicode=True) or f'major-{self.pk or "new"}'
+            slug = base
+            n = 2
+            while Major.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base}-{n}'
+                n += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def get_absolute_url(self):
+        if not (self.slug or '').strip():
+            return reverse('academics:majors')
         return reverse('academics:major_detail', args=[self.slug])
 
     @property
