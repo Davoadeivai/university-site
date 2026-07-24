@@ -1,5 +1,26 @@
+import os
+import re
+import uuid
+
+from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.utils.text import get_valid_filename
 from django.utils.translation import gettext_lazy as _
+
+
+def _safe_upload_filename(filename):
+    """نام فایل را برای filesystem سرور (ASCII) امن می‌کند؛ پسوند حفظ می‌شود."""
+    filename = get_valid_filename(filename or 'file')
+    name, ext = os.path.splitext(filename)
+    ext = (ext or '').lower()[:12]
+    safe = re.sub(r'[^A-Za-z0-9_-]+', '-', name).strip('-_')
+    if not safe or not re.search(r'[A-Za-z0-9]', safe):
+        safe = f'doc-{uuid.uuid4().hex[:10]}'
+    return f'{safe[:80]}{ext}'
+
+
+def _org_chart_file_upload_to(instance, filename):
+    return f'site/org_chart/{_safe_upload_filename(filename)}'
 
 
 class SiteSettings(models.Model):
@@ -47,6 +68,16 @@ class SiteSettings(models.Model):
     vision_text = models.TextField(_('چشم‌انداز'), blank=True)
     mission_text = models.TextField(_('مأموریت'), blank=True)
     values_text = models.TextField(_('ارزش‌ها'), blank=True)
+    org_chart_file = models.FileField(
+        _('فایل چارت سازمانی'),
+        upload_to=_org_chart_file_upload_to,
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'doc', 'docx'],
+        )],
+        help_text=_('PDF، تصویر (JPG/PNG/…) یا Word. برای حذف، تیک «پاک کردن» را بزنید و ذخیره کنید.'),
+    )
 
     class Meta:
         verbose_name = _('تنظیمات سایت')
@@ -54,6 +85,20 @@ class SiteSettings(models.Model):
 
     def __str__(self):
         return self.university_name_fa
+
+    @property
+    def org_chart_file_kind(self):
+        """نوع فایل چارت: image | pdf | word | other | None"""
+        if not self.org_chart_file:
+            return None
+        ext = os.path.splitext(self.org_chart_file.name)[1].lower().lstrip('.')
+        if ext in ('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'):
+            return 'image'
+        if ext == 'pdf':
+            return 'pdf'
+        if ext in ('doc', 'docx'):
+            return 'word'
+        return 'other'
 
 
 class Slider(models.Model):
@@ -656,23 +701,6 @@ class PaymentIdentifier(models.Model):
 
 
 # ─── آیین‌نامه‌ها و فرم‌ها ───────────────────────────────────────
-
-def _safe_upload_filename(filename):
-    """نام فایل را برای filesystem سرور (ASCII) امن می‌کند؛ پسوند حفظ می‌شود."""
-    import os
-    import re
-    import uuid
-    from django.utils.text import get_valid_filename
-
-    filename = get_valid_filename(filename or 'file')
-    name, ext = os.path.splitext(filename)
-    ext = (ext or '').lower()[:12]
-    # فقط حروف/عدد انگلیسی و خط تیره
-    safe = re.sub(r'[^A-Za-z0-9_-]+', '-', name).strip('-_')
-    if not safe or not re.search(r'[A-Za-z0-9]', safe):
-        safe = f'doc-{uuid.uuid4().hex[:10]}'
-    return f'{safe[:80]}{ext}'
-
 
 def _document_pdf_upload_to(instance, filename):
     return f'documents/{_safe_upload_filename(filename)}'

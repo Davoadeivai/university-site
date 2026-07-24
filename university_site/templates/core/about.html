@@ -70,7 +70,44 @@
         <!-- Org Chart -->
         <div id="chart" class="mt-5" data-aos="fade-up">
             <h2 class="section-title text-center">چارت سازمانی</h2>
-            {% if org_chart %}
+            {% if settings and settings.org_chart_file %}
+            <div class="org-chart-file mt-4 bg-white rounded-xl shadow-sm overflow-hidden">
+                {% if settings.org_chart_file_kind == 'image' %}
+                <div class="p-3 p-md-4 text-center">
+                    <img src="{{ settings.org_chart_file.url }}"
+                         alt="چارت سازمانی"
+                         class="img-fluid"
+                         style="max-width:100%;height:auto;border-radius:8px;">
+                </div>
+                <div class="px-3 pb-3 text-center">
+                    <a href="{{ settings.org_chart_file.url }}" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">
+                        <i class="fas fa-expand me-1"></i> مشاهده تمام‌صفحه
+                    </a>
+                </div>
+                {% elif settings.org_chart_file_kind == 'pdf' %}
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-bottom bg-light">
+                    <strong style="font-size:14px;"><i class="fas fa-file-pdf text-danger me-1"></i> چارت سازمانی (PDF)</strong>
+                    <a href="{{ settings.org_chart_file.url }}" class="btn btn-sm btn-outline-danger" target="_blank" rel="noopener" download>
+                        <i class="fas fa-download me-1"></i> دانلود
+                    </a>
+                </div>
+                <iframe src="{{ settings.org_chart_file.url }}#toolbar=1&navpanes=0&view=FitH"
+                        title="چارت سازمانی"
+                        style="width:100%;height:75vh;border:0;background:#eef2f7;"></iframe>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div style="width:88px;height:88px;border-radius:22px;background:linear-gradient(135deg,#2b579a,#1a365d);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:18px;">
+                        <i class="fas fa-{% if settings.org_chart_file_kind == 'word' %}file-word{% else %}file{% endif %}"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">فایل چارت سازمانی</h4>
+                    <p class="text-muted mb-4" style="font-size:14px;">برای مشاهده یا دانلود فایل روی دکمه زیر کلیک کنید.</p>
+                    <a href="{{ settings.org_chart_file.url }}" class="btn-primary-uni" target="_blank" rel="noopener">
+                        <i class="fas fa-download me-2"></i> دانلود / باز کردن فایل
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% elif org_chart %}
             <div class="org-chart-container mt-4">
                 {% for node in org_chart %}
                 <div class="org-node-wrapper">
@@ -118,7 +155,7 @@
             {% else %}
             <div class="text-center p-5 bg-white rounded-xl shadow-sm mt-4">
                 <i class="fas fa-sitemap text-primary" style="font-size:60px; opacity:0.3;"></i>
-                <p class="text-muted mt-3">چارت سازمانی از طریق پنل مدیریت بارگذاری می‌شود</p>
+                <p class="text-muted mt-3">چارت سازمانی از طریق پنل مدیریت (تنظیمات سایت) بارگذاری می‌شود</p>
             </div>
             {% endif %}
         </div>

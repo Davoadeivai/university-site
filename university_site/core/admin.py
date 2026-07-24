@@ -42,6 +42,13 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('محتوای صفحه معرفی', {
             'fields': ('about_short', 'history_text', 'vision_text', 'mission_text', 'values_text')
         }),
+        ('چارت سازمانی (صفحه معرفی)', {
+            'fields': ('org_chart_file',),
+            'description': (
+                'فایل چارت را اینجا آپلود کنید (PDF، عکس یا Word). '
+                'برای حذف فایل فعلی، تیک «پاک کردن» کنار فیلد را بزنید و ذخیره کنید.'
+            ),
+        }),
         ('اطلاعات تکمیلی', {
             'fields': ('working_hours', 'map_embed', 'established_year')
         }),
