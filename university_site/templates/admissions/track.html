@@ -6,21 +6,36 @@
 <div class="row justify-content-center">
 <div class="col-lg-7" data-aos="fade-up">
 
+    {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} mb-2" role="alert" style="font-size:14px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="uni-card p-5 mb-4">
         <h5 class="fw-bold text-primary-uni mb-4"><i class="fas fa-search"></i> جستجوی درخواست</h5>
-        <form method="post">
+        <form method="post" action="{% url 'admissions:track' %}">
             {% csrf_token %}
             <div class="input-group input-group-lg">
                 <label class="visually-hidden" for="trackQuery">کد رهگیری یا کد ملی</label>
                 <input type="text" name="query" id="trackQuery" class="form-control"
-                       placeholder="کد رهگیری ۱۲ رقمی یا کد ملی خود را وارد کنید..."
+                       placeholder="کد رهگیری ۱۲ رقمی یا کد ملی ۱۰ رقمی..."
                        value="{{ query|default:'' }}"
+                       inputmode="numeric"
+                       autocomplete="off"
                        required>
                 <button type="submit" class="btn btn-primary" style="font-family:Vazirmatn,sans-serif;">
                     <i class="fas fa-search"></i> جستجو
                 </button>
             </div>
-            <div class="form-text text-muted mt-2">مثال: <code>123456789012</code> یا کد ملی ۱۰ رقمی</div>
+            <div class="form-text text-muted mt-2">
+                کد ملی ۱۰ رقمی یا کد رهگیری ۱۲ رقمی را وارد کنید.
+                ارقام فارسی هم پذیرفته می‌شود.
+            </div>
         </form>
     </div>
 
@@ -87,7 +102,11 @@
             </div>
             <div class="col-6">
                 <div class="text-muted">رشته انتخابی</div>
-                <div class="fw-bold">{{ app.desired_major.name }}{% if app.desired_major2 %} / {{ app.desired_major2.name }}{% endif %}</div>
+                <div class="fw-bold">{% if app.desired_major %}{{ app.desired_major.name }}{% else %}—{% endif %}{% if app.desired_major2 %} / {{ app.desired_major2.name }}{% endif %}</div>
+            </div>
+            <div class="col-6">
+                <div class="text-muted">کد ملی</div>
+                <div class="fw-bold">{{ app.national_id }}</div>
             </div>
             <div class="col-6">
                 <div class="text-muted">تاریخ ثبت</div>

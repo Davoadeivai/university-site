@@ -330,51 +330,95 @@ def apply_success(request, code):
 # ─────────────────────────────────────────────
 #  پیگیری وضعیت
 # ─────────────────────────────────────────────
+def _normalize_track_query(raw):
+    """نرمال‌سازی کد رهگیری / کد ملی (ارقام فارسی، فاصله، خط تیره)."""
+    q = _normalize_digits(raw or '')
+    for ch in (' ', '-', '_', '\u200c', '\u200f', '\u200e', '\xa0'):
+        q = q.replace(ch, '')
+    return q.strip()
+
+
+def _track_lookup_candidates(query):
+    """نامزدهای جستجو برای کد ملی / رهگیری با اختلاف صفر اول و ارقام اضافه."""
+    digits = ''.join(ch for ch in query if ch.isdigit())
+    cands = set()
+    if query:
+        cands.add(query)
+    if digits:
+        cands.add(digits)
+        if len(digits) <= 10:
+            cands.add(digits.zfill(10))
+        stripped = digits.lstrip('0')
+        if stripped:
+            cands.add(stripped)
+            if len(stripped) <= 10:
+                cands.add(stripped.zfill(10))
+    return [c for c in cands if c]
+
+
 def track_application(request):
     app = None
     query = ''
     timeline = []
     if request.method == 'POST':
-        query = request.POST.get('query', '').strip()
-        from core.sms import check_rate_limit
-        allowed, rl_msg = check_rate_limit(request, scope='track_app', limit=10, window=300)
+        query = _normalize_track_query(request.POST.get('query', ''))
+        from core.sms import check_rate_limit, normalize_phone
+        from django.db.models import Q
+        # محدودیت جدا از تست‌های مکرر: فقط جستجوهای واقعی را محدود کن
+        allowed, rl_msg = check_rate_limit(request, scope='track_app', limit=40, window=300)
         if not allowed:
             messages.error(request, rl_msg)
-            query = ''
+        elif not query:
+            messages.error(request, 'لطفاً کد رهگیری یا کد ملی را وارد کنید.')
         else:
-            app = Application.objects.filter(
-                tracking_code=query
-            ).select_related('desired_major', 'desired_major2').first() or Application.objects.filter(
-                national_id=query
-            ).select_related('desired_major', 'desired_major2').first()
-        if query and not app:
-            messages.error(request, 'درخواستی با این اطلاعات یافت نشد.')
-        else:
-            flow = ['pending', 'reviewing', 'incomplete', 'interview', 'accepted']
-            labels = dict(Application.STATUS_CHOICES)
-            if app.status in ('rejected', 'waiting'):
-                timeline = [{
-                    'key': app.status,
-                    'label': labels.get(app.status, app.status),
-                    'state': 'current',
-                }]
+            qs = Application.objects.select_related(
+                'desired_major', 'desired_major2',
+                'desired_major__group', 'desired_major__department',
+            )
+            candidates = _track_lookup_candidates(query)
+            app = qs.filter(
+                Q(tracking_code__in=candidates) | Q(national_id__in=candidates)
+            ).first()
+
+            # جستجوی پشتیبان با موبایل (اگر به‌جای کد ملی وارد شده باشد)
+            if app is None:
+                phone = normalize_phone(query)
+                if phone and len(phone) >= 10:
+                    app = qs.filter(phone=phone).first()
+
+            if app is None:
+                messages.error(
+                    request,
+                    'درخواستی با این کد رهگیری یا کد ملی یافت نشد. '
+                    'اگر تازه ثبت‌نام کرده‌اید، از همان کد رهگیری پیامک/رسید استفاده کنید. '
+                    'در غیر این صورت ابتدا از صفحه «ثبت درخواست» اقدام کنید.',
+                )
             else:
-                try:
-                    cur = flow.index(app.status)
-                except ValueError:
-                    cur = 0
-                for i, key in enumerate(flow):
-                    if i < cur:
-                        state = 'done'
-                    elif i == cur:
-                        state = 'current'
-                    else:
-                        state = 'todo'
-                    timeline.append({
-                        'key': key,
-                        'label': labels[key],
-                        'state': state,
-                    })
+                flow = ['pending', 'reviewing', 'incomplete', 'interview', 'accepted']
+                labels = dict(Application.STATUS_CHOICES)
+                if app.status in ('rejected', 'waiting'):
+                    timeline = [{
+                        'key': app.status,
+                        'label': labels.get(app.status, app.status),
+                        'state': 'current',
+                    }]
+                else:
+                    try:
+                        cur = flow.index(app.status)
+                    except ValueError:
+                        cur = 0
+                    for i, key in enumerate(flow):
+                        if i < cur:
+                            state = 'done'
+                        elif i == cur:
+                            state = 'current'
+                        else:
+                            state = 'todo'
+                        timeline.append({
+                            'key': key,
+                            'label': labels[key],
+                            'state': state,
+                        })
     return render(request, 'admissions/track.html', {
         'app': app,
         'query': query,
