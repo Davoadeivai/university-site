@@ -27,7 +27,7 @@
                         <div class="text-muted" style="font-size:12px;">{{ row.assignment.get_assignment_type_display }}</div>
                     </td>
                     <td>{{ row.assignment.course.name }}</td>
-                    <td>{{ row.assignment.due_date|date:"Y/m/d H:i" }}</td>
+                    <td>{{ row.assignment.due_date|jalali_datetime }}</td>
                     <td>
                         {% if row.submission %}
                         <span class="badge bg-{% if row.submission.status == 'graded' %}success{% elif row.submission.status == 'late' %}warning{% else %}primary{% endif %}">{{ row.submission.get_status_display }}</span>

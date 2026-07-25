@@ -660,7 +660,8 @@ def staff_student_export(request):
         labels = dict(Major._meta.get_field('degree').choices)
         title = f'لیست دانشجویان مقطع {labels.get(degree, degree)}'
 
-    stamp = timezone.localtime().strftime('%Y%m%d')
+    from core.jalali import jalali_now_stamp
+    stamp = jalali_now_stamp('%Y%m%d')
     if download == 'excel':
         return excel_response(list(students), filename=f'students_{stamp}.xlsx', title=title)
     if download == 'word':

@@ -62,7 +62,7 @@
             <a href="{% url 'dashboard:professor_submissions' asgn.pk %}" class="announce-card mb-2 text-decoration-none d-flex">
                 <div class="flex-grow-1">
                     <div class="announce-title" style="font-size:13px;">{{ asgn.title }}</div>
-                    <div class="announce-date">{{ asgn.course.name }} | مهلت {{ asgn.due_date|date:"Y/m/d" }}</div>
+                    <div class="announce-date">{{ asgn.course.name }} | مهلت {{ asgn.due_date|jalali_date:"short" }}</div>
                 </div>
                 <span class="badge bg-warning">تحویل‌ها</span>
             </a>

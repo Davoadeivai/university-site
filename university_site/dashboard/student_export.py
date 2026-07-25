@@ -6,6 +6,8 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.utils import timezone
 
+from core.jalali import format_jalali_date, format_jalali_datetime
+
 
 HEADERS = [
     'ردیف',
@@ -28,10 +30,8 @@ HEADERS = [
 def student_row(index: int, profile) -> list:
     user = profile.user
     major = profile.major
-    birth = ''
-    if profile.birth_date:
-        birth = profile.birth_date.strftime('%Y-%m-%d')
-    joined = timezone.localtime(user.date_joined).strftime('%Y-%m-%d') if user.date_joined else ''
+    birth = format_jalali_date(profile.birth_date, 'short') if profile.birth_date else ''
+    joined = format_jalali_date(user.date_joined, 'short') if user.date_joined else ''
     return [
         index,
         user.first_name or '',
@@ -107,7 +107,7 @@ def word_response(profiles, filename: str, title: str = 'لیست دانشجوی
     heading = doc.add_heading(title, level=1)
     heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    meta = doc.add_paragraph(f'تاریخ تهیه: {timezone.localtime().strftime("%Y-%m-%d %H:%M")}')
+    meta = doc.add_paragraph(f'تاریخ تهیه: {format_jalali_datetime(timezone.now())}')
     meta.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     meta.runs[0].font.size = Pt(10)
 

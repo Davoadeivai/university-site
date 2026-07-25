@@ -20,7 +20,7 @@
                 {% for s in submissions %}
                 <tr>
                     <td>{{ s.student.get_full_name|default:s.student.username }}</td>
-                    <td>{{ s.submitted_at|date:"Y/m/d H:i" }}</td>
+                    <td>{{ s.submitted_at|jalali_datetime }}</td>
                     <td>{{ s.get_status_display }}</td>
                     <td>{% if s.grade %}{{ s.grade }}{% else %}—{% endif %}</td>
                     <td>{% if s.file %}<a href="{{ s.file.url }}" target="_blank">دانلود</a>{% else %}—{% endif %}</td>

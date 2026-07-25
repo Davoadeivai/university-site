@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+
+from core.admin_jalali import JalaliAdminMixin
+from core.jalali import format_jalali_date, format_jalali_datetime
 from .models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
     InstitutionGoal, BoardMember, CityInfo, CityAttraction,
@@ -88,10 +91,13 @@ class QuickLinkAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ['title', 'date', 'location', 'is_featured', 'is_active']
+    list_display = ['title', 'date_jalali', 'location', 'is_featured', 'is_active']
     list_filter = ['is_featured', 'is_active']
     search_fields = ['title']
-    date_hierarchy = 'date'
+
+    @admin.display(description='تاریخ', ordering='date')
+    def date_jalali(self, obj):
+        return format_jalali_date(obj.date, 'short')
 
 
 @admin.register(FAQ)
@@ -253,11 +259,14 @@ class InternationalOfficeAdmin(admin.ModelAdmin):
 
 @admin.register(InternationalActivity)
 class InternationalActivityAdmin(admin.ModelAdmin):
-    list_display = ['title', 'activity_type', 'partner_institution', 'country', 'date', 'is_active']
+    list_display = ['title', 'activity_type', 'partner_institution', 'country', 'date_jalali', 'is_active']
     list_editable = ['is_active']
     list_filter = ['activity_type', 'country', 'is_active']
     search_fields = ['title', 'partner_institution', 'country']
-    date_hierarchy = 'date'
+
+    @admin.display(description='تاریخ', ordering='date')
+    def date_jalali(self, obj):
+        return format_jalali_date(obj.date, 'short')
 
 
 @admin.register(PublicRelations)
@@ -283,12 +292,11 @@ class PublicRelationsAdmin(admin.ModelAdmin):
 
 
 @admin.register(PressRelease)
-class PressReleaseAdmin(admin.ModelAdmin):
-    list_display = ['title', 'published_at', 'is_active']
+class PressReleaseAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'published_jalali', 'is_active']
     list_editable = ['is_active']
     list_filter = ['is_active']
     search_fields = ['title', 'content']
-    date_hierarchy = 'published_at'
 
 
 @admin.register(SecurityOffice)

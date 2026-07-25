@@ -101,7 +101,7 @@
             <div class="announce-card mb-2">
                 <div class="flex-grow-1">
                     <div class="announce-title" style="font-size:13px;">{{ asgn.title }}</div>
-                    <div class="announce-date">{{ asgn.course.name }} | {{ asgn.due_date|date:"Y/m/d" }}</div>
+                    <div class="announce-date">{{ asgn.course.name }} | {{ asgn.due_date|jalali_date:"short" }}</div>
                 </div>
                 <a href="{% url 'dashboard:student_assignment_submit' asgn.pk %}" class="btn btn-sm btn-outline-primary">ارسال</a>
             </div>

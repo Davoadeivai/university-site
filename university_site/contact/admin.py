@@ -1,19 +1,25 @@
 from django.contrib import admin
+
+from core.admin_jalali import JalaliAdminMixin
+from core.jalali import format_jalali_datetime
 from .models import ContactMessage, Alumni
 
 
 @admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'email', 'subject', 'status', 'created_at']
+class ContactMessageAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['full_name', 'email', 'subject', 'status', 'created_jalali']
     list_filter = ['status', 'subject']
     list_editable = ['status']
     search_fields = ['full_name', 'email', 'message']
-    readonly_fields = ['full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at']
-    date_hierarchy = 'created_at'
+    readonly_fields = ['full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at_jalali_ro']
     fieldsets = (
-        ('پیام', {'fields': ('full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at')}),
+        ('پیام', {'fields': ('full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at_jalali_ro')}),
         ('پاسخ', {'fields': ('status', 'reply')}),
     )
+
+    @admin.display(description='تاریخ ثبت')
+    def created_at_jalali_ro(self, obj):
+        return format_jalali_datetime(obj.created_at)
 
 
 @admin.register(Alumni)

@@ -91,12 +91,12 @@
             </div>
             <div class="col-6">
                 <div class="text-muted">تاریخ ثبت</div>
-                <div class="fw-bold">{{ app.created_at|date:"Y/m/d" }}</div>
+                <div class="fw-bold">{{ app.created_at|jalali_date:"short" }}</div>
             </div>
             {% if app.interview_date %}
             <div class="col-6">
                 <div class="text-muted">تاریخ مصاحبه</div>
-                <div class="fw-bold text-primary">{{ app.interview_date|date:"Y/m/d H:i" }}</div>
+                <div class="fw-bold text-primary">{{ app.interview_date|jalali_datetime }}</div>
             </div>
             {% endif %}
         </div>

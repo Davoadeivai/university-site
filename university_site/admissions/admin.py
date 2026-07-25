@@ -83,7 +83,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     list_display = [
         'tracking_code', 'full_name', 'national_id', 'phone',
         'degree_fa', 'major_name', 'group_name', 'department_name',
-        'status_badge', 'phone_verified', 'docs_summary', 'created_at',
+        'status_badge', 'phone_verified', 'docs_summary', 'created_jalali',
     ]
     list_filter = [
         'status',
@@ -312,6 +312,11 @@ class ApplicationAdmin(admin.ModelAdmin):
             colors.get(obj.status, '#64748b'),
             obj.get_status_display(),
         )
+
+    @admin.display(description='تاریخ ثبت', ordering='created_at')
+    def created_jalali(self, obj):
+        from core.jalali import format_jalali_datetime
+        return format_jalali_datetime(obj.created_at)
 
     @admin.display(description='مدارک')
     def docs_summary(self, obj):

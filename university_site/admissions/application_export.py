@@ -8,6 +8,8 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.html import escape
 
+from core.jalali import format_jalali_datetime
+
 
 HEADERS = [
     'ردیف',
@@ -41,9 +43,7 @@ def application_row(index: int, app) -> list:
             group = major.group.name
         if getattr(major, 'department_id', None) and major.department:
             department = major.department.name
-    created = ''
-    if app.created_at:
-        created = timezone.localtime(app.created_at).strftime('%Y-%m-%d %H:%M')
+    created = format_jalali_datetime(app.created_at) if app.created_at else ''
     return [
         index,
         app.tracking_code or '',
@@ -99,7 +99,7 @@ def excel_response(applications, filename: str, title: str = 'لیست درخو�
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(HEADERS))
     ws['A1'].font = Font(bold=True, size=14)
     ws['A1'].alignment = Alignment(horizontal='center')
-    ws.append([f'تاریخ تهیه: {timezone.localtime().strftime("%Y-%m-%d %H:%M")} — تعداد: {len(apps)}'])
+    ws.append([f'تاریخ تهیه: {format_jalali_datetime(timezone.now())} — تعداد: {len(apps)}'])
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=len(HEADERS))
     ws.append(HEADERS)
     for cell in ws[3]:
@@ -155,7 +155,7 @@ def word_response(applications, filename: str, title: str = 'لیست درخوا
     heading = doc.add_heading(title, level=1)
     heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
     meta = doc.add_paragraph(
-        f'تاریخ تهیه: {timezone.localtime().strftime("%Y-%m-%d %H:%M")} — تعداد: {len(apps)}'
+        f'تاریخ تهیه: {format_jalali_datetime(timezone.now())} — تعداد: {len(apps)}'
     )
     meta.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     if meta.runs:
@@ -284,7 +284,7 @@ def print_html_response(applications, title: str = 'لیست درخواست‌ه
     <button onclick="window.print()">چاپ / ذخیره PDF</button>
   </div>
   <h1>{escape(title)}</h1>
-  <div class="meta">تاریخ تهیه: {timezone.localtime().strftime("%Y-%m-%d %H:%M")} — تعداد: {len(apps)}</div>
+  <div class="meta">تاریخ تهیه: {escape(format_jalali_datetime(timezone.now()))} — تعداد: {len(apps)}</div>
 
   <h2>خلاصه دسته‌بندی (مقطع / گروه / رشته)</h2>
   <table>

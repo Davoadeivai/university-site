@@ -64,6 +64,10 @@ TEMPLATES = [
                 'django.template.context_processors.i18n',
                 'core.context_processors.global_context',
             ],
+            # فیلترهای تاریخ شمسی در همه قالب‌ها در دسترس باشند
+            'builtins': [
+                'core.templatetags.custom_filters',
+            ],
         },
     },
 ]

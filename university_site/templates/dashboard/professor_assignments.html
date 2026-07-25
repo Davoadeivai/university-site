@@ -38,7 +38,7 @@
                         <tr>
                             <td>{{ a.title }}</td>
                             <td>{{ a.course.name }}</td>
-                            <td>{{ a.due_date|date:"Y/m/d H:i" }}</td>
+                            <td>{{ a.due_date|jalali_datetime }}</td>
                             <td><a href="{% url 'dashboard:professor_submissions' a.pk %}" class="btn btn-sm btn-outline-primary">تحویل‌ها</a></td>
                         </tr>
                         {% endfor %}
