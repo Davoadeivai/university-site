@@ -107,7 +107,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         'desired_major__group__name', 'desired_major__department__name',
     ]
     readonly_fields = [
-        'tracking_code', 'created_at', 'updated_at',
+        'tracking_code', 'created_at_jalali_ro', 'updated_at_jalali_ro',
+        'birth_date_jalali_ro', 'interview_date_jalali_ro',
         'doc_national_id_preview', 'doc_prev_degree_preview',
         'doc_photo_preview', 'doc_military_preview',
     ]
@@ -140,13 +141,13 @@ class ApplicationAdmin(admin.ModelAdmin):
             'fields': (
                 ('tracking_code', 'status'),
                 ('phone_verified', 'agreed_terms'),
-                ('created_at', 'updated_at'),
+                ('created_at_jalali_ro', 'updated_at_jalali_ro'),
             )
         }),
         ('اطلاعات هویتی', {
             'fields': (
                 ('first_name', 'last_name', 'father_name'),
-                ('national_id', 'birth_date', 'gender'),
+                ('national_id', 'birth_date', 'birth_date_jalali_ro', 'gender'),
                 'military',
             )
         }),
@@ -187,7 +188,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             'fields': (
                 'admin_notes',
                 'reject_reason',
-                'interview_date',
+                ('interview_date', 'interview_date_jalali_ro'),
             ),
             'description': 'یادداشت داخلی، دلیل رد و زمان مصاحبه برای پیگیری پذیرش.',
         }),
@@ -319,6 +320,26 @@ class ApplicationAdmin(admin.ModelAdmin):
     def created_jalali(self, obj):
         from core.jalali import format_jalali_datetime
         return format_jalali_datetime(obj.created_at)
+
+    @admin.display(description='تاریخ ثبت (شمسی)')
+    def created_at_jalali_ro(self, obj):
+        from core.jalali import format_jalali_datetime
+        return format_jalali_datetime(obj.created_at) if obj and obj.created_at else '—'
+
+    @admin.display(description='آخرین به‌روزرسانی (شمسی)')
+    def updated_at_jalali_ro(self, obj):
+        from core.jalali import format_jalali_datetime
+        return format_jalali_datetime(obj.updated_at) if obj and obj.updated_at else '—'
+
+    @admin.display(description='تاریخ تولد (شمسی)')
+    def birth_date_jalali_ro(self, obj):
+        from core.jalali import format_jalali_date
+        return format_jalali_date(obj.birth_date, 'full') if obj and obj.birth_date else '—'
+
+    @admin.display(description='مصاحبه (شمسی)')
+    def interview_date_jalali_ro(self, obj):
+        from core.jalali import format_jalali_datetime
+        return format_jalali_datetime(obj.interview_date) if obj and obj.interview_date else '—'
 
     @admin.display(description='مدارک')
     def docs_summary(self, obj):
