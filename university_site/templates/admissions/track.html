@@ -1,12 +1,54 @@
 {% extends 'base.html' %}
+{% block extra_css %}
+<style>
+/* جلوگیری از تداخل با فوتر: uni-card پیش‌فرض height:100% دارد */
+.track-page { padding-bottom: 48px; }
+.track-panel {
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: var(--radius, 12px);
+    box-shadow: var(--shadow, 0 4px 16px rgba(15, 23, 42, .08));
+    height: auto !important;
+    overflow: visible !important;
+    position: relative;
+    z-index: 2;
+    transform: none !important;
+}
+.track-panel:hover { transform: none !important; }
+.track-panel-result { border: 2px solid #16a34a !important; margin-bottom: 72px; }
+[data-theme="dark"] .track-panel { background: var(--bg-white); }
+.track-timeline { position: relative; padding-inline-end: 28px; margin-bottom: 1.25rem; }
+.track-timeline-item { position: relative; margin-bottom: 16px; }
+.track-timeline-dot {
+    position: absolute;
+    inset-inline-end: -28px;
+    top: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.track-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 14px;
+}
+@media (max-width: 575.98px) {
+    .track-info-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="page-header"><div class="container"><h1 class="page-header-title">پیگیری وضعیت درخواست</h1></div></div>
-<section class="section">
+<section class="section track-page">
 <div class="container">
 <div class="row justify-content-center">
 <div class="col-lg-7">
 
-    <div class="uni-card p-5 mb-4">
+    <div class="track-panel p-5 mb-4">
         <h5 class="fw-bold text-primary-uni mb-4"><i class="fas fa-search"></i> جستجوی درخواست</h5>
         <form method="post" action="{% url 'admissions:track' %}" id="trackForm">
             {% csrf_token %}
@@ -30,12 +72,12 @@
     </div>
 
     {% if app %}
-    <div class="uni-card p-4 border border-success" id="trackResult" style="border-width:2px !important;">
+    <div class="track-panel track-panel-result p-4" id="trackResult">
         <div class="alert alert-success mb-4" style="font-size:14px;">
             <i class="fas fa-check-circle"></i>
             درخواست پیدا شد.
         </div>
-        <div class="d-flex justify-content-between align-items-start mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
             <div>
                 <h5 class="fw-bold mb-1">{{ app.first_name }} {{ app.last_name }}</h5>
                 <div class="text-muted" style="font-size:13px;">کد رهگیری: <strong>{{ app.tracking_code }}</strong></div>
@@ -60,15 +102,11 @@
         </div>
 
         {% if timeline %}
-        <div class="mb-4" style="position:relative;padding-right:28px;">
+        <div class="track-timeline">
             {% for step in timeline %}
-            <div style="position:relative;margin-bottom:16px;">
-                <div style="position:absolute;right:-28px;top:2px;width:18px;height:18px;border-radius:50%;
-                    {% if step.state == 'current' %}background:#3b82d4;box-shadow:0 0 0 4px rgba(59,130,212,.25);
-                    {% elif step.state == 'done' %}background:#16a34a;
-                    {% else %}background:#e5e7eb;
-                    {% endif %}
-                    display:flex;align-items:center;justify-content:center;">
+            <div class="track-timeline-item">
+                <div class="track-timeline-dot"
+                    style="{% if step.state == 'current' %}background:#3b82d4;box-shadow:0 0 0 4px rgba(59,130,212,.25);{% elif step.state == 'done' %}background:#16a34a;{% else %}background:#e5e7eb;{% endif %}">
                     {% if step.state == 'done' %}
                     <i class="fas fa-check" style="font-size:8px;color:#fff;"></i>
                     {% elif step.state == 'current' %}
@@ -89,37 +127,31 @@
         </div>
         {% endif %}
 
-        <div class="row g-3" style="font-size:14px;">
-            <div class="col-6">
+        <div class="track-info-grid">
+            <div>
                 <div class="text-muted">مقطع</div>
                 <div class="fw-bold">{{ app.get_degree_display }}</div>
             </div>
-            <div class="col-6">
+            <div>
                 <div class="text-muted">رشته انتخابی</div>
                 <div class="fw-bold">{% if app.desired_major %}{{ app.desired_major.name }}{% else %}—{% endif %}{% if app.desired_major2 %} / {{ app.desired_major2.name }}{% endif %}</div>
             </div>
-            <div class="col-6">
+            <div>
                 <div class="text-muted">کد ملی</div>
                 <div class="fw-bold">{{ app.national_id }}</div>
             </div>
-            <div class="col-6">
+            <div>
                 <div class="text-muted">تاریخ ثبت</div>
                 <div class="fw-bold">{{ app.created_at|jalali_date:"short" }}</div>
             </div>
             {% if app.interview_date %}
-            <div class="col-6">
+            <div>
                 <div class="text-muted">تاریخ مصاحبه</div>
                 <div class="fw-bold text-primary">{{ app.interview_date|jalali_datetime }}</div>
             </div>
             {% endif %}
         </div>
     </div>
-    <script>
-    (function () {
-        var el = document.getElementById('trackResult');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    })();
-    </script>
     {% endif %}
 
 </div>
