@@ -4,7 +4,7 @@
 {% block panel_content %}
 <div class="panel-toolbar">
     <h2>خلاصه تدریس</h2>
-    {% if active_semester %}<span class="badge bg-success">{{ active_semester.name }}</span>{% endif %}
+    {% if active_semester %}<span class="badge bg-success">{{ active_semester|semester_jalali }}</span>{% endif %}
 </div>
 
 <div class="row g-3 mb-4">

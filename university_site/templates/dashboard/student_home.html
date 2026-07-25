@@ -5,7 +5,7 @@
 <div class="panel-toolbar">
     <h2>خلاصه ترم</h2>
     {% if active_semester %}
-    <span class="badge bg-success">{{ active_semester.name }} — {{ active_semester.academic_year }}</span>
+    <span class="badge bg-success">{{ active_semester|semester_jalali }}</span>
     {% endif %}
 </div>
 

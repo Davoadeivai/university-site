@@ -1,10 +1,11 @@
 {% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
 
 {% block panel_content %}
 <div class="panel-toolbar">
     <h2>برنامه کلاس و اساتید</h2>
     <div class="d-flex gap-2 align-items-center">
-        {% if semester %}<span class="badge bg-primary">{{ semester.name }}</span>{% endif %}
+        {% if semester %}<span class="badge bg-primary">{{ semester|semester_jalali }}</span>{% endif %}
         <a href="{% url 'dashboard:print_class_schedule' %}" class="btn btn-sm btn-outline-secondary" target="_blank">
             <i class="fas fa-print"></i> پرینت
         </a>

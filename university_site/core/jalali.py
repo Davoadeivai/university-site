@@ -1,6 +1,7 @@
 """ابزارهای مشترک تاریخ شمسی (جلالی) برای کل پروژه."""
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 
 import jdatetime
@@ -83,3 +84,52 @@ def format_jalali_datetime(value, persian_digits: bool = True) -> str:
 def jalali_now_stamp(fmt: str = '%Y%m%d') -> str:
     """برای نام فایل — ارقام انگلیسی شمسی."""
     return jdatetime.datetime.now().strftime(fmt)
+
+
+def g2j_year(year: int) -> int:
+    """تقریب سال شمسی از سال میلادی (حوالی نوروز)."""
+    return jdatetime.date.fromgregorian(date=date(year, 3, 21)).year
+
+
+def jalali_year_range(text: str) -> str:
+    """تبدیل رشته سال تحصیلی مثل 2026-2027 به ۱۴۰۵-۱۴۰۶."""
+    if not text:
+        return text
+    m = re.match(r'^\s*(\d{4})\s*[-–/]\s*(\d{4})\s*$', str(text))
+    if not m:
+        return gregorian_years_in_text(str(text))
+    y1, y2 = int(m.group(1)), int(m.group(2))
+    if y1 >= 1300 and y1 < 1600:
+        return to_persian_digits(str(text))
+    try:
+        return to_persian_digits(f'{g2j_year(y1)}-{g2j_year(y2)}')
+    except Exception:
+        return str(text)
+
+
+def gregorian_years_in_text(text: str) -> str:
+    """تبدیل سال‌های چهاررقمی میلادی داخل متن (مثل «ترم جاری 2026»)."""
+    if not text:
+        return text
+
+    def repl(m):
+        y = int(m.group(0))
+        if 1300 <= y < 1600:
+            return to_persian_digits(str(y))
+        if y < 1900 or y > 2100:
+            return m.group(0)
+        try:
+            return to_persian_digits(str(g2j_year(y)))
+        except Exception:
+            return m.group(0)
+
+    return re.sub(r'(?<!\d)(?:19|20)\d{2}(?!\d)', repl, str(text))
+
+
+def format_semester_jalali(name: str = '', academic_year: str = '') -> str:
+    """نمایش نام ترم + سال تحصیلی به شمسی، مثل: ترم جاری ۱۴۰۵ — ۱۴۰۵-۱۴۰۶"""
+    name_j = gregorian_years_in_text(name or '')
+    year_j = jalali_year_range(academic_year or '')
+    if name_j and year_j:
+        return f'{name_j} — {year_j}'
+    return name_j or year_j or ''

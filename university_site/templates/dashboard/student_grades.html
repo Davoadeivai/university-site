@@ -1,4 +1,5 @@
 {% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
 
 {% block panel_content %}
 <div class="panel-toolbar">
@@ -21,7 +22,7 @@
 
 {% for group in by_semester %}
 <div class="uni-card p-0 overflow-hidden mb-4">
-    <div class="p-3 border-bottom"><strong>{{ group.semester.name }}</strong> <span class="text-muted">{{ group.semester.academic_year }}</span></div>
+    <div class="p-3 border-bottom"><strong>{{ group.semester.name|jalali_years }}</strong> <span class="text-muted">{{ group.semester.academic_year|jalali_years }}</span></div>
     <div class="table-responsive">
         <table class="panel-table">
             <thead>

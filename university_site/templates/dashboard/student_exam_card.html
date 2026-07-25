@@ -28,7 +28,7 @@
     <div class="text-center mb-3">
         <div class="fw-bold">موسسه آموزش عالی علامه امینی بهنمیر</div>
         <div class="text-muted" style="font-size:13px;">کارت ورود به جلسه امتحان</div>
-        {% if semester %}<div class="badge bg-primary mt-2">{{ semester.name }} — {{ semester.academic_year }}</div>{% endif %}
+        {% if semester %}<div class="badge bg-primary mt-2">{{ semester|semester_jalali }}</div>{% endif %}
     </div>
     <div class="row g-3 mb-4" style="font-size:14px;">
         <div class="col-md-6"><span class="text-muted">نام:</span> <strong>{{ request.user.get_full_name|default:request.user.username }}</strong></div>

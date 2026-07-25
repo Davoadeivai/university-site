@@ -1,6 +1,11 @@
 from django import template
 
-from core.jalali import format_jalali_date, format_jalali_datetime
+from core.jalali import (
+    format_jalali_date,
+    format_jalali_datetime,
+    format_semester_jalali,
+    jalali_year_range,
+)
 
 register = template.Library()
 
@@ -30,6 +35,23 @@ def jalali_datetime(value, fmt='short'):
             return f"{date_part} - {time_part.split(' - ', 1)[1]}"
         return date_part
     return format_jalali_datetime(value, persian_digits=True)
+
+
+@register.filter
+def jalali_years(value):
+    """سال‌های میلادی داخل متن یا سال تحصیلی را شمسی می‌کند."""
+    return jalali_year_range(str(value or ''))
+
+
+@register.filter
+def semester_jalali(semester):
+    """{{ semester|semester_jalali }} → ترم جاری ۱۴۰۵ — ۱۴۰۵-۱۴۰۶"""
+    if not semester:
+        return ''
+    return format_semester_jalali(
+        getattr(semester, 'name', '') or '',
+        getattr(semester, 'academic_year', '') or '',
+    )
 
 
 @register.filter

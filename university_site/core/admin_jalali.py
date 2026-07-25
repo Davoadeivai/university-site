@@ -1,59 +1,14 @@
 """کمک‌کننده‌های نمایش تاریخ شمسی در ادمین Django."""
 from __future__ import annotations
 
-import re
-
 from django.contrib import admin
 
 from core.jalali import (
     format_jalali_date,
     format_jalali_datetime,
-    to_persian_digits,
+    gregorian_years_in_text as _gregorian_years_in_text,
+    jalali_year_range as _jalali_year_range,
 )
-
-
-def _g2j_year(year: int) -> int:
-    """تقریب سال شمسی از سال میلادی (حوالی نوروز)."""
-    import jdatetime
-    from datetime import date
-    return jdatetime.date.fromgregorian(date=date(year, 3, 21)).year
-
-
-def _jalali_year_range(text: str) -> str:
-    """تبدیل رشته سال تحصیلی مثل 2026-2027 به ۱۴۰۵-۱۴۰۶ در صورت میلادی بودن."""
-    if not text:
-        return text
-    m = re.match(r'^\s*(\d{4})\s*[-–/]\s*(\d{4})\s*$', str(text))
-    if not m:
-        return _gregorian_years_in_text(str(text))
-    y1, y2 = int(m.group(1)), int(m.group(2))
-    # سال‌های شمسی معمولاً ۱۳xx/۱۴xx هستند
-    if y1 >= 1300 and y1 < 1600:
-        return to_persian_digits(str(text))
-    try:
-        j1, j2 = _g2j_year(y1), _g2j_year(y2)
-        return to_persian_digits(f'{j1}-{j2}')
-    except Exception:
-        return str(text)
-
-
-def _gregorian_years_in_text(text: str) -> str:
-    """تبدیل سال‌های چهاررقمی میلادی داخل متن (مثل «ترم جاری 2026»)."""
-    if not text:
-        return text
-
-    def repl(m):
-        y = int(m.group(0))
-        if 1300 <= y < 1600:
-            return to_persian_digits(str(y))
-        if y < 1900 or y > 2100:
-            return m.group(0)
-        try:
-            return to_persian_digits(str(_g2j_year(y)))
-        except Exception:
-            return m.group(0)
-
-    return re.sub(r'(?<!\d)(?:19|20)\d{2}(?!\d)', repl, str(text))
 
 
 class JalaliAdminMixin:
