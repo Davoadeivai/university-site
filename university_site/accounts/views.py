@@ -406,3 +406,82 @@ def password_reset_confirm(request, uidb64, token):
         'token':  token,
         'page_title': 'تنظیم رمز عبور جدید',
     })
+
+
+def magic_login_request(request):
+    """ارسال لینک ورود یک‌بارمصرف به موبایل متقاضی پذیرفته‌شده."""
+    from django.urls import reverse
+    from admissions.models import Application
+    from core.sms import check_rate_limit, normalize_phone, send_sms
+    from core.notify import _site_label
+    from .magic_login import make_magic_token
+
+    if request.method != 'POST':
+        return redirect('admissions:track')
+
+    nid = (request.POST.get('national_id') or '').strip()
+    trans = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
+    nid = nid.translate(trans)
+    nid = ''.join(ch for ch in nid if ch.isdigit())
+
+    allowed, rl_msg = check_rate_limit(request, scope='magic_login', limit=5, window=300)
+    if not allowed:
+        messages.error(request, rl_msg)
+        return redirect(f"{reverse('admissions:track')}?q={nid}")
+
+    app = (
+        Application.objects.filter(national_id=nid, status='accepted')
+        .order_by('-id')
+        .first()
+    )
+    if not app:
+        messages.error(request, 'فقط برای درخواست‌های پذیرفته‌شده لینک ورود ارسال می‌شود.')
+        return redirect('admissions:track')
+
+    phone = normalize_phone(app.phone)
+    if not phone:
+        messages.error(request, 'شماره موبایل روی درخواست ثبت نشده است.')
+        return redirect(f"{reverse('admissions:track')}?q={nid}")
+
+    user = User.objects.filter(username=nid).first()
+    if user is None:
+        profile = UserProfile.objects.filter(national_id=nid).select_related('user').first()
+        user = profile.user if profile else None
+
+    label = _site_label()
+    if user is None:
+        reg_url = request.build_absolute_uri(
+            reverse('accounts:register') + f'?nid={nid}&from=track'
+        )
+        send_sms(
+            phone,
+            f'{label}: حساب ندارید. برای ادامه ثبت‌نام کنید: {reg_url}',
+        )
+        messages.success(request, 'لینک ساخت حساب به موبایل شما ارسال شد.')
+        return redirect(f"{reverse('admissions:track')}?q={nid}")
+
+    token = make_magic_token(user)
+    magic_url = request.build_absolute_uri(reverse('accounts:magic_login', args=[token]))
+    send_sms(
+        phone,
+        f'{label}: لینک ورود یک‌بارمصرف (۳۰ دقیقه): {magic_url}',
+    )
+    messages.success(request, 'لینک ورود یک‌بارمصرف به موبایل شما ارسال شد.')
+    return redirect(f"{reverse('admissions:track')}?q={nid}")
+
+
+def magic_login(request, token):
+    """ورود با لینک یک‌بارمصرف."""
+    from .magic_login import consume_magic_token
+    from dashboard.onboarding import tuition_is_paid
+
+    user = consume_magic_token(token)
+    if not user:
+        messages.error(request, 'لینک ورود نامعتبر یا منقضی است. دوباره درخواست دهید.')
+        return redirect('accounts:login')
+
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
+    if not tuition_is_paid(user):
+        return redirect('dashboard:student_payments')
+    return redirect('dashboard:student_registration')

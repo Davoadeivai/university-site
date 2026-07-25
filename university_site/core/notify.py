@@ -90,6 +90,8 @@ def notify_application_created(application) -> bool:
 def notify_application_status(application) -> bool:
     label = _site_label()
     status = application.get_status_display()
+    if application.status == 'accepted':
+        return notify_application_accepted(application)
     msg = (
         f'{label}: وضعیت پذیرش شما به «{status}» تغییر یافت. '
         f'کد رهگیری: {application.tracking_code}'
@@ -97,13 +99,49 @@ def notify_application_status(application) -> bool:
     return notify_phone(application.phone, msg)
 
 
+def notify_application_accepted(application) -> bool:
+    """پیامک ویژه پذیرش نهایی + راهنمای مراحل بعد."""
+    label = _site_label()
+    portal = getattr(settings, 'PUBLIC_SITE_URL', '') or 'https://portal.aab.ac.ir'
+    track = f'{portal.rstrip("/")}/پذیرش/پیگیری/?q={application.national_id}'
+    msg = (
+        f'{label}: تبریک! پذیرفته شدید. '
+        f'کد رهگیری {application.tracking_code}. '
+        f'مراحل بعد (حساب، شهریه، انتخاب واحد): {track}'
+    )
+    return notify_phone(application.phone, msg)
+
+
+def notify_tuition_paid(payment) -> bool:
+    label = _site_label()
+    amount = f'{int(payment.amount):,}'
+    msg = (
+        f'{label}: پرداخت شهریه ({amount} تومان) تأیید شد. '
+        f'اکنون می‌توانید انتخاب واحد را انجام دهید.'
+    )
+    return notify_phone(phone_from_user(payment.student), msg)
+
+
+def notify_registration_ready(user, semester_name: str = '') -> bool:
+    label = _site_label()
+    portal = getattr(settings, 'PUBLIC_SITE_URL', '') or 'https://portal.aab.ac.ir'
+    msg = (
+        f'{label}: بازه انتخاب واحد'
+        f'{(" " + semester_name) if semester_name else ""} فعال است. '
+        f'{portal.rstrip("/")}/dashboard/registration/'
+    )
+    return notify_phone(phone_from_user(user), msg)
+
+
 def notify_enrollment_created(enrollment) -> bool:
     label = _site_label()
     course = getattr(enrollment.course, 'name', 'درس')
     semester = getattr(enrollment.semester, 'name', '')
+    portal = getattr(settings, 'PUBLIC_SITE_URL', '') or 'https://portal.aab.ac.ir'
     msg = f'{label}: انتخاب واحد ثبت شد — {course}'
     if semester:
         msg += f' ({semester})'
+    msg += f'. برنامه کلاس: {portal.rstrip("/")}/dashboard/schedule/'
     return notify_phone(phone_from_user(enrollment.student), msg)
 
 

@@ -8,3 +8,4 @@ class DashboardConfig(AppConfig):
 
     def ready(self):
         from . import signals  # noqa: F401
+        from . import signals_payment  # noqa: F401

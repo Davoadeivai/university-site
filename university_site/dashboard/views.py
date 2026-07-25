@@ -561,10 +561,11 @@ def payment_callback(request):
     if ok:
         messages.success(
             request,
-            f'پرداخت موفق — کد پیگیری: {locked.transaction_id or locked.authority}',
+            f'پرداخت موفق — کد پیگیری: {locked.transaction_id or locked.authority}. '
+            f'اکنون می‌توانید انتخاب واحد را انجام دهید.',
         )
-    else:
-        messages.error(request, 'پرداخت ناموفق بود یا لغو شد.')
+        return redirect('dashboard:student_registration')
+    messages.error(request, 'پرداخت ناموفق بود یا لغو شد.')
     return redirect('dashboard:student_payments')
 
 

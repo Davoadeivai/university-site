@@ -113,6 +113,7 @@ SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
 KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
 SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
 SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی بهنمیر')
+PUBLIC_SITE_URL = config('PUBLIC_SITE_URL', default='https://portal.aab.ac.ir')
 # نام الگوی تأیید (verify lookup) در پنل کاوه‌نگار؛ اگر پر باشد OTP از این روش ارسال می‌شود
 KAVENEGAR_OTP_TEMPLATE = config('KAVENEGAR_OTP_TEMPLATE', default='')
 OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)

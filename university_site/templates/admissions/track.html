@@ -194,6 +194,13 @@
                     <i class="fas fa-sign-in-alt"></i> ورود و ادامه مسیر
                 </a>
                 {% endif %}
+                <form method="post" action="{% url 'accounts:magic_login_request' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="national_id" value="{{ app.national_id }}">
+                    <button type="submit" class="btn btn-outline-success">
+                        <i class="fas fa-mobile-alt"></i> ارسال لینک ورود به موبایل
+                    </button>
+                </form>
             </div>
             {% if journey.registration_open %}
             <div class="alert alert-success mt-3 mb-0" style="font-size:13px;">
