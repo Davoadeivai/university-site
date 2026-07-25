@@ -1,4 +1,7 @@
 from django.contrib import admin
+
+from core.admin_jalali import JalaliAdminMixin
+
 from .models import Book, Article, LibraryMembership
 
 
@@ -18,8 +21,8 @@ class ArticleAdmin(admin.ModelAdmin):
 
 
 @admin.register(LibraryMembership)
-class LibraryMembershipAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'student_id', 'email', 'status', 'created_at']
+class LibraryMembershipAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['full_name', 'student_id', 'email', 'status', 'created_jalali']
     list_filter = ['status']
     list_editable = ['status']
     search_fields = ['full_name', 'student_id']

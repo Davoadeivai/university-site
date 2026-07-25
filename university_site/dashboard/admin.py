@@ -6,6 +6,9 @@ from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
+from core.admin_jalali import JalaliAdminMixin
+from core.jalali import format_jalali_date, format_jalali_datetime
+
 from .models import (
     Semester, Enrollment, TeachingAssignment, StudentRequest,
     Payment, ExamSchedule, Assignment, AssignmentSubmission, Attendance,
@@ -15,19 +18,43 @@ from .onboarding import reapply_discount_to_pending
 
 
 @admin.register(Semester)
-class SemesterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'semester_type', 'academic_year', 'start_date', 'end_date', 'is_active', 'registration_open']
+class SemesterAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = [
+        'name_jalali', 'semester_type', 'academic_year_jalali',
+        'start_date_jalali', 'end_date_jalali',
+        'is_active', 'registration_open',
+    ]
     list_filter = ['semester_type', 'is_active', 'registration_open']
     search_fields = ['name', 'academic_year']
+    readonly_fields = ['start_date_jalali_ro', 'end_date_jalali_ro']
+
+    fieldsets = (
+        (None, {
+            'fields': (
+                'name', 'semester_type', 'academic_year',
+                'start_date', 'start_date_jalali_ro',
+                'end_date', 'end_date_jalali_ro',
+                'is_active', 'registration_open',
+            ),
+        }),
+    )
+
+    @admin.display(description='شروع (شمسی)')
+    def start_date_jalali_ro(self, obj):
+        return format_jalali_date(obj.start_date, 'full') if obj and obj.start_date else '—'
+
+    @admin.display(description='پایان (شمسی)')
+    def end_date_jalali_ro(self, obj):
+        return format_jalali_date(obj.end_date, 'full') if obj and obj.end_date else '—'
 
 
 @admin.register(Enrollment)
-class EnrollmentAdmin(admin.ModelAdmin):
+class EnrollmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     change_list_template = 'admin/dashboard/enrollment_changelist.html'
 
     list_display = [
         'student', 'major_name', 'course', 'semester',
-        'status_badge', 'mid_term_grade', 'final_grade', 'enrolled_at',
+        'status_badge', 'mid_term_grade', 'final_grade', 'enrolled_jalali',
     ]
     list_filter = [
         'status',
@@ -184,26 +211,33 @@ class TeachingAssignmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentRequest)
-class StudentRequestAdmin(admin.ModelAdmin):
-    list_display = ['student', 'request_type', 'title', 'status', 'created_at']
+class StudentRequestAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['student', 'request_type', 'title', 'status', 'created_jalali']
     list_filter = ['request_type', 'status', 'created_at']
     search_fields = ['student__first_name', 'student__last_name', 'title']
 
 
 @admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+class PaymentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = [
         'student', 'payment_type', 'installment_no', 'installment_stage',
-        'amount', 'method', 'due_date', 'semester', 'status', 'gateway',
-        'receipt_ref', 'payment_date',
+        'amount', 'method', 'due_date_jalali', 'semester', 'status', 'gateway',
+        'receipt_ref', 'payment_date_jalali',
     ]
     list_filter = ['status', 'method', 'payment_type', 'installment_stage', 'gateway', 'semester']
     search_fields = [
         'student__first_name', 'student__last_name', 'student__username',
         'transaction_id', 'authority', 'receipt_ref', 'exam_barcode',
     ]
-    readonly_fields = ['authority', 'transaction_id', 'payment_date', 'created_at', 'reminder_sent_at', 'exam_barcode']
+    readonly_fields = [
+        'authority', 'transaction_id', 'payment_date_jalali_ro',
+        'created_jalali', 'reminder_sent_at', 'exam_barcode',
+    ]
     actions = ['confirm_offline_payments', 'reject_offline_payments']
+
+    @admin.display(description='تاریخ پرداخت (شمسی)')
+    def payment_date_jalali_ro(self, obj):
+        return format_jalali_datetime(obj.payment_date) if obj and obj.payment_date else '—'
 
     @admin.action(description='تأیید پرداخت آفلاین (کارت‌به‌کارت / کارتخوان / فیش / نقدی)')
     def confirm_offline_payments(self, request, queryset):
@@ -225,9 +259,9 @@ class PaymentAdmin(admin.ModelAdmin):
 
 
 @admin.register(TuitionInstallmentPlan)
-class TuitionInstallmentPlanAdmin(admin.ModelAdmin):
+class TuitionInstallmentPlanAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = [
-        'academic_year', 'ratio_initial', 'ratio_mid', 'ratio_exam',
+        'academic_year_jalali', 'ratio_initial', 'ratio_mid', 'ratio_exam',
         'due_days_initial', 'due_days_mid', 'due_days_exam',
         'reminder_days_before', 'is_active',
     ]
@@ -236,14 +270,18 @@ class TuitionInstallmentPlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentDiscountClaim)
-class StudentDiscountClaimAdmin(admin.ModelAdmin):
+class StudentDiscountClaimAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = [
         'student', 'semester', 'discount_type', 'percent', 'status',
-        'created_at', 'reviewed_at',
+        'created_jalali', 'reviewed_jalali',
     ]
     list_filter = ['status', 'discount_type', 'semester']
     search_fields = ['student__first_name', 'student__last_name', 'student__username']
     actions = ['approve_claims', 'reject_claims']
+
+    @admin.display(description='بررسی', ordering='reviewed_at')
+    def reviewed_jalali(self, obj):
+        return format_jalali_datetime(obj.reviewed_at) if obj.reviewed_at else '—'
 
     @admin.action(description='تأیید تخفیف و بازتوزیع اقساط پرداخت‌نشده')
     def approve_claims(self, request, queryset):
@@ -265,28 +303,35 @@ class StudentDiscountClaimAdmin(admin.ModelAdmin):
 
 
 @admin.register(ExamSchedule)
-class ExamScheduleAdmin(admin.ModelAdmin):
-    list_display = ['course', 'semester', 'exam_type', 'date', 'start_time', 'end_time', 'location']
+class ExamScheduleAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['course', 'semester', 'exam_type', 'date_jalali', 'start_time', 'end_time', 'location']
     list_filter = ['exam_type', 'semester', 'date']
     search_fields = ['course__name', 'location']
 
 
 @admin.register(Assignment)
-class AssignmentAdmin(admin.ModelAdmin):
-    list_display = ['course', 'semester', 'professor', 'title', 'assignment_type', 'due_date', 'max_score', 'is_active']
+class AssignmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = [
+        'course', 'semester', 'professor', 'title', 'assignment_type',
+        'due_date_jalali', 'max_score', 'is_active',
+    ]
     list_filter = ['assignment_type', 'semester', 'is_active']
     search_fields = ['course__name', 'professor__first_name', 'professor__last_name', 'title']
 
 
 @admin.register(AssignmentSubmission)
-class AssignmentSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['assignment', 'student', 'submitted_at', 'grade', 'status']
+class AssignmentSubmissionAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['assignment', 'student', 'submitted_jalali', 'grade', 'status']
     list_filter = ['status', 'assignment__semester']
     search_fields = ['student__first_name', 'student__last_name', 'assignment__title']
 
+    @admin.display(description='ارسال', ordering='submitted_at')
+    def submitted_jalali(self, obj):
+        return format_jalali_datetime(obj.submitted_at) if obj.submitted_at else '—'
+
 
 @admin.register(Attendance)
-class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ['enrollment', 'date', 'status']
+class AttendanceAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['enrollment', 'date_jalali', 'status']
     list_filter = ['status', 'date']
     search_fields = ['enrollment__student__first_name', 'enrollment__student__last_name']

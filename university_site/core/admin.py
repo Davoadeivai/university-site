@@ -62,8 +62,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
 
 @admin.register(Slider)
-class SliderAdmin(admin.ModelAdmin):
-    list_display = ['title', 'badge_text', 'badge_color', 'order', 'is_active', 'created_at']
+class SliderAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'badge_text', 'badge_color', 'order', 'is_active', 'created_jalali']
     list_editable = ['order', 'is_active']
     list_filter = ['is_active', 'badge_color']
     search_fields = ['title', 'subtitle', 'badge_text']
@@ -412,7 +412,7 @@ class PaymentIdentifierAdmin(admin.ModelAdmin):
 
 
 @admin.register(DownloadableDocument)
-class DownloadableDocumentAdmin(admin.ModelAdmin):
+class DownloadableDocumentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     # بدون fieldsets جدا — همه فیلدها در یک فرم تا آپلود حتماً دیده شود
     fields = (
         'file',
@@ -427,7 +427,7 @@ class DownloadableDocumentAdmin(admin.ModelAdmin):
     )
     list_display = [
         'title', 'degree_level', 'category', 'has_pdf', 'has_word',
-        'order', 'is_active', 'created_at', 'delete_button',
+        'order', 'is_active', 'created_jalali', 'delete_button',
     ]
     list_filter = ['degree_level', 'category', 'is_active']
     list_editable = ['order', 'is_active']

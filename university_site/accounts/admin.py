@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.html import format_html
 
+from core.admin_jalali import JalaliAdminMixin
+
 from .models import UserProfile, Announcement, OTPCode
 
 
@@ -64,8 +66,8 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(Announcement)
-class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ['title', 'target', 'is_urgent', 'is_active', 'created_at', 'expires_at']
+class AnnouncementAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'target', 'is_urgent', 'is_active', 'created_jalali', 'expires_jalali']
     list_filter = ['target', 'is_urgent', 'is_active']
     list_editable = ['is_urgent', 'is_active']
     search_fields = ['title', 'content']
@@ -80,8 +82,8 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
 
 @admin.register(OTPCode)
-class OTPCodeAdmin(admin.ModelAdmin):
-    list_display = ['user', 'created_at', 'expires_at', 'is_used']
+class OTPCodeAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['user', 'created_jalali', 'expires_jalali', 'is_used']
     list_filter = ['is_used', 'created_at']
     search_fields = ['user__username', 'user__first_name', 'user__last_name']
     readonly_fields = ['user', 'code', 'created_at', 'expires_at', 'is_used']

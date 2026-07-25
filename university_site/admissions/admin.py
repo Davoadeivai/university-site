@@ -4,6 +4,8 @@ from django.urls import path, reverse
 from django.utils.html import format_html, mark_safe
 from django.utils.translation import gettext_lazy as _
 
+from core.admin_jalali import JalaliAdminMixin
+
 from .application_export import excel_response, print_html_response, word_response
 from .models import (
     AdmissionInfo, Application,
@@ -15,8 +17,8 @@ from .models import (
 #  اطلاعات پذیرش
 # ─────────────────────────────────────────────
 @admin.register(AdmissionInfo)
-class AdmissionInfoAdmin(admin.ModelAdmin):
-    list_display = ['get_degree', 'title', 'deadline', 'capacity', 'is_open_badge', 'is_active']
+class AdmissionInfoAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['get_degree', 'title', 'deadline_jalali', 'capacity', 'is_open_badge', 'is_active']
     list_editable = ['is_active']
     list_filter = ['degree', 'is_active']
     search_fields = ['title', 'description']
@@ -490,10 +492,10 @@ class TuitionDiscountAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentPayment)
-class StudentPaymentAdmin(admin.ModelAdmin):
+class StudentPaymentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = [
         'application', 'installment_no', 'amount_fmt',
-        'due_date', 'status_badge', 'confirmed_by',
+        'due_date_jalali', 'status_badge', 'confirmed_by',
     ]
     list_filter = ['status', 'due_date']
     search_fields = [
@@ -533,8 +535,8 @@ class StudentPaymentAdmin(admin.ModelAdmin):
 
 
 @admin.register(AdmissionOTP)
-class AdmissionOTPAdmin(admin.ModelAdmin):
-    list_display = ['phone', 'created_at', 'expires_at', 'is_used', 'attempts']
+class AdmissionOTPAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['phone', 'created_jalali', 'expires_jalali', 'is_used', 'attempts']
     list_filter = ['is_used', 'created_at']
     search_fields = ['phone']
     readonly_fields = ['phone', 'code', 'created_at', 'expires_at', 'attempts', 'is_used']

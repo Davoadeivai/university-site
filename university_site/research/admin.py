@@ -1,10 +1,13 @@
 from django.contrib import admin
+
+from core.admin_jalali import JalaliAdminMixin
+
 from .models import ResearchProject, Journal, Thesis, Conference, IndustryPartnership
 
 
 @admin.register(ResearchProject)
-class ResearchProjectAdmin(admin.ModelAdmin):
-    list_display = ['title', 'researcher', 'status', 'is_featured', 'start_date']
+class ResearchProjectAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'researcher', 'status', 'is_featured', 'start_date_jalali']
     list_filter = ['status', 'is_featured']
     list_editable = ['is_featured']
     search_fields = ['title', 'researcher']
@@ -27,8 +30,8 @@ class ThesisAdmin(admin.ModelAdmin):
 
 
 @admin.register(Conference)
-class ConferenceAdmin(admin.ModelAdmin):
-    list_display = ['title', 'date', 'location', 'is_upcoming']
+class ConferenceAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'date_jalali', 'location', 'is_upcoming']
     list_filter = ['is_upcoming']
     list_editable = ['is_upcoming']
 

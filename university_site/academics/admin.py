@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.db.models import Count, Q
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+
+from core.admin_jalali import JalaliAdminMixin
+
 from .models import Department, Major, Course, AcademicCalendar, Laboratory, AcademicGroup
 
 
@@ -181,9 +184,12 @@ class CourseAdmin(admin.ModelAdmin):
 
 
 @admin.register(AcademicCalendar)
-class AcademicCalendarAdmin(admin.ModelAdmin):
-    list_display  = ['title', 'semester', 'academic_year', 'start_date', 'end_date', 'is_important']
-    list_filter   = ['semester', 'academic_year', 'is_important']
+class AcademicCalendarAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = [
+        'title', 'semester', 'academic_year_jalali',
+        'start_date_jalali', 'end_date_jalali', 'is_important',
+    ]
+    list_filter = ['semester', 'academic_year', 'is_important']
     list_editable = ['is_important']
 
 
