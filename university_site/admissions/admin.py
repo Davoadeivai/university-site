@@ -111,7 +111,7 @@ class ApplicationAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ['desired_major', 'desired_major2']
     inlines = [StudentPaymentInline]
-    date_hierarchy = 'created_at'
+    # date_hierarchy روی MySQL بدون جداول timezone خطای 500 می‌دهد
     list_per_page = 50
     list_select_related = (
         'desired_major',
