@@ -54,13 +54,19 @@ class UserProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ['user', 'major']
     fieldsets = (
         ('کاربر و نقش', {
-            'fields': ('user', 'role', 'avatar')
+            'fields': ('user', 'role', 'avatar', 'photo_hijab_confirmed')
         }),
-        ('اطلاعات هویتی و تماس', {
-            'fields': ('national_id', 'phone', 'birth_date', 'student_id', 'major', 'department')
+        ('اطلاعات هویتی', {
+            'fields': (
+                'national_id', 'father_name', 'birth_date', 'gender', 'military',
+                'student_id', 'major', 'department',
+            )
         }),
-        ('سایر', {
-            'fields': ('bio',)
+        ('تماس و سکونت', {
+            'fields': ('phone', 'phone_emergency', 'province', 'city', 'address', 'postal_code')
+        }),
+        ('سوابق تحصیلی', {
+            'fields': ('prev_degree', 'prev_major', 'prev_school', 'prev_grad_year', 'gpa', 'bio')
         }),
     )
 

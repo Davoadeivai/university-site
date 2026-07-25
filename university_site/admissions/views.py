@@ -226,9 +226,6 @@ def apply(request):
                 if accepted >= info.capacity:
                     errors.append('ظرفیت این مقطع تکمیل شده است.')
 
-        if 'doc_national_id' not in request.FILES:
-            errors.append('تصویر کارت ملی الزامی است.')
-
         form_phone = only_digits(p.get('phone', ''))
         if require_otp:
             submit_phone = phone
@@ -329,15 +326,25 @@ def apply(request):
             if not birth_date:
                 errors.append('تاریخ تولد شمسی معتبر نیست.')
 
-        for field_name, label in [
-            ('doc_national_id', 'کارت ملی'),
-            ('doc_prev_degree', 'مدرک تحصیلی'),
-            ('doc_photo', 'عکس پرسنلی'),
-            ('doc_military', 'مدرک نظام وظیفه'),
+        for field_name, label, required in [
+            ('doc_national_id', 'کارت ملی', True),
+            ('doc_prev_degree', 'مدرک تحصیلی', False),
+            ('doc_military', 'مدرک نظام وظیفه', False),
         ]:
-            err = validate_image_upload(request.FILES.get(field_name), label)
+            err = validate_image_upload(request.FILES.get(field_name), label, required=required)
             if err:
                 errors.append(err)
+
+        from core.iran import validate_personnel_photo
+        hijab_ok = bool(p.get('photo_hijab_confirmed'))
+        errors.extend(
+            validate_personnel_photo(
+                request.FILES.get('doc_photo'),
+                gender=gender or '',
+                hijab_confirmed=hijab_ok,
+                required=True,
+            )
+        )
 
         if errors:
             for e in errors:
@@ -370,6 +377,7 @@ def apply(request):
             special_needs=(p.get('special_needs') or '').strip(),
             agreed_terms=True,
             phone_verified=phone_verified,
+            photo_hijab_confirmed=hijab_ok if (gender or '') == 'female' else False,
         )
         for field in ['doc_national_id', 'doc_prev_degree', 'doc_photo', 'doc_military']:
             if field in request.FILES:
@@ -614,12 +622,12 @@ def complete_documents(request, code):
 
     app = get_object_or_404(Application, tracking_code=code, status='incomplete')
     if request.method == 'POST':
+        from core.iran import validate_personnel_photo
         errors = []
         updated = False
         for field_name, label in [
             ('doc_national_id', 'کارت ملی'),
             ('doc_prev_degree', 'مدرک تحصیلی'),
-            ('doc_photo', 'عکس پرسنلی'),
             ('doc_military', 'مدرک نظام وظیفه'),
         ]:
             f = request.FILES.get(field_name)
@@ -630,6 +638,28 @@ def complete_documents(request, code):
                 else:
                     setattr(app, field_name, f)
                     updated = True
+
+        photo = request.FILES.get('doc_photo')
+        hijab_ok = bool(request.POST.get('photo_hijab_confirmed')) or bool(app.photo_hijab_confirmed)
+        if photo:
+            photo_errors = validate_personnel_photo(
+                photo, gender=app.gender, hijab_confirmed=hijab_ok, required=True,
+            )
+            if not photo_errors:
+                app.doc_photo = photo
+                updated = True
+            errors.extend(photo_errors)
+        elif not app.doc_photo:
+            errors.append('عکس پرسنلی الزامی است.')
+        elif app.gender == 'female' and not hijab_ok:
+            errors.append(
+                'برای متقاضیان خانم، تأیید رعایت حجاب کامل در عکس پرسنلی الزامی است.'
+            )
+
+        if app.gender == 'female' and hijab_ok and not app.photo_hijab_confirmed:
+            app.photo_hijab_confirmed = True
+            updated = True
+
         if errors:
             for e in errors:
                 messages.error(request, e)

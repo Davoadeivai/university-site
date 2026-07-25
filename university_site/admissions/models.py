@@ -136,6 +136,11 @@ class Application(models.Model):
                                         upload_to='admissions/docs/', blank=True, null=True)
     doc_military    = models.ImageField(_('کارت پایان خدمت/معافیت'),
                                         upload_to='admissions/docs/', blank=True, null=True)
+    photo_hijab_confirmed = models.BooleanField(
+        _('تأیید حجاب کامل در عکس پرسنلی'),
+        default=False,
+        help_text=_('برای متقاضیان خانم الزامی است.'),
+    )
 
     # ── سایر ──
     know_from      = models.CharField(_('نحوه آشنایی'), max_length=20,

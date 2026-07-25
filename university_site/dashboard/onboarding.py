@@ -50,22 +50,67 @@ def sync_profile_from_application(user: User, app: Application | None = None) ->
         return profile
 
     changed = False
-    if not profile.national_id and nid:
-        profile.national_id = nid
+    user_changed = False
+
+    def _fill(attr, value, only_if_empty=True):
+        nonlocal changed
+        if value in (None, ''):
+            return
+        current = getattr(profile, attr, None)
+        if only_if_empty and current not in (None, ''):
+            return
+        setattr(profile, attr, value)
         changed = True
-    # فقط اگر رشته خالی باشد از پذیرش پر کن (بازنویسی دستی ادمین حفظ شود)
+
+    if not profile.national_id and (app.national_id or nid):
+        profile.national_id = app.national_id or nid
+        changed = True
     if app.desired_major_id and not profile.major_id:
         profile.major = app.desired_major
         changed = True
-    if app.phone and not profile.phone:
-        profile.phone = app.phone
+
+    _fill('phone', app.phone)
+    _fill('phone_emergency', app.phone_emergency)
+    _fill('father_name', app.father_name)
+    _fill('birth_date', app.birth_date)
+    _fill('gender', app.gender)
+    _fill('military', app.military)
+    _fill('address', app.address)
+    _fill('postal_code', app.postal_code)
+    _fill('prev_degree', app.prev_degree)
+    _fill('prev_major', app.prev_major)
+    _fill('prev_school', app.prev_school)
+    _fill('prev_grad_year', app.prev_grad_year)
+    _fill('gpa', app.gpa)
+    if app.photo_hijab_confirmed and not profile.photo_hijab_confirmed:
+        profile.photo_hijab_confirmed = True
         changed = True
-    if not user.first_name and app.first_name:
+
+    if app.doc_photo and not profile.avatar:
+        try:
+            profile.avatar = app.doc_photo
+            changed = True
+        except Exception:
+            pass
+
+    if app.desired_major and app.desired_major.department_id and not profile.department:
+        try:
+            profile.department = app.desired_major.department.name
+            changed = True
+        except Exception:
+            pass
+
+    if app.first_name and not user.first_name:
         user.first_name = app.first_name
-        user.save(update_fields=['first_name'])
-    if not user.last_name and app.last_name:
+        user_changed = True
+    if app.last_name and not user.last_name:
         user.last_name = app.last_name
-        user.save(update_fields=['last_name'])
+        user_changed = True
+    if app.email and not user.email:
+        user.email = app.email
+        user_changed = True
+    if user_changed:
+        user.save(update_fields=['first_name', 'last_name', 'email'])
     if changed:
         profile.save()
     return profile

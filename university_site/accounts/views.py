@@ -251,12 +251,14 @@ def register_view(request):
                 user=user,
                 defaults=profile_defaults,
             )
+            from dashboard.onboarding import ensure_tuition_invoice, sync_profile_from_application
+            sync_profile_from_application(user, app)
             login(request, user)
-            from dashboard.onboarding import ensure_tuition_invoice
             ensure_tuition_invoice(user)
             messages.success(
                 request,
-                f'حساب کاربری ساخته شد. مرحله بعد: پرداخت شهریه.',
+                'حساب کاربری ساخته شد. مرحله بعد: پرداخت شهریه. '
+                'پروفایل و عکس پرسنلی را از صفحه «پروفایل من» تکمیل/بررسی کنید.',
             )
             return redirect('dashboard:student_payments')
 
@@ -266,31 +268,120 @@ def register_view(request):
 
 @login_required
 def profile(request):
+    from core.iran import (
+        is_valid_mobile, only_digits, parse_gpa, validate_personnel_photo,
+    )
+    from dashboard.onboarding import get_accepted_application, sync_profile_from_application
+
     profile_obj, _created = UserProfile.objects.get_or_create(user=request.user)
+    sync_profile_from_application(request.user)
+    profile_obj.refresh_from_db()
 
     if request.method == 'POST':
-        phone = request.POST.get('phone', '').strip()
-        department = request.POST.get('department', '').strip()
-        bio = request.POST.get('bio', '').strip()
-        email = request.POST.get('email', '').strip()
+        p = request.POST
+        first_name = (p.get('first_name') or '').strip()
+        last_name = (p.get('last_name') or '').strip()
+        father_name = (p.get('father_name') or '').strip()
+        phone = only_digits(p.get('phone', ''))
+        phone_emergency = only_digits(p.get('phone_emergency', ''))
+        department = (p.get('department') or '').strip()
+        bio = (p.get('bio') or '').strip()
+        email = (p.get('email') or '').strip()
+        gender = (p.get('gender') or '').strip()
+        military = (p.get('military') or 'na').strip()
+        province = (p.get('province') or '').strip()
+        city = (p.get('city') or '').strip()
+        address = (p.get('address') or '').strip()
+        postal_code = only_digits(p.get('postal_code', ''))
+        prev_degree = (p.get('prev_degree') or '').strip()
+        prev_major = (p.get('prev_major') or '').strip()
+        prev_school = (p.get('prev_school') or '').strip()
+        prev_grad_year = only_digits(p.get('prev_grad_year', ''))
+        student_id = only_digits(p.get('student_id', '')) or (p.get('student_id') or '').strip()
+        hijab_ok = bool(p.get('photo_hijab_confirmed'))
+        avatar_file = request.FILES.get('avatar')
 
-        if phone and (not phone.isdigit() or len(phone) != 11 or not phone.startswith('09')):
-            messages.error(request, 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.')
-        elif phone and UserProfile.objects.filter(phone=phone).exclude(pk=profile_obj.pk).exists():
-            messages.error(request, 'این شماره موبایل قبلاً ثبت شده است.')
+        errors = []
+        if not first_name or not last_name:
+            errors.append('نام و نام خانوادگی الزامی است.')
+        if phone and not is_valid_mobile(phone):
+            errors.append('شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.')
+        if phone and UserProfile.objects.filter(phone=phone).exclude(pk=profile_obj.pk).exists():
+            errors.append('این شماره موبایل قبلاً ثبت شده است.')
+        if postal_code and len(postal_code) not in (0, 10):
+            errors.append('کد پستی باید ۱۰ رقم باشد.')
+        if gender and gender not in dict(UserProfile.GENDER_CHOICES):
+            errors.append('جنسیت نامعتبر است.')
+        gpa_val, gpa_err = parse_gpa(p.get('gpa'))
+        if gpa_err:
+            errors.append(gpa_err)
+
+        if gender == 'female':
+            military = 'na'
+        effective_gender = gender or profile_obj.gender
+        if avatar_file:
+            errors.extend(
+                validate_personnel_photo(
+                    avatar_file,
+                    gender=effective_gender,
+                    hijab_confirmed=hijab_ok or profile_obj.photo_hijab_confirmed,
+                    required=True,
+                )
+            )
+        elif profile_obj.role == 'student' and not profile_obj.avatar:
+            errors.append('عکس پرسنلی الزامی است.')
+            if effective_gender == 'female' and not (hijab_ok or profile_obj.photo_hijab_confirmed):
+                errors.append(
+                    'برای بانوان تأیید حجاب کامل در عکس پرسنلی الزامی است.'
+                )
+        elif effective_gender == 'female' and profile_obj.avatar and not (
+            hijab_ok or profile_obj.photo_hijab_confirmed
+        ):
+            errors.append('برای بانوان تأیید حجاب کامل در عکس پرسنلی الزامی است.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
         else:
-            profile_obj.phone = phone
-            profile_obj.department = department
-            profile_obj.bio = bio
-            profile_obj.save()
+            request.user.first_name = first_name
+            request.user.last_name = last_name
             if email != request.user.email:
                 request.user.email = email
-                request.user.save(update_fields=['email'])
+            request.user.save(update_fields=['first_name', 'last_name', 'email'])
+
+            profile_obj.father_name = father_name
+            profile_obj.phone = phone
+            profile_obj.phone_emergency = phone_emergency
+            profile_obj.department = department
+            profile_obj.bio = bio
+            profile_obj.gender = gender
+            profile_obj.military = military if gender != 'female' else 'na'
+            profile_obj.province = province
+            profile_obj.city = city
+            profile_obj.address = address
+            profile_obj.postal_code = postal_code
+            profile_obj.prev_degree = prev_degree
+            profile_obj.prev_major = prev_major
+            profile_obj.prev_school = prev_school
+            profile_obj.prev_grad_year = prev_grad_year
+            profile_obj.gpa = gpa_val
+            profile_obj.student_id = student_id
+            if gender == 'female':
+                profile_obj.photo_hijab_confirmed = hijab_ok or profile_obj.photo_hijab_confirmed
+            else:
+                profile_obj.photo_hijab_confirmed = False
+            if avatar_file:
+                profile_obj.avatar = avatar_file
+            profile_obj.save()
             messages.success(request, 'پروفایل با موفقیت به‌روزرسانی شد.')
             return redirect('accounts:profile')
 
+    app = get_accepted_application(profile_obj.national_id or request.user.username)
     context = {
         'profile': profile_obj,
+        'application': app,
+        'completeness': profile_obj.completeness_percent(),
+        'prev_degree_choices': UserProfile.PREV_DEGREE_CHOICES,
         'page_title': 'پروفایل من',
     }
     return render(request, 'accounts/profile.html', context)

@@ -178,6 +178,7 @@ class ApplicationAdmin(admin.ModelAdmin):
                 ('doc_national_id', 'doc_national_id_preview'),
                 ('doc_prev_degree', 'doc_prev_degree_preview'),
                 ('doc_photo', 'doc_photo_preview'),
+                'photo_hijab_confirmed',
                 ('doc_military', 'doc_military_preview'),
             )
         }),

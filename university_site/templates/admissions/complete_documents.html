@@ -14,6 +14,12 @@
             <strong>توضیح کارشناس:</strong> {{ app.admin_notes }}
         </div>
         {% endif %}
+        <div class="alert alert-info mb-3" style="font-size:13px;line-height:1.9;">
+            عکس پرسنلی الزامی است.
+            {% if app.gender == 'female' %}
+            <strong class="text-danger">برای بانوان حجاب کامل در عکس و تأیید زیر الزامی است.</strong>
+            {% endif %}
+        </div>
         <form method="post" enctype="multipart/form-data" class="row g-3">
             {% csrf_token %}
             <div class="col-md-6">
@@ -25,13 +31,26 @@
                 <input type="file" name="doc_prev_degree" class="form-control" accept="image/*">
             </div>
             <div class="col-md-6">
-                <label class="form-label">عکس پرسنلی</label>
-                <input type="file" name="doc_photo" class="form-control" accept="image/*">
+                <label class="form-label">عکس پرسنلی {% if not app.doc_photo %}<span class="text-danger">*</span>{% endif %}</label>
+                <input type="file" name="doc_photo" class="form-control" accept="image/*" {% if not app.doc_photo %}required{% endif %}>
+                {% if app.doc_photo %}
+                <div class="form-text">عکس فعلی ثبت شده است؛ در صورت نیاز فایل جدید آپلود کنید.</div>
+                {% endif %}
             </div>
             <div class="col-md-6">
                 <label class="form-label">نظام وظیفه</label>
                 <input type="file" name="doc_military" class="form-control" accept="image/*">
             </div>
+            {% if app.gender == 'female' %}
+            <div class="col-12">
+                <div class="form-check p-3 rounded" style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);">
+                    <input class="form-check-input" type="checkbox" name="photo_hijab_confirmed" id="photoHijab" value="1" {% if app.photo_hijab_confirmed %}checked{% endif %} required>
+                    <label class="form-check-label" for="photoHijab" style="font-size:14px;">
+                        تأیید می‌کنم عکس پرسنلی با <strong>حجاب کامل اسلامی</strong> تهیه شده است. <span class="text-danger">*</span>
+                    </label>
+                </div>
+            </div>
+            {% endif %}
             <div class="col-12">
                 <button type="submit" class="btn-primary-uni">ارسال مدارک</button>
                 <a href="{% url 'admissions:track' %}?q={{ app.tracking_code }}" class="btn btn-outline-secondary ms-2">بازگشت</a>

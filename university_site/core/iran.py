@@ -63,9 +63,9 @@ ALLOWED_IMAGE_EXT = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'}
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024  # هم‌تراز UI: ۲ مگابایت
 
 
-def validate_image_upload(f, label: str = 'فایل') -> str | None:
+def validate_image_upload(f, label: str = 'فایل', required: bool = False) -> str | None:
     if not f:
-        return None
+        return f'{label} الزامی است.' if required else None
     ext = f.name.rsplit('.', 1)[-1].lower() if '.' in getattr(f, 'name', '') else ''
     if ext not in ALLOWED_IMAGE_EXT:
         return f'{label} باید تصویر (JPG/PNG/…) باشد.'
@@ -73,3 +73,16 @@ def validate_image_upload(f, label: str = 'فایل') -> str | None:
     if size > MAX_UPLOAD_BYTES:
         return f'حجم {label} نباید بیش از ۲ مگابایت باشد.'
     return None
+
+
+def validate_personnel_photo(f, gender: str = '', hijab_confirmed: bool = False, required: bool = True) -> list[str]:
+    """اعتبارسنجی عکس پرسنلی + الزام تأیید حجاب کامل برای بانوان."""
+    errors = []
+    err = validate_image_upload(f, 'عکس پرسنلی', required=required)
+    if err:
+        errors.append(err)
+    if (gender or '') == 'female' and not hijab_confirmed:
+        errors.append(
+            'برای متقاضیان خانم، تأیید رعایت حجاب کامل اسلامی در عکس پرسنلی الزامی است.'
+        )
+    return errors
