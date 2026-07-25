@@ -412,17 +412,16 @@ class DownloadableDocumentAdmin(admin.ModelAdmin):
         'title',
         'degree_level',
         'category',
-        'section',
         'description',
         'external_url',
         'order',
         'is_active',
     )
     list_display = [
-        'title', 'degree_level', 'category', 'section', 'has_pdf', 'has_word',
+        'title', 'degree_level', 'category', 'has_pdf', 'has_word',
         'order', 'is_active', 'created_at', 'delete_button',
     ]
-    list_filter = ['degree_level', 'category', 'section', 'is_active']
+    list_filter = ['degree_level', 'category', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'description']
     actions = ['delete_selected_documents']

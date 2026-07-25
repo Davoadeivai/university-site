@@ -1,4 +1,5 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
@@ -379,17 +380,11 @@ def graduate_news(request):
 
 
 def graduate_regulations(request):
-    """آیین‌نامه‌ها و فرم‌های تحصیلات تکمیلی"""
-    docs = DownloadableDocument.objects.filter(is_active=True, section='graduate')
-    category = request.GET.get('category', '')
-    if category in ('regulation', 'form', 'guide', 'other'):
-        docs = docs.filter(category=category)
-    context = {
-        'documents': docs,
-        'current_category': category,
-        'page_title': 'آیین‌نامه‌ها و فرم‌های تحصیلات تکمیلی',
-    }
-    return render(request, 'core/graduate_regulations.html', context)
+    """سازگاری با لینک‌های قدیمی — هدایت به صفحه واحد آیین‌نامه‌ها و فرم‌ها."""
+    params = request.GET.copy()
+    if 'degree' not in params:
+        params['degree'] = 'master'
+    return redirect(f"{reverse('core:documents')}?{params.urlencode()}")
 
 
 def gallery_view(request):

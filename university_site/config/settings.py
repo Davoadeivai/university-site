@@ -325,12 +325,6 @@ JAZZMIN_SETTINGS = {
                 'icon': 'fas fa-graduation-cap',
                 'permissions': ['academics.view_major'],
             },
-            {
-                'name': 'آیین‌نامه‌های تحصیلات تکمیلی',
-                'url': '/admin/core/downloadabledocument/?section__exact=graduate',
-                'icon': 'fas fa-file-alt',
-                'permissions': ['core.view_downloadabledocument'],
-            },
         ],
         'academics': [{
             'name': 'فقط رشته‌های ارشد',
