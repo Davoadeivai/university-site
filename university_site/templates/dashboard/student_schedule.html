@@ -1,0 +1,41 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>برنامه کلاس و اساتید</h2>
+    {% if semester %}
+    <span class="badge bg-primary">{{ semester.name }}</span>
+    {% endif %}
+</div>
+
+{% if rows %}
+<div class="row g-3">
+    {% for row in rows %}
+    <div class="col-md-6">
+        <div class="uni-card p-4 h-auto">
+            <h5 class="fw-bold text-primary-uni mb-2">{{ row.course.name }}</h5>
+            <div class="text-muted mb-3" style="font-size:13px;">{{ row.course.credits }} واحد</div>
+            <div class="mb-2" style="font-size:14px;">
+                <i class="fas fa-chalkboard-teacher text-muted"></i>
+                استاد:
+                <strong>{% if row.professor %}{{ row.professor.get_full_name|default:row.professor.username }}{% else %}هنوز تخصیص نشده{% endif %}</strong>
+            </div>
+            <div class="mb-2" style="font-size:14px;">
+                <i class="fas fa-clock text-muted"></i>
+                زمان: <strong>{% if row.schedule %}{{ row.schedule }}{% else %}—{% endif %}</strong>
+            </div>
+            <div style="font-size:14px;">
+                <i class="fas fa-door-open text-muted"></i>
+                کلاس: <strong>{% if row.classroom %}{{ row.classroom }}{% else %}—{% endif %}</strong>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="panel-empty">
+    هنوز درسی انتخاب نکرده‌اید.
+    <a href="{% url 'dashboard:student_registration' %}">رفتن به انتخاب واحد</a>
+</p>
+{% endif %}
+{% endblock %}

@@ -8,6 +8,8 @@ urlpatterns = [
 
     # دانشجو
     path('courses/', views.student_courses, name='student_courses'),
+    path('registration/', views.student_registration, name='student_registration'),
+    path('schedule/', views.student_schedule, name='student_schedule'),
     path('grades/', views.student_grades, name='student_grades'),
     path('requests/', views.student_requests, name='student_requests'),
     path('assignments/', views.student_assignments, name='student_assignments'),

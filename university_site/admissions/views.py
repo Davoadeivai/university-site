@@ -418,10 +418,22 @@ def track_application(request):
                         'label': labels[key],
                         'state': state,
                     })
+    journey = None
+    if app and app.status == 'accepted':
+        from dashboard.onboarding import build_journey_status
+        user = request.user if request.user.is_authenticated else None
+        # اگر کاربر لاگین است ولی کد ملی‌اش با درخواست یکی نیست، فقط وضعیت عمومی را نشان بده
+        if user and hasattr(user, 'profile'):
+            uid = (getattr(user.profile, 'national_id', '') or user.username or '').strip()
+            if uid and uid != (app.national_id or '').strip():
+                user = None
+        journey = build_journey_status(user=user, national_id=app.national_id)
+
     return render(request, 'admissions/track.html', {
         'app': app,
         'query': query,
         'timeline': timeline,
+        'journey': journey,
         'page_title': 'پیگیری وضعیت درخواست',
     })
 

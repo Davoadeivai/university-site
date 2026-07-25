@@ -162,7 +162,10 @@ def dashboard(request):
         return render(request, 'dashboard/professor_home.html', context)
 
     # دانشجو
+    from .onboarding import build_journey_status, ensure_tuition_invoice
     active_sem = context['active_semester']
+    ensure_tuition_invoice(user, active_sem)
+    context['journey'] = build_journey_status(user=user)
     all_current = student_enrollment_qs(user, active_sem) if active_sem else student_enrollment_qs(user)
     course_ids = list(all_current.values_list('course_id', flat=True))
     graded = all_current.filter(final_grade__isnull=False)
@@ -213,6 +216,136 @@ def student_courses(request):
         'total_units': sum(e.course.credits for e in current),
     })
     return render(request, 'dashboard/student_courses.html', ctx)
+
+
+MAX_REGISTRATION_UNITS = 24
+
+
+@role_required('student')
+def student_registration(request):
+    """انتخاب واحد دانشجو در بازه ثبت‌نام ترم."""
+    from academics.models import Course
+    from .onboarding import ensure_tuition_invoice, sync_profile_from_application, tuition_is_paid
+
+    ctx = panel_context(request, 'انتخاب واحد', 'registration')
+    semester = ctx['active_semester']
+    profile = sync_profile_from_application(request.user)
+    ensure_tuition_invoice(request.user, semester)
+    paid = tuition_is_paid(request.user, semester)
+
+    if not semester:
+        messages.warning(request, 'ترم فعالی تعریف نشده است.')
+        return redirect('dashboard:dashboard')
+    if not semester.registration_open:
+        messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
+        return redirect('dashboard:student_courses')
+    if not paid:
+        messages.error(request, 'قبل از انتخاب واحد، شهریه ترم را پرداخت کنید.')
+        return redirect('dashboard:student_payments')
+    if not profile.major_id:
+        messages.error(
+            request,
+            'رشته تحصیلی در پروفایل شما تنظیم نشده. با آموزش تماس بگیرید یا از پذیرش پذیرفته‌شده حساب بسازید.',
+        )
+        return redirect('accounts:profile')
+
+    # دروس قابل انتخاب: دروسی که برای این ترم تخصیص تدریس دارند، وگرنه کاتالوگ رشته
+    offerings = list(
+        TeachingAssignment.objects.filter(
+            semester=semester, is_active=True, course__major=profile.major
+        ).select_related('course', 'professor')
+    )
+    if offerings:
+        courses = [o.course for o in offerings]
+        offering_by_course = {o.course_id: o for o in offerings}
+    else:
+        courses = list(Course.objects.filter(major=profile.major).order_by('semester', 'name'))
+        offering_by_course = {}
+
+    current = Enrollment.objects.filter(
+        student=request.user, semester=semester
+    ).exclude(status='dropped').select_related('course')
+    enrolled_ids = set(current.values_list('course_id', flat=True))
+    total_units = sum(e.course.credits for e in current)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        course_id = request.POST.get('course_id')
+        course = get_object_or_404(Course, pk=course_id, major=profile.major)
+        if action == 'enroll':
+            if course.id in enrolled_ids:
+                messages.info(request, 'این درس قبلاً انتخاب شده است.')
+            elif total_units + course.credits > MAX_REGISTRATION_UNITS:
+                messages.error(
+                    request,
+                    f'سقف واحد ({MAX_REGISTRATION_UNITS}) پر می‌شود.',
+                )
+            else:
+                Enrollment.objects.update_or_create(
+                    student=request.user,
+                    course=course,
+                    semester=semester,
+                    defaults={'status': 'registered'},
+                )
+                messages.success(request, f'درس «{course.name}» انتخاب شد.')
+        elif action == 'drop':
+            Enrollment.objects.filter(
+                student=request.user, course=course, semester=semester
+            ).update(status='dropped')
+            messages.success(request, f'درس «{course.name}» حذف شد.')
+        return redirect('dashboard:student_registration')
+
+    rows = []
+    for course in courses:
+        off = offering_by_course.get(course.id)
+        rows.append({
+            'course': course,
+            'enrolled': course.id in enrolled_ids,
+            'professor': off.professor if off else None,
+            'schedule': off.class_schedule if off else '',
+            'classroom': off.classroom if off else '',
+        })
+
+    ctx.update({
+        'rows': rows,
+        'total_units': total_units,
+        'max_units': MAX_REGISTRATION_UNITS,
+        'major': profile.major,
+        'semester': semester,
+    })
+    return render(request, 'dashboard/student_registration.html', ctx)
+
+
+@role_required('student')
+def student_schedule(request):
+    """برنامه کلاس و لیست استاد برای دروس انتخاب‌شده."""
+    ctx = panel_context(request, 'برنامه کلاس و اساتید', 'schedule')
+    semester = ctx['active_semester']
+    enrollments = (
+        student_enrollment_qs(request.user, semester) if semester else student_enrollment_qs(request.user)
+    ).exclude(status='dropped')
+    course_ids = list(enrollments.values_list('course_id', flat=True))
+    ta_qs = TeachingAssignment.objects.filter(course_id__in=course_ids, is_active=True)
+    if semester:
+        ta_qs = ta_qs.filter(semester=semester)
+    assignments = {
+        ta.course_id: ta
+        for ta in ta_qs.select_related('professor', 'course')
+    }
+
+    rows = []
+    for en in enrollments:
+        ta = assignments.get(en.course_id)
+        rows.append({
+            'enrollment': en,
+            'course': en.course,
+            'professor': ta.professor if ta else None,
+            'schedule': ta.class_schedule if ta else '',
+            'classroom': ta.classroom if ta else '',
+        })
+    ctx['rows'] = rows
+    ctx['semester'] = semester
+    return render(request, 'dashboard/student_schedule.html', ctx)
 
 
 @role_required('student')

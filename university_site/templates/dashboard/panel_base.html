@@ -118,8 +118,14 @@
                     <i class="fas fa-home"></i> خلاصه
                 </a>
                 {% if role == 'student' %}
+                <a href="{% url 'dashboard:student_registration' %}" class="{% if active_nav == 'registration' %}active{% endif %}">
+                    <i class="fas fa-clipboard-list"></i> انتخاب واحد
+                </a>
                 <a href="{% url 'dashboard:student_courses' %}" class="{% if active_nav == 'courses' %}active{% endif %}">
                     <i class="fas fa-book"></i> دروس
+                </a>
+                <a href="{% url 'dashboard:student_schedule' %}" class="{% if active_nav == 'schedule' %}active{% endif %}">
+                    <i class="fas fa-calendar-alt"></i> برنامه کلاس
                 </a>
                 <a href="{% url 'dashboard:student_grades' %}" class="{% if active_nav == 'grades' %}active{% endif %}">
                     <i class="fas fa-chart-line"></i> نمرات

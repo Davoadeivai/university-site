@@ -85,6 +85,28 @@ def register_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard:dashboard')
 
+    # پیش‌پر کردن از صفحه پیگیری پذیرش
+    pref = {
+        'national_id': (request.GET.get('nid') or '').strip(),
+        'first_name': '',
+        'last_name': '',
+        'phone': '',
+        'from_track': request.GET.get('from') == 'track',
+    }
+    accepted_app = None
+    if pref['national_id']:
+        from admissions.models import Application
+        accepted_app = (
+            Application.objects.filter(national_id=pref['national_id'], status='accepted')
+            .select_related('desired_major')
+            .order_by('-id')
+            .first()
+        )
+        if accepted_app:
+            pref['first_name'] = accepted_app.first_name or ''
+            pref['last_name'] = accepted_app.last_name or ''
+            pref['phone'] = accepted_app.phone or ''
+
     if request.method == 'POST':
         national_id = request.POST.get('national_id', '').strip()
         email = request.POST.get('email', '').strip()
@@ -128,21 +150,36 @@ def register_view(request):
                 first_name=first_name,
                 last_name=last_name,
             )
+            profile_defaults = {
+                'role': role,
+                'national_id': national_id,
+                'student_id': student_id,
+                'department': department,
+                'phone': phone,
+            }
+            from admissions.models import Application
+            app = (
+                Application.objects.filter(national_id=national_id, status='accepted')
+                .select_related('desired_major')
+                .order_by('-id')
+                .first()
+            )
+            if app and app.desired_major_id:
+                profile_defaults['major'] = app.desired_major
             UserProfile.objects.update_or_create(
                 user=user,
-                defaults={
-                    'role': role,
-                    'national_id': national_id,
-                    'student_id': student_id,
-                    'department': department,
-                    'phone': phone,
-                },
+                defaults=profile_defaults,
             )
             login(request, user)
-            messages.success(request, f'حساب کاربری با موفقیت ساخته شد. خوش آمدید، {user.get_full_name() or national_id}!')
-            return redirect('dashboard:dashboard')
+            from dashboard.onboarding import ensure_tuition_invoice
+            ensure_tuition_invoice(user)
+            messages.success(
+                request,
+                f'حساب کاربری ساخته شد. مرحله بعد: پرداخت شهریه.',
+            )
+            return redirect('dashboard:student_payments')
 
-    context = {'page_title': 'ثبت‌نام'}
+    context = {'page_title': 'ثبت‌نام', 'pref': pref, 'accepted_app': accepted_app}
     return render(request, 'accounts/register.html', context)
 
 

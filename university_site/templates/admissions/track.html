@@ -151,6 +151,61 @@
             </div>
             {% endif %}
         </div>
+
+        {% if app.status == 'accepted' and journey %}
+        <div class="mt-4 pt-4" style="border-top:1px solid var(--border,#e5e7eb);">
+            <h5 class="fw-bold text-primary-uni mb-2"><i class="fas fa-route"></i> مسیر بعد از پذیرش</h5>
+            <p class="text-muted mb-3" style="font-size:13px;">
+                مراحل زیر را به‌ترتیب انجام دهید تا وارد کلاس و لیست استاد شوید.
+            </p>
+            <ol class="list-unstyled mb-4" style="font-size:14px;">
+                {% for step in journey.steps %}
+                <li class="d-flex gap-2 align-items-start mb-3">
+                    <span class="badge {% if step.done %}bg-success{% elif step.locked %}bg-secondary{% else %}bg-warning text-dark{% endif %} rounded-pill" style="min-width:28px;">
+                        {% if step.done %}<i class="fas fa-check"></i>{% else %}{{ forloop.counter }}{% endif %}
+                    </span>
+                    <div>
+                        <div class="fw-bold {% if step.done %}text-success{% endif %}">{{ step.title }}</div>
+                        <div class="text-muted" style="font-size:12px;">{{ step.hint }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ol>
+            <div class="d-flex flex-wrap gap-2">
+                {% if not journey.has_account %}
+                <a class="btn btn-primary" href="{% url 'accounts:register' %}?nid={{ app.national_id }}&from=track">
+                    <i class="fas fa-user-plus"></i> ساخت حساب دانشجویی
+                </a>
+                <a class="btn btn-outline-primary" href="{% url 'accounts:login' %}?next=/dashboard/payments/">
+                    <i class="fas fa-sign-in-alt"></i> ورود
+                </a>
+                {% elif user.is_authenticated %}
+                <a class="btn btn-primary" href="{% url 'dashboard:student_payments' %}">
+                    <i class="fas fa-credit-card"></i> پرداخت شهریه
+                </a>
+                <a class="btn btn-success" href="{% url 'dashboard:student_registration' %}">
+                    <i class="fas fa-clipboard-list"></i> انتخاب واحد
+                </a>
+                <a class="btn btn-outline-secondary" href="{% url 'dashboard:student_schedule' %}">
+                    <i class="fas fa-chalkboard-teacher"></i> برنامه کلاس / استاد
+                </a>
+                {% else %}
+                <a class="btn btn-primary" href="{% url 'accounts:login' %}?next=/dashboard/payments/">
+                    <i class="fas fa-sign-in-alt"></i> ورود و ادامه مسیر
+                </a>
+                {% endif %}
+            </div>
+            {% if journey.registration_open %}
+            <div class="alert alert-success mt-3 mb-0" style="font-size:13px;">
+                <i class="fas fa-unlock"></i> بازه انتخاب واحد ترم فعال باز است.
+            </div>
+            {% else %}
+            <div class="alert alert-warning mt-3 mb-0" style="font-size:13px;">
+                <i class="fas fa-lock"></i> انتخاب واحد وقتی از طرف آموزش باز شود در پنل دانشجو فعال می‌شود.
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 
