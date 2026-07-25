@@ -52,7 +52,9 @@ class Command(BaseCommand):
                 plan_days = 3
 
             window_start = payment.due_date - timedelta(days=plan_days)
-            if not (window_start <= today <= payment.due_date):
+            # یادآوری تا ۳ روز بعد از سررسید هم ادامه دارد
+            window_end = payment.due_date + timedelta(days=3)
+            if not (window_start <= today <= window_end):
                 skipped += 1
                 continue
 

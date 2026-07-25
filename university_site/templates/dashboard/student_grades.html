@@ -39,9 +39,9 @@
                 <tr>
                     <td>{{ en.course.name }}</td>
                     <td>{{ en.course.credits }}</td>
-                    <td>{% if en.mid_term_grade %}{{ en.mid_term_grade }}{% else %}—{% endif %}</td>
-                    <td>{% if en.final_grade %}<strong>{{ en.final_grade }}</strong>{% else %}—{% endif %}</td>
-                    <td>{% if en.attendance_score %}{{ en.attendance_score }}{% else %}—{% endif %}</td>
+                    <td>{% if en.mid_term_grade != None %}{{ en.mid_term_grade }}{% else %}—{% endif %}</td>
+                    <td>{% if en.final_grade != None %}<strong>{{ en.final_grade }}</strong>{% else %}—{% endif %}</td>
+                    <td>{% if en.attendance_score != None %}{{ en.attendance_score }}{% else %}—{% endif %}</td>
                     <td>{{ en.get_status_display }}</td>
                 </tr>
                 {% endfor %}

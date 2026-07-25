@@ -26,6 +26,15 @@
 </div>
 {% endif %}
 
+{% if tips %}
+<div class="alert alert-info mb-4" style="font-size:13px;">
+    <strong>نکات مهم:</strong>
+    <ul class="mb-0 mt-1">
+        {% for tip in tips %}<li>{{ tip }}</li>{% endfor %}
+    </ul>
+</div>
+{% endif %}
+
 <form method="post" enctype="multipart/form-data" id="applyForm">
 {% csrf_token %}
 <div class="row g-4">
@@ -186,10 +195,10 @@
             <label class="form-label" for="degree">مقطع درخواستی <span class="text-danger">*</span></label>
             <select name="degree" id="degree" class="form-select" required>
                 <option value="">انتخاب کنید...</option>
-                <option value="associate" {% if post.degree == 'associate' %}selected{% endif %}>کاردانی</option>
-                <option value="bachelor"  {% if post.degree == 'bachelor' %}selected{% endif %}>کارشناسی</option>
-                <option value="master"    {% if post.degree == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
-                <option value="phd"       {% if post.degree == 'phd' %}selected{% endif %}>دکتری</option>
+                <option value="associate" {% if post.degree == 'associate' or preselect_degree == 'associate' %}selected{% endif %}>کاردانی</option>
+                <option value="bachelor"  {% if post.degree == 'bachelor' or preselect_degree == 'bachelor' %}selected{% endif %}>کارشناسی</option>
+                <option value="master"    {% if post.degree == 'master' or preselect_degree == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
+                <option value="phd"       {% if post.degree == 'phd' or preselect_degree == 'phd' %}selected{% endif %}>دکتری</option>
             </select>
         </div>
         <div class="col-md-4">
@@ -263,7 +272,8 @@
                 <option value="social"     {% if post.know_from == 'social' %}selected{% endif %}>شبکه‌های اجتماعی</option>
                 <option value="friend"     {% if post.know_from == 'friend' %}selected{% endif %}>معرفی دوست/آشنا</option>
                 <option value="site"       {% if post.know_from == 'site' or not post %}selected{% endif %}>وب‌سایت دانشگاه</option>
-                <option value="exhibition" {% if post.know_from == 'exhibition' %}selected{% endif %}>موتورهای جستجو</option>
+                <option value="exhibition" {% if post.know_from == 'exhibition' %}selected{% endif %}>نمایشگاه</option>
+                <option value="search" {% if post.know_from == 'search' %}selected{% endif %}>موتورهای جستجو</option>
                 <option value="other"      {% if post.know_from == 'other' %}selected{% endif %}>سایر</option>
             </select>
         </div>

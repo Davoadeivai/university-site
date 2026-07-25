@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">تکمیل مدارک</h1></div></div>
+<section class="section">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-7">
+    <div class="uni-card p-4">
+        <p class="mb-2">کد رهگیری: <strong>{{ app.tracking_code }}</strong></p>
+        <p class="text-muted mb-3" style="font-size:13px;">{{ app.first_name }} {{ app.last_name }} — تاریخ ثبت: {{ app.created_at|jalali_date:"short" }}</p>
+        {% if app.admin_notes %}
+        <div class="alert alert-warning" style="font-size:14px;">
+            <strong>توضیح کارشناس:</strong> {{ app.admin_notes }}
+        </div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="row g-3">
+            {% csrf_token %}
+            <div class="col-md-6">
+                <label class="form-label">کارت ملی</label>
+                <input type="file" name="doc_national_id" class="form-control" accept="image/*">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">مدرک تحصیلی</label>
+                <input type="file" name="doc_prev_degree" class="form-control" accept="image/*">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">عکس پرسنلی</label>
+                <input type="file" name="doc_photo" class="form-control" accept="image/*">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">نظام وظیفه</label>
+                <input type="file" name="doc_military" class="form-control" accept="image/*">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn-primary-uni">ارسال مدارک</button>
+                <a href="{% url 'admissions:track' %}?q={{ app.tracking_code }}" class="btn btn-outline-secondary ms-2">بازگشت</a>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

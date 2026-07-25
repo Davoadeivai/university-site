@@ -31,7 +31,8 @@ def login_view(request):
         return redirect('dashboard:dashboard')
 
     if request.method == 'POST':
-        login_id = request.POST.get('national_id', '').strip()
+        from core.iran import only_digits
+        login_id = only_digits(request.POST.get('national_id', '')) or request.POST.get('national_id', '').strip()
         password = request.POST.get('password')
 
         user = None
@@ -108,17 +109,19 @@ def register_view(request):
             pref['phone'] = accepted_app.phone or ''
 
     if request.method == 'POST':
-        national_id = request.POST.get('national_id', '').strip()
+        from core.iran import is_valid_mobile, is_valid_national_id, only_digits
+        from admissions.models import Application
+
+        national_id = only_digits(request.POST.get('national_id', ''))
         email = request.POST.get('email', '').strip()
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        student_id = request.POST.get('student_id', '').strip()
+        student_id = only_digits(request.POST.get('student_id', ''))
         department = request.POST.get('department', '').strip()
-        phone = request.POST.get('phone', '').strip()
+        phone = only_digits(request.POST.get('phone', ''))
 
-        # ثبت‌نام عمومی فقط برای دانشجو است؛ اساتید/مدیر/ادمین از پنل مدیریت ساخته می‌شوند
         role = 'student'
 
         pwd_error = None
@@ -128,12 +131,20 @@ def register_view(request):
             except ValidationError as e:
                 pwd_error = ' '.join(e.messages)
 
+        accepted = Application.objects.filter(national_id=national_id, status='accepted').exists()
+
         if not national_id or not password1 or not password2:
             messages.error(request, 'لطفاً تمام فیلدهای الزامی را پر کنید.')
-        elif not national_id.isdigit() or len(national_id) != 10:
-            messages.error(request, 'کد ملی باید ۱۰ رقم عددی باشد.')
-        elif not phone or not phone.isdigit() or len(phone) != 11 or not phone.startswith('09'):
+        elif not is_valid_national_id(national_id):
+            messages.error(request, 'کد ملی معتبر نیست.')
+        elif not is_valid_mobile(phone):
             messages.error(request, 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.')
+        elif not accepted:
+            messages.error(
+                request,
+                'ثبت‌نام دانشجویی فقط پس از پذیرش نهایی ممکن است. '
+                'وضعیت درخواست را از صفحه پیگیری بررسی کنید.',
+            )
         elif UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'این شماره موبایل قبلاً ثبت‌نام شده است.')
         elif password1 != password2:

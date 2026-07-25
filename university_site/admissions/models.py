@@ -70,17 +70,19 @@ class Application(models.Model):
     ]
     SHIFT_CHOICES = [('day', 'روزانه'), ('evening', 'شبانه'), ('both', 'هر دو')]
     KNOW_FROM_CHOICES = [
-        ('social',    'شبکه‌های اجتماعی'),
-        ('friend',    'معرفی دوست/آشنا'),
-        ('site',      'وب‌سایت دانشگاه'),
-        ('exhibition','نمایشگاه'),
-        ('other',     'سایر'),
+        ('social', 'شبکه‌های اجتماعی'),
+        ('friend', 'معرفی دوست/آشنا'),
+        ('site', 'وب‌سایت دانشگاه'),
+        ('exhibition', 'نمایشگاه'),
+        ('search', 'موتورهای جستجو'),
+        ('other', 'سایر'),
     ]
     PREV_DEGREE_CHOICES = [
-        ('diploma',   'دیپلم'),
+        ('diploma', 'دیپلم'),
         ('associate', 'کاردانی'),
-        ('bachelor',  'کارشناسی'),
-        ('master',    'کارشناسی ارشد'),
+        ('bachelor', 'کارشناسی'),
+        ('discontinuous_bachelor', 'کارشناسی ناپیوسته'),
+        ('master', 'کارشناسی ارشد'),
     ]
 
     # ── شناسه یکتا ──

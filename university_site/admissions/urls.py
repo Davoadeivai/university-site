@@ -12,6 +12,7 @@ urlpatterns = [
     path('ثبت-موفق/<str:code>/', views.apply_success, name='apply_success'),
     # پیگیری
     path('پیگیری/', views.track_application, name='track'),
+    path('تکمیل-مدارک/<str:code>/', views.complete_documents, name='complete_documents'),
     # شهریه
     path('شهریه/', views.tuition_info, name='tuition'),
     path('محاسبه-شهریه/', views.tuition_calculator, name='tuition_calc'),

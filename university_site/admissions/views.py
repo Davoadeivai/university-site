@@ -1,8 +1,20 @@
+from __future__ import annotations
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from academics.models import Major
+from core.iran import (
+    choice_value,
+    is_valid_email,
+    is_valid_mobile,
+    is_valid_national_id,
+    normalize_digits,
+    only_digits,
+    parse_gpa,
+    validate_image_upload,
+)
 from .models import (
     AdmissionInfo, Application, AdmissionOTP,
     TuitionStructure, TuitionDiscount,
@@ -12,7 +24,6 @@ import jdatetime
 
 logger = logging.getLogger('django')
 
-_PERSIAN_DIGITS = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
 _JALALI_MONTHS = [
     (1, 'فروردین'), (2, 'اردیبهشت'), (3, 'خرداد'),
     (4, 'تیر'), (5, 'مرداد'), (6, 'شهریور'),
@@ -27,7 +38,7 @@ def _require_mobile_otp():
 
 def _normalize_digits(value):
     """Convert Persian/Arabic digits to ASCII."""
-    return (value or '').translate(_PERSIAN_DIGITS).strip()
+    return normalize_digits(value)
 
 
 def _parse_jalali_birth(year, month, day):
@@ -41,12 +52,25 @@ def _parse_jalali_birth(year, month, day):
 
 def _jalali_birth_context():
     today = jdatetime.date.today()
-    years = list(range(today.year - 15, today.year - 70, -1))
+    # از ۱۵ تا ۷۵ سالگی (سال انتهایی inclusive)
+    years = list(range(today.year - 15, today.year - 76, -1))
     return {
         'jalali_years': years,
         'jalali_months': _JALALI_MONTHS,
         'jalali_days': list(range(1, 32)),
     }
+
+
+def _active_application_exists(national_id: str = '', phone: str = '') -> Application | None:
+    """درخواست فعال (غیر از رد شده) برای کد ملی / موبایل."""
+    qs = Application.objects.exclude(status='rejected')
+    if national_id:
+        hit = qs.filter(national_id=national_id).order_by('-id').first()
+        if hit:
+            return hit
+    if phone:
+        return qs.filter(phone=phone).order_by('-id').first()
+    return None
 
 
 def admissions_view(request):
@@ -85,6 +109,8 @@ def apply_otp_send(request):
         msg = f'کد تأیید پذیرش دانشگاه: {otp.code}\nاعتبار ۱۰ دقیقه'
         sent = send_otp(phone, otp.code, msg)
         if not sent:
+            otp.is_used = True
+            otp.save(update_fields=['is_used'])
             messages.error(request, 'ارسال پیامک ناموفق بود. لطفاً چند لحظه دیگر تلاش کنید.')
             return render(request, 'admissions/apply_step1_otp.html',
                           {'page_title': 'ثبت درخواست پذیرش'})
@@ -145,6 +171,7 @@ def apply(request):
     require_otp = _require_mobile_otp()
     phone = request.session.get('apply_phone', '')
     verified = request.session.get('apply_phone_verified', False)
+    preselect_degree = (request.GET.get('degree') or '').strip()
 
     if require_otp and (not phone or not verified):
         messages.warning(request, 'لطفاً ابتدا شماره موبایل خود را تأیید کنید.')
@@ -160,6 +187,13 @@ def apply(request):
             'require_mobile_otp': require_otp,
             'all_majors': all_majors,
             'post': post,
+            'preselect_degree': preselect_degree,
+            'prev_degree_choices': Application.PREV_DEGREE_CHOICES,
+            'tips': [
+                'مدارک را واضح و رنگی آپلود کنید (حداکثر ۲ مگابایت).',
+                'کد رهگیری را بعد از ثبت حتماً ذخیره کنید.',
+                'تاریخ تولد را به‌صورت شمسی انتخاب کنید.',
+            ],
             **jalali_ctx,
         }
         if extra:
@@ -168,83 +202,108 @@ def apply(request):
 
     if request.method == 'POST':
         p = request.POST
-        national_id = _normalize_digits(p.get('national_id', ''))
-
-        # #7: بررسی تکراری روی کد ملی و موبایل
-        if Application.objects.filter(national_id=national_id).exists():
-            messages.error(request, 'قبلاً با این کد ملی درخواستی ثبت شده است.')
-            return _apply_form(p)
-        form_phone_check = _normalize_digits(p.get('phone', '') if not require_otp else (phone or ''))
-        if form_phone_check and Application.objects.filter(phone=form_phone_check).exists():
-            messages.error(request, 'قبلاً با این شماره موبایل درخواستی ثبت شده است.')
-            return _apply_form(p)
-
-        # اعتبارسنجی اولیه
+        national_id = only_digits(p.get('national_id', ''))
         errors = []
-        if not p.get('first_name'): errors.append('نام الزامی است.')
-        if not p.get('last_name'):  errors.append('نام خانوادگی الزامی است.')
-        if not national_id or len(national_id) != 10 or not national_id.isdigit():
-            errors.append('کد ملی باید ۱۰ رقم باشد.')
-        if not p.get('address', '').strip(): errors.append('آدرس الزامی است.')
-        if not p.get('degree'):     errors.append('مقطع را انتخاب کنید.')
+
+        if not (p.get('first_name') or '').strip():
+            errors.append('نام الزامی است.')
+        if not (p.get('last_name') or '').strip():
+            errors.append('نام خانوادگی الزامی است.')
+        if not is_valid_national_id(national_id):
+            errors.append('کد ملی معتبر نیست.')
+        if not (p.get('address') or '').strip():
+            errors.append('آدرس الزامی است.')
+
+        degree = choice_value(p.get('degree', ''), Application.DEGREE_CHOICES)
+        if not degree:
+            errors.append('مقطع را انتخاب کنید.')
+        else:
+            info = AdmissionInfo.objects.filter(degree=degree, is_active=True).first()
+            if info and not info.is_open:
+                errors.append(f'پذیرش مقطع {info.get_degree_display()} در حال حاضر بسته است.')
+            if info and info.capacity and info.capacity > 0:
+                accepted = Application.objects.filter(degree=degree, status='accepted').count()
+                if accepted >= info.capacity:
+                    errors.append('ظرفیت این مقطع تکمیل شده است.')
+
         if 'doc_national_id' not in request.FILES:
             errors.append('تصویر کارت ملی الزامی است.')
 
-        # موبایل: از session (اگر OTP فعال) یا از فرم
-        form_phone = _normalize_digits(p.get('phone', ''))
+        form_phone = only_digits(p.get('phone', ''))
         if require_otp:
             submit_phone = phone
             phone_verified = True
         else:
             submit_phone = form_phone
             phone_verified = False
-            if submit_phone and (
-                not submit_phone.isdigit()
-                or len(submit_phone) != 11
-                or not submit_phone.startswith('09')
-            ):
-                errors.append('شماره موبایل معتبر وارد کنید (مثال: 09123456789).')
+            if submit_phone and not is_valid_mobile(submit_phone):
+                errors.append('شماره موبایل معتبر وارد کنید (مثال: ۰۹۱۲۳۴۵۶۷۸۹).')
+
+        dup = _active_application_exists(national_id=national_id, phone=submit_phone or '')
+        if dup:
+            errors.append(
+                f'قبلاً درخواست فعالی با کد رهگیری {dup.tracking_code} ثبت شده است. '
+                'در صورت رد شدن می‌توانید دوباره ثبت کنید.'
+            )
+
+        gender = choice_value(p.get('gender', 'male'), Application.GENDER_CHOICES, 'male')
+        military = choice_value(p.get('military', 'na'), Application.MILITARY_CHOICES, 'na')
+        if gender == 'female':
+            military = 'na'
+        shift = choice_value(p.get('shift', 'day'), Application.SHIFT_CHOICES, 'day')
+        know_from = choice_value(p.get('know_from', 'site'), Application.KNOW_FROM_CHOICES, 'site')
+        prev_degree = choice_value(
+            p.get('prev_degree', 'diploma'), Application.PREV_DEGREE_CHOICES, 'diploma'
+        )
+
+        email = (p.get('email') or '').strip()
+        if not is_valid_email(email):
+            errors.append('ایمیل معتبر نیست.')
+
+        postal_code = only_digits(p.get('postal_code', ''))
+        if postal_code and len(postal_code) not in (0, 10):
+            errors.append('کد پستی باید ۱۰ رقم باشد.')
+        phone_emergency = only_digits(p.get('phone_emergency', ''))
+        prev_grad_year = only_digits(p.get('prev_grad_year', ''))
 
         major_id = p.get('desired_major')
         major2_id = p.get('desired_major2') or None
-        major_obj = None
-        major2_obj = None
+        major_obj = major2_obj = None
         if not major_id:
             errors.append('رشته اولویت اول را انتخاب کنید.')
         else:
             try:
                 major_obj = Major.objects.get(pk=int(major_id), is_active=True)
-                if major_obj.admission_degree != p.get('degree'):
+                if degree and major_obj.admission_degree != degree:
                     errors.append('رشته اولویت اول با مقطع انتخاب‌شده هم‌خوان نیست.')
+                if getattr(major_obj, 'capacity', 0):
+                    enrolled = Application.objects.filter(
+                        desired_major=major_obj, status='accepted'
+                    ).count()
+                    if enrolled >= major_obj.capacity:
+                        errors.append('ظرفیت رشته اولویت اول تکمیل شده است.')
             except (Major.DoesNotExist, ValueError, TypeError):
                 errors.append('رشته اولویت اول معتبر نیست.')
         if major2_id:
             try:
                 major2_obj = Major.objects.get(pk=int(major2_id), is_active=True)
-                if major2_obj.admission_degree != p.get('degree'):
+                if degree and major2_obj.admission_degree != degree:
                     errors.append('رشته اولویت دوم با مقطع انتخاب‌شده هم‌خوان نیست.')
                 if major_obj and major2_obj.pk == major_obj.pk:
                     errors.append('اولویت اول و دوم نباید یکسان باشند.')
             except (Major.DoesNotExist, ValueError, TypeError):
                 errors.append('رشته اولویت دوم معتبر نیست.')
-        if not p.get('agreed_terms'): errors.append('پذیرش قوانین الزامی است.')
 
-        # مدرک قبلی باید با مقطع درخواستی سازگار باشد (همه مقاطع یک فرم)
-        prev_degree = p.get('prev_degree', 'diploma')
-        target_degree = p.get('degree', '')
-        # #26: مقادیر valid_prev_degrees باید دقیقاً با PREV_DEGREE_CHOICES مدل تطابق داشته باشند
+        if not p.get('agreed_terms'):
+            errors.append('پذیرش قوانین الزامی است.')
+
         allowed_prev = {
             'associate': {'diploma', 'associate'},
-            'bachelor':  {'diploma', 'associate', 'bachelor'},
-            'master':    {'bachelor', 'master'},
-            'phd':       {'master'},
+            'bachelor': {'diploma', 'associate', 'bachelor', 'discontinuous_bachelor'},
+            'master': {'bachelor', 'discontinuous_bachelor', 'master'},
+            'phd': {'master'},
         }
-        if target_degree in allowed_prev and prev_degree not in allowed_prev[target_degree]:
-            labels = {
-                'associate': 'کاردانی', 'bachelor': 'کارشناسی',
-                'master': 'کارشناسی ارشد', 'phd': 'دکتری',
-                'diploma': 'دیپلم', 'discontinuous_bachelor': 'کارشناسی ناپیوسته',
-            }
+        if degree in allowed_prev and prev_degree not in allowed_prev[degree]:
             need = {
                 'associate': 'دیپلم یا کاردانی',
                 'bachelor': 'دیپلم، کاردانی، کارشناسی یا کارشناسی ناپیوسته',
@@ -252,91 +311,79 @@ def apply(request):
                 'phd': 'کارشناسی ارشد',
             }
             errors.append(
-                f'برای مقطع {labels.get(target_degree, target_degree)} '
-                f'آخرین مدرک باید {need[target_degree]} باشد.'
+                f'برای این مقطع، آخرین مدرک باید {need[degree]} باشد.'
             )
 
-        gpa_val = None
-        if p.get('gpa'):
-            try:
-                gpa_val = float(p.get('gpa'))
-            except (TypeError, ValueError):
-                errors.append('معدل باید عدد معتبر باشد.')
+        gpa_val, gpa_err = parse_gpa(p.get('gpa'))
+        if gpa_err:
+            errors.append(gpa_err)
 
-        # #27: بررسی صریح پر بودن فیلدهای تاریخ تولد قبل از parse
         birth_year = _normalize_digits(p.get('birth_year', ''))
         birth_month = _normalize_digits(p.get('birth_month', ''))
         birth_day = _normalize_digits(p.get('birth_day', ''))
         if not birth_year or not birth_month or not birth_day:
-            errors.append('تاریخ تولد الزامی است. روز، ماه و سال را انتخاب کنید.')
+            errors.append('تاریخ تولد شمسی الزامی است.')
             birth_date = None
         else:
             birth_date = _parse_jalali_birth(birth_year, birth_month, birth_day)
             if not birth_date:
-                errors.append('تاریخ تولد شمسی معتبر نیست. لطفاً دوباره بررسی کنید.')
+                errors.append('تاریخ تولد شمسی معتبر نیست.')
+
+        for field_name, label in [
+            ('doc_national_id', 'کارت ملی'),
+            ('doc_prev_degree', 'مدرک تحصیلی'),
+            ('doc_photo', 'عکس پرسنلی'),
+            ('doc_military', 'مدرک نظام وظیفه'),
+        ]:
+            err = validate_image_upload(request.FILES.get(field_name), label)
+            if err:
+                errors.append(err)
 
         if errors:
             for e in errors:
                 messages.error(request, e)
             return _apply_form(p)
 
-        # ذخیره
         app = Application(
-            first_name=p.get('first_name', ''),
-            last_name=p.get('last_name', ''),
-            father_name=p.get('father_name', ''),
+            first_name=(p.get('first_name') or '').strip(),
+            last_name=(p.get('last_name') or '').strip(),
+            father_name=(p.get('father_name') or '').strip(),
             national_id=national_id,
             birth_date=birth_date,
-            gender=p.get('gender', 'male'),
-            military=p.get('military', 'na'),
-            phone=submit_phone,
-            phone_emergency=p.get('phone_emergency', ''),
-            email=p.get('email', ''),
-            address=p.get('address', ''),
-            postal_code=p.get('postal_code', ''),
-            prev_degree=prev_degree,
-            prev_major=p.get('prev_major', ''),
-            prev_school=p.get('prev_school', ''),
-            prev_grad_year=p.get('prev_grad_year', ''),
+            gender=gender or 'male',
+            military=military or 'na',
+            phone=submit_phone or '',
+            phone_emergency=phone_emergency,
+            email=email,
+            address=(p.get('address') or '').strip(),
+            postal_code=postal_code,
+            prev_degree=prev_degree or 'diploma',
+            prev_major=(p.get('prev_major') or '').strip(),
+            prev_school=(p.get('prev_school') or '').strip(),
+            prev_grad_year=prev_grad_year,
             gpa=gpa_val,
-            degree=p.get('degree', 'bachelor'),
+            degree=degree or 'bachelor',
             desired_major=major_obj,
             desired_major2=major2_obj,
-            shift=p.get('shift', 'day'),
-            know_from=p.get('know_from', 'site'),
-            special_needs=p.get('special_needs', ''),
-            agreed_terms=bool(p.get('agreed_terms')),
+            shift=shift or 'day',
+            know_from=know_from or 'site',
+            special_needs=(p.get('special_needs') or '').strip(),
+            agreed_terms=True,
             phone_verified=phone_verified,
         )
-
-        # #16: اعتبارسنجی نوع و سایز فایل‌های آپلودی
-        ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'}
-        MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
-        for field_name in ['doc_national_id', 'doc_prev_degree', 'doc_photo', 'doc_military']:
-            f = request.FILES.get(field_name)
-            if f:
-                ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-                if ext not in ALLOWED_EXTENSIONS:
-                    errors.append(f'فایل {f.name} باید تصویر (JPG/PNG/…) باشد.')
-                elif f.size > MAX_FILE_SIZE:
-                    errors.append(f'حجم فایل {f.name} نباید بیش از ۵ مگابایت باشد.')
-
-        if errors:
-            for e in errors:
-                messages.error(request, e)
-            return _apply_form(p)
-
-        # آپلود مدارک
         for field in ['doc_national_id', 'doc_prev_degree', 'doc_photo', 'doc_military']:
             if field in request.FILES:
                 setattr(app, field, request.FILES[field])
 
-        # #17: session را قبل از save پاک کن تا در صورت خطا session دوباره استفاده‌پذیر باشد
+        try:
+            app.save()
+        except Exception:
+            logger.exception('application save failed')
+            messages.error(request, 'ثبت درخواست با خطا مواجه شد. دوباره تلاش کنید.')
+            return _apply_form(p)
+
         request.session.pop('apply_phone', None)
         request.session.pop('apply_phone_verified', None)
-
-        app.save()
-
         messages.success(request, f'درخواست شما با کد رهگیری {app.tracking_code} ثبت شد.')
         return redirect('admissions:apply_success', code=app.tracking_code)
 
@@ -415,34 +462,40 @@ def track_application(request):
             messages.error(
                 request,
                 'درخواستی با این کد رهگیری یا کد ملی یافت نشد. '
-                'از ادمین → درخواست‌های پذیرش کد دقیق را بردارید، '
-                'یا اگر هنوز ثبت نکرده‌اید از «ثبت درخواست» اقدام کنید.',
+                'کد رهگیری ۱۲ رقمی یا کد ملی ۱۰ رقمی را دوباره وارد کنید؛ '
+                'اگر هنوز ثبت نکرده‌اید از «ثبت درخواست» اقدام کنید.',
             )
         else:
-            flow = ['pending', 'reviewing', 'incomplete', 'interview', 'accepted']
             labels = dict(Application.STATUS_CHOICES)
+            # مسیر واقعی بدون علامت‌زدن مراحل ردشده به‌عنوان انجام‌شده
+            main_flow = ['pending', 'reviewing', 'accepted']
+            optional = {'incomplete', 'interview'}
             if app.status in ('rejected', 'waiting'):
                 timeline = [{
                     'key': app.status,
                     'label': labels.get(app.status, app.status),
                     'state': 'current',
                 }]
+            elif app.status in optional:
+                timeline = [
+                    {'key': 'pending', 'label': labels['pending'], 'state': 'done'},
+                    {'key': 'reviewing', 'label': labels['reviewing'], 'state': 'done'},
+                    {'key': app.status, 'label': labels[app.status], 'state': 'current'},
+                    {'key': 'accepted', 'label': labels['accepted'], 'state': 'todo'},
+                ]
             else:
                 try:
-                    cur = flow.index(app.status)
+                    cur = main_flow.index(app.status)
                 except ValueError:
                     cur = 0
-                for i, key in enumerate(flow):
-                    if i < cur:
-                        state = 'done'
-                    elif i == cur:
-                        state = 'current'
-                    else:
-                        state = 'todo'
-                    timeline.append({
-                        'key': key,
-                        'label': labels[key],
-                        'state': state,
+                for i, key in enumerate(main_flow):
+                    state = 'done' if i < cur else ('current' if i == cur else 'todo')
+                    timeline.append({'key': key, 'label': labels[key], 'state': state})
+                if app.status == 'accepted' and app.interview_date:
+                    timeline.insert(-1, {
+                        'key': 'interview',
+                        'label': labels['interview'],
+                        'state': 'done',
                     })
     journey = None
     if app and app.status == 'accepted':
@@ -480,9 +533,9 @@ def tuition_calculator(request):
     if request.method == 'POST':
         major_id = request.POST.get('major_id', '')
         try:
-            theory = int(request.POST.get('theory_units', 0) or 0)
-            practical = int(request.POST.get('practical_units', 0) or 0)
-            lab = int(request.POST.get('lab_units', 0) or 0)
+            theory = max(0, min(40, int(only_digits(request.POST.get('theory_units', 0) or 0) or 0)))
+            practical = max(0, min(40, int(only_digits(request.POST.get('practical_units', 0) or 0) or 0)))
+            lab = max(0, min(40, int(only_digits(request.POST.get('lab_units', 0) or 0) or 0)))
         except (TypeError, ValueError):
             messages.error(request, 'تعداد واحدها باید عدد معتبر باشد.')
             theory = practical = lab = 0
@@ -496,7 +549,11 @@ def tuition_calculator(request):
                 lab_cost = ts.lab_fee * lab
                 extra = ts.registration_fee + ts.insurance_fee + ts.card_fee
                 subtotal = ts.fixed_fee + theory_cost + practical_cost + lab_cost + extra
-                best_discount = discounts.order_by('-percent').first()
+                # تخفیف فقط نمایش راهنما — بدون اعمال خودکار بیشینه
+                discount_code = (request.POST.get('discount_id') or '').strip()
+                best_discount = None
+                if discount_code.isdigit():
+                    best_discount = discounts.filter(pk=int(discount_code)).first()
                 discount_amount = 0
                 if best_discount:
                     discount_amount = subtotal * best_discount.percent / 100
@@ -514,6 +571,7 @@ def tuition_calculator(request):
                     'theory': theory,
                     'practical': practical,
                     'lab': lab,
+                    'note': 'مبالغ تقریبی است؛ فاکتور نهایی پس از پذیرش در پنل دانشجو صادر می‌شود.',
                 }
             else:
                 messages.warning(request, 'اطلاعات شهریه برای این رشته ثبت نشده است.')
@@ -534,6 +592,45 @@ def tuition_calculator(request):
         'history': history,
         'result': result,
         'page_title': 'محاسبه‌گر شهریه',
+    })
+
+
+def complete_documents(request, code):
+    """آپلود مجدد مدارک وقتی وضعیت incomplete است."""
+    from django.urls import reverse
+    from urllib.parse import urlencode
+
+    app = get_object_or_404(Application, tracking_code=code, status='incomplete')
+    if request.method == 'POST':
+        errors = []
+        updated = False
+        for field_name, label in [
+            ('doc_national_id', 'کارت ملی'),
+            ('doc_prev_degree', 'مدرک تحصیلی'),
+            ('doc_photo', 'عکس پرسنلی'),
+            ('doc_military', 'مدرک نظام وظیفه'),
+        ]:
+            f = request.FILES.get(field_name)
+            if f:
+                err = validate_image_upload(f, label)
+                if err:
+                    errors.append(err)
+                else:
+                    setattr(app, field_name, f)
+                    updated = True
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        elif not updated:
+            messages.error(request, 'حداقل یک مدرک جدید آپلود کنید.')
+        else:
+            app.status = 'reviewing'
+            app.save()
+            messages.success(request, 'مدارک ارسال شد و دوباره برای بررسی قرار گرفت.')
+            return redirect(f"{reverse('admissions:track')}?{urlencode({'q': app.tracking_code})}")
+    return render(request, 'admissions/complete_documents.html', {
+        'app': app,
+        'page_title': 'تکمیل مدارک',
     })
 
 

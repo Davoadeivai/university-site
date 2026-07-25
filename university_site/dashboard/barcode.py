@@ -1,62 +1,46 @@
-"""تولید SVG بارکد Code128 ساده برای دسترسی امتحان."""
+"""تولید SVG بارکد Code39 برای اسکن در جلسه امتحان."""
 from __future__ import annotations
 
-# الگوهای Code128B (subset) — کافی برای اعداد و حروف بزرگ
-_PATTERNS = {
-    ' ': '11011001100', '!': '11001101100', '"': '11001100110', '#': '10010011000',
-    '$': '10010001100', '%': '10001001100', '&': '10011001000', "'": '10011000100',
-    '(': '10001100100', ')': '11001001000', '*': '11001000100', '+': '11000100100',
-    ',': '10110011100', '-': '10011011100', '.': '10011001110', '/': '10111001100',
-    '0': '10011101100', '1': '10011100110', '2': '11001110010', '3': '11001011100',
-    '4': '11001001110', '5': '11011100100', '6': '11001110100', '7': '11101101110',
-    '8': '11101001100', '9': '11100101100', ':': '11100100110', ';': '11101100100',
-    '<': '11100110100', '=': '11100110010', '>': '11011011000', '?': '11011000110',
-    '@': '11000110110', 'A': '10100011000', 'B': '10001011000', 'C': '10001000110',
-    'D': '10110001000', 'E': '10001101000', 'F': '10001100010', 'G': '11010001000',
-    'H': '11000101000', 'I': '11000100010', 'J': '10110111000', 'K': '10110001110',
-    'L': '10001101110', 'M': '10111011000', 'N': '10111000110', 'O': '10001110110',
-    'P': '11101110110', 'Q': '11010001110', 'R': '11000101110', 'S': '11011101000',
-    'T': '11011100010', 'U': '11011101110', 'V': '11101011000', 'W': '11101000110',
-    'X': '11100010110', 'Y': '11101101000', 'Z': '11101100010',
+import html
+
+# Code39 patterns (narrow/wide as 0/1 bits with inter-char gap)
+_CODE39 = {
+    '0': '101001101101', '1': '110100101011', '2': '101100101011', '3': '110110010101',
+    '4': '101001101011', '5': '110100110101', '6': '101100110101', '7': '101001011011',
+    '8': '110100101101', '9': '101100101101', 'A': '110101001011', 'B': '101101001011',
+    'C': '110110100101', 'D': '101011001011', 'E': '110101100101', 'F': '101101100101',
+    'G': '101010011011', 'H': '110101001101', 'I': '101101001101', 'J': '101011001101',
+    'K': '110101010011', 'L': '101101010011', 'M': '110110101001', 'N': '101011010011',
+    'O': '110101101001', 'P': '101101101001', 'Q': '101010110011', 'R': '110101011001',
+    'S': '101101011001', 'T': '101011011001', 'U': '110010101011', 'V': '100110101011',
+    'W': '110011010101', 'X': '100101101011', 'Y': '110010110101', 'Z': '100110110101',
+    '-': '100101011011', '.': '110010101101', ' ': '100110101101', '*': '100101101101',
 }
-_START_B = '11010010000'
-_STOP = '1100011101011'
-
-
-def _value(ch: str) -> int:
-    return ord(ch) - 32
-
-
-def code128_bits(data: str) -> str:
-    data = ''.join(ch if ch in _PATTERNS else '-' for ch in (data or '').upper())
-    if not data:
-        data = '0'
-    checksum = 104  # Start B
-    bits = [_START_B]
-    for i, ch in enumerate(data, start=1):
-        bits.append(_PATTERNS.get(ch, _PATTERNS['-']))
-        checksum += _value(ch) * i
-    checksum %= 103
-    # checksum pattern from value
-    check_ch = chr(checksum + 32) if 0 <= checksum <= 94 else '-'
-    bits.append(_PATTERNS.get(check_ch, _PATTERNS['-']))
-    bits.append(_STOP)
-    return ''.join(bits)
 
 
 def barcode_svg(data: str, height: int = 60, module_width: int = 2) -> str:
-    bits = code128_bits(data)
-    width = len(bits) * module_width
+    raw = ''.join(ch for ch in (data or '').upper() if ch in _CODE39 and ch != '*')
+    if not raw:
+        raw = '0'
+    payload = f'*{raw}*'
+    bits = []
+    for i, ch in enumerate(payload):
+        bits.append(_CODE39[ch])
+        if i < len(payload) - 1:
+            bits.append('0')  # inter-character gap
+    stream = ''.join(bits)
+    width = len(stream) * module_width
     rects = []
     x = 0
-    for bit in bits:
+    for bit in stream:
         if bit == '1':
             rects.append(f'<rect x="{x}" y="0" width="{module_width}" height="{height}" fill="#000"/>')
         x += module_width
+    label = html.escape(raw)
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height + 18}" '
-        f'viewBox="0 0 {width} {height + 18}" role="img" aria-label="{data}">'
+        f'viewBox="0 0 {width} {height + 18}" role="img" aria-label="{label}">'
         f'{"".join(rects)}'
         f'<text x="{width/2}" y="{height + 14}" text-anchor="middle" '
-        f'font-family="monospace" font-size="12">{data}</text></svg>'
+        f'font-family="monospace" font-size="12">{label}</text></svg>'
     )

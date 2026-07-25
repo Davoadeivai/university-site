@@ -166,7 +166,7 @@
                             <h5 class="fw-bold text-primary-uni mb-3"><i class="fas fa-money-bill"></i> اطلاعات شهریه</h5>
                             {% if info.tuition_info %}<p style="font-size:14px; line-height:2;">{{ info.tuition_info }}</p>{% else %}<p class="text-muted">شهریه از طریق پنل مدیریت تنظیم می‌شود</p>{% endif %}
                             {% if info.is_open %}
-                            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3">
+                            <a href="{% url 'admissions:apply' %}?degree={{ info.degree }}" class="btn-primary-uni w-100 text-center text-decoration-none d-block mt-3">
                                 <i class="fas fa-edit"></i> ثبت درخواست این مقطع
                             </a>
                             {% else %}

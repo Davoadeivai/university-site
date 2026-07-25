@@ -53,7 +53,8 @@ def sync_profile_from_application(user: User, app: Application | None = None) ->
     if not profile.national_id and nid:
         profile.national_id = nid
         changed = True
-    if app.desired_major_id and profile.major_id != app.desired_major_id:
+    # فقط اگر رشته خالی باشد از پذیرش پر کن (بازنویسی دستی ادمین حفظ شود)
+    if app.desired_major_id and not profile.major_id:
         profile.major = app.desired_major
         changed = True
     if app.phone and not profile.phone:
@@ -70,13 +71,24 @@ def sync_profile_from_application(user: User, app: Application | None = None) ->
     return profile
 
 
-def _estimate_tuition_amount(major) -> int:
+def _estimate_tuition_amount(major, semester: Semester | None = None) -> int:
+    """برآورد شهریه ترم: ثابت + ۱۲ واحد نظری + هزینه‌های جانبی."""
     if not major:
         return 0
-    ts = TuitionStructure.objects.filter(major=major, is_active=True).order_by('-academic_year').first()
+    qs = TuitionStructure.objects.filter(major=major, is_active=True)
+    if semester and semester.academic_year:
+        ts = qs.filter(academic_year=semester.academic_year).first() or qs.order_by('-academic_year').first()
+    else:
+        ts = qs.order_by('-academic_year').first()
     if not ts:
         return 0
-    return int(ts.fixed_fee or 0) + int(ts.theory_fee or 0) * 12
+    return (
+        int(ts.fixed_fee or 0)
+        + int(ts.theory_fee or 0) * 12
+        + int(ts.registration_fee or 0)
+        + int(ts.insurance_fee or 0)
+        + int(ts.card_fee or 0)
+    )
 
 
 def get_installment_plan(semester: Semester | None) -> TuitionInstallmentPlan | None:
@@ -141,9 +153,10 @@ def _due_dates_for(semester: Semester | None) -> list:
 
 
 def tuition_payments_qs(user: User, semester: Semester | None = None):
+    """اقساط شهریه ترم — refunded حذف؛ بدون ترم یتیم با ترم فعال قاطی نشود."""
     qs = Payment.objects.filter(student=user, payment_type='tuition').exclude(status='refunded')
     if semester:
-        qs = qs.filter(Q(semester=semester) | Q(semester__isnull=True))
+        qs = qs.filter(semester=semester)
     return qs
 
 
@@ -172,7 +185,7 @@ def ensure_tuition_invoice(user: User, semester: Semester | None = None):
     semester = semester or Semester.objects.filter(is_active=True).first()
     profile = sync_profile_from_application(user)
     major = profile.major
-    gross = _estimate_tuition_amount(major)
+    gross = _estimate_tuition_amount(major, semester)
     if gross <= 0:
         return None
 
@@ -180,70 +193,105 @@ def ensure_tuition_invoice(user: User, semester: Semester | None = None):
     total = apply_discount(gross, discount_pct)
     due_dates = _due_dates_for(semester)
 
-    existing = list(
-        tuition_payments_qs(user, semester).order_by('installment_no', 'id')
-    )
-    # اگر قبلاً سه قسط ساخته شده — فقط سررسید خالی را پر کن
-    if any(p.installment_stage == 'exam_card' for p in existing) or (
-        len([p for p in existing if p.installment_no]) >= 3
-    ):
-        # #9: مرتب‌سازی با None-safe key؛ None → بعد از آخرین رقم واقعی
-        for p, due in zip(
-            sorted(existing, key=lambda x: (x.installment_no is None, x.installment_no or 0)),
-            due_dates,
-        ):
-            if due and not p.due_date and p.status in ('pending', 'failed', 'review'):
-                p.due_date = due
-                p.save(update_fields=['due_date'])
-        return existing[0] if existing else None
+    from django.db import transaction
+    with transaction.atomic():
+        existing = list(
+            tuition_payments_qs(user, semester).select_for_update().order_by('installment_no', 'id')
+        )
+        staged_count = len([p for p in existing if (p.installment_no or 0) >= 1])
+        has_exam = any(p.installment_stage == 'exam_card' for p in existing)
 
-    # فاکتور قدیمی یک‌جا
-    if len(existing) == 1 and not existing[0].installment_stage:
-        old = existing[0]
-        if old.status == 'paid':
+        if has_exam or staged_count >= 3:
+            for p, due in zip(
+                sorted(existing, key=lambda x: (x.installment_no is None, x.installment_no or 0)),
+                due_dates,
+            ):
+                if due and not p.due_date and p.status in ('pending', 'failed'):
+                    p.due_date = due
+                    p.save(update_fields=['due_date'])
+            return existing[0] if existing else None
+
+        # تکمیل اقساط ناقص (۱ یا ۲ قسط)
+        if staged_count in (1, 2) and not has_exam:
+            present = {p.installment_stage for p in existing if p.installment_stage}
+            amounts = _split_amounts(total, semester)
+            for (no, stage, label), amount, due in zip(STAGE_META, amounts, due_dates):
+                if stage not in present:
+                    Payment.objects.create(
+                        student=user,
+                        payment_type='tuition',
+                        amount=amount,
+                        semester=semester,
+                        description=f'{label} — {major.name if major else ""}',
+                        status='pending',
+                        installment_no=no,
+                        installment_stage=stage,
+                        due_date=due,
+                        method='online',
+                    )
+            return tuition_payments_qs(user, semester).order_by('installment_no').first()
+
+        # فاکتور قدیمی یک‌جا
+        if len(existing) == 1 and not existing[0].installment_stage:
+            old = existing[0]
+            amounts = _split_amounts(total if old.status != 'paid' else (old.amount or total), semester)
+            if old.status == 'paid':
+                # تسویه یکجا → هر سه قسط paid
+                old.amount = amounts[0]
+                old.installment_no = 1
+                old.installment_stage = 'initial'
+                old.description = (old.description or '') + ' (تسویه یکجا)'
+                old.save()
+                for (no, stage, label), amount, due in zip(STAGE_META[1:], amounts[1:], due_dates[1:]):
+                    Payment.objects.create(
+                        student=user,
+                        payment_type='tuition',
+                        amount=amount,
+                        semester=semester,
+                        description=f'{label} — {major.name if major else ""} (تسویه یکجا)',
+                        status='paid',
+                        installment_no=no,
+                        installment_stage=stage,
+                        due_date=due,
+                        method=old.method or 'online',
+                        payment_date=old.payment_date,
+                    )
+                return old
+            old.amount = amounts[0]
             old.installment_no = 1
             old.installment_stage = 'initial'
-            old.description = (old.description or '') + ' (تسویه یکجا — معادل کامل)'
-            old.save(update_fields=['installment_no', 'installment_stage', 'description'])
+            old.due_date = due_dates[0]
+            old.description = f'قسط ۱/۳ شهریه — {major.name if major else ""} — {semester.name if semester else ""}'
+            if discount_pct:
+                old.description += f' (تخفیف {discount_pct}٪)'
+            old.save()
+            for (no, stage, label), amount, due in zip(STAGE_META[1:], amounts[1:], due_dates[1:]):
+                Payment.objects.create(
+                    student=user,
+                    payment_type='tuition',
+                    amount=amount,
+                    semester=semester,
+                    description=f'{label} — {major.name if major else ""}',
+                    status='pending',
+                    installment_no=no,
+                    installment_stage=stage,
+                    due_date=due,
+                    method='online',
+                )
             return old
-        # #2: اگر old.amount=0 باشد، `old.amount or total` مبلغ بدون تخفیف را استفاده می‌کرد.
-        # همیشه از total (که با تخفیف محاسبه شده) استفاده می‌کنیم.
+
+        if existing:
+            return existing[0]
+
         amounts = _split_amounts(total, semester)
-        old.amount = amounts[0]
-        old.installment_no = 1
-        old.installment_stage = 'initial'
-        old.due_date = due_dates[0]
-        old.description = f'قسط ۱/۳ شهریه — {major.name if major else ""} — {semester.name if semester else ""}'
-        if discount_pct:
-            old.description += f' (تخفیف {discount_pct}٪)'
-        old.save()
-        for (no, stage, label), amount, due in zip(STAGE_META[1:], amounts[1:], due_dates[1:]):
-            Payment.objects.create(
-                student=user,
-                payment_type='tuition',
-                amount=amount,
-                semester=semester,
-                description=f'{label} — {major.name if major else ""}',
-                status='pending',
-                installment_no=no,
-                installment_stage=stage,
-                due_date=due,
-                method='online',
-            )
-        return old
-
-    if existing:
-        return existing[0]
-
-    amounts = _split_amounts(total, semester)
-    return _create_staged_payments(user, semester, major, amounts, due_dates)
+        return _create_staged_payments(user, semester, major, amounts, due_dates)
 
 
 def reapply_discount_to_pending(user: User, semester: Semester | None = None) -> bool:
     """پس از تأیید تخفیف، مبالغ اقساط پرداخت‌نشده را بازتوزیع کند."""
     semester = semester or Semester.objects.filter(is_active=True).first()
     profile = sync_profile_from_application(user)
-    gross = _estimate_tuition_amount(profile.major)
+    gross = _estimate_tuition_amount(profile.major, semester)
     if gross <= 0:
         return False
     discount_pct = approved_discount_percent(user, semester)
@@ -253,7 +301,8 @@ def reapply_discount_to_pending(user: User, semester: Semester | None = None) ->
     if len(staged) < 3:
         return False
     paid_amount = sum(p.amount for p in staged if p.status == 'paid')
-    unpaid = [p for p in staged if p.status != 'paid']
+    # فقط اقساط در انتظار/ناموفق — نه review (رسید ثبت‌شده)
+    unpaid = [p for p in staged if p.status in ('pending', 'failed')]
     remaining_budget = max(total - paid_amount, 0)
     if not unpaid:
         return False
@@ -427,7 +476,7 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
             'title': 'انتخاب واحد / استاد و کلاس',
             'done': enrolled_count > 0,
             'hint': 'در بازه انتخاب واحد، درس و کلاس/استاد را انتخاب کنید.',
-            'locked': not first_paid,
+            'locked': not first_paid or not registration_open,
         },
         {
             'key': 'schedule',

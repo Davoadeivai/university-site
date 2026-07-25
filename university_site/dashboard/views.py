@@ -41,7 +41,7 @@ def get_user_role(user):
     try:
         return user.profile.role
     except Exception:
-        return 'student'
+        return None
 
 
 def role_required(*roles):
@@ -80,10 +80,12 @@ def professor_teaching_qs(user):
     ).select_related('course', 'semester', 'department')
 
 
-def student_enrollment_qs(user, semester=None):
+def student_enrollment_qs(user, semester=None, include_dropped=False):
     qs = Enrollment.objects.filter(student=user).select_related(
-        'course', 'semester', 'course__major'
+        'course', 'semester', 'course__major', 'teaching_assignment',
     ).order_by('-enrolled_at')
+    if not include_dropped:
+        qs = qs.exclude(status='dropped')
     if semester:
         qs = qs.filter(semester=semester)
     return qs
@@ -245,13 +247,12 @@ def student_registration(request):
         messages.error(request, 'قبل از انتخاب واحد، قسط اول شهریه را پرداخت کنید.')
         return redirect('dashboard:student_payments')
     if not profile.major_id:
-        # #24: پیام راهنمای واضح‌تر با لینک آموزش
         messages.error(
             request,
             'رشته تحصیلی در پروفایل شما تنظیم نشده است. '
-            'اگر درخواست پذیرش داشتید و پذیرفته شدید، با دفتر آموزش تماس بگیرید تا رشته را ثبت کنند.',
+            'با دفتر آموزش تماس بگیرید تا رشته را ثبت کنند.',
         )
-        return redirect('dashboard:student_payments')
+        return redirect('dashboard:dashboard')
 
     offerings = list(
         TeachingAssignment.objects.filter(
@@ -262,56 +263,79 @@ def student_registration(request):
     for o in offerings:
         offerings_by_course[o.course_id].append(o)
 
-    if offerings_by_course:
-        course_ids = list(offerings_by_course.keys())
-        courses = list(Course.objects.filter(id__in=course_ids).order_by('semester', 'name'))
-    else:
-        courses = list(Course.objects.filter(major=profile.major).order_by('semester', 'name'))
+    # همه دروس رشته + کلاس‌های تعریف‌شده (دروس بدون کلاس هم دیده شوند)
+    courses = list(Course.objects.filter(major=profile.major).order_by('semester', 'name'))
 
-    current = Enrollment.objects.filter(
-        student=request.user, semester=semester
-    ).exclude(status='dropped').select_related('course', 'teaching_assignment')
+    current = student_enrollment_qs(request.user, semester).select_related(
+        'course', 'teaching_assignment'
+    )
     enrolled_map = {e.course_id: e for e in current}
     total_units = sum(e.course.credits for e in current)
 
     if request.method == 'POST':
-        # #14: بررسی registration_open در POST هم انجام شود
         if not semester.registration_open:
             messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
             return redirect('dashboard:student_courses')
+        if not tuition_first_paid(request.user, semester):
+            messages.error(request, 'قبل از انتخاب واحد، قسط اول شهریه را پرداخت کنید.')
+            return redirect('dashboard:student_payments')
+        if not profile.major_id:
+            return redirect('dashboard:dashboard')
         action = request.POST.get('action')
         course_id = request.POST.get('course_id')
         course = get_object_or_404(Course, pk=course_id, major=profile.major)
         if action == 'enroll':
-            if course.id in enrolled_map:
-                messages.info(request, 'این درس قبلاً انتخاب شده است.')
-            elif total_units + course.credits > MAX_REGISTRATION_UNITS:
-                messages.error(request, f'سقف واحد ({MAX_REGISTRATION_UNITS}) پر می‌شود.')
-            else:
-                ta = None
-                ta_id = request.POST.get('teaching_assignment_id')
-                opts = offerings_by_course.get(course.id) or []
-                if ta_id:
-                    ta = next((x for x in opts if str(x.id) == str(ta_id)), None)
-                elif len(opts) == 1:
-                    ta = opts[0]
-                elif len(opts) > 1:
-                    messages.error(request, 'لطفاً استاد / کلاس مورد نظر را انتخاب کنید.')
-                    return redirect('dashboard:student_registration')
-                # #5: عملیات ثبت‌نام با transaction.atomic برای جلوگیری از race condition
-                with transaction.atomic():
+            with transaction.atomic():
+                locked = list(
+                    Enrollment.objects.select_for_update().filter(
+                        student=request.user, semester=semester
+                    ).exclude(status='dropped').select_related('course')
+                )
+                locked_map = {e.course_id: e for e in locked}
+                units_now = sum(e.course.credits for e in locked)
+                if course.id in locked_map:
+                    messages.info(request, 'این درس قبلاً انتخاب شده است.')
+                elif units_now + course.credits > MAX_REGISTRATION_UNITS:
+                    messages.error(request, f'سقف واحد ({MAX_REGISTRATION_UNITS}) پر می‌شود.')
+                else:
+                    ta = None
+                    ta_id = request.POST.get('teaching_assignment_id')
+                    opts = offerings_by_course.get(course.id) or []
+                    if ta_id:
+                        ta = next((x for x in opts if str(x.id) == str(ta_id)), None)
+                        if ta is None:
+                            messages.error(request, 'کلاس/استاد انتخاب‌شده معتبر نیست.')
+                            return redirect('dashboard:student_registration')
+                    elif len(opts) == 1:
+                        ta = opts[0]
+                    elif len(opts) > 1:
+                        messages.error(request, 'لطفاً استاد / کلاس مورد نظر را انتخاب کنید.')
+                        return redirect('dashboard:student_registration')
                     Enrollment.objects.update_or_create(
                         student=request.user,
                         course=course,
                         semester=semester,
-                        defaults={'status': 'registered', 'teaching_assignment': ta},
+                        defaults={
+                            'status': 'registered',
+                            'teaching_assignment': ta,
+                            'mid_term_grade': None,
+                            'final_grade': None,
+                            'attendance_score': None,
+                        },
                     )
-                messages.success(request, f'درس «{course.name}» انتخاب شد.')
+                    messages.success(request, f'درس «{course.name}» انتخاب شد.')
         elif action == 'drop':
-            Enrollment.objects.filter(
+            en = Enrollment.objects.filter(
                 student=request.user, course=course, semester=semester
-            ).update(status='dropped', teaching_assignment=None)
-            messages.success(request, f'درس «{course.name}» حذف شد.')
+            ).exclude(status='dropped').first()
+            if en:
+                en.status = 'dropped'
+                en.teaching_assignment = None
+                en.mid_term_grade = None
+                en.final_grade = None
+                en.attendance_score = None
+                en.save()
+                messages.success(request, f'درس «{course.name}» حذف شد.')
         return redirect('dashboard:student_registration')
 
     rows = []
@@ -510,19 +534,21 @@ def student_grades(request):
         })
         return render(request, 'dashboard/student_grades.html', ctx)
 
+    # فقط ترم‌هایی که شهریه‌شان تسویه شده
     enrollments = student_enrollment_qs(request.user).filter(
         Q(final_grade__isnull=False) | Q(mid_term_grade__isnull=False)
     ).distinct().order_by('-semester__start_date', 'course__name')
 
-    # #22: اگر اصلاً نمره‌ای ثبت نشده، پیام راهنما نمایش بده
-    no_grades_yet = not enrollments.exists()
-
     by_semester = {}
     for en in enrollments:
+        if not tuition_fully_settled(request.user, en.semester):
+            continue
         key = en.semester_id
         if key not in by_semester:
             by_semester[key] = {'semester': en.semester, 'items': []}
         by_semester[key]['items'].append(en)
+
+    no_grades_yet = not by_semester
 
     graded = [e for e in enrollments if e.final_grade is not None]
     avg = None
@@ -765,6 +791,8 @@ def tuition_discount_claim(request):
 @role_required('student')
 def payment_start(request, pk):
     """شروع پرداخت آنلاین برای یک پرداخت در انتظار."""
+    if request.method != 'POST' and request.method != 'GET':
+        return redirect('dashboard:student_payments')
     payment = get_object_or_404(Payment, pk=pk, student=request.user)
     if payment.status == 'paid':
         messages.info(request, 'این پرداخت قبلاً انجام شده است.')
@@ -775,6 +803,21 @@ def payment_start(request, pk):
     if payment.status not in ('pending', 'failed'):
         messages.warning(request, 'امکان پرداخت این مورد وجود ندارد.')
         return redirect('dashboard:student_payments')
+    if not payment.amount or payment.amount <= 0:
+        messages.error(request, 'مبلغ این قسط برای پرداخت آنلاین معتبر نیست.')
+        return redirect('dashboard:student_payments')
+
+    # ترتیب اقساط: قبل از قسط n همه قبلی‌ها باید paid باشند
+    if payment.installment_no and payment.installment_no > 1:
+        earlier = Payment.objects.filter(
+            student=request.user,
+            payment_type='tuition',
+            semester=payment.semester,
+            installment_no__lt=payment.installment_no,
+        ).exclude(status='paid')
+        if earlier.exists():
+            messages.warning(request, 'ابتدا اقساط قبلی را پرداخت یا تأیید کنید.')
+            return redirect('dashboard:student_payments')
 
     payment.status = 'pending'
     payment.method = 'online'

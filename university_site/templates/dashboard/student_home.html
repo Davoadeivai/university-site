@@ -23,15 +23,25 @@
         <a href="{% url 'dashboard:student_payments' %}" class="btn btn-primary btn-sm">
             <i class="fas fa-credit-card"></i> اقساط شهریه
         </a>
-        <a href="{% url 'dashboard:student_registration' %}" class="btn btn-success btn-sm">
-            <i class="fas fa-clipboard-list"></i> انتخاب واحد / استاد
-        </a>
-        <a href="{% url 'dashboard:student_schedule' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-calendar-alt"></i> برنامه کلاس
-        </a>
-        <a href="{% url 'dashboard:student_exam_card' %}" class="btn btn-outline-dark btn-sm">
-            <i class="fas fa-id-card"></i> کارت امتحان
-        </a>
+        {% for step in journey.steps %}
+            {% if step.key == 'registration' and not step.locked %}
+            <a href="{% url 'dashboard:student_registration' %}" class="btn btn-success btn-sm">
+                <i class="fas fa-clipboard-list"></i> انتخاب واحد / استاد
+            </a>
+            {% elif step.key == 'registration' and step.locked %}
+            <span class="btn btn-secondary btn-sm disabled" title="{{ step.hint }}">انتخاب واحد (قفل)</span>
+            {% elif step.key == 'schedule' and not step.locked %}
+            <a href="{% url 'dashboard:student_schedule' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-calendar-alt"></i> برنامه کلاس
+            </a>
+            {% elif step.key == 'exam_card' and not step.locked %}
+            <a href="{% url 'dashboard:student_exam_card' %}" class="btn btn-outline-dark btn-sm">
+                <i class="fas fa-id-card"></i> کارت امتحان
+            </a>
+            {% elif step.key == 'exam_card' and step.locked %}
+            <span class="btn btn-secondary btn-sm disabled">کارت امتحان (قفل)</span>
+            {% endif %}
+        {% endfor %}
     </div>
 </div>
 {% endif %}
