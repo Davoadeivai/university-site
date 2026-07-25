@@ -357,68 +357,67 @@ def _track_lookup_candidates(query):
 
 
 def track_application(request):
-    app = None
-    query = ''
-    timeline = []
+    from django.db.models import Q
+    from core.sms import normalize_phone
+
+    # PRG: بعد از POST به GET برو تا نتیجه در آدرس بماند و رفرش خراب نشود
     if request.method == 'POST':
-        query = _normalize_track_query(request.POST.get('query', ''))
-        from core.sms import check_rate_limit, normalize_phone
-        from django.db.models import Q
-        # محدودیت جدا از تست‌های مکرر: فقط جستجوهای واقعی را محدود کن
-        allowed, rl_msg = check_rate_limit(request, scope='track_app', limit=40, window=300)
-        if not allowed:
-            messages.error(request, rl_msg)
-        elif not query:
+        q = _normalize_track_query(request.POST.get('query', ''))
+        if not q:
             messages.error(request, 'لطفاً کد رهگیری یا کد ملی را وارد کنید.')
-        else:
-            qs = Application.objects.select_related(
-                'desired_major', 'desired_major2',
-                'desired_major__group', 'desired_major__department',
+            return redirect('admissions:track')
+        from django.urls import reverse
+        from urllib.parse import urlencode
+        return redirect(f"{reverse('admissions:track')}?{urlencode({'q': q})}")
+
+    app = None
+    timeline = []
+    query = _normalize_track_query(request.GET.get('q', ''))
+    if query:
+        qs = Application.objects.select_related(
+            'desired_major', 'desired_major2',
+        )
+        candidates = _track_lookup_candidates(query)
+        app = qs.filter(
+            Q(tracking_code__in=candidates) | Q(national_id__in=candidates)
+        ).first()
+        if app is None:
+            phone = normalize_phone(query)
+            if phone and len(phone) >= 10:
+                app = qs.filter(phone=phone).first()
+        if app is None:
+            messages.error(
+                request,
+                'درخواستی با این کد رهگیری یا کد ملی یافت نشد. '
+                'از ادمین → درخواست‌های پذیرش کد دقیق را بردارید، '
+                'یا اگر هنوز ثبت نکرده‌اید از «ثبت درخواست» اقدام کنید.',
             )
-            candidates = _track_lookup_candidates(query)
-            app = qs.filter(
-                Q(tracking_code__in=candidates) | Q(national_id__in=candidates)
-            ).first()
-
-            # جستجوی پشتیبان با موبایل (اگر به‌جای کد ملی وارد شده باشد)
-            if app is None:
-                phone = normalize_phone(query)
-                if phone and len(phone) >= 10:
-                    app = qs.filter(phone=phone).first()
-
-            if app is None:
-                messages.error(
-                    request,
-                    'درخواستی با این کد رهگیری یا کد ملی یافت نشد. '
-                    'اگر تازه ثبت‌نام کرده‌اید، از همان کد رهگیری پیامک/رسید استفاده کنید. '
-                    'در غیر این صورت ابتدا از صفحه «ثبت درخواست» اقدام کنید.',
-                )
+        else:
+            flow = ['pending', 'reviewing', 'incomplete', 'interview', 'accepted']
+            labels = dict(Application.STATUS_CHOICES)
+            if app.status in ('rejected', 'waiting'):
+                timeline = [{
+                    'key': app.status,
+                    'label': labels.get(app.status, app.status),
+                    'state': 'current',
+                }]
             else:
-                flow = ['pending', 'reviewing', 'incomplete', 'interview', 'accepted']
-                labels = dict(Application.STATUS_CHOICES)
-                if app.status in ('rejected', 'waiting'):
-                    timeline = [{
-                        'key': app.status,
-                        'label': labels.get(app.status, app.status),
-                        'state': 'current',
-                    }]
-                else:
-                    try:
-                        cur = flow.index(app.status)
-                    except ValueError:
-                        cur = 0
-                    for i, key in enumerate(flow):
-                        if i < cur:
-                            state = 'done'
-                        elif i == cur:
-                            state = 'current'
-                        else:
-                            state = 'todo'
-                        timeline.append({
-                            'key': key,
-                            'label': labels[key],
-                            'state': state,
-                        })
+                try:
+                    cur = flow.index(app.status)
+                except ValueError:
+                    cur = 0
+                for i, key in enumerate(flow):
+                    if i < cur:
+                        state = 'done'
+                    elif i == cur:
+                        state = 'current'
+                    else:
+                        state = 'todo'
+                    timeline.append({
+                        'key': key,
+                        'label': labels[key],
+                        'state': state,
+                    })
     return render(request, 'admissions/track.html', {
         'app': app,
         'query': query,
