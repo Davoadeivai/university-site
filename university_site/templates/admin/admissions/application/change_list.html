@@ -1,0 +1,77 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+<style>
+.adm-apps-toolbar {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  margin: 0 0 14px; padding: 12px 14px;
+  background: linear-gradient(135deg, #0f2744, #1a3a5c);
+  border-radius: 10px; color: #fff;
+}
+.adm-apps-toolbar .title { font-weight: 700; margin-left: auto; font-size: 14px; }
+.adm-apps-toolbar a, .adm-apps-toolbar button {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 0; border-radius: 8px; padding: 7px 12px; font-size: 13px;
+  text-decoration: none; cursor: pointer; color: #0f2744; background: #f8fafc;
+  font-family: inherit;
+}
+.adm-apps-toolbar a.primary { background: #22c55e; color: #fff; }
+.adm-apps-toolbar a.warn { background: #f59e0b; color: #111; }
+.adm-apps-toolbar a.info { background: #38bdf8; color: #0f2744; }
+.adm-apps-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px; margin-bottom: 14px;
+}
+.adm-apps-stats a {
+  display: block; text-decoration: none; color: inherit;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 10px 12px; text-align: center;
+}
+.adm-apps-stats a:hover { border-color: #94a3b8; }
+.adm-apps-stats .n { font-size: 20px; font-weight: 800; color: #0f2744; }
+.adm-apps-stats .l { font-size: 12px; color: #64748b; margin-top: 2px; }
+.adm-apps-stats a.active { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
+.adm-apps-hint {
+  font-size: 12px; color: #64748b; margin: -6px 0 12px;
+}
+</style>
+
+<div class="adm-apps-toolbar">
+  <span class="title"><i class="fas fa-user-graduate"></i> مدیریت پذیرش و خروجی لیست</span>
+  <a class="primary" href="{{ export_excel_url }}">
+    <i class="fas fa-file-excel"></i> اکسل
+  </a>
+  <a class="info" href="{{ export_word_url }}">
+    <i class="fas fa-file-word"></i> ورد
+  </a>
+  <a class="warn" target="_blank" href="{{ export_print_url }}">
+    <i class="fas fa-print"></i> چاپ / PDF
+  </a>
+  <a href="?status__exact=accepted">فقط پذیرفته‌شدگان</a>
+  <a href="?">پاک کردن فیلترها</a>
+</div>
+
+{% if status_counts %}
+<div class="adm-apps-stats">
+  {% for key, label, count, url in status_counts %}
+  <a href="{{ url }}" class="{% if request.GET.status__exact == key %}active{% endif %}">
+    <div class="n">{{ count }}</div>
+    <div class="l">{{ label }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<p class="adm-apps-hint">
+  از فیلتر سمت چپ می‌توانید بر اساس <strong>وضعیت، مقطع، رشته، گروه آموزشی و دانشکده</strong> جدا کنید.
+  جستجو: نام، کد ملی، کد رهگیری، موبایل، ایمیل، نام رشته.
+  برای چاپ گروهی ابتدا فیلتر کنید، سپس «چاپ / PDF» را بزنید.
+</p>
+
+{{ block.super }}
+{% endblock %}

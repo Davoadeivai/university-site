@@ -1,5 +1,10 @@
 from django.contrib import admin, messages
-from django.utils.html import format_html
+from django.db.models import Count
+from django.urls import path, reverse
+from django.utils.html import format_html, mark_safe
+from django.utils.translation import gettext_lazy as _
+
+from .application_export import excel_response, print_html_response, word_response
 from .models import (
     AdmissionInfo, Application,
     TuitionStructure, TuitionDiscount, StudentPayment, AdmissionOTP,
@@ -46,22 +51,58 @@ class StudentPaymentInline(admin.TabularInline):
     show_change_link = True
 
 
+class HasDocsFilter(admin.SimpleListFilter):
+    title = _('مدارک کامل')
+    parameter_name = 'docs_complete'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'مدارک کامل'),
+            ('no', 'مدارک ناقص'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.exclude(doc_national_id='').exclude(doc_national_id=None).exclude(
+                doc_prev_degree=''
+            ).exclude(doc_prev_degree=None).exclude(doc_photo='').exclude(doc_photo=None)
+        if self.value() == 'no':
+            from django.db.models import Q
+            return queryset.filter(
+                Q(doc_national_id='') | Q(doc_national_id=None)
+                | Q(doc_prev_degree='') | Q(doc_prev_degree=None)
+                | Q(doc_photo='') | Q(doc_photo=None)
+            )
+        return queryset
+
+
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/admissions/application/change_list.html'
+
     list_display = [
         'tracking_code', 'full_name', 'national_id', 'phone',
-        'degree_fa', 'desired_major', 'status_badge',
-        'phone_verified', 'docs_summary', 'created_at',
+        'degree_fa', 'major_name', 'group_name', 'department_name',
+        'status_badge', 'phone_verified', 'docs_summary', 'created_at',
     ]
     list_filter = [
-        'status', 'degree', 'gender', 'shift', 'phone_verified',
-        'desired_major', 'created_at',
+        'status',
+        'degree',
+        ('desired_major__group', admin.RelatedOnlyFieldListFilter),
+        ('desired_major__department', admin.RelatedOnlyFieldListFilter),
+        ('desired_major', admin.RelatedOnlyFieldListFilter),
+        'gender',
+        'shift',
+        'phone_verified',
+        HasDocsFilter,
+        'created_at',
     ]
-    list_editable = []  # وضعیت فقط از فرم/اکشن تا اشتباه انبوه کمتر شود
+    list_editable = []
     search_fields = [
         'tracking_code', 'national_id', 'first_name', 'last_name',
         'phone', 'email', 'father_name',
         'desired_major__name', 'desired_major2__name',
+        'desired_major__group__name', 'desired_major__department__name',
     ]
     readonly_fields = [
         'tracking_code', 'created_at', 'updated_at',
@@ -71,9 +112,14 @@ class ApplicationAdmin(admin.ModelAdmin):
     autocomplete_fields = ['desired_major', 'desired_major2']
     inlines = [StudentPaymentInline]
     date_hierarchy = 'created_at'
-    list_per_page = 25
-    list_select_related = ('desired_major', 'desired_major2')
-    ordering = ['-created_at']
+    list_per_page = 50
+    list_select_related = (
+        'desired_major',
+        'desired_major__group',
+        'desired_major__department',
+        'desired_major2',
+    )
+    ordering = ['degree', 'desired_major__group__order', 'desired_major__name', '-created_at']
     save_on_top = True
     actions = [
         'action_mark_reviewing',
@@ -82,6 +128,9 @@ class ApplicationAdmin(admin.ModelAdmin):
         'action_mark_interview',
         'action_mark_incomplete',
         'action_mark_waiting',
+        'action_export_excel',
+        'action_export_word',
+        'action_export_print',
     ]
 
     fieldsets = (
@@ -142,6 +191,83 @@ class ApplicationAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path(
+                'export/excel/',
+                self.admin_site.admin_view(self.export_excel_view),
+                name='admissions_application_export_excel',
+            ),
+            path(
+                'export/word/',
+                self.admin_site.admin_view(self.export_word_view),
+                name='admissions_application_export_word',
+            ),
+            path(
+                'export/print/',
+                self.admin_site.admin_view(self.export_print_view),
+                name='admissions_application_export_print',
+            ),
+        ]
+        return custom + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        qs = request.GET.urlencode()
+        q = f'?{qs}' if qs else ''
+        extra_context.update({
+            'export_excel_url': reverse('admin:admissions_application_export_excel') + q,
+            'export_word_url': reverse('admin:admissions_application_export_word') + q,
+            'export_print_url': reverse('admin:admissions_application_export_print') + q,
+            'status_counts': self._status_count_cards(request),
+        })
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def _status_count_cards(self, request):
+        base = reverse('admin:admissions_application_changelist')
+        rows = (
+            Application.objects.values('status')
+            .annotate(n=Count('id'))
+            .order_by()
+        )
+        counts = {r['status']: r['n'] for r in rows}
+        cards = []
+        total = sum(counts.values())
+        cards.append(('__all__', 'همه', total, base))
+        for key, label in Application.STATUS_CHOICES:
+            cards.append((key, label, counts.get(key, 0), f'{base}?status__exact={key}'))
+        return cards
+
+    def _export_queryset(self, request):
+        """اعمال همان فیلتر/جستجوی صفحه‌لیست روی خروجی."""
+        try:
+            cl = self.get_changelist_instance(request)
+            qs = cl.get_queryset(request)
+        except Exception:
+            qs = self.get_queryset(request)
+        return qs.select_related(
+            'desired_major',
+            'desired_major__group',
+            'desired_major__department',
+            'desired_major2',
+        ).order_by('degree', 'desired_major__group__name', 'desired_major__name', 'last_name')
+
+    def export_excel_view(self, request):
+        qs = self._export_queryset(request)
+        return excel_response(qs, 'applications.xlsx', title='لیست درخواست‌های پذیرش')
+
+    def export_word_view(self, request):
+        qs = self._export_queryset(request)
+        return word_response(qs, 'applications.docx', title='لیست درخواست‌های پذیرش')
+
+    def export_print_view(self, request):
+        qs = self._export_queryset(request)
+        title = 'لیست درخواست‌های پذیرش'
+        if request.GET.get('status__exact') == 'accepted':
+            title = 'لیست پذیرفته‌شدگان'
+        return print_html_response(qs, title=title)
+
     # ── ستون‌های لیست ──
     @admin.display(description='نام متقاضی', ordering='last_name')
     def full_name(self, obj):
@@ -150,6 +276,24 @@ class ApplicationAdmin(admin.ModelAdmin):
     @admin.display(description='مقطع', ordering='degree')
     def degree_fa(self, obj):
         return obj.get_degree_display()
+
+    @admin.display(description='رشته', ordering='desired_major__name')
+    def major_name(self, obj):
+        return obj.desired_major.name if obj.desired_major_id else '—'
+
+    @admin.display(description='گروه آموزشی', ordering='desired_major__group__name')
+    def group_name(self, obj):
+        major = obj.desired_major
+        if major and major.group_id:
+            return major.group.name
+        return '—'
+
+    @admin.display(description='دانشکده', ordering='desired_major__department__name')
+    def department_name(self, obj):
+        major = obj.desired_major
+        if major and major.department_id:
+            return major.department.name
+        return '—'
 
     @admin.display(description='وضعیت')
     def status_badge(self, obj):
@@ -183,7 +327,8 @@ class ApplicationAdmin(admin.ModelAdmin):
             parts.append(
                 f'<span style="color:{color};font-size:11px;margin-left:4px;">{label}</span>'
             )
-        return format_html(''.join(parts))
+        # Django 5+: format_html بدون آرگومان TypeError می‌دهد
+        return mark_safe(''.join(parts))
 
     def _img_preview(self, field_file, empty='فایلی آپلود نشده'):
         if not field_file:
@@ -216,9 +361,8 @@ class ApplicationAdmin(admin.ModelAdmin):
     def doc_military_preview(self, obj):
         return self._img_preview(obj.doc_military)
 
-    # ── اکشن‌های گروهی (فارسی) ──
+    # ── اکشن‌های گروهی ──
     def _bulk_status(self, request, queryset, status, label):
-        # save() تکی تا سیگنال پیامک وضعیت پذیرش اجرا شود
         updated = 0
         for app in queryset:
             if app.status == status:
@@ -255,6 +399,27 @@ class ApplicationAdmin(admin.ModelAdmin):
     @admin.action(description='تغییر وضعیت به: لیست انتظار')
     def action_mark_waiting(self, request, queryset):
         self._bulk_status(request, queryset, 'waiting', 'لیست انتظار')
+
+    @admin.action(description='خروجی اکسل از انتخاب‌شده‌ها')
+    def action_export_excel(self, request, queryset):
+        qs = queryset.select_related(
+            'desired_major', 'desired_major__group', 'desired_major__department', 'desired_major2',
+        )
+        return excel_response(qs, 'applications-selected.xlsx', title='لیست انتخاب‌شده پذیرش')
+
+    @admin.action(description='خروجی ورد از انتخاب‌شده‌ها')
+    def action_export_word(self, request, queryset):
+        qs = queryset.select_related(
+            'desired_major', 'desired_major__group', 'desired_major__department', 'desired_major2',
+        )
+        return word_response(qs, 'applications-selected.docx', title='لیست انتخاب‌شده پذیرش')
+
+    @admin.action(description='چاپ / PDF از انتخاب‌شده‌ها')
+    def action_export_print(self, request, queryset):
+        qs = queryset.select_related(
+            'desired_major', 'desired_major__group', 'desired_major__department', 'desired_major2',
+        )
+        return print_html_response(qs, title='لیست انتخاب‌شده پذیرش')
 
 
 @admin.register(TuitionStructure)

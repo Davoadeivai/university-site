@@ -306,12 +306,6 @@ JAZZMIN_SETTINGS = {
         'core.PageView',
     ],
     'custom_links': {
-        'admissions': [{
-            'name': 'ثبت‌نام آنلاین (سایت)',
-            'url': '/پذیرش/تایید-موبایل/',
-            'icon': 'fas fa-external-link-alt',
-            'new_window': True,
-        }],
         'core': [
             {
                 'name': 'صفحه اصلی سایت',
@@ -324,6 +318,27 @@ JAZZMIN_SETTINGS = {
                 'url': '/admin/academics/major/?degree__exact=master',
                 'icon': 'fas fa-graduation-cap',
                 'permissions': ['academics.view_major'],
+            },
+        ],
+        'admissions': [
+            {
+                'name': 'ثبت‌نام آنلاین (سایت)',
+                'url': '/پذیرش/تایید-موبایل/',
+                'icon': 'fas fa-external-link-alt',
+                'new_window': True,
+            },
+            {
+                'name': 'فقط پذیرفته‌شدگان',
+                'url': '/admin/admissions/application/?status__exact=accepted',
+                'icon': 'fas fa-user-check',
+                'permissions': ['admissions.view_application'],
+            },
+            {
+                'name': 'چاپ لیست پذیرش',
+                'url': '/admin/admissions/application/export/print/',
+                'icon': 'fas fa-print',
+                'permissions': ['admissions.view_application'],
+                'new_window': True,
             },
         ],
         'academics': [{
