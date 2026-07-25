@@ -1,4 +1,4 @@
-"""One-shot: apply dashboard migrations then restart Passenger."""
+﻿"""One-shot: apply migrations then restart Passenger."""
 import os
 import pathlib
 import sys
@@ -14,8 +14,6 @@ django.setup()
 from django.core.management import call_command
 
 print("=== migrate ===")
-call_command("migrate", "dashboard", "--noinput")
-print("=== migrate all ===")
 call_command("migrate", "--noinput")
 pathlib.Path("tmp").mkdir(exist_ok=True)
 pathlib.Path("tmp/restart.txt").touch()
