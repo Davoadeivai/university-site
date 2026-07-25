@@ -26,12 +26,20 @@ def get_accepted_application(national_id: str) -> Application | None:
     nid = (national_id or '').strip()
     if not nid:
         return None
-    return (
+    qs = (
         Application.objects.filter(national_id=nid, status='accepted')
         .select_related('desired_major', 'desired_major2')
         .order_by('-id')
-        .first()
     )
+    # #21: اگر چند Application پذیرفته‌شده با یک کد ملی وجود داشت، هشدار لاگ بده
+    count = qs.count()
+    if count > 1:
+        import logging
+        logging.getLogger(__name__).warning(
+            'Multiple accepted applications for national_id=%s (count=%d); using latest.',
+            nid, count,
+        )
+    return qs.first()
 
 
 def sync_profile_from_application(user: User, app: Application | None = None) -> UserProfile:
@@ -179,8 +187,10 @@ def ensure_tuition_invoice(user: User, semester: Semester | None = None):
     if any(p.installment_stage == 'exam_card' for p in existing) or (
         len([p for p in existing if p.installment_no]) >= 3
     ):
+        # #9: مرتب‌سازی با None-safe key؛ None → بعد از آخرین رقم واقعی
         for p, due in zip(
-            sorted(existing, key=lambda x: x.installment_no or 99), due_dates
+            sorted(existing, key=lambda x: (x.installment_no is None, x.installment_no or 0)),
+            due_dates,
         ):
             if due and not p.due_date and p.status in ('pending', 'failed', 'review'):
                 p.due_date = due
@@ -196,7 +206,9 @@ def ensure_tuition_invoice(user: User, semester: Semester | None = None):
             old.description = (old.description or '') + ' (تسویه یکجا — معادل کامل)'
             old.save(update_fields=['installment_no', 'installment_stage', 'description'])
             return old
-        amounts = _split_amounts(old.amount or total, semester)
+        # #2: اگر old.amount=0 باشد، `old.amount or total` مبلغ بدون تخفیف را استفاده می‌کرد.
+        # همیشه از total (که با تخفیف محاسبه شده) استفاده می‌کنیم.
+        amounts = _split_amounts(total, semester)
         old.amount = amounts[0]
         old.installment_no = 1
         old.installment_stage = 'initial'
@@ -249,8 +261,14 @@ def reapply_discount_to_pending(user: User, semester: Semester | None = None) ->
     ratios = _installment_ratios(semester)
     unpaid_ratios = []
     for p in unpaid:
-        idx = max((p.installment_no or 1) - 1, 0)
-        unpaid_ratios.append(ratios[idx] if idx < 3 else 0)
+        # #8: اگر installment_no=None باشد، از نسبت پیش‌فرض قسط اول استفاده نکن؛
+        # به جایش ratio آن را صفر بگذار تا در توزیع نسبی تأثیر نگذارد.
+        no = p.installment_no
+        if no is not None and 1 <= no <= 3:
+            idx = no - 1
+            unpaid_ratios.append(ratios[idx])
+        else:
+            unpaid_ratios.append(0)
     ratio_sum = sum(unpaid_ratios) or 1
     allocated = 0
     for i, p in enumerate(unpaid):
@@ -281,9 +299,16 @@ def tuition_fully_settled(user: User, semester: Semester | None = None) -> bool:
     qs = tuition_payments_qs(user, semester)
     staged = qs.exclude(installment_stage='')
     if staged.exists():
-        pending = staged.exclude(status='paid')
-        return not pending.exists()
-    return qs.filter(status='paid').exists()
+        # #1: همه قسط‌های staged باید paid باشند
+        return not staged.exclude(status='paid').exists()
+    # اگر هیچ قسط staged وجود ندارد، باید حداقل یک پرداخت paid با payment_type='tuition' باشد
+    # و کل مبلغ پرداخت‌شده >= مبلغ کل باشد (نه فقط وجود هر پرداختی)
+    paid_qs = qs.filter(status='paid')
+    if not paid_qs.exists():
+        return False
+    # اگر ساختار اقساط وجود ندارد (سیستم قدیمی)، وجود هر پرداخت paid کافی نیست؛
+    # مطمئن می‌شویم هیچ قسط pending/failed وجود ندارد
+    return not qs.exclude(status__in=('paid', 'refunded')).exists()
 
 
 def tuition_is_paid(user: User, semester: Semester | None = None) -> bool:
@@ -307,11 +332,11 @@ def ensure_exam_barcode(user: User, semester: Semester | None = None) -> str:
         return ''
     if target.exam_barcode:
         return target.exam_barcode
-    profile = sync_profile_from_application(user)
-    nid = (profile.national_id or user.username or str(user.pk))[-6:]
-    raw = f'{user.pk}-{semester.pk}-{nid}-exam'
-    digest = hashlib.sha1(raw.encode('utf-8')).hexdigest()[:8].upper()
-    code = f'AAB{user.pk:04d}{semester.pk:03d}{digest}'
+    # #28: بارکد را بدون PII بساز — فقط از user.pk و semester.pk و یک salt مخفی
+    secret = getattr(settings, 'SECRET_KEY', 'aab-barcode-salt')[:16]
+    raw = f'{secret}-{user.pk}-{semester.pk}-exam'
+    digest = hashlib.sha256(raw.encode('utf-8')).hexdigest()[:10].upper()
+    code = f'AAB{user.pk:05d}{semester.pk:04d}{digest}'
     target.exam_barcode = code
     target.save(update_fields=['exam_barcode'])
     return code
@@ -353,7 +378,12 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
     if user and user.is_authenticated:
         has_account = True
     elif nid:
-        has_account = User.objects.filter(username=nid).exists() or UserProfile.objects.filter(national_id=nid).exists()
+        # #13: بررسی با national_id در پروفایل قابل اعتمادتر از username است،
+        # چون ادمین ممکن است username را تغییر دهد.
+        has_account = (
+            UserProfile.objects.filter(national_id=nid, user__is_active=True).exists()
+            or User.objects.filter(username=nid, is_active=True).exists()
+        )
 
     first_paid = bool(summary and summary['first_paid'])
     fully = bool(summary and summary['fully_settled'])

@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{{ report_url }}" class="btn btn-sm"
+           style="background:#3b82f6;color:#fff;border-radius:6px;padding:4px 14px;font-size:13px;text-decoration:none;">
+            📊 گزارش آماری انتخاب‌واحد
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}

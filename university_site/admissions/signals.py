@@ -23,12 +23,15 @@ def application_cache_old_status(sender, instance, **kwargs):
 def application_sms_notify(sender, instance, created, **kwargs):
     if kwargs.get('raw'):
         return
-    from core.notify import notify_application_created, notify_application_status
-
-    if created:
-        notify_application_created(instance)
-        return
-
-    old = getattr(instance, '_old_status', None)
-    if old is not None and old != instance.status:
-        notify_application_status(instance)
+    # #15: خطاهای notify نباید کل ذخیره را خراب کنند
+    try:
+        from core.notify import notify_application_created, notify_application_status
+        if created:
+            notify_application_created(instance)
+            return
+        old = getattr(instance, '_old_status', None)
+        if old is not None and old != instance.status:
+            notify_application_status(instance)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('application_sms_notify failed for pk=%s', instance.pk)

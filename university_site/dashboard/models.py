@@ -26,6 +26,22 @@ class Semester(models.Model):
     def __str__(self):
         return f"{self.name} - {self.academic_year}"
 
+    def clean(self):
+        """#11 + #20: جلوگیری از دو ترم is_active=True همزمان."""
+        from django.core.exceptions import ValidationError
+        if self.is_active:
+            conflict = Semester.objects.filter(is_active=True).exclude(pk=self.pk)
+            if conflict.exists():
+                names = ', '.join(conflict.values_list('name', flat=True))
+                raise ValidationError(
+                    f'ترم فعال دیگری وجود دارد: {names}. '
+                    'ابتدا آن را غیرفعال کنید.'
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
 
 class Enrollment(models.Model):
     STATUS_CHOICES = [

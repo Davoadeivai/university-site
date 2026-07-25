@@ -194,6 +194,8 @@
                     <i class="fas fa-sign-in-alt"></i> ورود و ادامه مسیر
                 </a>
                 {% endif %}
+                {# #25: دکمه magic login فقط وقتی حساب وجود دارد نمایش داده شود #}
+                {% if journey.has_account %}
                 <form method="post" action="{% url 'accounts:magic_login_request' %}" class="d-inline">
                     {% csrf_token %}
                     <input type="hidden" name="national_id" value="{{ app.national_id }}">
@@ -201,6 +203,7 @@
                         <i class="fas fa-mobile-alt"></i> ارسال لینک ورود به موبایل
                     </button>
                 </form>
+                {% endif %}
             </div>
             {% if journey.registration_open %}
             <div class="alert alert-success mt-3 mb-0" style="font-size:13px;">

@@ -1,4 +1,4 @@
-"""One-shot: apply dashboard 0005 then restart Passenger."""
+"""One-shot: apply dashboard migrations then restart Passenger."""
 import os
 import pathlib
 import sys
@@ -13,13 +13,10 @@ django.setup()
 
 from django.core.management import call_command
 
-print("=== migrate dashboard ===")
+print("=== migrate ===")
 call_command("migrate", "dashboard", "--noinput")
-print("=== ensure journey installment plan ===")
-try:
-    call_command("ensure_journey_ready")
-except Exception as e:
-    print("ensure_journey_ready skipped:", e)
+print("=== migrate all ===")
+call_command("migrate", "--noinput")
 pathlib.Path("tmp").mkdir(exist_ok=True)
 pathlib.Path("tmp/restart.txt").touch()
 print("=== done ===")

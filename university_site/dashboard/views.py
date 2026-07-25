@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -245,11 +245,13 @@ def student_registration(request):
         messages.error(request, 'قبل از انتخاب واحد، قسط اول شهریه را پرداخت کنید.')
         return redirect('dashboard:student_payments')
     if not profile.major_id:
+        # #24: پیام راهنمای واضح‌تر با لینک آموزش
         messages.error(
             request,
-            'رشته تحصیلی در پروفایل شما تنظیم نشده. با آموزش تماس بگیرید یا از پذیرش پذیرفته‌شده حساب بسازید.',
+            'رشته تحصیلی در پروفایل شما تنظیم نشده است. '
+            'اگر درخواست پذیرش داشتید و پذیرفته شدید، با دفتر آموزش تماس بگیرید تا رشته را ثبت کنند.',
         )
-        return redirect('accounts:profile')
+        return redirect('dashboard:student_payments')
 
     offerings = list(
         TeachingAssignment.objects.filter(
@@ -273,6 +275,10 @@ def student_registration(request):
     total_units = sum(e.course.credits for e in current)
 
     if request.method == 'POST':
+        # #14: بررسی registration_open در POST هم انجام شود
+        if not semester.registration_open:
+            messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
+            return redirect('dashboard:student_courses')
         action = request.POST.get('action')
         course_id = request.POST.get('course_id')
         course = get_object_or_404(Course, pk=course_id, major=profile.major)
@@ -292,12 +298,14 @@ def student_registration(request):
                 elif len(opts) > 1:
                     messages.error(request, 'لطفاً استاد / کلاس مورد نظر را انتخاب کنید.')
                     return redirect('dashboard:student_registration')
-                Enrollment.objects.update_or_create(
-                    student=request.user,
-                    course=course,
-                    semester=semester,
-                    defaults={'status': 'registered', 'teaching_assignment': ta},
-                )
+                # #5: عملیات ثبت‌نام با transaction.atomic برای جلوگیری از race condition
+                with transaction.atomic():
+                    Enrollment.objects.update_or_create(
+                        student=request.user,
+                        course=course,
+                        semester=semester,
+                        defaults={'status': 'registered', 'teaching_assignment': ta},
+                    )
                 messages.success(request, f'درس «{course.name}» انتخاب شد.')
         elif action == 'drop':
             Enrollment.objects.filter(
@@ -506,6 +514,9 @@ def student_grades(request):
         Q(final_grade__isnull=False) | Q(mid_term_grade__isnull=False)
     ).distinct().order_by('-semester__start_date', 'course__name')
 
+    # #22: اگر اصلاً نمره‌ای ثبت نشده، پیام راهنما نمایش بده
+    no_grades_yet = not enrollments.exists()
+
     by_semester = {}
     for en in enrollments:
         key = en.semester_id
@@ -522,6 +533,7 @@ def student_grades(request):
 
     ctx.update({
         'grades_locked': False,
+        'no_grades_yet': no_grades_yet,
         'tuition_summary': summary,
         'by_semester': by_semester.values(),
         'grade_average': avg,
@@ -589,7 +601,8 @@ def student_assignment_submit(request, pk):
             sub = form.save(commit=False)
             sub.assignment = assignment
             sub.student = request.user
-            if timezone.now() > assignment.due_date:
+            # #10: due_date ممکن است None باشد — بررسی None-safe
+            if assignment.due_date and timezone.now() > assignment.due_date:
                 sub.status = 'late'
             else:
                 sub.status = 'submitted'
@@ -631,7 +644,13 @@ def student_payments(request):
             StudentDiscountClaim.objects.filter(student=request.user, semester=semester)
             .order_by('-created_at')
         )
-    ctx['payments'] = Payment.objects.filter(student=request.user).order_by('installment_no', '-created_at')
+    # #18: فقط پرداخت‌های ترم فعال نمایش داده شود، نه تمام ترم‌ها
+    payments_qs = Payment.objects.filter(student=request.user)
+    if semester:
+        payments_qs = payments_qs.filter(
+            models.Q(semester=semester) | models.Q(semester__isnull=True)
+        )
+    ctx['payments'] = payments_qs.order_by('installment_no', '-created_at')
     ctx['tuition_summary'] = summary
     ctx['payment_gateway'] = getattr(settings, 'PAYMENT_GATEWAY', 'mock')
     ctx['bank_accounts'] = BankAccount.objects.filter(is_active=True)[:5]
@@ -670,13 +689,15 @@ def payment_offline(request, pk):
             messages.error(request, 'برای کارت‌به‌کارت یا فیش بانکی، شماره پیگیری یا تصویر رسید لازم است.')
             return redirect('dashboard:payment_offline', pk=pk)
 
-        payment.method = method
-        payment.receipt_ref = receipt_ref
-        payment.method_notes = method_notes
-        if receipt:
-            payment.receipt_file = receipt
-        payment.status = 'review'
-        payment.save()
+        # #4: پرداخت آفلاین با transaction.atomic تا آپلود فایل و تغییر status باهم انجام شود
+        with transaction.atomic():
+            payment.method = method
+            payment.receipt_ref = receipt_ref
+            payment.method_notes = method_notes
+            if receipt:
+                payment.receipt_file = receipt
+            payment.status = 'review'
+            payment.save()
         messages.success(
             request,
             'رسید ثبت شد و برای تأیید امور مالی ارسال گردید. پس از تأیید، وضعیت به «پرداخت شده» تغییر می‌کند.',
@@ -731,9 +752,10 @@ def tuition_discount_claim(request):
         claim.percent = percent
         claim.notes = notes
         claim.status = 'pending'
+        # #19: فایل مدرک جدید همیشه آپدیت شود، نه فقط وقتی document ارسال شده
         if document:
             claim.document = document
-        claim.save()
+        claim.save(update_fields=['percent', 'notes', 'status', 'document'] if document else ['percent', 'notes', 'status'])
         messages.success(request, 'درخواست تخفیف به‌روز و دوباره ارسال شد.')
     else:
         messages.success(request, 'درخواست تخفیف ثبت شد؛ پس از بررسی امور مالی اعمال می‌شود.')
@@ -808,7 +830,9 @@ def payment_callback(request):
         messages.error(request, 'پرداخت یافت نشد.')
         return redirect('dashboard:student_payments')
 
-    if payment.student_id != request.user.id and not request.user.is_staff:
+    # #29: Staff نباید بتواند پرداخت دانشجویان دیگر را مدیریت کند؛
+    # callback درگاه (بدون login) تنها با authority معتبر مجاز است.
+    if payment.student_id != request.user.id:
         messages.error(request, 'دسترسی غیرمجاز.')
         return redirect('dashboard:dashboard')
 
@@ -816,13 +840,14 @@ def payment_callback(request):
         messages.success(request, 'پرداخت قبلاً تأیید شده است.')
         return redirect('dashboard:student_payments')
 
-    # قفل ردیف پرداخت تا فراخوانی‌های همزمان درگاه، پرداخت را دوباره پردازش نکنند
+    # #3: verify_payment داخل select_for_update فراخوانی شود تا race condition رفع شود
     try:
         with transaction.atomic():
             locked = Payment.objects.select_for_update().get(pk=payment.pk)
             if locked.status == 'paid':
                 messages.success(request, 'پرداخت قبلاً تأیید شده است.')
                 return redirect('dashboard:student_payments')
+            # verify_payment روی locked object فراخوانی می‌شود (داخل transaction)
             ok = verify_payment(request, locked, authority=authority)
     except PaymentGatewayError as e:
         messages.error(request, str(e))
@@ -1035,31 +1060,25 @@ def staff_student_export(request):
     degree = (request.GET.get('degree') or '').strip()
     download = (request.GET.get('download') or '').strip().lower()
 
-    students = (
+    # #32: یک queryset واحد — فیلتر major از طریق profile یا enrollment در یک مرحله
+    base_qs = (
         UserProfile.objects.filter(role='student')
         .select_related('user', 'major', 'major__group', 'major__department')
         .order_by('user__last_name', 'user__first_name')
     )
     if degree:
-        students = students.filter(major__degree=degree)
+        base_qs = base_qs.filter(major__degree=degree)
     if major_id:
-        by_profile = students.filter(major_id=major_id)
-        if by_profile.exists():
-            students = by_profile
-        else:
-            user_ids = (
-                Enrollment.objects.filter(
-                    student__profile__role='student',
-                    course__major_id=major_id,
-                )
-                .values_list('student_id', flat=True)
-                .distinct()
-            )
-            students = (
-                UserProfile.objects.filter(role='student', user_id__in=user_ids)
-                .select_related('user', 'major', 'major__group', 'major__department')
-                .order_by('user__last_name', 'user__first_name')
-            )
+        enrolled_user_ids = (
+            Enrollment.objects.filter(course__major_id=major_id)
+            .values_list('student_id', flat=True)
+            .distinct()
+        )
+        students = base_qs.filter(
+            models.Q(major_id=major_id) | models.Q(user_id__in=enrolled_user_ids)
+        )
+    else:
+        students = base_qs
 
     selected_major = majors.filter(pk=major_id).first() if major_id else None
 
@@ -1072,10 +1091,23 @@ def staff_student_export(request):
 
     from core.jalali import jalali_now_stamp
     stamp = jalali_now_stamp('%Y%m%d')
+    # #34: export را در try/except بپوشانیم تا خطاهای کتابخانه 500 نشود
     if download == 'excel':
-        return excel_response(list(students), filename=f'students_{stamp}.xlsx', title=title)
+        try:
+            return excel_response(list(students), filename=f'students_{stamp}.xlsx', title=title)
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).error('Excel export failed: %s', exc)
+            messages.error(request, 'خطا در تهیه فایل اکسل. لطفاً دوباره تلاش کنید.')
+            return redirect(request.get_full_path().replace('&download=excel', '').replace('?download=excel', ''))
     if download == 'word':
-        return word_response(list(students), filename=f'students_{stamp}.docx', title=title)
+        try:
+            return word_response(list(students), filename=f'students_{stamp}.docx', title=title)
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).error('Word export failed: %s', exc)
+            messages.error(request, 'خطا در تهیه فایل ورد. لطفاً دوباره تلاش کنید.')
+            return redirect(request.get_full_path().replace('&download=word', '').replace('?download=word', ''))
 
     degrees = Major._meta.get_field('degree').choices
     ctx = panel_context(request, 'خروجی لیست دانشجویان', 'student_export')

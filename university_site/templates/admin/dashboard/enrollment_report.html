@@ -1,0 +1,147 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content_title %}گزارش انتخاب‌واحد به تفکیک رشته{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">خانه</a></li>
+    <li class="breadcrumb-item">گزارش انتخاب‌واحد</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+    <div>
+        {% if active_semester %}
+        <span class="badge bg-success" style="font-size:14px;">
+            ترم فعال: {{ active_semester.name }} — {{ active_semester.academic_year }}
+        </span>
+        {% if active_semester.registration_open %}
+        <span class="badge bg-primary ms-1">بازه انتخاب‌واحد باز است</span>
+        {% else %}
+        <span class="badge bg-secondary ms-1">بازه انتخاب‌واحد بسته است</span>
+        {% endif %}
+        {% else %}
+        <span class="badge bg-danger">ترم فعالی تعریف نشده</span>
+        {% endif %}
+    </div>
+    <form method="get" class="d-flex gap-2 align-items-center">
+        <label class="mb-0" for="sel-semester" style="font-size:13px;">نمایش ترم:</label>
+        <select name="semester" id="sel-semester" class="form-select form-select-sm" style="min-width:180px;" onchange="this.form.submit()">
+            <option value="">— ترم فعال —</option>
+            {% for s in all_semesters %}
+            <option value="{{ s.id }}" {% if selected_semester_id == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.name }} — {{ s.academic_year }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{# کارت‌های خلاصه #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div style="font-size:28px;font-weight:700;color:#3b82f6;">{{ summary.total_enrollments }}</div>
+                <div class="text-muted" style="font-size:12px;">کل انتخاب‌واحد</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div style="font-size:28px;font-weight:700;color:#16a34a;">{{ summary.total_students }}</div>
+                <div class="text-muted" style="font-size:12px;">دانشجوی فعال</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div style="font-size:28px;font-weight:700;color:#f59e0b;">{{ summary.total_majors }}</div>
+                <div class="text-muted" style="font-size:12px;">رشته با انتخاب‌واحد</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div style="font-size:28px;font-weight:700;color:#dc2626;">{{ summary.dropped_count }}</div>
+                <div class="text-muted" style="font-size:12px;">حذف‌شده</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# جدول اصلی به تفکیک رشته #}
+{% if rows %}
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">انتخاب‌واحد به تفکیک رشته</h5>
+        <a href="{% url 'admin:dashboard_enrollment_changelist' %}{% if selected_semester_id %}?semester={{ selected_semester_id }}{% endif %}" class="btn btn-sm btn-outline-primary">
+            مشاهده لیست کامل
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" style="font-size:13px;">
+                <thead style="background:#f8fafc;">
+                    <tr>
+                        <th style="padding:10px 12px;">رشته</th>
+                        <th style="padding:10px 12px;">مقطع</th>
+                        <th style="padding:10px 12px;">گروه آموزشی</th>
+                        <th style="padding:10px 12px;text-align:center;">دانشجو</th>
+                        <th style="padding:10px 12px;text-align:center;">کل انتخاب‌واحد</th>
+                        <th style="padding:10px 12px;text-align:center;">حذف‌شده</th>
+                        <th style="padding:10px 12px;text-align:center;">پیشرفت</th>
+                        <th style="padding:10px 12px;text-align:center;">عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td style="padding:8px 12px;font-weight:600;">{{ row.major_name }}</td>
+                        <td style="padding:8px 12px;white-space:nowrap;">
+                            <span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:8px;font-size:11px;">
+                                {{ row.degree_display }}
+                            </span>
+                        </td>
+                        <td style="padding:8px 12px;color:#57606a;">{{ row.group_name|default:"—" }}</td>
+                        <td style="padding:8px 12px;text-align:center;font-weight:700;color:#16a34a;">{{ row.student_count }}</td>
+                        <td style="padding:8px 12px;text-align:center;">{{ row.enroll_count }}</td>
+                        <td style="padding:8px 12px;text-align:center;color:{% if row.dropped_count %}#dc2626{% else %}#94a3b8{% endif %};">
+                            {{ row.dropped_count }}
+                        </td>
+                        <td style="padding:8px 12px;min-width:120px;">
+                            {% if row.capacity %}
+                            <div style="background:#e5e7eb;border-radius:6px;height:10px;overflow:hidden;">
+                                <div style="background:#3b82f6;height:100%;width:{% widthratio row.student_count row.capacity 100 %}%;border-radius:6px;transition:width .3s;"></div>
+                            </div>
+                            <div style="font-size:11px;color:#57606a;margin-top:2px;text-align:center;">
+                                {{ row.student_count }} / {{ row.capacity }}
+                            </div>
+                            {% else %}
+                            <span style="color:#94a3b8;font-size:11px;">ظرفیت نامشخص</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding:8px 12px;text-align:center;">
+                            <a href="{% url 'admin:dashboard_enrollment_changelist' %}?course__major={{ row.major_id }}{% if selected_semester_id %}&semester={{ selected_semester_id }}{% endif %}"
+                               class="btn btn-xs btn-outline-secondary" style="font-size:11px;padding:2px 8px;">
+                                جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    در این ترم هیچ انتخاب‌واحدی ثبت نشده است.
+</div>
+{% endif %}
+{% endblock %}

@@ -63,6 +63,10 @@
     var link = document.getElementById('resendOtp');
     var timerEl = document.getElementById('resendTimer');
     var left = 60;
+    /* #31: تبدیل اعداد انگلیسی به فارسی */
+    function toPersian(n) {
+        return String(n).replace(/[0-9]/g, function(d){ return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+    }
     var t = setInterval(function(){
         left -= 1;
         if(left <= 0){
@@ -71,7 +75,7 @@
             link.style.opacity = '1';
             timerEl.textContent = '';
         } else {
-            timerEl.textContent = '(' + left + ')';
+            timerEl.textContent = '(' + toPersian(left) + ')';
         }
     }, 1000);
 })();

@@ -170,9 +170,13 @@ def apply(request):
         p = request.POST
         national_id = _normalize_digits(p.get('national_id', ''))
 
-        # بررسی ثبت تکراری
+        # #7: بررسی تکراری روی کد ملی و موبایل
         if Application.objects.filter(national_id=national_id).exists():
             messages.error(request, 'قبلاً با این کد ملی درخواستی ثبت شده است.')
+            return _apply_form(p)
+        form_phone_check = _normalize_digits(p.get('phone', '') if not require_otp else (phone or ''))
+        if form_phone_check and Application.objects.filter(phone=form_phone_check).exists():
+            messages.error(request, 'قبلاً با این شماره موبایل درخواستی ثبت شده است.')
             return _apply_form(p)
 
         # اعتبارسنجی اولیه
@@ -228,10 +232,11 @@ def apply(request):
         # مدرک قبلی باید با مقطع درخواستی سازگار باشد (همه مقاطع یک فرم)
         prev_degree = p.get('prev_degree', 'diploma')
         target_degree = p.get('degree', '')
+        # #26: مقادیر valid_prev_degrees باید دقیقاً با PREV_DEGREE_CHOICES مدل تطابق داشته باشند
         allowed_prev = {
             'associate': {'diploma', 'associate'},
-            'bachelor':  {'diploma', 'associate', 'bachelor', 'discontinuous_bachelor'},
-            'master':    {'bachelor', 'discontinuous_bachelor', 'master'},
+            'bachelor':  {'diploma', 'associate', 'bachelor'},
+            'master':    {'bachelor', 'master'},
             'phd':       {'master'},
         }
         if target_degree in allowed_prev and prev_degree not in allowed_prev[target_degree]:
@@ -258,13 +263,17 @@ def apply(request):
             except (TypeError, ValueError):
                 errors.append('معدل باید عدد معتبر باشد.')
 
-        birth_date = _parse_jalali_birth(
-            _normalize_digits(p.get('birth_year', '')),
-            _normalize_digits(p.get('birth_month', '')),
-            _normalize_digits(p.get('birth_day', '')),
-        )
-        if not birth_date:
-            errors.append('تاریخ تولد شمسی معتبر وارد کنید.')
+        # #27: بررسی صریح پر بودن فیلدهای تاریخ تولد قبل از parse
+        birth_year = _normalize_digits(p.get('birth_year', ''))
+        birth_month = _normalize_digits(p.get('birth_month', ''))
+        birth_day = _normalize_digits(p.get('birth_day', ''))
+        if not birth_year or not birth_month or not birth_day:
+            errors.append('تاریخ تولد الزامی است. روز، ماه و سال را انتخاب کنید.')
+            birth_date = None
+        else:
+            birth_date = _parse_jalali_birth(birth_year, birth_month, birth_day)
+            if not birth_date:
+                errors.append('تاریخ تولد شمسی معتبر نیست. لطفاً دوباره بررسی کنید.')
 
         if errors:
             for e in errors:
@@ -300,16 +309,33 @@ def apply(request):
             phone_verified=phone_verified,
         )
 
+        # #16: اعتبارسنجی نوع و سایز فایل‌های آپلودی
+        ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'}
+        MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+        for field_name in ['doc_national_id', 'doc_prev_degree', 'doc_photo', 'doc_military']:
+            f = request.FILES.get(field_name)
+            if f:
+                ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+                if ext not in ALLOWED_EXTENSIONS:
+                    errors.append(f'فایل {f.name} باید تصویر (JPG/PNG/…) باشد.')
+                elif f.size > MAX_FILE_SIZE:
+                    errors.append(f'حجم فایل {f.name} نباید بیش از ۵ مگابایت باشد.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return _apply_form(p)
+
         # آپلود مدارک
         for field in ['doc_national_id', 'doc_prev_degree', 'doc_photo', 'doc_military']:
             if field in request.FILES:
                 setattr(app, field, request.FILES[field])
 
-        app.save()
-
-        # پاک کردن session
+        # #17: session را قبل از save پاک کن تا در صورت خطا session دوباره استفاده‌پذیر باشد
         request.session.pop('apply_phone', None)
         request.session.pop('apply_phone_verified', None)
+
+        app.save()
 
         messages.success(request, f'درخواست شما با کد رهگیری {app.tracking_code} ثبت شد.')
         return redirect('admissions:apply_success', code=app.tracking_code)
