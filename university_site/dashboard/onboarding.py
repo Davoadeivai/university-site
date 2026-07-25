@@ -1,17 +1,20 @@
 """مسیر پس از پذیرش: همگام‌سازی پروفایل، اقساط شهریه، وضعیت مراحل."""
 from __future__ import annotations
 
+import hashlib
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
-
 from admissions.models import Application, TuitionStructure
 from accounts.models import UserProfile
 
-from .models import Enrollment, Payment, Semester
+from .models import Enrollment, Payment, Semester, StudentDiscountClaim, TuitionInstallmentPlan
 
 # نسبت اقساط پیش‌فرض: اول / میانی / کارت امتحان (جمع = ۱۰۰)
 DEFAULT_INSTALLMENT_RATIOS = (40, 30, 30)
+DEFAULT_DUE_DAYS = (7, 60, 100)
 STAGE_META = (
     (1, 'initial', 'قسط اول — پیش‌پرداخت ثبت‌نام / انتخاب واحد'),
     (2, 'mid', 'قسط دوم — میانی ترم'),
@@ -68,7 +71,20 @@ def _estimate_tuition_amount(major) -> int:
     return int(ts.fixed_fee or 0) + int(ts.theory_fee or 0) * 12
 
 
-def _installment_ratios():
+def get_installment_plan(semester: Semester | None) -> TuitionInstallmentPlan | None:
+    if not semester:
+        return None
+    return TuitionInstallmentPlan.objects.filter(
+        academic_year=semester.academic_year, is_active=True
+    ).first()
+
+
+def _installment_ratios(semester: Semester | None = None):
+    plan = get_installment_plan(semester)
+    if plan:
+        ratios = plan.ratios
+        if sum(ratios) == 100:
+            return ratios
     raw = getattr(settings, 'TUITION_INSTALLMENT_RATIOS', None) or DEFAULT_INSTALLMENT_RATIOS
     ratios = tuple(int(x) for x in raw)
     if len(ratios) != 3 or sum(ratios) != 100:
@@ -76,12 +92,44 @@ def _installment_ratios():
     return ratios
 
 
-def _split_amounts(total: int) -> list[int]:
-    r1, r2, r3 = _installment_ratios()
+def _due_days(semester: Semester | None = None):
+    plan = get_installment_plan(semester)
+    if plan:
+        return (plan.due_days_initial, plan.due_days_mid, plan.due_days_exam)
+    return DEFAULT_DUE_DAYS
+
+
+def approved_discount_percent(user: User, semester: Semester | None) -> int:
+    if not semester:
+        return 0
+    total = (
+        StudentDiscountClaim.objects.filter(
+            student=user, semester=semester, status='approved'
+        ).aggregate(s=Sum('percent'))['s']
+        or 0
+    )
+    return min(int(total), 70)
+
+
+def apply_discount(total: int, percent: int) -> int:
+    if percent <= 0:
+        return total
+    return max(int(total * (100 - percent) // 100), 0)
+
+
+def _split_amounts(total: int, semester: Semester | None = None) -> list[int]:
+    r1, r2, r3 = _installment_ratios(semester)
     a1 = (total * r1) // 100
     a2 = (total * r2) // 100
     a3 = total - a1 - a2
     return [max(a1, 0), max(a2, 0), max(a3, 0)]
+
+
+def _due_dates_for(semester: Semester | None) -> list:
+    if not semester or not semester.start_date:
+        return [None, None, None]
+    days = _due_days(semester)
+    return [semester.start_date + timedelta(days=d) for d in days]
 
 
 def tuition_payments_qs(user: User, semester: Semester | None = None):
@@ -91,59 +139,9 @@ def tuition_payments_qs(user: User, semester: Semester | None = None):
     return qs
 
 
-def ensure_tuition_invoice(user: User, semester: Semester | None = None):
-    """ساخت برنامه ۳ قسطی شهریه برای همه رشته‌ها/مقاطع (در صورت نبود)."""
-    semester = semester or Semester.objects.filter(is_active=True).first()
-    profile = sync_profile_from_application(user)
-    major = profile.major
-    total = _estimate_tuition_amount(major)
-    if total <= 0:
-        return None
-
-    existing = list(
-        tuition_payments_qs(user, semester).order_by('installment_no', 'id')
-    )
-    # اگر قبلاً سه قسط ساخته شده
-    if any(p.installment_stage == 'exam_card' for p in existing) or (
-        len([p for p in existing if p.installment_no]) >= 3
-    ):
-        return existing[0] if existing else None
-
-    # فاکتور قدیمی یک‌جا: اگر پرداخت شده = تسویه کامل؛ اگر در انتظار = تبدیل به ۳ قسط
-    if len(existing) == 1 and not existing[0].installment_stage:
-        old = existing[0]
-        if old.status == 'paid':
-            old.installment_no = 1
-            old.installment_stage = 'initial'
-            old.description = (old.description or '') + ' (تسویه یکجا — معادل کامل)'
-            old.save(update_fields=['installment_no', 'installment_stage', 'description'])
-            # قسط ۲ و ۳ را paid با مبلغ ۰ نساز؛ برای کارت امتحان، fully_settled اگر مبلغ پرداختی >= total
-            return old
-        amounts = _split_amounts(old.amount or total)
-        old.amount = amounts[0]
-        old.installment_no = 1
-        old.installment_stage = 'initial'
-        old.description = f'قسط ۱/۳ شهریه — {major.name if major else ""} — {semester.name if semester else ""}'
-        old.save()
-        for (no, stage, label), amount in zip(STAGE_META[1:], amounts[1:]):
-            Payment.objects.create(
-                student=user,
-                payment_type='tuition',
-                amount=amount,
-                semester=semester,
-                description=f'{label} — {major.name if major else ""}',
-                status='pending',
-                installment_no=no,
-                installment_stage=stage,
-            )
-        return old
-
-    if existing:
-        return existing[0]
-
-    amounts = _split_amounts(total)
+def _create_staged_payments(user, semester, major, amounts, due_dates):
     first = None
-    for (no, stage, label), amount in zip(STAGE_META, amounts):
+    for (no, stage, label), amount, due in zip(STAGE_META, amounts, due_dates):
         p = Payment.objects.create(
             student=user,
             payment_type='tuition',
@@ -153,10 +151,119 @@ def ensure_tuition_invoice(user: User, semester: Semester | None = None):
             status='pending',
             installment_no=no,
             installment_stage=stage,
+            due_date=due,
+            method='online',
         )
         if first is None:
             first = p
     return first
+
+
+def ensure_tuition_invoice(user: User, semester: Semester | None = None):
+    """ساخت برنامه ۳ قسطی شهریه (با نسبت/سررسید سال تحصیلی و تخفیف تأییدشده)."""
+    semester = semester or Semester.objects.filter(is_active=True).first()
+    profile = sync_profile_from_application(user)
+    major = profile.major
+    gross = _estimate_tuition_amount(major)
+    if gross <= 0:
+        return None
+
+    discount_pct = approved_discount_percent(user, semester)
+    total = apply_discount(gross, discount_pct)
+    due_dates = _due_dates_for(semester)
+
+    existing = list(
+        tuition_payments_qs(user, semester).order_by('installment_no', 'id')
+    )
+    # اگر قبلاً سه قسط ساخته شده — فقط سررسید خالی را پر کن
+    if any(p.installment_stage == 'exam_card' for p in existing) or (
+        len([p for p in existing if p.installment_no]) >= 3
+    ):
+        for p, due in zip(
+            sorted(existing, key=lambda x: x.installment_no or 99), due_dates
+        ):
+            if due and not p.due_date and p.status in ('pending', 'failed', 'review'):
+                p.due_date = due
+                p.save(update_fields=['due_date'])
+        return existing[0] if existing else None
+
+    # فاکتور قدیمی یک‌جا
+    if len(existing) == 1 and not existing[0].installment_stage:
+        old = existing[0]
+        if old.status == 'paid':
+            old.installment_no = 1
+            old.installment_stage = 'initial'
+            old.description = (old.description or '') + ' (تسویه یکجا — معادل کامل)'
+            old.save(update_fields=['installment_no', 'installment_stage', 'description'])
+            return old
+        amounts = _split_amounts(old.amount or total, semester)
+        old.amount = amounts[0]
+        old.installment_no = 1
+        old.installment_stage = 'initial'
+        old.due_date = due_dates[0]
+        old.description = f'قسط ۱/۳ شهریه — {major.name if major else ""} — {semester.name if semester else ""}'
+        if discount_pct:
+            old.description += f' (تخفیف {discount_pct}٪)'
+        old.save()
+        for (no, stage, label), amount, due in zip(STAGE_META[1:], amounts[1:], due_dates[1:]):
+            Payment.objects.create(
+                student=user,
+                payment_type='tuition',
+                amount=amount,
+                semester=semester,
+                description=f'{label} — {major.name if major else ""}',
+                status='pending',
+                installment_no=no,
+                installment_stage=stage,
+                due_date=due,
+                method='online',
+            )
+        return old
+
+    if existing:
+        return existing[0]
+
+    amounts = _split_amounts(total, semester)
+    return _create_staged_payments(user, semester, major, amounts, due_dates)
+
+
+def reapply_discount_to_pending(user: User, semester: Semester | None = None) -> bool:
+    """پس از تأیید تخفیف، مبالغ اقساط پرداخت‌نشده را بازتوزیع کند."""
+    semester = semester or Semester.objects.filter(is_active=True).first()
+    profile = sync_profile_from_application(user)
+    gross = _estimate_tuition_amount(profile.major)
+    if gross <= 0:
+        return False
+    discount_pct = approved_discount_percent(user, semester)
+    total = apply_discount(gross, discount_pct)
+    qs = list(tuition_payments_qs(user, semester).order_by('installment_no', 'id'))
+    staged = [p for p in qs if p.installment_stage]
+    if len(staged) < 3:
+        return False
+    paid_amount = sum(p.amount for p in staged if p.status == 'paid')
+    unpaid = [p for p in staged if p.status != 'paid']
+    remaining_budget = max(total - paid_amount, 0)
+    if not unpaid:
+        return False
+    # توزیع باقی‌مانده روی اقساط پرداخت‌نشده با نسبت برنامه
+    ratios = _installment_ratios(semester)
+    unpaid_ratios = []
+    for p in unpaid:
+        idx = max((p.installment_no or 1) - 1, 0)
+        unpaid_ratios.append(ratios[idx] if idx < 3 else 0)
+    ratio_sum = sum(unpaid_ratios) or 1
+    allocated = 0
+    for i, p in enumerate(unpaid):
+        if i == len(unpaid) - 1:
+            amount = remaining_budget - allocated
+        else:
+            amount = (remaining_budget * unpaid_ratios[i]) // ratio_sum
+            allocated += amount
+        p.amount = max(amount, 0)
+        if discount_pct and f'تخفیف {discount_pct}' not in (p.description or ''):
+            p.description = (p.description or '') + f' (تخفیف {discount_pct}٪)'
+        p.save(update_fields=['amount', 'description'])
+    return True
 
 
 def tuition_first_paid(user: User, semester: Semester | None = None) -> bool:
@@ -165,19 +272,17 @@ def tuition_first_paid(user: User, semester: Semester | None = None) -> bool:
     qs = tuition_payments_qs(user, semester)
     if qs.filter(installment_stage='initial', status='paid').exists():
         return True
-    # فاکتور قدیمی یکجا (بدون مرحله)
     return qs.filter(status='paid', installment_stage='').exists()
 
 
 def tuition_fully_settled(user: User, semester: Semester | None = None) -> bool:
-    """همه اقساط پرداخت شده → صدور کارت ورود به جلسه."""
+    """همه اقساط پرداخت شده → صدور کارت ورود به جلسه / باز شدن نمرات."""
     semester = semester or Semester.objects.filter(is_active=True).first()
     qs = tuition_payments_qs(user, semester)
     staged = qs.exclude(installment_stage='')
     if staged.exists():
         pending = staged.exclude(status='paid')
         return not pending.exists()
-    # فاکتور قدیمی: یک پرداخت موفق کافی است
     return qs.filter(status='paid').exists()
 
 
@@ -186,12 +291,40 @@ def tuition_is_paid(user: User, semester: Semester | None = None) -> bool:
     return tuition_first_paid(user, semester)
 
 
+def ensure_exam_barcode(user: User, semester: Semester | None = None) -> str:
+    """بارکد یکتا برای اسکن در جلسه امتحان."""
+    semester = semester or Semester.objects.filter(is_active=True).first()
+    if not semester or not tuition_fully_settled(user, semester):
+        return ''
+    gate = (
+        tuition_payments_qs(user, semester)
+        .filter(installment_stage='exam_card')
+        .order_by('id')
+        .first()
+    )
+    target = gate or tuition_payments_qs(user, semester).filter(status='paid').order_by('id').first()
+    if not target:
+        return ''
+    if target.exam_barcode:
+        return target.exam_barcode
+    profile = sync_profile_from_application(user)
+    nid = (profile.national_id or user.username or str(user.pk))[-6:]
+    raw = f'{user.pk}-{semester.pk}-{nid}-exam'
+    digest = hashlib.sha1(raw.encode('utf-8')).hexdigest()[:8].upper()
+    code = f'AAB{user.pk:04d}{semester.pk:03d}{digest}'
+    target.exam_barcode = code
+    target.save(update_fields=['exam_barcode'])
+    return code
+
+
 def tuition_summary(user: User, semester: Semester | None = None) -> dict:
     semester = semester or Semester.objects.filter(is_active=True).first()
     ensure_tuition_invoice(user, semester)
     qs = tuition_payments_qs(user, semester).order_by('installment_no', 'id')
     total = qs.aggregate(s=Sum('amount'))['s'] or 0
     paid = qs.filter(status='paid').aggregate(s=Sum('amount'))['s'] or 0
+    discount_pct = approved_discount_percent(user, semester)
+    plan = get_installment_plan(semester)
     return {
         'payments': list(qs),
         'total': total,
@@ -199,6 +332,9 @@ def tuition_summary(user: User, semester: Semester | None = None) -> dict:
         'remaining': max(total - paid, 0),
         'first_paid': tuition_first_paid(user, semester),
         'fully_settled': tuition_fully_settled(user, semester),
+        'discount_percent': discount_pct,
+        'plan': plan,
+        'ratios': _installment_ratios(semester),
     }
 
 
@@ -224,7 +360,12 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
     pending_payment = None
     enrolled_count = 0
     if user and user.is_authenticated:
-        pending_payment = tuition_payments_qs(user, semester).filter(status='pending').order_by('installment_no').first()
+        pending_payment = (
+            tuition_payments_qs(user, semester)
+            .filter(status__in=('pending', 'failed', 'review'))
+            .order_by('installment_no')
+            .first()
+        )
         if semester:
             enrolled_count = Enrollment.objects.filter(
                 student=user, semester=semester
@@ -249,7 +390,7 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
             'key': 'tuition',
             'title': 'پرداخت قسط اول شهریه',
             'done': first_paid,
-            'hint': 'قسط اول برای باز شدن انتخاب واحد الزامی است؛ تسویه کامل برای کارت امتحان.',
+            'hint': 'قسط اول برای باز شدن انتخاب واحد الزامی است؛ تسویه کامل برای کارت امتحان و مشاهده نمرات.',
         },
         {
             'key': 'registration',

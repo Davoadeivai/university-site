@@ -124,7 +124,8 @@ class Payment(models.Model):
         ('other', 'سایر'),
     ]
     STATUS_CHOICES = [
-        ('pending', 'در انتظار'),
+        ('pending', 'در انتظار پرداخت'),
+        ('review', 'در انتظار تأیید امور مالی'),
         ('paid', 'پرداخت شده'),
         ('failed', 'ناموفق'),
         ('refunded', 'بازگشت داده شده'),
@@ -145,6 +146,25 @@ class Payment(models.Model):
     installment_stage = models.CharField(
         _('مرحله قسط'), max_length=20, choices=STAGE_CHOICES, blank=True, default='',
     )
+    METHOD_CHOICES = [
+        ('online', 'پرداخت آنلاین (درگاه)'),
+        ('card_to_card', 'کارت‌به‌کارت'),
+        ('pos', 'کارت‌خوان / کارتخوان در مؤسسه'),
+        ('bank_deposit', 'فیش بانکی / واریز به حساب'),
+        ('cash', 'نقدی در امور مالی'),
+        ('other', 'سایر'),
+    ]
+    method = models.CharField(
+        _('روش پرداخت'), max_length=20, choices=METHOD_CHOICES, default='online', blank=True,
+    )
+    due_date = models.DateField(_('سررسید قسط'), null=True, blank=True, db_index=True)
+    receipt_file = models.FileField(
+        _('فیش / رسید آفلاین'), upload_to='tuition_receipts/', blank=True, null=True,
+    )
+    receipt_ref = models.CharField(_('شماره پیگیری / مرجع'), max_length=100, blank=True)
+    method_notes = models.TextField(_('توضیح روش پرداخت'), blank=True)
+    reminder_sent_at = models.DateTimeField(_('آخرین یادآوری پیامکی'), null=True, blank=True)
+    exam_barcode = models.CharField(_('بارکد کارت امتحان'), max_length=64, blank=True, db_index=True)
     transaction_id = models.CharField(_('شناسه تراکنش'), max_length=100, blank=True)
     authority = models.CharField(_('کد authority درگاه'), max_length=100, blank=True, db_index=True)
     gateway = models.CharField(_('درگاه'), max_length=20, blank=True, default='')
@@ -262,3 +282,69 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.enrollment.student.get_full_name()} - {self.date}"
+
+
+class TuitionInstallmentPlan(models.Model):
+    """نسبت و سررسید اقساط شهریه به‌ازای سال تحصیلی (ادمین)."""
+    academic_year = models.CharField(_('سال تحصیلی'), max_length=20, unique=True)
+    ratio_initial = models.PositiveSmallIntegerField(_('درصد قسط ۱'), default=40)
+    ratio_mid = models.PositiveSmallIntegerField(_('درصد قسط ۲'), default=30)
+    ratio_exam = models.PositiveSmallIntegerField(_('درصد قسط ۳'), default=30)
+    due_days_initial = models.PositiveSmallIntegerField(_('سررسید قسط ۱ (روز از شروع ترم)'), default=7)
+    due_days_mid = models.PositiveSmallIntegerField(_('سررسید قسط ۲ (روز از شروع ترم)'), default=60)
+    due_days_exam = models.PositiveSmallIntegerField(_('سررسید قسط ۳ (روز از شروع ترم)'), default=100)
+    reminder_days_before = models.PositiveSmallIntegerField(_('یادآوری پیامک چند روز قبل'), default=3)
+    is_active = models.BooleanField(_('فعال'), default=True)
+    notes = models.TextField(_('توضیحات'), blank=True)
+
+    class Meta:
+        verbose_name = _('برنامه اقساط شهریه')
+        verbose_name_plural = _('برنامه‌های اقساط شهریه')
+        ordering = ['-academic_year']
+
+    def __str__(self):
+        return f'{self.academic_year} ({self.ratio_initial}/{self.ratio_mid}/{self.ratio_exam})'
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.ratio_initial + self.ratio_mid + self.ratio_exam != 100:
+            raise ValidationError('جمع درصد اقساط باید دقیقاً ۱۰۰ باشد.')
+
+    @property
+    def ratios(self):
+        return (self.ratio_initial, self.ratio_mid, self.ratio_exam)
+
+
+class StudentDiscountClaim(models.Model):
+    """درخواست/اعمال تخفیف شهریه برای دانشجو (خواهر/برادر، ایثارگری، …)."""
+    DISCOUNT_CHOICES = [
+        ('sibling', 'تخفیف خواهر / برادر'),
+        ('martyr', 'ایثارگری / خانواده شهید'),
+        ('veteran', 'جانبازی / ایثارگری'),
+        ('talent', 'استعداد درخشان'),
+        ('other', 'سایر'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'در انتظار بررسی'),
+        ('approved', 'تأیید شده'),
+        ('rejected', 'رد شده'),
+    ]
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='discount_claims', verbose_name=_('دانشجو'))
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='discount_claims', verbose_name=_('ترم'))
+    discount_type = models.CharField(_('نوع تخفیف'), max_length=20, choices=DISCOUNT_CHOICES)
+    percent = models.PositiveSmallIntegerField(_('درصد تخفیف'), default=10)
+    document = models.FileField(_('مدرک پیوست'), upload_to='tuition_discounts/', blank=True, null=True)
+    notes = models.TextField(_('توضیحات دانشجو'), blank=True)
+    status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_note = models.TextField(_('یادداشت ادمین'), blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('تخفیف شهریه دانشجو')
+        verbose_name_plural = _('تخفیف‌های شهریه دانشجو')
+        ordering = ['-created_at']
+        unique_together = ['student', 'semester', 'discount_type']
+
+    def __str__(self):
+        return f'{self.student} — {self.get_discount_type_display()} ({self.percent}%)'

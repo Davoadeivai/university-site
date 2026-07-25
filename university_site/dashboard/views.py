@@ -31,6 +31,7 @@ from .models import (
     ExamSchedule,
     Payment,
     Semester,
+    StudentDiscountClaim,
     StudentRequest,
     TeachingAssignment,
 )
@@ -361,7 +362,13 @@ def student_schedule(request):
 @role_required('student')
 def student_exam_card(request):
     """کارت ورود به جلسه — فقط پس از تسویه کامل شهریه."""
-    from .onboarding import sync_profile_from_application, tuition_fully_settled, tuition_summary
+    from .barcode import barcode_svg
+    from .onboarding import (
+        ensure_exam_barcode,
+        sync_profile_from_application,
+        tuition_fully_settled,
+        tuition_summary,
+    )
 
     ctx = panel_context(request, 'کارت ورود به جلسه', 'exam_card')
     semester = ctx['active_semester']
@@ -377,6 +384,13 @@ def student_exam_card(request):
         exams = exams.filter(semester=semester)
     exams = exams.order_by('date', 'start_time')
 
+    barcode_code = ''
+    barcode_svg_markup = ''
+    if settled and enrollments.exists():
+        barcode_code = ensure_exam_barcode(request.user, semester)
+        if barcode_code:
+            barcode_svg_markup = barcode_svg(barcode_code)
+
     ctx.update({
         'settled': settled,
         'summary': summary,
@@ -385,6 +399,8 @@ def student_exam_card(request):
         'enrollments': enrollments,
         'semester': semester,
         'can_issue': settled and enrollments.exists(),
+        'barcode_code': barcode_code,
+        'barcode_svg': barcode_svg_markup,
     })
     return render(request, 'dashboard/student_exam_card.html', ctx)
 
@@ -469,12 +485,27 @@ def professor_print_roster(request, pk):
 
 @role_required('student')
 def student_grades(request):
+    from .onboarding import tuition_fully_settled, tuition_summary
+
     ctx = panel_context(request, 'نمرات و کارنامه', 'grades')
+    semester = ctx['active_semester']
+    settled = tuition_fully_settled(request.user, semester)
+    summary = tuition_summary(request.user, semester)
+
+    if not settled:
+        ctx.update({
+            'grades_locked': True,
+            'tuition_summary': summary,
+            'by_semester': [],
+            'grade_average': None,
+            'graded_count': 0,
+        })
+        return render(request, 'dashboard/student_grades.html', ctx)
+
     enrollments = student_enrollment_qs(request.user).filter(
         Q(final_grade__isnull=False) | Q(mid_term_grade__isnull=False)
     ).distinct().order_by('-semester__start_date', 'course__name')
 
-    # گروه‌بندی بر اساس ترم
     by_semester = {}
     for en in enrollments:
         key = en.semester_id
@@ -482,7 +513,6 @@ def student_grades(request):
             by_semester[key] = {'semester': en.semester, 'items': []}
         by_semester[key]['items'].append(en)
 
-    # میانگین تقریبی (فقط نمرات نهایی)
     graded = [e for e in enrollments if e.final_grade is not None]
     avg = None
     if graded:
@@ -491,6 +521,8 @@ def student_grades(request):
         avg = round(total_w / total_c, 2)
 
     ctx.update({
+        'grades_locked': False,
+        'tuition_summary': summary,
         'by_semester': by_semester.values(),
         'grade_average': avg,
         'graded_count': len(graded),
@@ -587,14 +619,125 @@ def student_exams(request):
 
 @role_required('student')
 def student_payments(request):
+    from core.models import BankAccount
     from .onboarding import tuition_summary
+
     ctx = panel_context(request, 'پرداخت‌ها', 'payments')
     semester = ctx['active_semester']
     summary = tuition_summary(request.user, semester)
+    discounts = []
+    if semester:
+        discounts = list(
+            StudentDiscountClaim.objects.filter(student=request.user, semester=semester)
+            .order_by('-created_at')
+        )
     ctx['payments'] = Payment.objects.filter(student=request.user).order_by('installment_no', '-created_at')
     ctx['tuition_summary'] = summary
     ctx['payment_gateway'] = getattr(settings, 'PAYMENT_GATEWAY', 'mock')
+    ctx['bank_accounts'] = BankAccount.objects.filter(is_active=True)[:5]
+    ctx['discount_claims'] = discounts
+    ctx['discount_types'] = StudentDiscountClaim.DISCOUNT_CHOICES
+    ctx['payment_methods'] = Payment.METHOD_CHOICES
     return render(request, 'dashboard/student_payments.html', ctx)
+
+
+@role_required('student')
+def payment_offline(request, pk):
+    """ثبت پرداخت آفلاین: کارت‌به‌کارت، کارتخوان، فیش بانکی، نقدی، سایر."""
+    payment = get_object_or_404(Payment, pk=pk, student=request.user)
+    if payment.status == 'paid':
+        messages.info(request, 'این قسط قبلاً پرداخت شده است.')
+        return redirect('dashboard:student_payments')
+    if payment.status == 'review':
+        messages.info(request, 'رسید شما در صف تأیید امور مالی است.')
+        return redirect('dashboard:student_payments')
+    if payment.status not in ('pending', 'failed'):
+        messages.warning(request, 'امکان ثبت این پرداخت وجود ندارد.')
+        return redirect('dashboard:student_payments')
+
+    offline_methods = {
+        'card_to_card', 'pos', 'bank_deposit', 'cash', 'other',
+    }
+    if request.method == 'POST':
+        method = (request.POST.get('method') or '').strip()
+        if method not in offline_methods:
+            messages.error(request, 'روش پرداخت نامعتبر است.')
+            return redirect('dashboard:payment_offline', pk=pk)
+        receipt_ref = (request.POST.get('receipt_ref') or '').strip()[:100]
+        method_notes = (request.POST.get('method_notes') or '').strip()[:500]
+        receipt = request.FILES.get('receipt_file')
+        if method in ('card_to_card', 'bank_deposit') and not receipt_ref and not receipt:
+            messages.error(request, 'برای کارت‌به‌کارت یا فیش بانکی، شماره پیگیری یا تصویر رسید لازم است.')
+            return redirect('dashboard:payment_offline', pk=pk)
+
+        payment.method = method
+        payment.receipt_ref = receipt_ref
+        payment.method_notes = method_notes
+        if receipt:
+            payment.receipt_file = receipt
+        payment.status = 'review'
+        payment.save()
+        messages.success(
+            request,
+            'رسید ثبت شد و برای تأیید امور مالی ارسال گردید. پس از تأیید، وضعیت به «پرداخت شده» تغییر می‌کند.',
+        )
+        return redirect('dashboard:student_payments')
+
+    from core.models import BankAccount
+    ctx = panel_context(request, 'ثبت پرداخت آفلاین', 'payments')
+    ctx.update({
+        'payment': payment,
+        'bank_accounts': BankAccount.objects.filter(is_active=True)[:5],
+        'offline_methods': [
+            c for c in Payment.METHOD_CHOICES if c[0] in offline_methods
+        ],
+    })
+    return render(request, 'dashboard/payment_offline.html', ctx)
+
+
+@role_required('student')
+def tuition_discount_claim(request):
+    """درخواست تخفیف خواهر/برادر یا ایثارگری روی شهریه ترم فعال."""
+    semester = Semester.objects.filter(is_active=True).first()
+    if not semester:
+        messages.error(request, 'ترم فعالی تعریف نشده است.')
+        return redirect('dashboard:student_payments')
+    if request.method != 'POST':
+        return redirect('dashboard:student_payments')
+
+    dtype = (request.POST.get('discount_type') or '').strip()
+    valid = {c[0] for c in StudentDiscountClaim.DISCOUNT_CHOICES}
+    if dtype not in valid:
+        messages.error(request, 'نوع تخفیف نامعتبر است.')
+        return redirect('dashboard:student_payments')
+    try:
+        percent = int(request.POST.get('percent') or 10)
+    except (TypeError, ValueError):
+        percent = 10
+    percent = max(1, min(percent, 50))
+    notes = (request.POST.get('notes') or '').strip()[:1000]
+    document = request.FILES.get('document')
+
+    claim, created = StudentDiscountClaim.objects.get_or_create(
+        student=request.user,
+        semester=semester,
+        discount_type=dtype,
+        defaults={'percent': percent, 'notes': notes, 'document': document},
+    )
+    if not created:
+        if claim.status == 'approved':
+            messages.info(request, 'این تخفیف قبلاً تأیید شده است.')
+            return redirect('dashboard:student_payments')
+        claim.percent = percent
+        claim.notes = notes
+        claim.status = 'pending'
+        if document:
+            claim.document = document
+        claim.save()
+        messages.success(request, 'درخواست تخفیف به‌روز و دوباره ارسال شد.')
+    else:
+        messages.success(request, 'درخواست تخفیف ثبت شد؛ پس از بررسی امور مالی اعمال می‌شود.')
+    return redirect('dashboard:student_payments')
 
 
 @role_required('student')
@@ -604,12 +747,16 @@ def payment_start(request, pk):
     if payment.status == 'paid':
         messages.info(request, 'این پرداخت قبلاً انجام شده است.')
         return redirect('dashboard:student_payments')
+    if payment.status == 'review':
+        messages.info(request, 'رسید شما در انتظار تأیید امور مالی است.')
+        return redirect('dashboard:student_payments')
     if payment.status not in ('pending', 'failed'):
         messages.warning(request, 'امکان پرداخت این مورد وجود ندارد.')
         return redirect('dashboard:student_payments')
 
     payment.status = 'pending'
-    payment.save(update_fields=['status'])
+    payment.method = 'online'
+    payment.save(update_fields=['status', 'method'])
 
     from .payment_gateway import PaymentGatewayError, start_payment
     try:

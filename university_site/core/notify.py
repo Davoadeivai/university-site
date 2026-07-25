@@ -115,9 +115,40 @@ def notify_application_accepted(application) -> bool:
 def notify_tuition_paid(payment) -> bool:
     label = _site_label()
     amount = f'{int(payment.amount):,}'
+    stage = ''
+    if getattr(payment, 'installment_stage', None):
+        try:
+            stage = payment.get_installment_stage_display()
+        except Exception:
+            stage = payment.installment_stage
+    portal = getattr(settings, 'PUBLIC_SITE_URL', '') or 'https://portal.aab.ac.ir'
     msg = (
-        f'{label}: پرداخت شهریه ({amount} تومان) تأیید شد. '
-        f'اکنون می‌توانید انتخاب واحد را انجام دهید.'
+        f'{label}: پرداخت شهریه'
+        f'{(" (" + stage + ")") if stage else ""}'
+        f' به مبلغ {amount} تومان تأیید شد. '
+        f'{portal.rstrip("/")}/dashboard/payments/'
+    )
+    return notify_phone(phone_from_user(payment.student), msg)
+
+
+def notify_installment_due(payment) -> bool:
+    """یادآوری پیامکی قبل از سررسید قسط شهریه."""
+    label = _site_label()
+    amount = f'{int(payment.amount):,}'
+    due = payment.due_date.strftime('%Y-%m-%d') if payment.due_date else ''
+    stage = ''
+    if payment.installment_stage:
+        try:
+            stage = payment.get_installment_stage_display()
+        except Exception:
+            stage = payment.installment_stage
+    portal = getattr(settings, 'PUBLIC_SITE_URL', '') or 'https://portal.aab.ac.ir'
+    msg = (
+        f'{label}: یادآوری قسط شهریه'
+        f'{(" — " + stage) if stage else ""}. '
+        f'مبلغ {amount} تومان'
+        f'{("، سررسید " + due) if due else ""}. '
+        f'{portal.rstrip("/")}/dashboard/payments/'
     )
     return notify_phone(phone_from_user(payment.student), msg)
 

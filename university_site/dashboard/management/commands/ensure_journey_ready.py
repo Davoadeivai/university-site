@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from academics.models import Course, Major
 from admissions.models import Application, TuitionStructure
 from accounts.models import UserProfile
-from dashboard.models import Semester, TeachingAssignment
+from dashboard.models import Semester, TeachingAssignment, TuitionInstallmentPlan
 from dashboard.onboarding import ensure_tuition_invoice
 
 
@@ -42,6 +42,24 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f'Semester ready: {semester} (created={created}, registration_open=True)'
         ))
+
+        plan, plan_created = TuitionInstallmentPlan.objects.get_or_create(
+            academic_year=semester.academic_year,
+            defaults={
+                'ratio_initial': 40,
+                'ratio_mid': 30,
+                'ratio_exam': 30,
+                'due_days_initial': 7,
+                'due_days_mid': 60,
+                'due_days_exam': 100,
+                'reminder_days_before': 3,
+                'is_active': True,
+            },
+        )
+        self.stdout.write(
+            f'Installment plan {plan.academic_year}: '
+            f'{plan.ratio_initial}/{plan.ratio_mid}/{plan.ratio_exam} (new={plan_created})'
+        )
 
         nid = (options.get('national_id') or '').strip()
         apps = Application.objects.filter(status='accepted').select_related('desired_major')

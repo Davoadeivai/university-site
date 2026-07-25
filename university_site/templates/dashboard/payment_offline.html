@@ -1,0 +1,65 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>ثبت پرداخت آفلاین</h2>
+    <a href="{% url 'dashboard:student_payments' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+</div>
+
+<div class="uni-card p-4 mb-4">
+    <div style="font-size:14px;">
+        <div><span class="text-muted">قسط:</span>
+            <strong>{% if payment.installment_stage %}{{ payment.get_installment_stage_display }}{% else %}#{{ payment.pk }}{% endif %}</strong>
+        </div>
+        <div class="mt-1"><span class="text-muted">مبلغ:</span> <strong>{{ payment.amount|floatformat:0 }} تومان</strong></div>
+        {% if payment.due_date %}
+        <div class="mt-1"><span class="text-muted">سررسید:</span> {{ payment.due_date|jalali_date:"short" }}</div>
+        {% endif %}
+    </div>
+</div>
+
+{% if bank_accounts %}
+<div class="uni-card p-4 mb-4">
+    <h3 class="h6 mb-2">حساب‌های مؤسسه برای واریز</h3>
+    {% for acc in bank_accounts %}
+    <div class="mb-2" style="font-size:13px;">
+        <strong>{{ acc.bank_name }}</strong> — {{ acc.account_number }}
+        {% if acc.iban %} | شبا: {{ acc.iban }}{% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="uni-card p-4">
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label class="form-label">روش پرداخت</label>
+            <select name="method" class="form-select" required>
+                {% for val, label in offline_methods %}
+                <option value="{{ val }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">شماره پیگیری / مرجع</label>
+            <input type="text" name="receipt_ref" class="form-control" placeholder="کد تراکنش، شماره فیش، …">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">تصویر فیش / رسید</label>
+            <input type="file" name="receipt_file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">توضیح</label>
+            <input type="text" name="method_notes" class="form-control" placeholder="مثلاً ساعت مراجعه به کارتخوان">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">ارسال برای تأیید امور مالی</button>
+        </div>
+    </form>
+    <p class="text-muted mt-3 mb-0" style="font-size:12px;">
+        تا قبل از تأیید ادمین، وضعیت «در انتظار تأیید امور مالی» می‌ماند و انتخاب واحد/کارت امتحان بر اساس اقساط تأییدشده محاسبه می‌شود.
+    </p>
+</div>
+{% endblock %}

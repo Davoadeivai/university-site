@@ -55,7 +55,18 @@
             {% endfor %}
         </tbody>
     </table>
-    <div class="text-muted" style="font-size:11px;">این کارت بدون تسویه کامل شهریه فاقد اعتبار است. مهر آموزش الزامی است.</div>
+
+    {% if barcode_svg %}
+    <div class="text-center mt-4 pt-3 border-top">
+        <div class="text-muted mb-2" style="font-size:12px;">بارکد ورود به جلسه (اسکن در محل امتحان)</div>
+        <div class="d-inline-block">{{ barcode_svg|safe }}</div>
+        {% if barcode_code %}
+        <div class="mt-1" style="font-family:monospace; font-size:13px; letter-spacing:1px;">{{ barcode_code }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="text-muted mt-3" style="font-size:11px;">این کارت بدون تسویه کامل شهریه فاقد اعتبار است. مهر آموزش الزامی است.</div>
 </div>
 
 <button type="button" class="btn btn-primary" onclick="window.print()">

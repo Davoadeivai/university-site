@@ -6,6 +6,19 @@
     {% if grade_average %}<span class="badge bg-primary">میانگین وزنی: {{ grade_average }}</span>{% endif %}
 </div>
 
+{% if grades_locked %}
+<div class="alert alert-danger">
+    <i class="fas fa-lock"></i>
+    مشاهده نمرات تا تسویه کامل شهریه ترم قفل است.
+    {% if tuition_summary %}
+    باقی‌مانده: <strong>{{ tuition_summary.remaining|floatformat:0 }} تومان</strong>.
+    {% endif %}
+    <div class="mt-2">
+        <a href="{% url 'dashboard:student_payments' %}" class="btn btn-sm btn-danger">پرداخت اقساط شهریه</a>
+    </div>
+</div>
+{% else %}
+
 {% for group in by_semester %}
 <div class="uni-card p-0 overflow-hidden mb-4">
     <div class="p-3 border-bottom"><strong>{{ group.semester.name }}</strong> <span class="text-muted">{{ group.semester.academic_year }}</span></div>
@@ -39,4 +52,6 @@
 {% empty %}
 <div class="uni-card"><p class="panel-empty">هنوز نمره‌ای ثبت نشده است.</p></div>
 {% endfor %}
+
+{% endif %}
 {% endblock %}

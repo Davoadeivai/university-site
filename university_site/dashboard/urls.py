@@ -21,8 +21,10 @@ urlpatterns = [
     path('payments/print/', views.print_tuition_receipt, name='print_tuition_receipt'),
     path('payments/<int:pk>/print/', views.print_tuition_receipt, name='print_tuition_receipt_one'),
     path('payments/<int:pk>/pay/', views.payment_start, name='payment_start'),
+    path('payments/<int:pk>/offline/', views.payment_offline, name='payment_offline'),
     path('payments/<int:pk>/mock/', views.payment_mock, name='payment_mock'),
     path('payments/callback/', views.payment_callback, name='payment_callback'),
+    path('payments/discount/', views.tuition_discount_claim, name='tuition_discount_claim'),
 
     # استاد
     path('teaching/', views.professor_courses, name='professor_courses'),
