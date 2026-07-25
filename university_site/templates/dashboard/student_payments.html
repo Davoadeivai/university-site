@@ -3,30 +3,61 @@
 
 {% block panel_content %}
 <div class="panel-toolbar">
-    <h2>پرداخت‌ها</h2>
+    <h2>پرداخت شهریه (اقساط)</h2>
     <span class="text-muted" style="font-size:13px;">درگاه: {% if payment_gateway == 'zarinpal' %}زرین‌پال{% else %}آزمایشی (mock){% endif %}</span>
 </div>
+
+{% if tuition_summary %}
+<div class="uni-card p-4 mb-4">
+    <div class="row g-3" style="font-size:14px;">
+        <div class="col-md-4"><div class="text-muted">کل شهریه ترم</div><div class="fw-bold">{{ tuition_summary.total|floatformat:0 }} تومان</div></div>
+        <div class="col-md-4"><div class="text-muted">پرداخت‌شده</div><div class="fw-bold text-success">{{ tuition_summary.paid|floatformat:0 }} تومان</div></div>
+        <div class="col-md-4"><div class="text-muted">باقی‌مانده</div><div class="fw-bold text-danger">{{ tuition_summary.remaining|floatformat:0 }} تومان</div></div>
+    </div>
+    <div class="mt-3" style="font-size:13px;">
+        {% if tuition_summary.fully_settled %}
+        <span class="badge bg-success">تسویه کامل — کارت ورود به جلسه قابل صدور است</span>
+        {% elif tuition_summary.first_paid %}
+        <span class="badge bg-primary">قسط اول پرداخت شد — انتخاب واحد باز است</span>
+        {% else %}
+        <span class="badge bg-warning text-dark">ابتدا قسط اول را بپردازید</span>
+        {% endif %}
+    </div>
+    <div class="mt-3 d-flex flex-wrap gap-2">
+        <a href="{% url 'dashboard:print_tuition_receipt' %}" class="btn btn-sm btn-outline-secondary" target="_blank">
+            <i class="fas fa-print"></i> پرینت رسیدهای واریزی
+        </a>
+        <a href="{% url 'dashboard:student_exam_card' %}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-id-card"></i> کارت ورود به جلسه
+        </a>
+    </div>
+</div>
+{% endif %}
 
 <div class="uni-card p-0 overflow-hidden">
     {% if payments %}
     <div class="table-responsive">
         <table class="panel-table">
             <thead>
-                <tr><th>نوع</th><th>مبلغ</th><th>وضعیت</th><th>ترم</th><th>تاریخ</th><th></th></tr>
+                <tr><th>قسط</th><th>شرح</th><th>مبلغ</th><th>وضعیت</th><th>ترم</th><th>تاریخ</th><th></th></tr>
             </thead>
             <tbody>
                 {% for p in payments %}
                 <tr>
-                    <td>{{ p.get_payment_type_display }}</td>
+                    <td>{% if p.installment_no %}{{ p.installment_no }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if p.installment_stage %}{{ p.get_installment_stage_display }}{% else %}{{ p.get_payment_type_display }}{% endif %}
+                        {% if p.description %}<div class="text-muted" style="font-size:11px;">{{ p.description|truncatechars:60 }}</div>{% endif %}
+                    </td>
                     <td>{{ p.amount|floatformat:0 }} تومان</td>
                     <td><span class="badge bg-{% if p.status == 'paid' %}success{% elif p.status == 'pending' %}warning{% else %}danger{% endif %}">{{ p.get_status_display }}</span></td>
                     <td>{% if p.semester %}{{ p.semester.name }}{% else %}—{% endif %}</td>
                     <td>{{ p.created_at|jalali_date }}</td>
                     <td>
                         {% if p.status == 'pending' or p.status == 'failed' %}
-                        <a href="{% url 'dashboard:payment_start' p.pk %}" class="btn btn-sm btn-primary">پرداخت آنلاین</a>
-                        {% elif p.status == 'paid' and p.transaction_id %}
-                        <small class="text-muted" dir="ltr">{{ p.transaction_id }}</small>
+                        <a href="{% url 'dashboard:payment_start' p.pk %}" class="btn btn-sm btn-primary">پرداخت</a>
+                        {% elif p.status == 'paid' %}
+                        <a href="{% url 'dashboard:print_tuition_receipt_one' p.pk %}" class="btn btn-sm btn-outline-secondary" target="_blank">رسید</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -40,8 +71,6 @@
 </div>
 
 <p class="text-muted mt-3" style="font-size:13px;">
-    همچنین می‌توانید از صفحه
-    <a href="{% url 'core:payment_id' %}">شناسه واریز</a>
-    به‌صورت کارت‌به‌کارت/فیش بانکی پرداخت کنید.
+    قسط سوم هنگام دریافت کارت ورود به جلسه الزامی است؛ بدون تسویه کامل، کارت صادر نمی‌شود.
 </p>
 {% endblock %}

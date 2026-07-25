@@ -223,15 +223,16 @@ MAX_REGISTRATION_UNITS = 24
 
 @role_required('student')
 def student_registration(request):
-    """انتخاب واحد دانشجو در بازه ثبت‌نام ترم."""
+    """انتخاب واحد + انتخاب استاد/کلاس (در صورت چند ارائه)."""
+    from collections import defaultdict
     from academics.models import Course
-    from .onboarding import ensure_tuition_invoice, sync_profile_from_application, tuition_is_paid
+    from .onboarding import ensure_tuition_invoice, sync_profile_from_application, tuition_first_paid
 
     ctx = panel_context(request, 'انتخاب واحد', 'registration')
     semester = ctx['active_semester']
     profile = sync_profile_from_application(request.user)
     ensure_tuition_invoice(request.user, semester)
-    paid = tuition_is_paid(request.user, semester)
+    paid = tuition_first_paid(request.user, semester)
 
     if not semester:
         messages.warning(request, 'ترم فعالی تعریف نشده است.')
@@ -240,7 +241,7 @@ def student_registration(request):
         messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
         return redirect('dashboard:student_courses')
     if not paid:
-        messages.error(request, 'قبل از انتخاب واحد، شهریه ترم را پرداخت کنید.')
+        messages.error(request, 'قبل از انتخاب واحد، قسط اول شهریه را پرداخت کنید.')
         return redirect('dashboard:student_payments')
     if not profile.major_id:
         messages.error(
@@ -249,23 +250,25 @@ def student_registration(request):
         )
         return redirect('accounts:profile')
 
-    # دروس قابل انتخاب: دروسی که برای این ترم تخصیص تدریس دارند، وگرنه کاتالوگ رشته
     offerings = list(
         TeachingAssignment.objects.filter(
             semester=semester, is_active=True, course__major=profile.major
         ).select_related('course', 'professor')
     )
-    if offerings:
-        courses = [o.course for o in offerings]
-        offering_by_course = {o.course_id: o for o in offerings}
+    offerings_by_course = defaultdict(list)
+    for o in offerings:
+        offerings_by_course[o.course_id].append(o)
+
+    if offerings_by_course:
+        course_ids = list(offerings_by_course.keys())
+        courses = list(Course.objects.filter(id__in=course_ids).order_by('semester', 'name'))
     else:
         courses = list(Course.objects.filter(major=profile.major).order_by('semester', 'name'))
-        offering_by_course = {}
 
     current = Enrollment.objects.filter(
         student=request.user, semester=semester
-    ).exclude(status='dropped').select_related('course')
-    enrolled_ids = set(current.values_list('course_id', flat=True))
+    ).exclude(status='dropped').select_related('course', 'teaching_assignment')
+    enrolled_map = {e.course_id: e for e in current}
     total_units = sum(e.course.credits for e in current)
 
     if request.method == 'POST':
@@ -273,37 +276,47 @@ def student_registration(request):
         course_id = request.POST.get('course_id')
         course = get_object_or_404(Course, pk=course_id, major=profile.major)
         if action == 'enroll':
-            if course.id in enrolled_ids:
+            if course.id in enrolled_map:
                 messages.info(request, 'این درس قبلاً انتخاب شده است.')
             elif total_units + course.credits > MAX_REGISTRATION_UNITS:
-                messages.error(
-                    request,
-                    f'سقف واحد ({MAX_REGISTRATION_UNITS}) پر می‌شود.',
-                )
+                messages.error(request, f'سقف واحد ({MAX_REGISTRATION_UNITS}) پر می‌شود.')
             else:
+                ta = None
+                ta_id = request.POST.get('teaching_assignment_id')
+                opts = offerings_by_course.get(course.id) or []
+                if ta_id:
+                    ta = next((x for x in opts if str(x.id) == str(ta_id)), None)
+                elif len(opts) == 1:
+                    ta = opts[0]
+                elif len(opts) > 1:
+                    messages.error(request, 'لطفاً استاد / کلاس مورد نظر را انتخاب کنید.')
+                    return redirect('dashboard:student_registration')
                 Enrollment.objects.update_or_create(
                     student=request.user,
                     course=course,
                     semester=semester,
-                    defaults={'status': 'registered'},
+                    defaults={'status': 'registered', 'teaching_assignment': ta},
                 )
                 messages.success(request, f'درس «{course.name}» انتخاب شد.')
         elif action == 'drop':
             Enrollment.objects.filter(
                 student=request.user, course=course, semester=semester
-            ).update(status='dropped')
+            ).update(status='dropped', teaching_assignment=None)
             messages.success(request, f'درس «{course.name}» حذف شد.')
         return redirect('dashboard:student_registration')
 
     rows = []
     for course in courses:
-        off = offering_by_course.get(course.id)
+        opts = offerings_by_course.get(course.id) or []
+        en = enrolled_map.get(course.id)
         rows.append({
             'course': course,
-            'enrolled': course.id in enrolled_ids,
-            'professor': off.professor if off else None,
-            'schedule': off.class_schedule if off else '',
-            'classroom': off.classroom if off else '',
+            'enrolled': en is not None,
+            'enrollment': en,
+            'offerings': opts,
+            'professor': en.teaching_assignment.professor if en and en.teaching_assignment_id else (opts[0].professor if len(opts) == 1 else None),
+            'schedule': en.teaching_assignment.class_schedule if en and en.teaching_assignment_id else (opts[0].class_schedule if len(opts) == 1 else ''),
+            'classroom': en.teaching_assignment.classroom if en and en.teaching_assignment_id else (opts[0].classroom if len(opts) == 1 else ''),
         })
 
     ctx.update({
@@ -323,19 +336,16 @@ def student_schedule(request):
     semester = ctx['active_semester']
     enrollments = (
         student_enrollment_qs(request.user, semester) if semester else student_enrollment_qs(request.user)
-    ).exclude(status='dropped')
+    ).exclude(status='dropped').select_related('teaching_assignment', 'teaching_assignment__professor', 'course')
     course_ids = list(enrollments.values_list('course_id', flat=True))
     ta_qs = TeachingAssignment.objects.filter(course_id__in=course_ids, is_active=True)
     if semester:
         ta_qs = ta_qs.filter(semester=semester)
-    assignments = {
-        ta.course_id: ta
-        for ta in ta_qs.select_related('professor', 'course')
-    }
+    fallback = {ta.course_id: ta for ta in ta_qs.select_related('professor', 'course')}
 
     rows = []
     for en in enrollments:
-        ta = assignments.get(en.course_id)
+        ta = en.teaching_assignment or fallback.get(en.course_id)
         rows.append({
             'enrollment': en,
             'course': en.course,
@@ -346,6 +356,115 @@ def student_schedule(request):
     ctx['rows'] = rows
     ctx['semester'] = semester
     return render(request, 'dashboard/student_schedule.html', ctx)
+
+
+@role_required('student')
+def student_exam_card(request):
+    """کارت ورود به جلسه — فقط پس از تسویه کامل شهریه."""
+    from .onboarding import sync_profile_from_application, tuition_fully_settled, tuition_summary
+
+    ctx = panel_context(request, 'کارت ورود به جلسه', 'exam_card')
+    semester = ctx['active_semester']
+    profile = sync_profile_from_application(request.user)
+    summary = tuition_summary(request.user, semester)
+    settled = tuition_fully_settled(request.user, semester)
+    enrollments = (
+        student_enrollment_qs(request.user, semester) if semester else student_enrollment_qs(request.user)
+    ).exclude(status='dropped')
+    course_ids = list(enrollments.values_list('course_id', flat=True))
+    exams = ExamSchedule.objects.filter(course_id__in=course_ids).select_related('course')
+    if semester:
+        exams = exams.filter(semester=semester)
+    exams = exams.order_by('date', 'start_time')
+
+    ctx.update({
+        'settled': settled,
+        'summary': summary,
+        'profile': profile,
+        'exams': exams,
+        'enrollments': enrollments,
+        'semester': semester,
+        'can_issue': settled and enrollments.exists(),
+    })
+    return render(request, 'dashboard/student_exam_card.html', ctx)
+
+
+@role_required('student')
+def print_tuition_receipt(request, pk=None):
+    """پرینت رسید شهریه پرداخت‌شده."""
+    from .onboarding import tuition_summary
+    ctx = panel_context(request, 'رسید شهریه', 'payments')
+    semester = ctx['active_semester']
+    if pk:
+        payments = list(Payment.objects.filter(pk=pk, student=request.user, status='paid'))
+    else:
+        payments = [p for p in tuition_summary(request.user, semester)['payments'] if p.status == 'paid']
+    if not payments:
+        messages.warning(request, 'رسید پرداخت‌شده‌ای برای پرینت وجود ندارد.')
+        return redirect('dashboard:student_payments')
+    ctx.update({
+        'payments': payments,
+        'print_mode': True,
+        'student': request.user,
+        'semester': semester,
+    })
+    return render(request, 'dashboard/print_tuition_receipt.html', ctx)
+
+
+@role_required('student')
+def print_class_schedule(request):
+    """پرینت برنامه کلاسی دانشجو."""
+    request.GET  # keep
+    # reuse schedule data
+    semester = Semester.objects.filter(is_active=True).first()
+    enrollments = (
+        student_enrollment_qs(request.user, semester) if semester else student_enrollment_qs(request.user)
+    ).exclude(status='dropped').select_related('teaching_assignment', 'teaching_assignment__professor', 'course')
+    course_ids = list(enrollments.values_list('course_id', flat=True))
+    ta_qs = TeachingAssignment.objects.filter(course_id__in=course_ids, is_active=True)
+    if semester:
+        ta_qs = ta_qs.filter(semester=semester)
+    fallback = {ta.course_id: ta for ta in ta_qs.select_related('professor')}
+    rows = []
+    for en in enrollments:
+        ta = en.teaching_assignment or fallback.get(en.course_id)
+        rows.append({
+            'course': en.course,
+            'professor': ta.professor if ta else None,
+            'schedule': ta.class_schedule if ta else '',
+            'classroom': ta.classroom if ta else '',
+        })
+    return render(request, 'dashboard/print_class_schedule.html', {
+        **panel_context(request, 'پرینت برنامه کلاس', 'schedule'),
+        'rows': rows,
+        'semester': semester,
+        'student': request.user,
+        'print_mode': True,
+    })
+
+
+@role_required('professor')
+def professor_print_roster(request, pk):
+    """پرینت لیست دانشجویان کلاس برای استاد."""
+    ta = get_object_or_404(
+        TeachingAssignment.objects.select_related('course', 'semester'),
+        pk=pk, professor=request.user, is_active=True,
+    )
+    enrollments = Enrollment.objects.filter(
+        course=ta.course, semester=ta.semester
+    ).exclude(status='dropped').select_related('student', 'student__profile').order_by(
+        'student__last_name', 'student__first_name'
+    )
+    # اگر دانشجو این TA را انتخاب کرده باشد اولویت با همان است
+    preferred = enrollments.filter(teaching_assignment=ta)
+    if preferred.exists():
+        enrollments = preferred
+    return render(request, 'dashboard/print_professor_roster.html', {
+        **panel_context(request, 'پرینت لیست کلاس', 'teaching'),
+        'teaching': ta,
+        'enrollments': enrollments,
+        'print_mode': True,
+    })
 
 
 @role_required('student')
@@ -468,8 +587,12 @@ def student_exams(request):
 
 @role_required('student')
 def student_payments(request):
+    from .onboarding import tuition_summary
     ctx = panel_context(request, 'پرداخت‌ها', 'payments')
-    ctx['payments'] = Payment.objects.filter(student=request.user).order_by('-created_at')
+    semester = ctx['active_semester']
+    summary = tuition_summary(request.user, semester)
+    ctx['payments'] = Payment.objects.filter(student=request.user).order_by('installment_no', '-created_at')
+    ctx['tuition_summary'] = summary
     ctx['payment_gateway'] = getattr(settings, 'PAYMENT_GATEWAY', 'mock')
     return render(request, 'dashboard/student_payments.html', ctx)
 
@@ -559,12 +682,18 @@ def payment_callback(request):
         return redirect('dashboard:student_payments')
 
     if ok:
+        from .onboarding import tuition_first_paid, tuition_fully_settled
         messages.success(
             request,
-            f'پرداخت موفق — کد پیگیری: {locked.transaction_id or locked.authority}. '
-            f'اکنون می‌توانید انتخاب واحد را انجام دهید.',
+            f'پرداخت موفق — کد پیگیری: {locked.transaction_id or locked.authority}',
         )
-        return redirect('dashboard:student_registration')
+        if tuition_fully_settled(request.user, locked.semester):
+            messages.info(request, 'شهریه کامل تسویه شد؛ می‌توانید کارت ورود به جلسه را دریافت کنید.')
+            return redirect('dashboard:student_exam_card')
+        if tuition_first_paid(request.user, locked.semester):
+            messages.info(request, 'قسط اول پرداخت شد؛ اکنون انتخاب واحد باز است.')
+            return redirect('dashboard:student_registration')
+        return redirect('dashboard:student_payments')
     messages.error(request, 'پرداخت ناموفق بود یا لغو شد.')
     return redirect('dashboard:student_payments')
 

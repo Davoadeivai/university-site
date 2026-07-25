@@ -3,9 +3,12 @@
 {% block panel_content %}
 <div class="panel-toolbar">
     <h2>برنامه کلاس و اساتید</h2>
-    {% if semester %}
-    <span class="badge bg-primary">{{ semester.name }}</span>
-    {% endif %}
+    <div class="d-flex gap-2 align-items-center">
+        {% if semester %}<span class="badge bg-primary">{{ semester.name }}</span>{% endif %}
+        <a href="{% url 'dashboard:print_class_schedule' %}" class="btn btn-sm btn-outline-secondary" target="_blank">
+            <i class="fas fa-print"></i> پرینت
+        </a>
+    </div>
 </div>
 
 {% if rows %}

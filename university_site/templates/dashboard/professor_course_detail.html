@@ -9,7 +9,12 @@
             {% if teaching.classroom %} | کلاس {{ teaching.classroom }}{% endif %}
         </div>
     </div>
-    <a href="{% url 'dashboard:professor_courses' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+    <div class="d-flex gap-2">
+        <a href="{% url 'dashboard:professor_print_roster' teaching.pk %}" class="btn btn-sm btn-outline-secondary" target="_blank">
+            <i class="fas fa-print"></i> پرینت لیست
+        </a>
+        <a href="{% url 'dashboard:professor_courses' %}" class="btn btn-sm btn-outline-secondary">بازگشت</a>
+    </div>
 </div>
 
 {% if teaching.class_schedule %}

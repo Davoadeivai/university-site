@@ -1,0 +1,43 @@
+{% extends 'dashboard/panel_base.html' %}
+
+{% block panel_content %}
+<div class="panel-toolbar no-print">
+    <h2>پرینت برنامه کلاسی</h2>
+    <button type="button" class="btn btn-primary btn-sm" onclick="window.print()"><i class="fas fa-print"></i> چاپ</button>
+</div>
+
+<div class="uni-card p-4">
+    <div class="text-center mb-3">
+        <div class="fw-bold">برنامه کلاسی دانشجو</div>
+        <div>{{ student.get_full_name|default:student.username }}
+            {% if semester %} — {{ semester.name }}{% endif %}
+        </div>
+    </div>
+    <table class="table table-bordered" style="font-size:13px;">
+        <thead>
+            <tr><th>درس</th><th>واحد</th><th>استاد</th><th>زمان</th><th>کلاس</th></tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.course.name }}</td>
+                <td>{{ row.course.credits }}</td>
+                <td>{% if row.professor %}{{ row.professor.get_full_name|default:row.professor.username }}{% else %}—{% endif %}</td>
+                <td>{{ row.schedule|default:"—" }}</td>
+                <td>{{ row.classroom|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">درسی انتخاب نشده است.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+@media print {
+    .no-print, .panel-nav, .btn, .main-footer, .main-header, .chatbot-widget { display: none !important; }
+    .panel-shell { display: block !important; }
+    .panel-main { width: 100% !important; }
+}
+</style>
+{% endblock %}

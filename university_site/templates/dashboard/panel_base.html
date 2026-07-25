@@ -127,6 +127,9 @@
                 <a href="{% url 'dashboard:student_schedule' %}" class="{% if active_nav == 'schedule' %}active{% endif %}">
                     <i class="fas fa-calendar-alt"></i> برنامه کلاس
                 </a>
+                <a href="{% url 'dashboard:student_exam_card' %}" class="{% if active_nav == 'exam_card' %}active{% endif %}">
+                    <i class="fas fa-id-card"></i> کارت امتحان
+                </a>
                 <a href="{% url 'dashboard:student_grades' %}" class="{% if active_nav == 'grades' %}active{% endif %}">
                     <i class="fas fa-chart-line"></i> نمرات
                 </a>

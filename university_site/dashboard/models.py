@@ -38,6 +38,14 @@ class Enrollment(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments', verbose_name=_('دانشجو'))
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments', verbose_name=_('درس'))
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='enrollments', verbose_name=_('ترم'))
+    teaching_assignment = models.ForeignKey(
+        'TeachingAssignment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='enrollments',
+        verbose_name=_('کلاس / استاد انتخابی'),
+    )
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='registered')
     mid_term_grade = models.DecimalField(_('نمره میان‌ترم'), max_digits=5, decimal_places=2, null=True, blank=True)
     final_grade = models.DecimalField(_('نمره نهایی'), max_digits=5, decimal_places=2, null=True, blank=True)
@@ -121,12 +129,22 @@ class Payment(models.Model):
         ('failed', 'ناموفق'),
         ('refunded', 'بازگشت داده شده'),
     ]
+    STAGE_CHOICES = [
+        ('', '—'),
+        ('initial', 'قسط اول (ثبت‌نام)'),
+        ('mid', 'قسط دوم (میانی)'),
+        ('exam_card', 'قسط سوم (کارت ورود به جلسه)'),
+    ]
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments', verbose_name=_('دانشجو'))
     payment_type = models.CharField(_('نوع پرداخت'), max_length=20, choices=PAYMENT_TYPE_CHOICES)
     amount = models.PositiveIntegerField(_('مبلغ (تومان)'))
     semester = models.ForeignKey(Semester, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('ترم'))
     description = models.TextField(_('توضیحات'), blank=True)
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='pending')
+    installment_no = models.PositiveSmallIntegerField(_('شماره قسط'), default=0, db_index=True)
+    installment_stage = models.CharField(
+        _('مرحله قسط'), max_length=20, choices=STAGE_CHOICES, blank=True, default='',
+    )
     transaction_id = models.CharField(_('شناسه تراکنش'), max_length=100, blank=True)
     authority = models.CharField(_('کد authority درگاه'), max_length=100, blank=True, db_index=True)
     gateway = models.CharField(_('درگاه'), max_length=20, blank=True, default='')
@@ -136,10 +154,16 @@ class Payment(models.Model):
     class Meta:
         verbose_name = _('پرداخت سامانه آموزشی')
         verbose_name_plural = _('پرداخت‌های سامانه آموزشی')
-        ordering = ['-created_at']
+        ordering = ['installment_no', '-created_at']
 
     def __str__(self):
-        return f"{self.student.get_full_name()} - {self.amount:,} تومان"
+        stage = self.get_installment_stage_display() if self.installment_stage else ''
+        base = f"{self.student.get_full_name()} - {self.amount:,} تومان"
+        return f"{base} ({stage})" if stage else base
+
+    @property
+    def is_exam_gate(self) -> bool:
+        return self.installment_stage == 'exam_card'
 
 
 class ExamSchedule(models.Model):

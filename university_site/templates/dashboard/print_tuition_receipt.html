@@ -1,0 +1,46 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar no-print">
+    <h2>رسید واریز شهریه</h2>
+    <button type="button" class="btn btn-primary btn-sm" onclick="window.print()"><i class="fas fa-print"></i> چاپ</button>
+</div>
+
+<div class="uni-card p-4">
+    <div class="text-center mb-4">
+        <div class="fw-bold">موسسه آموزش عالی علامه امینی بهنمیر</div>
+        <div class="text-muted">رسید پرداخت شهریه</div>
+    </div>
+    <div class="mb-3" style="font-size:14px;">
+        دانشجو: <strong>{{ student.get_full_name|default:student.username }}</strong>
+        | کد کاربری: <strong>{{ student.username }}</strong>
+        {% if semester %} | ترم: <strong>{{ semester.name }}</strong>{% endif %}
+    </div>
+    <table class="table table-bordered" style="font-size:13px;">
+        <thead>
+            <tr><th>قسط</th><th>شرح</th><th>مبلغ</th><th>کد پیگیری</th><th>تاریخ پرداخت</th></tr>
+        </thead>
+        <tbody>
+            {% for p in payments %}
+            <tr>
+                <td>{{ p.installment_no|default:"—" }}</td>
+                <td>{% if p.installment_stage %}{{ p.get_installment_stage_display }}{% else %}{{ p.get_payment_type_display }}{% endif %}</td>
+                <td>{{ p.amount|floatformat:0 }} تومان</td>
+                <td dir="ltr">{% firstof p.transaction_id p.authority "—" %}</td>
+                <td>{% if p.payment_date %}{{ p.payment_date|jalali_datetime }}{% else %}{{ p.created_at|jalali_datetime }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+@media print {
+    .no-print, .panel-nav, .btn, .main-footer, .main-header, .chatbot-widget { display: none !important; }
+    .panel-shell { display: block !important; }
+    .panel-main { width: 100% !important; }
+}
+</style>
+<script>window.addEventListener('load', function(){ /* ready for print */ });</script>
+{% endblock %}

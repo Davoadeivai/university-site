@@ -2,7 +2,7 @@
 
 {% block panel_content %}
 <div class="panel-toolbar">
-    <h2>انتخاب واحد</h2>
+    <h2>انتخاب واحد / استاد و کلاس</h2>
     {% if semester %}
     <span class="badge bg-success">{{ semester.name }} — {{ semester.academic_year }}</span>
     {% endif %}
@@ -10,13 +10,10 @@
 
 <div class="alert alert-info" style="font-size:14px;">
     <div class="d-flex justify-content-between flex-wrap gap-2">
-        <div>
-            رشته: <strong>{% if major %}{{ major.name }}{% else %}—{% endif %}</strong>
-        </div>
-        <div>
-            واحد انتخاب‌شده: <strong>{{ total_units }}</strong> / {{ max_units }}
-        </div>
+        <div>رشته: <strong>{% if major %}{{ major.name }}{% else %}—{% endif %}</strong></div>
+        <div>واحد انتخاب‌شده: <strong>{{ total_units }}</strong> / {{ max_units }}</div>
     </div>
+    <div class="mt-2 text-muted" style="font-size:12px;">اگر چند استاد/کلاس برای یک درس باشد، یکی را انتخاب کنید.</div>
 </div>
 
 {% if rows %}
@@ -26,8 +23,7 @@
             <tr>
                 <th>درس</th>
                 <th>واحد</th>
-                <th>استاد</th>
-                <th>زمان / کلاس</th>
+                <th>استاد / کلاس</th>
                 <th></th>
             </tr>
         </thead>
@@ -39,22 +35,52 @@
                     {% if row.course.code %}<div class="text-muted" style="font-size:12px;">{{ row.course.code }}</div>{% endif %}
                 </td>
                 <td>{{ row.course.credits }}</td>
-                <td>{% if row.professor %}{{ row.professor.get_full_name|default:row.professor.username }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
-                <td style="font-size:12px;">
-                    {% if row.schedule %}{{ row.schedule }}{% endif %}
-                    {% if row.classroom %}<div class="text-muted">{{ row.classroom }}</div>{% endif %}
-                    {% if not row.schedule and not row.classroom %}<span class="text-muted">هنوز اعلام نشده</span>{% endif %}
+                <td>
+                    {% if row.enrolled %}
+                        {% if row.professor %}{{ row.professor.get_full_name|default:row.professor.username }}{% else %}—{% endif %}
+                        {% if row.schedule %}<div class="text-muted" style="font-size:12px;">{{ row.schedule }}</div>{% endif %}
+                        {% if row.classroom %}<div class="text-muted" style="font-size:12px;">{{ row.classroom }}</div>{% endif %}
+                    {% elif row.offerings|length > 1 %}
+                        <form method="post" class="d-flex flex-wrap gap-2 align-items-center" id="enroll-{{ row.course.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="course_id" value="{{ row.course.id }}">
+                            <select name="teaching_assignment_id" class="form-select form-select-sm" style="min-width:220px;" required>
+                                <option value="">انتخاب استاد / کلاس…</option>
+                                {% for off in row.offerings %}
+                                <option value="{{ off.id }}">
+                                    {{ off.professor.get_full_name|default:off.professor.username }}
+                                    {% if off.class_schedule %} — {{ off.class_schedule }}{% endif %}
+                                    {% if off.classroom %} ({{ off.classroom }}){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    {% elif row.offerings|length == 1 %}
+                        {{ row.offerings.0.professor.get_full_name|default:row.offerings.0.professor.username }}
+                        {% if row.offerings.0.class_schedule %}<div class="text-muted" style="font-size:12px;">{{ row.offerings.0.class_schedule }}</div>{% endif %}
+                    {% else %}
+                        <span class="text-muted">هنوز اعلام نشده</span>
+                    {% endif %}
                 </td>
                 <td class="text-end">
+                    {% if row.enrolled %}
                     <form method="post" class="d-inline">
                         {% csrf_token %}
                         <input type="hidden" name="course_id" value="{{ row.course.id }}">
-                        {% if row.enrolled %}
                         <button type="submit" name="action" value="drop" class="btn btn-sm btn-outline-danger">حذف</button>
-                        {% else %}
-                        <button type="submit" name="action" value="enroll" class="btn btn-sm btn-primary">انتخاب</button>
-                        {% endif %}
                     </form>
+                    {% elif row.offerings|length > 1 %}
+                    <button type="submit" form="enroll-{{ row.course.id }}" name="action" value="enroll" class="btn btn-sm btn-primary">انتخاب</button>
+                    {% else %}
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="course_id" value="{{ row.course.id }}">
+                        {% if row.offerings|length == 1 %}
+                        <input type="hidden" name="teaching_assignment_id" value="{{ row.offerings.0.id }}">
+                        {% endif %}
+                        <button type="submit" name="action" value="enroll" class="btn btn-sm btn-primary">انتخاب</button>
+                    </form>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
@@ -62,12 +88,15 @@
     </table>
 </div>
 {% else %}
-<p class="panel-empty">درسی برای رشته شما تعریف نشده است. با آموزش هماهنگ کنید.</p>
+<p class="panel-empty">درسی برای رشته شما تعریف نشده است.</p>
 {% endif %}
 
-<div class="mt-3">
+<div class="mt-3 d-flex flex-wrap gap-2">
     <a href="{% url 'dashboard:student_schedule' %}" class="btn btn-outline-primary btn-sm">
-        <i class="fas fa-calendar-alt"></i> مشاهده برنامه کلاس و اساتید
+        <i class="fas fa-calendar-alt"></i> برنامه کلاس
+    </a>
+    <a href="{% url 'dashboard:print_class_schedule' %}" class="btn btn-outline-secondary btn-sm" target="_blank">
+        <i class="fas fa-print"></i> پرینت برنامه
     </a>
 </div>
 {% endblock %}

@@ -473,7 +473,7 @@ def magic_login_request(request):
 def magic_login(request, token):
     """ورود با لینک یک‌بارمصرف."""
     from .magic_login import consume_magic_token
-    from dashboard.onboarding import tuition_is_paid
+    from dashboard.onboarding import tuition_first_paid, tuition_fully_settled
 
     user = consume_magic_token(token)
     if not user:
@@ -482,6 +482,8 @@ def magic_login(request, token):
 
     login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
-    if not tuition_is_paid(user):
+    if tuition_fully_settled(user):
+        return redirect('dashboard:student_exam_card')
+    if not tuition_first_paid(user):
         return redirect('dashboard:student_payments')
     return redirect('dashboard:student_registration')
