@@ -498,6 +498,17 @@ def track_application(request):
                         'state': 'done',
                     })
     journey = None
+    viewer_is_staff = False
+    if request.user.is_authenticated:
+        try:
+            role = request.user.profile.role
+        except Exception:
+            role = ''
+        viewer_is_staff = bool(
+            request.user.is_superuser
+            or request.user.is_staff
+            or role in ('admin', 'staff')
+        )
     if app and app.status == 'accepted':
         from dashboard.onboarding import build_journey_status
         user = request.user if request.user.is_authenticated else None
@@ -513,6 +524,7 @@ def track_application(request):
         'query': query,
         'timeline': timeline,
         'journey': journey,
+        'viewer_is_staff': viewer_is_staff,
         'page_title': 'پیگیری وضعیت درخواست',
     })
 

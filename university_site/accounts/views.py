@@ -26,9 +26,50 @@ def _safe_redirect_target(request, default='/dashboard/'):
     return default
 
 
+def _user_role(user):
+    try:
+        return user.profile.role
+    except Exception:
+        return ''
+
+
+def _is_student_dest(url: str) -> bool:
+    if not url:
+        return False
+    prefixes = (
+        '/dashboard/payments',
+        '/dashboard/registration',
+        '/dashboard/schedule',
+        '/dashboard/exam',
+        '/dashboard/courses',
+        '/accounts/register',
+    )
+    return any(url.startswith(p) for p in prefixes)
+
+
+def _student_post_login_redirect(request, user):
+    """دانشجو را به مرحله بعدی مسیر (شهریه / انتخاب واحد / …) بفرست."""
+    from dashboard.onboarding import next_journey_url
+    default = next_journey_url(user=user)
+    return redirect(_safe_redirect_target(request, default=default))
+
+
 def login_view(request):
+    next_raw = request.GET.get('next') or request.POST.get('next') or ''
+
+    # اگر ادمین لاگین است ولی می‌خواهد مسیر دانشجو را ادامه دهد، خارج شو تا بتواند با کد ملی وارد شود
     if request.user.is_authenticated:
-        return redirect('dashboard:dashboard')
+        role = _user_role(request.user)
+        if role in ('admin', 'staff') or request.user.is_superuser:
+            if _is_student_dest(next_raw) or request.GET.get('as_student') == '1':
+                logout(request)
+                messages.info(request, 'از حساب مدیریت خارج شدید. با کد ملی دانشجو وارد شوید.')
+            else:
+                return redirect('/admin/' if role in ('admin', 'staff') or request.user.is_superuser else 'dashboard:dashboard')
+        elif role == 'student':
+            return _student_post_login_redirect(request, request.user)
+        else:
+            return redirect(_safe_redirect_target(request))
 
     if request.method == 'POST':
         from core.iran import only_digits
@@ -55,44 +96,73 @@ def login_view(request):
                     )
 
         if user:
-            # نقش کاربر خودکار از روی حساب تشخیص داده می‌شود
-            try:
-                user_role = user.profile.role
-            except Exception:
-                user_role = ''
-
+            user_role = _user_role(user)
             login(request, user)
             messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
-            # ادمین کامل و مدیر دانشگاه (با دسترسی محدود) به پنل ادمین؛ بقیه به داشبورد
-            if user_role == 'admin' or user.is_superuser:
+            # اگر مقصد مسیر دانشجویی است، همان را اولویت بده (حتی برای ادمین تست‌کننده)
+            dest = _safe_redirect_target(request, default='')
+            if user_role == 'student':
+                return _student_post_login_redirect(request, user)
+            if dest and _is_student_dest(dest):
+                return redirect(dest)
+            if user_role == 'admin' or user.is_superuser or user_role == 'staff':
                 return redirect('/admin/')
-            if user_role == 'staff':
-                return redirect('/admin/')
-            return redirect(_safe_redirect_target(request))
+            return redirect(dest or '/dashboard/')
         else:
             messages.error(request, 'کد ملی / نام کاربری یا رمز عبور اشتباه است.')
 
-    context = {'page_title': 'ورود به سامانه'}
+    context = {
+        'page_title': 'ورود به سامانه',
+        'next': next_raw,
+    }
     return render(request, 'accounts/login.html', context)
 
 
 def logout_view(request):
+    next_url = request.GET.get('next') or request.POST.get('next') or ''
     logout(request)
     messages.info(request, 'با موفقیت خارج شدید.')
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
     return redirect('/')
 
 
 def register_view(request):
+    from core.iran import only_digits
+    pref_nid = only_digits(request.GET.get('nid') or '') or (request.GET.get('nid') or '').strip()
+    from_track = request.GET.get('from') == 'track' or bool(pref_nid)
+
+    # ادمین/کارمند لاگین‌شده نباید مانع ساخت حساب دانشجو شود
     if request.user.is_authenticated:
-        return redirect('dashboard:dashboard')
+        role = _user_role(request.user)
+        try:
+            my_nid = (request.user.profile.national_id or request.user.username or '').strip()
+        except Exception:
+            my_nid = (request.user.username or '').strip()
+        same_student = pref_nid and my_nid == pref_nid and role == 'student'
+        if same_student:
+            from dashboard.onboarding import next_journey_url
+            return redirect(next_journey_url(user=request.user))
+        if from_track or role in ('admin', 'staff') or request.user.is_superuser:
+            logout(request)
+            messages.info(
+                request,
+                'برای ساخت حساب دانشجویی از حساب فعلی خارج شدید. فرم را تکمیل کنید.',
+            )
+        else:
+            return redirect('dashboard:dashboard')
 
     # پیش‌پر کردن از صفحه پیگیری پذیرش
     pref = {
-        'national_id': (request.GET.get('nid') or '').strip(),
+        'national_id': pref_nid,
         'first_name': '',
         'last_name': '',
         'phone': '',
-        'from_track': request.GET.get('from') == 'track',
+        'from_track': from_track,
     }
     accepted_app = None
     if pref['national_id']:
@@ -484,7 +554,6 @@ def magic_login_request(request):
 def magic_login(request, token):
     """ورود با لینک یک‌بارمصرف."""
     from .magic_login import consume_magic_token
-    from dashboard.onboarding import tuition_first_paid, tuition_fully_settled
 
     user = consume_magic_token(token)
     if not user:
@@ -493,8 +562,5 @@ def magic_login(request, token):
 
     login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     messages.success(request, f'خوش آمدید، {user.get_full_name() or user.username}!')
-    if tuition_fully_settled(user):
-        return redirect('dashboard:student_exam_card')
-    if not tuition_first_paid(user):
-        return redirect('dashboard:student_payments')
-    return redirect('dashboard:student_registration')
+    from dashboard.onboarding import next_journey_url
+    return redirect(next_journey_url(user=user))

@@ -412,45 +412,130 @@ def tuition_summary(user: User, semester: Semester | None = None) -> dict:
     }
 
 
-def build_journey_status(user: User | None = None, national_id: str = '') -> dict:
-    semester = Semester.objects.filter(is_active=True).first()
-    nid = national_id
-    profile = None
-    summary = None
-    if user and user.is_authenticated:
-        profile = sync_profile_from_application(user)
-        nid = profile.national_id or user.username
-        summary = tuition_summary(user, semester)
+def resolve_student_user(national_id: str = '', user: User | None = None) -> User | None:
+    """کاربر دانشجو را بر اساس کد ملی متقاضی پیدا می‌کند (نه جلسه ادمین)."""
+    nid = (national_id or '').strip()
+    if user and getattr(user, 'is_authenticated', False):
+        try:
+            uid = (getattr(user.profile, 'national_id', '') or user.username or '').strip()
+        except Exception:
+            uid = (user.username or '').strip()
+        if nid and uid and uid != nid:
+            user = None
+        elif not nid:
+            nid = uid
+    if user and getattr(user, 'is_authenticated', False):
+        return user
+    if not nid:
+        return None
+    profile = (
+        UserProfile.objects.filter(national_id=nid, user__is_active=True)
+        .select_related('user')
+        .first()
+    )
+    if profile:
+        return profile.user
+    return User.objects.filter(username=nid, is_active=True).first()
+
+
+def next_journey_url(user: User | None = None, national_id: str = '') -> str:
+    """آدرس مرحله بعدی مسیر دانشجو پس از پذیرش."""
+    from django.urls import reverse
+
+    student = resolve_student_user(national_id=national_id, user=user)
+    nid = (national_id or '').strip()
+    if student:
+        try:
+            nid = (student.profile.national_id or student.username or nid).strip()
+        except Exception:
+            nid = (student.username or nid).strip()
 
     app = get_accepted_application(nid)
-    has_account = False
-    if user and user.is_authenticated:
-        has_account = True
-    elif nid:
-        # #13: بررسی با national_id در پروفایل قابل اعتمادتر از username است،
-        # چون ادمین ممکن است username را تغییر دهد.
+    if not app:
+        return reverse('admissions:track')
+
+    if student is None:
+        return reverse('accounts:register') + f'?nid={nid}&from=track'
+
+    semester = Semester.objects.filter(is_active=True).first()
+    ensure_tuition_invoice(student, semester)
+    if not tuition_first_paid(student, semester):
+        return reverse('dashboard:student_payments')
+    if semester and semester.registration_open:
+        enrolled = Enrollment.objects.filter(
+            student=student, semester=semester
+        ).exclude(status='dropped').exists()
+        if not enrolled:
+            return reverse('dashboard:student_registration')
+        if tuition_fully_settled(student, semester):
+            return reverse('dashboard:student_exam_card')
+        return reverse('dashboard:student_schedule')
+    enrolled = False
+    if semester:
+        enrolled = Enrollment.objects.filter(
+            student=student, semester=semester
+        ).exclude(status='dropped').exists()
+    if enrolled:
+        return reverse('dashboard:student_schedule')
+    return reverse('dashboard:student_payments')
+
+
+def build_journey_status(user: User | None = None, national_id: str = '') -> dict:
+    semester = Semester.objects.filter(is_active=True).first()
+    nid = (national_id or '').strip()
+    student = resolve_student_user(national_id=nid, user=user)
+    profile = None
+    summary = None
+
+    if student:
+        profile = sync_profile_from_application(student)
+        nid = (profile.national_id or student.username or nid).strip()
+        summary = tuition_summary(student, semester)
+    elif not nid and user and getattr(user, 'is_authenticated', False):
+        try:
+            nid = (user.profile.national_id or user.username or '').strip()
+        except Exception:
+            nid = (user.username or '').strip()
+
+    app = get_accepted_application(nid)
+    has_account = student is not None
+    if not has_account and nid:
         has_account = (
             UserProfile.objects.filter(national_id=nid, user__is_active=True).exists()
             or User.objects.filter(username=nid, is_active=True).exists()
         )
+        if has_account and student is None:
+            student = resolve_student_user(national_id=nid)
 
     first_paid = bool(summary and summary['first_paid'])
     fully = bool(summary and summary['fully_settled'])
     pending_payment = None
     enrolled_count = 0
-    if user and user.is_authenticated:
+    if student:
         pending_payment = (
-            tuition_payments_qs(user, semester)
+            tuition_payments_qs(student, semester)
             .filter(status__in=('pending', 'failed', 'review'))
             .order_by('installment_no')
             .first()
         )
         if semester:
             enrolled_count = Enrollment.objects.filter(
-                student=user, semester=semester
+                student=student, semester=semester
             ).exclude(status='dropped').count()
 
     registration_open = bool(semester and semester.registration_open)
+    next_url = next_journey_url(user=student, national_id=nid)
+
+    if not has_account:
+        next_key = 'account'
+    elif not first_paid:
+        next_key = 'tuition'
+    elif enrolled_count == 0:
+        next_key = 'registration'
+    elif not fully:
+        next_key = 'schedule'
+    else:
+        next_key = 'exam_card'
 
     steps = [
         {
@@ -505,4 +590,8 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
         'enrolled_count': enrolled_count,
         'steps': steps,
         'profile': profile,
+        'student_user': student,
+        'next_url': next_url,
+        'next_key': next_key,
+        'national_id': nid,
     }

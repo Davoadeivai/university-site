@@ -56,6 +56,14 @@ def role_required(*roles):
                 if 'staff' in roles or 'admin' in roles:
                     return view_func(request, *args, **kwargs)
             if role not in roles:
+                if 'student' in roles and role in ('admin', 'staff'):
+                    from django.utils.http import urlencode
+                    messages.warning(
+                        request,
+                        'این بخش مخصوص دانشجو است. با حساب دانشجویی وارد شوید.',
+                    )
+                    q = urlencode({'next': request.get_full_path(), 'as_student': '1'})
+                    return redirect(f'/accounts/login/?{q}')
                 messages.error(request, 'شما به این بخش دسترسی ندارید.')
                 return redirect('dashboard:dashboard')
             return view_func(request, *args, **kwargs)

@@ -20,6 +20,8 @@
 
                     <form method="post" id="login-form">
                         {% csrf_token %}
+                        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                        {% if request.GET.as_student %}<input type="hidden" name="as_student" value="1">{% endif %}
 
                         <div class="mb-3">
                             <label for="national_id" class="form-label">کد ملی / نام کاربری</label>

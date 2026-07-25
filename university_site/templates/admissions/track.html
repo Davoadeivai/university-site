@@ -187,16 +187,26 @@
                 </li>
                 {% endfor %}
             </ol>
+            {% if user.is_authenticated and viewer_is_staff %}
+            <div class="alert alert-warning mb-3" style="font-size:13px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                شما با حساب مدیریت وارد هستید. برای ادامه مسیر دانشجو روی دکمه زیر بزنید
+                (از حساب مدیریت خارج می‌شوید و فرم دانشجو باز می‌شود).
+            </div>
+            {% endif %}
             <div class="d-flex flex-wrap gap-2">
                 {% if not journey.has_account %}
-                <a class="btn btn-primary" href="{% url 'accounts:register' %}?nid={{ app.national_id }}&from=track">
-                    <i class="fas fa-user-plus"></i> ساخت حساب دانشجویی
+                <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}?nid={{ app.national_id }}&from=track">
+                    <i class="fas fa-user-plus"></i> ساخت حساب دانشجویی و ادامه
                 </a>
-                <a class="btn btn-outline-primary" href="{% url 'accounts:login' %}?next=/dashboard/payments/">
-                    <i class="fas fa-sign-in-alt"></i> ورود
+                <a class="btn btn-outline-primary" href="{% url 'accounts:login' %}?next={{ journey.next_url|urlencode }}&as_student=1">
+                    <i class="fas fa-sign-in-alt"></i> ورود با حساب دانشجو
                 </a>
-                {% elif user.is_authenticated %}
-                <a class="btn btn-primary" href="{% url 'dashboard:student_payments' %}">
+                {% elif journey.student_user and user.is_authenticated and user.id == journey.student_user.id %}
+                <a class="btn btn-primary btn-lg" href="{{ journey.next_url }}">
+                    <i class="fas fa-arrow-left"></i> ادامه مرحله بعد
+                </a>
+                <a class="btn btn-outline-primary" href="{% url 'dashboard:student_payments' %}">
                     <i class="fas fa-credit-card"></i> پرداخت شهریه
                 </a>
                 <a class="btn btn-success" href="{% url 'dashboard:student_registration' %}">
@@ -206,11 +216,10 @@
                     <i class="fas fa-chalkboard-teacher"></i> برنامه کلاس / استاد
                 </a>
                 {% else %}
-                <a class="btn btn-primary" href="{% url 'accounts:login' %}?next=/dashboard/payments/">
-                    <i class="fas fa-sign-in-alt"></i> ورود و ادامه مسیر
+                <a class="btn btn-primary btn-lg" href="{% url 'accounts:login' %}?next={{ journey.next_url|urlencode }}&as_student=1">
+                    <i class="fas fa-sign-in-alt"></i> ورود و ادامه مسیر دانشجو
                 </a>
                 {% endif %}
-                {# #25: دکمه magic login فقط وقتی حساب وجود دارد نمایش داده شود #}
                 {% if journey.has_account %}
                 <form method="post" action="{% url 'accounts:magic_login_request' %}" class="d-inline">
                     {% csrf_token %}

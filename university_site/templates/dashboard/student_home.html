@@ -19,6 +19,13 @@
         </span>
         {% endfor %}
     </div>
+    {% if journey.next_url %}
+    <div class="mb-3">
+        <a href="{{ journey.next_url }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> ادامه مرحله بعد
+        </a>
+    </div>
+    {% endif %}
     <div class="d-flex flex-wrap gap-2">
         <a href="{% url 'dashboard:student_payments' %}" class="btn btn-primary btn-sm">
             <i class="fas fa-credit-card"></i> اقساط شهریه
