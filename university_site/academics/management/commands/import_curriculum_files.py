@@ -25,65 +25,79 @@ FOLDER_DEGREE = {
     '3کارشناسی ناپیوسته': ('bachelor_disc', 'bachelor_discontinuous'),
     '4کاردانی ناپیوسته': ('associate_disc', 'associate'),
     '5کاردانی فنی': ('associate_cont', 'associate_tech'),
+    # نام‌های ASCII برای دیپلوی روی سرور (ZIP ویندوز)
+    '1_master': ('master', 'master'),
+    '2_bachelor_cont': ('bachelor_cont', 'bachelor_continuous'),
+    '3_bachelor_disc': ('bachelor_disc', 'bachelor_discontinuous'),
+    '4_associate_disc': ('associate_disc', 'associate'),
+    '5_associate_tech': ('associate_cont', 'associate_tech'),
 }
 
-# نگاشت صریح: (پوشه، نام‌پایه بدون پسوند) → کلید رشته یا create
-# کلید: ('match', degree, name_contains...) یا ('id', major_id) یا ('create', degree, name, group_name)
+FOLDER_ALIAS = {
+    '1_master': '1کارشناسی ارشد',
+    '2_bachelor_cont': '2کارشناسی پیوسته',
+    '3_bachelor_disc': '3کارشناسی ناپیوسته',
+    '4_associate_disc': '4کاردانی ناپیوسته',
+    '5_associate_tech': '5کاردانی فنی',
+}
+
+# نگاشت: (پوشه، نام‌پایه) → دستور
+# id از لوکال فقط راهنماست؛ روی سرور با (degree, name_contains) مچ می‌شود.
 MAPPINGS: dict[tuple[str, str], tuple] = {
     # —— کارشناسی ارشد ——
-    ('1کارشناسی ارشد', 'آموزش و پرورش ابتدایی'): ('id', 51),
-    ('1کارشناسی ارشد', 'حسابداری ورودی 1400 به بعد'): ('id', 20),
-    ('1کارشناسی ارشد', 'حسابرسی جدید'): ('id', 21),
-    ('1کارشناسی ارشد', 'مدیریت آموزشی جدید'): ('id', 50),
-    ('1کارشناسی ارشد', 'مدیریت بازرگانی گرایش بازاریابی جدید'): ('id', 40),
-    ('1کارشناسی ارشد', 'مدیریت بازرگانی گرایش بازرگانی بین المللی'): ('id', 41),
-    ('1کارشناسی ارشد', 'مدیریت صنعتی گرایش تولید و عملیات'): ('id', 27),
-    ('1کارشناسی ارشد', 'مدیریت صنعتی گرایش مدیریت کیفیت و بهره و ری'): ('id', 26),
+    ('1کارشناسی ارشد', 'آموزش و پرورش ابتدایی'): ('match', 'master', 'آموزش و پرورش ابتدایی'),
+    ('1کارشناسی ارشد', 'حسابداری ورودی 1400 به بعد'): ('match', 'master', 'حسابداری - حسابداری'),
+    ('1کارشناسی ارشد', 'حسابرسی جدید'): ('match', 'master', 'حسابرسی'),
+    ('1کارشناسی ارشد', 'مدیریت آموزشی جدید'): ('match', 'master', 'مدیریت آموزشی'),
+    ('1کارشناسی ارشد', 'مدیریت بازرگانی گرایش بازاریابی جدید'): ('match', 'master', 'بازاریابی'),
+    ('1کارشناسی ارشد', 'مدیریت بازرگانی گرایش بازرگانی بین المللی'): ('match', 'master', 'بازرگانی بین'),
+    ('1کارشناسی ارشد', 'مدیریت صنعتی گرایش تولید و عملیات'): ('match', 'master', 'تولید و عملیات'),
+    ('1کارشناسی ارشد', 'مدیریت صنعتی گرایش مدیریت کیفیت و بهره و ری'): ('match', 'master', 'کیفیت و بهره'),
     # —— کارشناسی پیوسته ——
-    ('2کارشناسی پیوسته', 'کارشناسی پیوسته جامعه شناسی'): ('id', 46),
-    ('2کارشناسی پیوسته', 'کارشناسی پیوسته حسابداری ورودی 1404 به بعد'): ('id', 22),
-    ('2کارشناسی پیوسته', 'کارشناسی پیوسته حسابداری ورودی 96 به بعد'): ('doc_only', 22),  # نسخه قدیمی فقط در پوشه اسناد
+    ('2کارشناسی پیوسته', 'کارشناسی پیوسته جامعه شناسی'): ('match', 'bachelor_cont', 'علوم اجتماعی'),
+    ('2کارشناسی پیوسته', 'کارشناسی پیوسته حسابداری ورودی 1404 به بعد'): ('match', 'bachelor_cont', 'حسابداری'),
+    ('2کارشناسی پیوسته', 'کارشناسی پیوسته حسابداری ورودی 96 به بعد'): ('doc_match', 'bachelor_cont', 'حسابداری'),
     ('2کارشناسی پیوسته', 'کارشناسی پیوسته مدیریت بازرگانی'): (
         'create', 'bachelor_cont', 'مدیریت بازرگانی', 'گروه مدیریت بازرگانی',
     ),
     ('2کارشناسی پیوسته', 'کارشناسی پیوسته مدیریت دولتی'): (
         'create', 'bachelor_cont', 'مدیریت دولتی', 'گروه مدیریت بازرگانی',
     ),
-    ('2کارشناسی پیوسته', 'کارشناسی پیوسته مدیریت مالی'): ('id', 29),
-    ('2کارشناسی پیوسته', 'کارشناسی روانشناسی جدید'): ('id', 47),
-    ('2کارشناسی پیوسته', 'کارشناسی روانشناسی'): ('doc_only', 47),
-    ('2کارشناسی پیوسته', 'مهندسی برق جدید'): ('id', 31),
-    ('2کارشناسی پیوسته', 'مهندسی کامپیوتر'): ('id', 15),
-    ('2کارشناسی پیوسته', 'مهندسی معماری ورودی 1401 به بعد'): ('id', 10),
+    ('2کارشناسی پیوسته', 'کارشناسی پیوسته مدیریت مالی'): ('match', 'bachelor_cont', 'مدیریت مالی'),
+    ('2کارشناسی پیوسته', 'کارشناسی روانشناسی جدید'): ('match', 'bachelor_cont', 'روانشناسی'),
+    ('2کارشناسی پیوسته', 'کارشناسی روانشناسی'): ('doc_match', 'bachelor_cont', 'روانشناسی'),
+    ('2کارشناسی پیوسته', 'مهندسی برق جدید'): ('match', 'bachelor_cont', 'مهندسی برق'),
+    ('2کارشناسی پیوسته', 'مهندسی کامپیوتر'): ('match', 'bachelor_cont', 'مهندسی کامپیوتر'),
+    ('2کارشناسی پیوسته', 'مهندسی معماری ورودی 1401 به بعد'): ('match', 'bachelor_cont', 'مهندسی معماری'),
     # —— کارشناسی ناپیوسته ——
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته  کامپیوتر ورودی 1401 به بعد'): ('id', 16),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته  معماری جدید'): ('id', 11),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته برق'): ('id', 32),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته تکنولوژی مخابرات - گرایش انتقال'): ('id', 33),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته حسابداری ورودی 1400 به بعد'): ('id', 23),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مدیریت بازرگانی'): ('id', 42),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مدیریت بیمه'): ('id', 43),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مدیریت صنعتی'): ('id', 28),
-    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مکانیک خودرو'): ('id', 18),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته  کامپیوتر ورودی 1401 به بعد'): ('match', 'bachelor_disc', 'کامپیوتر'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته  معماری جدید'): ('match', 'bachelor_disc', 'معماری'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته برق'): ('match', 'bachelor_disc', 'برق'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته تکنولوژی مخابرات - گرایش انتقال'): ('match', 'bachelor_disc', 'مخابرات'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته حسابداری ورودی 1400 به بعد'): ('match', 'bachelor_disc', 'حسابداری'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مدیریت بازرگانی'): ('match', 'bachelor_disc', 'مدیریت بازرگانی'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مدیریت بیمه'): ('match', 'bachelor_disc', 'بیمه'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مدیریت صنعتی'): ('match', 'bachelor_disc', 'مدیریت صنعتی'),
+    ('3کارشناسی ناپیوسته', 'کارشناسی ناپیوسته مکانیک خودرو'): ('match', 'bachelor_disc', 'مکانیک خودرو'),
     # —— کاردانی ناپیوسته ——
-    ('4کاردانی ناپیوسته', 'کاردانی امور دولتی'): ('id', 45),
-    ('4کاردانی ناپیوسته', 'کاردانی مدیریت بازرگانی'): ('id', 44),
-    ('4کاردانی ناپیوسته', 'کاردانی مدیریت صنعتی'): ('id', 30),
-    ('4کاردانی ناپیوسته', 'کاردانی ناپیوسته حسابداری'): ('id', 24),
+    ('4کاردانی ناپیوسته', 'کاردانی امور دولتی'): ('match', 'associate_disc', 'امور دولتی'),
+    ('4کاردانی ناپیوسته', 'کاردانی مدیریت بازرگانی'): ('match', 'associate_disc', 'مدیریت بازرگانی'),
+    ('4کاردانی ناپیوسته', 'کاردانی مدیریت صنعتی'): ('match', 'associate', 'مدیریت صنعتی'),
+    ('4کاردانی ناپیوسته', 'کاردانی ناپیوسته حسابداری'): ('match', 'associate_disc', 'حسابداری'),
     # —— کاردانی فنی ——
-    ('5کاردانی فنی', 'الکتروتکنیک- برق صنعتی'): ('id', 35),
-    ('5کاردانی فنی', 'الکترونیک – الکترونیک عمومی'): ('id', 36),
-    ('5کاردانی فنی', 'حسابداری و بازرگانی ورودی 1401 به بعد'): ('id', 25),
-    ('5کاردانی فنی', 'کامپیوتر نرم افزار'): ('id', 17),
+    ('5کاردانی فنی', 'الکتروتکنیک- برق صنعتی'): ('match', 'associate_cont', 'برق صنعتی'),
+    ('5کاردانی فنی', 'الکترونیک – الکترونیک عمومی'): ('match', 'associate_cont', 'الکترونیک عمومی'),
+    ('5کاردانی فنی', 'حسابداری و بازرگانی ورودی 1401 به بعد'): ('match', 'associate_cont', 'حسابداری و بازرگانی'),
+    ('5کاردانی فنی', 'کامپیوتر نرم افزار'): ('match', 'associate_cont', 'کامپیوتر'),
     ('5کاردانی فنی', 'گرافیک جدید ورودی 1401'): (
         'create', 'associate_cont', 'گرافیک', 'گروه معماری و نقشه کشی',
     ),
     ('5کاردانی فنی', 'مکانیک خودرو جدید ورودی 1401'): (
         'create', 'associate_cont', 'مکانیک خودرو', 'گروه مکانیک',
     ),
-    ('5کاردانی فنی', 'نقشه برداری'): ('id', 13),
-    ('5کاردانی فنی', 'نقشه کشی عمومی – نقشه کشی و طراحی صنعتی'): ('id', 14),
-    ('5کاردانی فنی', 'نقشه کشی معماری جدید ورودی 1401'): ('id', 12),
+    ('5کاردانی فنی', 'نقشه برداری'): ('match', 'associate_cont', 'نقشه برداری'),
+    ('5کاردانی فنی', 'نقشه کشی عمومی – نقشه کشی و طراحی صنعتی'): ('match', 'associate_cont', 'طراحی صنعتی'),
+    ('5کاردانی فنی', 'نقشه کشی معماری جدید ورودی 1401'): ('match', 'associate_cont', 'معماری نقشه'),
 }
 
 
@@ -141,25 +155,50 @@ class Command(BaseCommand):
                     bundles[key]['word'] = f
 
         # فایل عمومی ریشه
-        root_doc = source / 'کد رشته و تعداد واحد.docx'
-        if root_doc.is_file() and not dry:
-            self._upsert_document(
-                title='کد رشته و تعداد واحد',
-                degree_level='general',
-                pdf=None,
-                word=root_doc,
-            )
+        for root_name in ('کد رشته و تعداد واحد.docx', 'major_codes.docx'):
+            root_doc = source / root_name
+            if root_doc.is_file() and not dry:
+                self._upsert_document(
+                    title='کد رشته و تعداد واحد',
+                    degree_level='general',
+                    pdf=None,
+                    word=root_doc,
+                )
+                break
 
         ok = skip = created = 0
         unmatched = []
 
         with transaction.atomic():
             for (folder, stem), files in sorted(bundles.items()):
-                mapping = MAPPINGS.get((folder, stem))
-                # تلاش با نرمال‌سازی کلیدها اگر مستقیم نبود
+                map_folder = FOLDER_ALIAS.get(folder, folder)
+                mapping = None
+
+                # همیشه اول sidecar .map را بخوان (برای دیپلوی ASCII)
+                for kind in ('pdf', 'word'):
+                    p = files.get(kind)
+                    if not p:
+                        continue
+                    cand = Path(str(p)).with_suffix('.map')
+                    if cand.exists():
+                        raw = cand.read_text(encoding='utf-8', errors='ignore').splitlines()
+                        if len(raw) >= 2:
+                            try:
+                                mapping = eval(raw[1], {'__builtins__': {}})  # noqa: S307
+                            except Exception:
+                                mapping = None
+                        break
+
+                if mapping is None:
+                    m_id = re.match(r'^id_(\d+)$', stem)
+                    if m_id:
+                        mapping = ('id', int(m_id.group(1)))
+
+                if mapping is None:
+                    mapping = MAPPINGS.get((map_folder, stem))
                 if mapping is None:
                     for (mf, ms), mv in MAPPINGS.items():
-                        if mf == folder and _norm(ms) == stem:
+                        if mf == map_folder and _norm(ms) == stem:
                             mapping = mv
                             break
                 if mapping is None:
@@ -169,11 +208,29 @@ class Command(BaseCommand):
                 degree_code, degree_level = FOLDER_DEGREE[folder]
                 mode = mapping[0]
 
-                if mode == 'doc_only':
-                    major = Major.objects.filter(pk=mapping[1]).first()
-                    title = stem
-                    if major:
-                        title = f'سرفصل {major.name} — {stem}'
+                def _find_major(degree: str, needle: str):
+                    needle_n = _norm(needle)
+                    qs = Major.objects.filter(degree=degree, is_active=True)
+                    # exact then contains
+                    for m in qs:
+                        if _norm(m.name) == needle_n:
+                            return m
+                    for m in qs:
+                        if needle_n in _norm(m.name):
+                            return m
+                    # also inactive
+                    qs2 = Major.objects.filter(degree=degree)
+                    for m in qs2:
+                        if needle_n in _norm(m.name):
+                            return m
+                    return None
+
+                if mode in ('doc_only', 'doc_match'):
+                    if mode == 'doc_only':
+                        major = Major.objects.filter(pk=mapping[1]).first()
+                    else:
+                        major = _find_major(mapping[1], mapping[2])
+                    title = f'سرفصل {major.name} — آرشیو' if major else stem
                     if not dry:
                         self._upsert_document(
                             title=title,
@@ -190,9 +247,17 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.ERROR(f'Major id={mapping[1]} نیست'))
                         skip += 1
                         continue
+                elif mode == 'match':
+                    major = _find_major(mapping[1], mapping[2])
+                    if not major:
+                        self.stdout.write(self.style.ERROR(
+                            f'رشته پیدا نشد: {mapping[1]} / {mapping[2]}'
+                        ))
+                        skip += 1
+                        continue
                 elif mode == 'create':
                     _, deg, name, group_name = mapping
-                    major = Major.objects.filter(degree=deg, name=name, is_active=True).first()
+                    major = Major.objects.filter(degree=deg, name=name).first()
                     if not major:
                         group = AcademicGroup.objects.filter(name=group_name).first()
                         if dry:
