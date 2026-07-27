@@ -72,20 +72,25 @@ def login_view(request):
             return redirect(_safe_redirect_target(request))
 
     if request.method == 'POST':
-        from core.iran import only_digits
-        login_id = only_digits(request.POST.get('national_id', '')) or request.POST.get('national_id', '').strip()
+        from core.iran import only_digits, normalize_digits
+        raw_id = (request.POST.get('national_id') or '').strip()
+        digits = only_digits(raw_id)
+        # اگر فقط رقم بود → کد ملی؛ وگرنه نام کاربری را دست‌نخورده نگه دار
+        # (قبلاً only_digits برای admin2 به «2» تبدیل می‌شد و ورود روی موبایل/دسکتاپ می‌ترکید)
+        norm = normalize_digits(raw_id).replace(' ', '').replace('-', '')
+        login_id = digits if digits and digits == norm else raw_id
         password = request.POST.get('password')
 
         user = None
         if login_id and password:
-            # ۱) ورود مستقیم با نام کاربری (مثلاً admin)
+            # ۱) ورود مستقیم با نام کاربری (مثلاً admin / admin2)
             user = authenticate(request, username=login_id, password=password)
             # ۲) ورود با کد ملی ذخیره‌شده در پروفایل
-            if user is None:
+            if user is None and digits:
                 profile = (
                     UserProfile.objects
                     .select_related('user')
-                    .filter(national_id=login_id)
+                    .filter(national_id=digits)
                     .first()
                 )
                 if profile:
