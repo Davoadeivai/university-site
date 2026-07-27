@@ -87,23 +87,16 @@ body {
     line-height: 0;
     /* modern blue gradient behind the banner (matches the image background) */
     background: linear-gradient(105deg, #0a4a74 0%, #063a5c 55%, #04263f 100%);
-    overflow: hidden;
 }
 .site-banner a { display: block; width: 100%; }
-/* بنر جمع‌وجور: تمام‌عرض، ارتفاع محدود تا صفحه را نگیرد */
+/* full-width banner: image always spans edge to edge, height follows aspect ratio,
+   so there is never a black/empty area on the sides. */
 .site-banner img {
     display: block;
     width: 100%;
-    height: 96px;
-    object-fit: cover;
-    object-position: center center;
-    filter: saturate(1.05) contrast(1.02);
-}
-@media (max-width: 991.98px) {
-    .site-banner img { height: 72px; }
-}
-@media (max-width: 575.98px) {
-    .site-banner img { height: 56px; }
+    height: auto;
+    /* richer, bolder logo/text/emblem colors */
+    filter: saturate(1.08) contrast(1.03);
 }
 /* modern gold accent line under the banner */
 .site-banner::after {
