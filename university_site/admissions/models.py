@@ -106,7 +106,7 @@ class Application(models.Model):
     postal_code     = models.CharField(_('کد پستی'), max_length=10, blank=True)
 
     # ── سوابق تحصیلی ──
-    prev_degree        = models.CharField(_('آخرین مدرک'), max_length=20,
+    prev_degree        = models.CharField(_('آخرین مدرک'), max_length=50,
                                           choices=PREV_DEGREE_CHOICES, default='diploma')
     prev_major         = models.CharField(_('رشته مدرک قبلی'), max_length=200, blank=True)
     prev_school        = models.CharField(_('نام مدرسه/مرکز'), max_length=200, blank=True)
