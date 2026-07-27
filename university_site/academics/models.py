@@ -57,6 +57,20 @@ class Major(models.Model):
     job_market = models.TextField(_('بازار کار'), blank=True)
     objectives = models.TextField(_('اهداف'), blank=True)
     curriculum = models.TextField(_('سرفصل دروس'), blank=True)
+    curriculum_pdf = models.FileField(
+        _('فایل سرفصل (PDF)'),
+        upload_to='majors/curriculum/',
+        blank=True,
+        null=True,
+        help_text=_('برنامه درسی / سرفصل PDF این رشته'),
+    )
+    curriculum_word = models.FileField(
+        _('فایل سرفصل (Word)'),
+        upload_to='majors/curriculum/word/',
+        blank=True,
+        null=True,
+        help_text=_('نسخه Word سرفصل در صورت وجود'),
+    )
     total_credits = models.PositiveIntegerField(_('تعداد کل واحد'), default=0)
     capacity = models.PositiveIntegerField(_('ظرفیت'), default=0)
     admission_requirements = models.TextField(_('شرایط پذیرش'), blank=True)

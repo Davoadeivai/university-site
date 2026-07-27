@@ -85,7 +85,10 @@ class MajorAdmin(admin.ModelAdmin):
             'fields': ('name', 'slug', 'department', 'group', 'degree', 'order', 'is_active')
         }),
         ('محتوا', {
-            'fields': ('description', 'objectives', 'job_market', 'curriculum', 'admission_requirements')
+            'fields': (
+                'description', 'objectives', 'job_market', 'curriculum',
+                'curriculum_pdf', 'curriculum_word', 'admission_requirements',
+            )
         }),
         ('ظرفیت و شهریه', {
             'fields': ('total_credits', 'capacity', 'tuition_fee')
