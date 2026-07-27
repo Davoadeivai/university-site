@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 {% block content %}
 <div class="page-header"><div class="container"><h1 class="page-header-title">اطلاعات شهریه</h1></div></div>
 <section class="section">
@@ -54,7 +55,7 @@
                 {% if t.major.group %}<div class="text-muted" style="font-size:11px;">{{ t.major.group.name }}</div>{% endif %}
             </td>
             <td class="px-3"><span class="badge bg-primary">{{ t.degree }}</span></td>
-            <td class="px-3">{{ t.academic_year }}</td>
+            <td class="px-3">{{ t.academic_year|jalali_years }}</td>
             <td class="px-3 text-success fw-bold">{{ t.fixed_fee|floatformat:0 }}  ت</td>
             <td class="px-3">{{ t.theory_fee|floatformat:0 }}  ت</td>
             <td class="px-3">{{ t.practical_fee|floatformat:0 }}  ت</td>
@@ -91,7 +92,7 @@
             <tr>
                 <td class="px-3">{{ h.major.name }}</td>
                 <td class="px-3">{{ h.degree }}</td>
-                <td class="px-3">{{ h.academic_year }}</td>
+                <td class="px-3">{{ h.academic_year|jalali_years }}</td>
                 <td class="px-3">{{ h.fixed_fee|floatformat:0 }} ت</td>
             </tr>
             {% endfor %}
