@@ -6,7 +6,14 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    # روی هاست (وجود passenger_wsgi) تنظیمات تولید؛ لوکال همان settings
+    root = os.path.dirname(os.path.abspath(__file__))
+    default = (
+        'config.settings_prod'
+        if os.path.exists(os.path.join(root, 'passenger_wsgi.py'))
+        else 'config.settings'
+    )
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', default)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
