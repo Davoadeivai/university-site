@@ -23,12 +23,25 @@ urlpatterns = [
     path('شناسه-واریز/', views.payment_id, name='payment_id'),
     path('آیین-نامه-ها-و-فرم-ها/', views.documents, name='documents'),
     path('آیین-نامه-ها-و-فرم-ها/<int:pk>/', views.document_detail, name='document_detail'),
+    # سازگاری با لینک‌هایی که نیم‌فاصله (ZWNJ) به‌جای خط تیره دارند
+    path(
+        'آیین-نامه‌ها-و-فرم‌ها/',
+        RedirectView.as_view(pattern_name='core:documents', permanent=False, query_string=True),
+    ),
+    path(
+        'آیین-نامه‌ها-و-فرم‌ها/<int:pk>/',
+        RedirectView.as_view(pattern_name='core:document_detail', permanent=False, query_string=True),
+    ),
     path('رویدادها/', views.events_list, name='events'),
     path('تحصیلات-تکمیلی/', views.graduate_studies, name='graduate_studies'),
     path('تحصیلات-تکمیلی/رشته-ها/', views.graduate_majors, name='graduate_majors'),
     path('تحصیلات-تکمیلی/مدیر/', views.graduate_manager, name='graduate_manager'),
     path('تحصیلات-تکمیلی/اخبار/', views.graduate_news, name='graduate_news'),
     path('تحصیلات-تکمیلی/آیین-نامه-ها-و-فرم-ها/', views.graduate_regulations, name='graduate_regulations'),
+    path(
+        'تحصیلات-تکمیلی/آیین-نامه‌ها-و-فرم‌ها/',
+        RedirectView.as_view(pattern_name='core:graduate_regulations', permanent=False, query_string=True),
+    ),
     # حوزه ریاست
     path('ریاست/', views.presidency, name='presidency'),
     path('دفتر-ریاست/', views.presidency_office, name='presidency_office'),
