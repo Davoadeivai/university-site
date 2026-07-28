@@ -27,26 +27,47 @@ from research.models import ResearchProject, Conference
 
 def home(request):
     """صفحه اصلی یکپارچه سایت (جایگزین landing + home قبلی)."""
-    settings = SiteSettings.objects.first()
-    sliders = list(Slider.objects.filter(is_active=True).order_by('order')[:5])
+    # site_settings از global_context می‌آید؛ کوئری تکراری حذف شد
+    sliders = list(
+        Slider.objects.filter(is_active=True).order_by('order')[:5]
+    )
     quick_links = QuickLink.objects.filter(is_active=True, category='home')[:8]
     if not quick_links.exists():
         quick_links = QuickLink.objects.filter(is_active=True, category='eservice')[:8]
-    featured_news = News.objects.filter(is_published=True, is_featured=True)[:3]
-    latest_news = News.objects.filter(is_published=True)[:6]
-    announcements_qs = News.objects.filter(is_published=True, news_type='announcement')
-    announcements = announcements_qs[:8]
-    news_events_qs = News.objects.filter(is_published=True).order_by('-published_at')
-    # تب‌های اطلاعیه شبیه aab.ac.ir
+
+    published = News.objects.filter(is_published=True).select_related('category')
+    featured_news = published.filter(is_featured=True)[:3]
+    latest_news = published[:6]
+    announcements = list(published.filter(news_type='announcement')[:8])
+    news_events = list(published.order_by('-published_at')[:8])
+    # تب‌ها از همان دو لیست — بدون کوئری جدا برای هر دسته
     announcement_tabs = [
-        ('all', 'همه', announcements_qs[:8]),
-        ('news_events', 'اخبار و رویدادها', news_events_qs[:8]),
-        ('academic', 'آموزش', announcements_qs.filter(category__category_type='academic')[:8]),
-        ('cultural', 'دانشجویی و فرهنگی', announcements_qs.filter(category__category_type='cultural')[:8]),
-        ('administrative', 'اداری و مالی', announcements_qs.filter(category__category_type='administrative')[:8]),
-        ('research', 'پژوهشی و فناوری', announcements_qs.filter(category__category_type='research')[:8]),
+        ('all', 'همه', announcements),
+        ('news_events', 'اخبار و رویدادها', news_events),
+        (
+            'academic',
+            'آموزش',
+            [n for n in announcements if getattr(getattr(n, 'category', None), 'category_type', None) == 'academic'][:8],
+        ),
+        (
+            'cultural',
+            'دانشجویی و فرهنگی',
+            [n for n in announcements if getattr(getattr(n, 'category', None), 'category_type', None) == 'cultural'][:8],
+        ),
+        (
+            'administrative',
+            'اداری و مالی',
+            [n for n in announcements if getattr(getattr(n, 'category', None), 'category_type', None) == 'administrative'][:8],
+        ),
+        (
+            'research',
+            'پژوهشی و فناوری',
+            [n for n in announcements if getattr(getattr(n, 'category', None), 'category_type', None) == 'research'][:8],
+        ),
     ]
-    upcoming_events = Event.objects.filter(is_active=True, date__gte=timezone.now().date()).order_by('date')[:4]
+    upcoming_events = Event.objects.filter(
+        is_active=True, date__gte=timezone.now().date()
+    ).order_by('date')[:4]
     departments = Department.objects.filter(is_active=True)[:6]
     calendar_items = AcademicCalendar.objects.filter(
         start_date__gte=timezone.now().date()
@@ -58,7 +79,6 @@ def home(request):
     bank_accounts = BankAccount.objects.filter(is_active=True)[:3]
 
     context = {
-        'settings': settings,
         'sliders': sliders,
         'quick_links': quick_links,
         'featured_news': featured_news,
@@ -231,8 +251,14 @@ def payment_id(request):
 
 def documents(request):
     """آیین‌نامه‌ها و فرم‌ها — ابتدا پوشه‌های مقطع، سپس فایل‌های داخل هر پوشه."""
+    from core.degree_map import document_degree_for_query, normalize_degree_query
+
     docs = DownloadableDocument.objects.filter(is_active=True)
-    degree = request.GET.get('degree', '')
+    raw_degree = request.GET.get('degree', '')
+    degree = normalize_degree_query(raw_degree)
+    # اگر کد Major آمد، به پوشه سند نگاشت کن
+    if degree and degree not in {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES}:
+        degree = document_degree_for_query(degree)
     category = request.GET.get('category', '')
 
     degree_keys = {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES}
@@ -328,26 +354,8 @@ def graduate_studies(request):
 
 
 def graduate_majors(request):
-    """رشته‌های تحصیلات تکمیلی (کارشناسی ارشد)"""
-    qs = (
-        Major.objects.filter(is_active=True, degree='master')
-        .select_related('group')
-        .order_by('group__order', 'group__name', 'order', 'name')
-    )
-    # جلوگیری از نمایش تکراری هم‌نام
-    seen = set()
-    majors = []
-    for m in qs:
-        key = m.name.replace('\u200c', '').strip()
-        if key in seen:
-            continue
-        seen.add(key)
-        majors.append(m)
-    context = {
-        'master_majors': majors,
-        'page_title': 'رشته‌های تحصیلات تکمیلی',
-    }
-    return render(request, 'core/graduate_majors.html', context)
+    """رشته‌های تحصیلات تکمیلی → هاب مسیر دانشجو با فیلتر ارشد."""
+    return redirect(reverse('core:student_path') + '?degree=master&step=1')
 
 
 def graduate_manager(request):

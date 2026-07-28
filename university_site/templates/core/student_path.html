@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مسیر دانشجو | {% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.sp-wrap { max-width: 1100px; margin: 0 auto; }
+.sp-progress {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.75rem;
+  padding: 0.85rem; background: linear-gradient(135deg, #f0f6fc, #fff);
+  border: 1px solid var(--border, #e5e7eb); border-radius: 14px;
+}
+.sp-step {
+  flex: 1 1 140px; text-align: center; padding: 0.55rem 0.4rem;
+  border-radius: 10px; font-size: 12px; font-weight: 600; color: #64748b;
+  background: rgba(255,255,255,.7); border: 1px solid transparent;
+}
+.sp-step .n {
+  display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center;
+  border-radius: 50%; background: #e2e8f0; color: #475569; font-size: 11px; margin-left: 4px;
+}
+.sp-step.is-active { color: #1e40af; border-color: rgba(59,130,212,.35); background: #fff; }
+.sp-step.is-active .n { background: #3b82d4; color: #fff; }
+.sp-step.is-done { color: #047857; }
+.sp-step.is-done .n { background: #10b981; color: #fff; }
+.sp-cta {
+  display: block; text-align: center; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #1e3a5f, #3b82d4); color: #fff !important;
+  border-radius: 14px; font-weight: 800; font-size: 1.1rem; text-decoration: none;
+  box-shadow: 0 8px 24px rgba(30,58,95,.25);
+}
+.sp-cta:hover { filter: brightness(1.05); color: #fff; }
+.sp-cta-hint { display: block; font-size: 12px; font-weight: 500; opacity: .85; margin-top: 0.25rem; }
+.sp-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+.sp-filters a {
+  padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 13px; font-weight: 600;
+  text-decoration: none; color: #334155; background: #f1f5f9; border: 1px solid #e2e8f0;
+}
+.sp-filters a.is-on { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+.sp-major-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.85rem; }
+.sp-major {
+  display: block; padding: 1rem; border-radius: 12px; text-decoration: none; color: inherit;
+  background: #fff; border: 1px solid #e5e7eb; transition: border-color .15s, box-shadow .15s;
+}
+.sp-major:hover { border-color: #3b82d4; box-shadow: 0 6px 18px rgba(59,130,212,.12); }
+.sp-major.is-selected { border-color: #3b82d4; background: #f0f7ff; }
+.sp-major h3 { font-size: 15px; font-weight: 800; margin: 0 0 0.35rem; color: #1e3a5f; }
+.sp-major .meta { font-size: 12px; color: #64748b; }
+.sp-panel {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 1.25rem 1.4rem; margin-bottom: 1rem;
+}
+.sp-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.sp-lock {
+  background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;
+  border-radius: 10px; padding: 0.75rem 1rem; font-size: 13px; margin-top: 0.75rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-header-title mb-1">مسیر دانشجو</h1>
+    <p class="text-muted mb-0" style="font-size:14px;">از انتخاب رشته تا فارغ‌التحصیلی — یک مسیر یکپارچه</p>
+  </div>
+</div>
+
+<section class="section" style="padding-top:1.25rem;">
+  <div class="container sp-wrap">
+
+    <div class="sp-progress" role="navigation" aria-label="مراحل مسیر">
+      {% for s in wizard_steps %}
+      <a class="sp-step {% if s.num == current_step %}is-active{% elif s.num < current_step %}is-done{% endif %}"
+         href="{% url 'core:student_path' %}?step={{ s.num }}{% if selected_major %}&major={{ selected_major.pk }}{% endif %}{% if degree %}&degree={{ degree }}{% endif %}">
+        <span class="n">{{ s.num }}</span>{{ s.title }}
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if next_cta %}
+      {% if next_cta.url %}
+      <a class="sp-cta" href="{{ next_cta.url }}">
+        گام بعدی شما: {{ next_cta.label }}
+        {% if next_cta.hint %}<span class="sp-cta-hint">{{ next_cta.hint }}</span>{% endif %}
+      </a>
+      {% else %}
+      <div class="sp-cta" style="cursor:default;">
+        گام بعدی شما: {{ next_cta.label }}
+        {% if next_cta.hint %}<span class="sp-cta-hint">{{ next_cta.hint }}</span>{% endif %}
+      </div>
+      {% endif %}
+    {% endif %}
+
+    {% if terminal_status %}
+    <div class="sp-lock mb-3">
+      وضعیت تحصیلی شما: <strong>{{ request.user.profile.get_academic_status_display }}</strong>.
+      ثبت‌نام ترم جدید و انتخاب واحد برای این وضعیت فعال نیست.
+      <a href="{% url 'dashboard:dashboard' %}">مشاهده پنل</a>
+    </div>
+    {% endif %}
+
+    {% if current_step == 1 %}
+    <div class="sp-panel">
+      <h2 class="h5 fw-bold mb-3">۱. انتخاب مقطع و رشته</h2>
+      <div class="sp-filters">
+        {% for code, label in degree_filters %}
+        <a href="{% url 'core:student_path' %}?step=1{% if code %}&degree={{ code }}{% endif %}"
+           class="{% if degree == code or not degree and not code %}is-on{% endif %}">{{ label }}</a>
+        {% endfor %}
+      </div>
+      {% if degree %}<p class="text-muted mb-3" style="font-size:13px;">فیلتر: {{ degree_label }} — {{ majors|length }} رشته</p>{% endif %}
+      <div class="sp-major-grid">
+        {% for m in majors %}
+        <a class="sp-major {% if selected_major and selected_major.pk == m.pk %}is-selected{% endif %}"
+           href="{% url 'core:student_path' %}?step=2&major={{ m.pk }}&degree={{ m.admission_degree }}">
+          <h3>{{ m.name }}</h3>
+          <div class="meta">{{ m.get_degree_display }}{% if m.group %} · {{ m.group.name }}{% endif %}</div>
+        </a>
+        {% empty %}
+        <p class="panel-empty text-muted">رشته‌ای برای این مقطع یافت نشد.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% elif current_step == 2 %}
+    <div class="sp-panel">
+      <h2 class="h5 fw-bold mb-3">۲. جزئیات، شهریه و مدارک</h2>
+      {% if selected_major %}
+      <p class="mb-2"><strong>{{ selected_major.name }}</strong> — {{ selected_major.get_degree_display }}</p>
+      {% if selected_major.description %}
+      <p class="text-muted" style="font-size:14px;">{{ selected_major.description|truncatewords:60 }}</p>
+      {% endif %}
+      <div class="sp-actions mt-3">
+        <a class="btn btn-outline-primary btn-sm" href="{{ selected_major.get_absolute_url }}">جزئیات کامل رشته</a>
+        <a class="btn btn-outline-success btn-sm" href="{{ tuition_url }}">محاسبه‌گر شهریه</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ docs_url }}">آیین‌نامه‌ها و فرم‌ها</a>
+        <a class="btn btn-primary btn-sm" href="{% url 'core:student_path' %}?step=3&major={{ selected_major.pk }}&degree={{ apply_degree }}">ادامه ثبت درخواست</a>
+      </div>
+      {% else %}
+      <p class="text-muted">ابتدا از مرحله ۱ یک رشته انتخاب کنید.</p>
+      <a href="{% url 'core:student_path' %}?step=1{% if degree %}&degree={{ degree }}{% endif %}">بازگشت به انتخاب رشته</a>
+      {% endif %}
+    </div>
+
+    {% elif current_step == 3 %}
+    <div class="sp-panel">
+      <h2 class="h5 fw-bold mb-3">۳. ثبت درخواست پذیرش</h2>
+      {% if selected_major %}
+      <p>رشته انتخابی: <strong>{{ selected_major.name }}</strong> ({{ selected_major.get_degree_display }})</p>
+      {% endif %}
+      <p class="text-muted" style="font-size:14px;">با تأیید موبایل، فرم پذیرش با مقطع و رشته از پیش پر می‌شود.</p>
+      <a class="btn btn-primary mt-2" href="{{ apply_url }}"><i class="fas fa-user-plus me-1"></i> شروع ثبت درخواست</a>
+      <a class="btn btn-outline-secondary mt-2" href="{% url 'admissions:track' %}">پیگیری وضعیت</a>
+    </div>
+
+    {% elif current_step == 4 %}
+    <div class="sp-panel">
+      <h2 class="h5 fw-bold mb-3">۴. حساب دانشجویی و شهریه</h2>
+      {% if journey and journey.application %}
+      <p class="text-success mb-2"><i class="fas fa-check"></i> پذیرش نهایی ثبت شده است.</p>
+      {% if journey.has_account %}
+      <a class="btn btn-primary" href="{% url 'dashboard:student_payments' %}">اقساط شهریه</a>
+      {% else %}
+      <a class="btn btn-primary" href="{% url 'accounts:register' %}?nid={{ journey.national_id }}&from=track">ساخت حساب</a>
+      <a class="btn btn-outline-primary" href="{% url 'accounts:login' %}">ورود</a>
+      {% endif %}
+      {% if journey.steps %}
+      <ul class="mt-3 mb-0" style="font-size:13px;">
+        {% for step in journey.steps %}
+          {% if step.key == 'account' or step.key == 'tuition' %}
+          <li class="{% if step.done %}text-success{% elif step.locked %}text-muted{% endif %}">
+            {{ step.title }}{% if step.locked %} (قفل){% endif %}
+          </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% else %}
+      <p class="text-muted">پس از پذیرش نهایی این مرحله فعال می‌شود.</p>
+      <a href="{% url 'core:student_path' %}?step=3{% if selected_major %}&major={{ selected_major.pk }}{% endif %}">ثبت درخواست پذیرش</a>
+      {% endif %}
+    </div>
+
+    {% elif current_step == 5 %}
+    <div class="sp-panel">
+      <h2 class="h5 fw-bold mb-3">۵. انتخاب واحد و ترم</h2>
+      {% if terminal_status %}
+      <div class="sp-lock">این بخش برای وضعیت فعلی شما قفل است.</div>
+      {% elif journey and journey.tuition_paid %}
+      <div class="sp-actions">
+        <a class="btn btn-success" href="{% url 'dashboard:student_registration' %}">انتخاب واحد</a>
+        <a class="btn btn-outline-secondary" href="{% url 'dashboard:student_schedule' %}">برنامه کلاس</a>
+        <a class="btn btn-outline-secondary" href="{% url 'dashboard:student_grades' %}">نمرات</a>
+        <a class="btn btn-outline-dark" href="{% url 'dashboard:student_exam_card' %}">کارت امتحان</a>
+      </div>
+      {% else %}
+      <div class="sp-lock">تا قسط اول شهریه پرداخت نشود، انتخاب واحد باز نمی‌شود.</div>
+      <a class="btn btn-primary mt-2" href="{% url 'dashboard:student_payments' %}">پرداخت اقساط</a>
+      {% endif %}
+    </div>
+
+    {% elif current_step == 6 %}
+    <div class="sp-panel">
+      <h2 class="h5 fw-bold mb-3">۶. پایان مسیر — فارغ‌التحصیلی / انصراف</h2>
+      <p class="text-muted" style="font-size:14px;">درخواست فارغ‌التحصیلی یا انصراف را ثبت کنید؛ پس از تکمیل تسویه و تأیید آموزش اعمال می‌شود. اخراج فقط توسط آموزش ثبت می‌شود.</p>
+      {% if user.is_authenticated %}
+      <div class="sp-actions">
+        <a class="btn btn-primary" href="{% url 'dashboard:student_clearance' %}">وضعیت تسویه</a>
+        <a class="btn btn-outline-primary" href="{% url 'dashboard:student_lifecycle' %}">درخواست فارغ‌التحصیلی / انصراف</a>
+      </div>
+      {% else %}
+      <a class="btn btn-primary" href="{% url 'accounts:login' %}?next={% url 'dashboard:student_lifecycle' %}">ورود برای ثبت درخواست</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

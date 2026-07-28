@@ -483,6 +483,15 @@ def resolve_student_user(national_id: str = '', user: User | None = None) -> Use
     return User.objects.filter(username=nid, is_active=True).first()
 
 
+def get_or_create_clearance(user: User):
+    from .models import StudentClearance
+    clearance, created = StudentClearance.objects.get_or_create(student=user)
+    clearance.ensure_items()
+    if created:
+        clearance.refresh_status()
+    return clearance
+
+
 def next_journey_url(user: User | None = None, national_id: str = '') -> str:
     """آدرس مرحله بعدی مسیر دانشجو پس از پذیرش."""
     from django.urls import reverse
@@ -492,6 +501,11 @@ def next_journey_url(user: User | None = None, national_id: str = '') -> str:
     if student:
         try:
             nid = (student.profile.national_id or student.username or nid).strip()
+            status = getattr(student.profile, 'academic_status', 'active')
+            if status in ('graduated', 'withdrawn', 'expelled'):
+                return reverse('dashboard:dashboard')
+            if status == 'leave':
+                return reverse('dashboard:student_lifecycle')
         except Exception:
             nid = (student.username or nid).strip()
 
@@ -513,6 +527,14 @@ def next_journey_url(user: User | None = None, national_id: str = '') -> str:
         if not enrolled:
             return reverse('dashboard:student_registration')
         if tuition_fully_settled(student, semester):
+            # پس از کارت امتحان → تسویه/پایان مسیر اگر درخواست باز باشد
+            from .models import StudentLifecycleRequest
+            open_lc = StudentLifecycleRequest.objects.filter(
+                student=student,
+                status__in=('submitted', 'under_review', 'draft'),
+            ).exists()
+            if open_lc:
+                return reverse('dashboard:student_lifecycle')
             return reverse('dashboard:student_exam_card')
         return reverse('dashboard:student_schedule')
     enrolled = False
@@ -531,14 +553,27 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
     student = resolve_student_user(national_id=nid, user=user)
     profile = None
     summary = None
+    academic_status = 'applicant'
+    clearance = None
+    lifecycle_requests = []
 
     if student:
         profile = sync_profile_from_application(student)
         nid = (profile.national_id or student.username or nid).strip()
         summary = tuition_summary(student, semester)
+        academic_status = getattr(profile, 'academic_status', 'active') or 'active'
+        try:
+            clearance = get_or_create_clearance(student)
+            from .models import StudentLifecycleRequest
+            lifecycle_requests = list(
+                StudentLifecycleRequest.objects.filter(student=student).order_by('-created_at')[:5]
+            )
+        except Exception:
+            clearance = None
     elif not nid and user and getattr(user, 'is_authenticated', False):
         try:
             nid = (user.profile.national_id or user.username or '').strip()
+            academic_status = getattr(user.profile, 'academic_status', 'active') or 'active'
         except Exception:
             nid = (user.username or '').strip()
 
@@ -569,9 +604,18 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
             ).exclude(status='dropped').count()
 
     registration_open = bool(semester and semester.registration_open)
+    terminal = academic_status in ('graduated', 'withdrawn', 'expelled')
     next_url = next_journey_url(user=student, national_id=nid)
 
-    if not has_account:
+    clearance_done = bool(clearance and clearance.is_complete)
+    has_approved_lifecycle = any(r.status == 'approved' for r in lifecycle_requests)
+    has_open_lifecycle = any(
+        r.status in ('draft', 'submitted', 'under_review') for r in lifecycle_requests
+    )
+
+    if terminal:
+        next_key = 'done'
+    elif not has_account:
         next_key = 'account'
     elif not first_paid:
         next_key = 'tuition'
@@ -579,6 +623,8 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
         next_key = 'registration'
     elif not fully:
         next_key = 'schedule'
+    elif has_open_lifecycle or (clearance and clearance.status != 'completed'):
+        next_key = 'lifecycle' if has_open_lifecycle else 'clearance'
     else:
         next_key = 'exam_card'
 
@@ -600,27 +646,42 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
             'title': 'پرداخت قسط اول شهریه',
             'done': first_paid,
             'hint': 'قسط اول برای باز شدن انتخاب واحد الزامی است؛ تسویه کامل برای کارت امتحان و مشاهده نمرات.',
+            'locked': terminal,
         },
         {
             'key': 'registration',
             'title': 'انتخاب واحد / استاد و کلاس',
             'done': enrolled_count > 0,
             'hint': 'در بازه انتخاب واحد، درس و کلاس/استاد را انتخاب کنید.',
-            'locked': not first_paid or not registration_open,
+            'locked': terminal or not first_paid or not registration_open,
         },
         {
             'key': 'schedule',
             'title': 'برنامه کلاس',
             'done': enrolled_count > 0,
             'hint': 'پس از انتخاب واحد قابل مشاهده و پرینت است.',
-            'locked': enrolled_count == 0,
+            'locked': terminal or enrolled_count == 0,
         },
         {
             'key': 'exam_card',
             'title': 'کارت ورود به جلسه',
             'done': fully and enrolled_count > 0,
             'hint': 'پس از تسویه هر سه قسط شهریه صادر می‌شود.',
-            'locked': not fully,
+            'locked': terminal or not fully,
+        },
+        {
+            'key': 'clearance',
+            'title': 'تسویه پایان‌تحصیل',
+            'done': clearance_done,
+            'hint': 'چک‌لیست کتابخانه، مالی، آموزش، آزمایشگاه، حراست و خوابگاه.',
+            'locked': not has_account,
+        },
+        {
+            'key': 'lifecycle',
+            'title': 'فارغ‌التحصیلی / انصراف',
+            'done': has_approved_lifecycle or terminal,
+            'hint': 'درخواست دانشجو + تأیید آموزش. اخراج فقط توسط ادمین.',
+            'locked': not has_account,
         },
     ]
     return {
@@ -639,4 +700,8 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
         'next_url': next_url,
         'next_key': next_key,
         'national_id': nid,
+        'academic_status': academic_status,
+        'terminal_status': terminal,
+        'clearance': clearance,
+        'lifecycle_requests': lifecycle_requests,
     }

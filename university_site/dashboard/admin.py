@@ -13,6 +13,7 @@ from .models import (
     Semester, Enrollment, TeachingAssignment, StudentRequest,
     Payment, ExamSchedule, Assignment, AssignmentSubmission, Attendance,
     TuitionInstallmentPlan, StudentDiscountClaim,
+    StudentClearance, StudentClearanceItem, StudentLifecycleRequest,
 )
 from .onboarding import reapply_discount_to_pending
 
@@ -335,3 +336,119 @@ class AttendanceAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['enrollment', 'date_jalali', 'status']
     list_filter = ['status', 'date']
     search_fields = ['enrollment__student__first_name', 'enrollment__student__last_name']
+
+
+class StudentClearanceItemInline(admin.TabularInline):
+    model = StudentClearanceItem
+    extra = 0
+    fields = ['department', 'status', 'cleared_at', 'note']
+
+
+@admin.register(StudentClearance)
+class StudentClearanceAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = ['student', 'status', 'completed_jalali', 'updated_jalali']
+    list_filter = ['status']
+    search_fields = [
+        'student__username', 'student__first_name', 'student__last_name',
+        'student__profile__national_id',
+    ]
+    autocomplete_fields = ['student']
+    inlines = [StudentClearanceItemInline]
+    readonly_fields = ['created_at', 'updated_at', 'completed_at']
+
+    @admin.display(description='تکمیل', ordering='completed_at')
+    def completed_jalali(self, obj):
+        return format_jalali_datetime(obj.completed_at) if obj.completed_at else '—'
+
+    @admin.display(description='بروزرسانی', ordering='updated_at')
+    def updated_jalali(self, obj):
+        return format_jalali_datetime(obj.updated_at) if obj.updated_at else '—'
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.ensure_items()
+        form.instance.refresh_status()
+
+
+@admin.register(StudentLifecycleRequest)
+class StudentLifecycleRequestAdmin(JalaliAdminMixin, admin.ModelAdmin):
+    list_display = [
+        'student', 'request_type', 'status_badge', 'created_jalali', 'reviewed_jalali',
+    ]
+    list_filter = ['request_type', 'status']
+    search_fields = [
+        'student__username', 'student__first_name', 'student__last_name',
+        'student__profile__national_id', 'reason',
+    ]
+    autocomplete_fields = ['student', 'reviewed_by']
+    readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
+    actions = ['approve_requests', 'reject_requests', 'mark_under_review']
+
+    fieldsets = (
+        (None, {
+            'fields': (
+                'student', 'request_type', 'status', 'reason', 'attachment',
+            ),
+        }),
+        ('پاسخ ادمین', {
+            'fields': ('admin_response', 'reviewed_by', 'reviewed_at'),
+        }),
+        ('زمان', {
+            'fields': ('created_at', 'updated_at'),
+        }),
+    )
+
+    @admin.display(description='وضعیت')
+    def status_badge(self, obj):
+        colors = {
+            'draft': '#6c757d',
+            'submitted': '#0d6efd',
+            'under_review': '#fd7e14',
+            'approved': '#198754',
+            'rejected': '#dc3545',
+            'cancelled': '#6c757d',
+        }
+        color = colors.get(obj.status, '#6c757d')
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;border-radius:6px;font-size:12px;">{}</span>',
+            color, obj.get_status_display(),
+        )
+
+    @admin.display(description='ثبت', ordering='created_at')
+    def created_jalali(self, obj):
+        return format_jalali_datetime(obj.created_at) if obj.created_at else '—'
+
+    @admin.display(description='بررسی', ordering='reviewed_at')
+    def reviewed_jalali(self, obj):
+        return format_jalali_datetime(obj.reviewed_at) if obj.reviewed_at else '—'
+
+    @admin.action(description='تأیید و اعمال وضعیت تحصیلی')
+    def approve_requests(self, request, queryset):
+        n = 0
+        for req in queryset.exclude(status='approved'):
+            if req.needs_clearance:
+                clearance = getattr(req.student, 'clearance', None)
+                if clearance is None or not clearance.is_complete:
+                    self.message_user(
+                        request,
+                        f'تسویه {req.student} تکمیل نشده؛ درخواست {req.pk} رد نشد اما تأیید نشد.',
+                        messages.WARNING,
+                    )
+                    continue
+            req.apply_approval(reviewer=request.user)
+            n += 1
+        self.message_user(request, f'{n} درخواست تأیید شد.', messages.SUCCESS)
+
+    @admin.action(description='رد درخواست')
+    def reject_requests(self, request, queryset):
+        n = queryset.exclude(status__in=('approved', 'rejected')).update(
+            status='rejected',
+            reviewed_at=timezone.now(),
+            reviewed_by=request.user,
+        )
+        self.message_user(request, f'{n} درخواست رد شد.', messages.WARNING)
+
+    @admin.action(description='علامت‌گذاری «در حال بررسی»')
+    def mark_under_review(self, request, queryset):
+        n = queryset.filter(status__in=('draft', 'submitted')).update(status='under_review')
+        self.message_user(request, f'{n} درخواست به بررسی منتقل شد.', messages.INFO)

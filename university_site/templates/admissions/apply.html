@@ -207,7 +207,7 @@
                 <option value="">ابتدا مقطع را انتخاب کنید...</option>
                 {% for m in all_majors %}
                 <option value="{{ m.pk }}" data-degree="{{ m.admission_degree }}"
-                    {% if post.desired_major == m.pk|stringformat:"s" or post.desired_major == m.pk %}selected{% endif %}>
+                    {% if post.desired_major == m.pk|stringformat:"s" or post.desired_major == m.pk or preselect_major == m.pk|stringformat:"s" %}selected{% endif %}>
                     {{ m.name }} ({{ m.get_degree_display }})
                 </option>
                 {% endfor %}

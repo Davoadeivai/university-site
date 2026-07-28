@@ -1,0 +1,90 @@
+{% extends 'dashboard/panel_base.html' %}
+{% load custom_filters %}
+
+{% block panel_content %}
+<div class="panel-toolbar">
+    <h2>پایان مسیر تحصیلی</h2>
+    {% if academic_status_display %}
+    <span class="badge bg-primary">{{ academic_status_display }}</span>
+    {% endif %}
+</div>
+
+<div class="uni-card p-4 mb-4">
+    <p class="mb-2" style="font-size:14px;">
+        فارغ‌التحصیلی و انصراف با درخواست شما و تأیید آموزش انجام می‌شود.
+        اخراج فقط توسط آموزش ثبت می‌شود.
+    </p>
+    <p class="mb-0 text-muted" style="font-size:13px;">
+        وضعیت تسویه:
+        <strong class="{% if clearance.status == 'completed' %}text-success{% else %}text-warning{% endif %}">
+            {{ clearance.get_status_display }}
+        </strong>
+        — <a href="{% url 'dashboard:student_clearance' %}">مشاهده چک‌لیست</a>
+    </p>
+</div>
+
+{% if academic_status != 'graduated' and academic_status != 'withdrawn' and academic_status != 'expelled' %}
+<div class="uni-card p-4 mb-4">
+    <h5 class="fw-bold mb-3">ثبت درخواست جدید</h5>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label" for="request_type">نوع درخواست</label>
+            <select name="request_type" id="request_type" class="form-select" required>
+                {% for code, label in type_choices %}
+                <option value="{{ code }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="reason">دلیل / توضیحات</label>
+            <textarea name="reason" id="reason" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="attachment">پیوست (اختیاری)</label>
+            <input type="file" name="attachment" id="attachment" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">ارسال درخواست</button>
+    </form>
+</div>
+{% else %}
+<div class="alert alert-info">وضعیت تحصیلی شما نهایی است؛ درخواست جدید ثبت نمی‌شود.</div>
+{% endif %}
+
+<div class="uni-card p-0 overflow-hidden">
+    <div class="p-3 border-bottom"><strong>درخواست‌های قبلی</strong></div>
+    <table class="panel-table mb-0">
+        <thead>
+            <tr>
+                <th>نوع</th>
+                <th>وضعیت</th>
+                <th>تاریخ</th>
+                <th>پاسخ</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.get_request_type_display }}</td>
+                <td>{{ req.get_status_display }}</td>
+                <td>{{ req.created_at|jalali_datetime }}</td>
+                <td style="font-size:13px;">{{ req.admin_response|default:"—"|truncatechars:80 }}</td>
+                <td>
+                    {% if req.status == 'draft' or req.status == 'submitted' %}
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cancel">
+                        <input type="hidden" name="request_id" value="{{ req.pk }}">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">لغو</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="panel-empty">درخواستی ثبت نشده.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

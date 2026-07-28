@@ -17,9 +17,8 @@
     <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/vazirmatn/vazirmatn.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/aos/aos.css' %}">
-    <link rel="stylesheet" href="{% static 'vendor/swiper/swiper-bundle.min.css' %}">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260727c">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260728a">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %}">
@@ -188,7 +187,7 @@
                         <i class="fas fa-graduation-cap" style="font-size:13px;margin-left:3px;"></i> تحصیلات تکمیلی
                     </a>
                     <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_majors' %}">رشته ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=master&step=1">رشته ها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_manager' %}">مدیر تحصیلات تکمیلی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_news' %}">اخبار تحصیلات تکمیلی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:documents' %}?degree=master">آیین‌نامه‌ها و فرم‌ها</a></li>
@@ -223,16 +222,19 @@
                                 <i class="fas fa-graduation-cap me-1"></i> انتخاب رشته
                             </span>
                         </li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=associate">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}">
+                            <i class="fas fa-route me-1" style="width:16px;"></i> مسیر یکپارچه دانشجو
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=associate&step=1">
                             <i class="fas fa-book me-1" style="width:16px;"></i> کاردانی
                         </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=bachelor">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=bachelor&step=1">
                             <i class="fas fa-book-open me-1" style="width:16px;"></i> کارشناسی
                         </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=master">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=master&step=1">
                             <i class="fas fa-scroll me-1" style="width:16px;"></i> کارشناسی ارشد
                         </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}?degree=phd">
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=phd&step=1">
                             <i class="fas fa-university me-1" style="width:16px;"></i> دکتری
                         </a></li>
 
@@ -501,11 +503,10 @@
 </div>
 
 <!-- Local vendor JS -->
-<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'vendor/aos/aos.js' %}"></script>
-<script src="{% static 'vendor/swiper/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
+<script src="{% static 'vendor/aos/aos.js' %}" defer></script>
 <!-- Custom JS -->
-<script src="{% static 'js/main.js' %}?v=20260723a"></script>
+<script src="{% static 'js/main.js' %}?v=20260728a" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

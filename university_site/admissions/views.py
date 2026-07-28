@@ -87,8 +87,34 @@ def admissions_view(request):
 # ─────────────────────────────────────────────
 def apply_otp_send(request):
     """ارسال کد OTP برای تأیید موبایل"""
+    from django.urls import reverse
+    from urllib.parse import urlencode
+
+    # deeplink از مسیر دانشجو
+    for key in ('degree', 'major', 'major_id'):
+        val = (request.GET.get(key) or '').strip()
+        if val:
+            request.session[f'apply_pre_{key}'] = val
+
+    def _apply_redirect():
+        params = {}
+        degree = request.session.get('apply_pre_degree') or ''
+        major = (
+            request.session.get('apply_pre_major')
+            or request.session.get('apply_pre_major_id')
+            or ''
+        )
+        if degree:
+            params['degree'] = degree
+        if major:
+            params['major'] = major
+        target = reverse('admissions:apply')
+        if params:
+            target += '?' + urlencode(params)
+        return redirect(target)
+
     if not _require_mobile_otp():
-        return redirect('admissions:apply')
+        return _apply_redirect()
 
     from core.sms import can_send_otp, mark_otp_sent, send_otp
 
@@ -126,8 +152,28 @@ def apply_otp_send(request):
 
 def apply_otp_verify(request):
     """تأیید کد OTP"""
+    from django.urls import reverse
+    from urllib.parse import urlencode
+
+    def _apply_redirect():
+        params = {}
+        degree = request.session.get('apply_pre_degree') or ''
+        major = (
+            request.session.get('apply_pre_major')
+            or request.session.get('apply_pre_major_id')
+            or ''
+        )
+        if degree:
+            params['degree'] = degree
+        if major:
+            params['major'] = major
+        target = reverse('admissions:apply')
+        if params:
+            target += '?' + urlencode(params)
+        return redirect(target)
+
     if not _require_mobile_otp():
-        return redirect('admissions:apply')
+        return _apply_redirect()
 
     from core.sms import can_verify_otp, mark_otp_verify_failed, clear_otp_verify_attempts
 
@@ -157,7 +203,7 @@ def apply_otp_verify(request):
             otp.save(update_fields=['is_used'])
             clear_otp_verify_attempts(phone, scope='admission')
             request.session['apply_phone_verified'] = True
-            return redirect('admissions:apply')
+            return _apply_redirect()
 
     masked = f'{phone[:4]}****{phone[-3:]}'
     return render(request, 'admissions/apply_step2_verify.html',
@@ -171,7 +217,25 @@ def apply(request):
     require_otp = _require_mobile_otp()
     phone = request.session.get('apply_phone', '')
     verified = request.session.get('apply_phone_verified', False)
-    preselect_degree = (request.GET.get('degree') or '').strip()
+    preselect_degree = (request.GET.get('degree') or request.session.get('apply_pre_degree') or '').strip()
+    preselect_major = (
+        request.GET.get('major')
+        or request.GET.get('major_id')
+        or request.session.get('apply_pre_major')
+        or request.session.get('apply_pre_major_id')
+        or ''
+    ).strip()
+    if preselect_degree:
+        from core.degree_map import normalize_degree_query, COARSE_TO_MAJOR_PREFIXES
+        nd = normalize_degree_query(preselect_degree)
+        if nd in COARSE_TO_MAJOR_PREFIXES:
+            preselect_degree = nd
+        elif nd.startswith('bachelor'):
+            preselect_degree = 'bachelor'
+        elif nd.startswith('associate'):
+            preselect_degree = 'associate'
+        elif nd in ('master', 'phd'):
+            preselect_degree = nd
 
     if require_otp and (not phone or not verified):
         messages.warning(request, 'لطفاً ابتدا شماره موبایل خود را تأیید کنید.')
@@ -188,6 +252,7 @@ def apply(request):
             'all_majors': all_majors,
             'post': post,
             'preselect_degree': preselect_degree,
+            'preselect_major': preselect_major,
             'prev_degree_choices': Application.PREV_DEGREE_CHOICES,
             'tips': [
                 'مدارک را واضح و رنگی آپلود کنید (حداکثر ۲ مگابایت).',
@@ -549,6 +614,10 @@ def tuition_calculator(request):
         is_active=False
     ).select_related('major').order_by('-academic_year')[:20]
 
+    preselect_major_id = (
+        request.GET.get('major_id') or request.GET.get('major') or ''
+    ).strip()
+
     result = None
     if request.method == 'POST':
         major_id = request.POST.get('major_id', '')
@@ -611,6 +680,7 @@ def tuition_calculator(request):
         'discounts': discounts,
         'history': history,
         'result': result,
+        'preselect_major_id': preselect_major_id,
         'page_title': 'محاسبه‌گر شهریه',
     })
 

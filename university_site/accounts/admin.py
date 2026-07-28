@@ -45,16 +45,24 @@ class UserAdmin(DjangoUserAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'role', 'national_id', 'phone', 'student_id', 'major', 'department']
-    list_filter = ['role', 'major__degree', 'major', 'department']
+    list_display = [
+        'user', 'role', 'academic_status', 'national_id', 'phone',
+        'student_id', 'major', 'department',
+    ]
+    list_filter = ['role', 'academic_status', 'major__degree', 'major', 'department']
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name',
         'student_id', 'national_id', 'phone', 'major__name',
     ]
     autocomplete_fields = ['user', 'major']
+    readonly_fields = ['status_changed_at']
     fieldsets = (
         ('کاربر و نقش', {
             'fields': ('user', 'role', 'avatar', 'photo_hijab_confirmed')
+        }),
+        ('وضعیت تحصیلی', {
+            'fields': ('academic_status', 'status_changed_at', 'status_note'),
+            'description': 'اخراج و مرخصی اجباری فقط از این بخش. فارغ‌التحصیلی/انصراف معمولاً از درخواست دانشجو.',
         }),
         ('اطلاعات هویتی', {
             'fields': (
@@ -69,6 +77,12 @@ class UserProfileAdmin(admin.ModelAdmin):
             'fields': ('prev_degree', 'prev_major', 'prev_school', 'prev_grad_year', 'gpa', 'bio')
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        from django.utils import timezone
+        if change and 'academic_status' in form.changed_data:
+            obj.status_changed_at = timezone.now()
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(Announcement)

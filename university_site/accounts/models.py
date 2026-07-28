@@ -29,9 +29,26 @@ class UserProfile(models.Model):
         ('discontinuous_bachelor', _('کارشناسی ناپیوسته')),
         ('master', _('کارشناسی ارشد')),
     ]
+    ACADEMIC_STATUS_CHOICES = [
+        ('applicant', _('متقاضی')),
+        ('active', _('در حال تحصیل')),
+        ('leave', _('مرخصی')),
+        ('withdrawn', _('انصراف')),
+        ('expelled', _('اخراج')),
+        ('graduated', _('فارغ‌التحصیل')),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(_('نقش'), max_length=20, choices=ROLE_CHOICES, default='student')
+    academic_status = models.CharField(
+        _('وضعیت تحصیلی'),
+        max_length=20,
+        choices=ACADEMIC_STATUS_CHOICES,
+        default='active',
+        db_index=True,
+    )
+    status_changed_at = models.DateTimeField(_('زمان تغییر وضعیت'), blank=True, null=True)
+    status_note = models.CharField(_('یادداشت وضعیت'), max_length=300, blank=True)
     avatar = models.ImageField(
         _('عکس پرسنلی'),
         upload_to='avatars/',

@@ -145,6 +145,12 @@
                 <a href="{% url 'dashboard:student_payments' %}" class="{% if active_nav == 'payments' %}active{% endif %}">
                     <i class="fas fa-credit-card"></i> پرداخت‌ها
                 </a>
+                <a href="{% url 'dashboard:student_clearance' %}" class="{% if active_nav == 'clearance' %}active{% endif %}">
+                    <i class="fas fa-clipboard-check"></i> تسویه
+                </a>
+                <a href="{% url 'dashboard:student_lifecycle' %}" class="{% if active_nav == 'lifecycle' %}active{% endif %}">
+                    <i class="fas fa-flag-checkered"></i> پایان تحصیل
+                </a>
                 {% elif role == 'professor' %}
                 <a href="{% url 'dashboard:professor_courses' %}" class="{% if active_nav == 'teaching' %}active{% endif %}">
                     <i class="fas fa-chalkboard"></i> دروس تدریس

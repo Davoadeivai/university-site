@@ -177,6 +177,36 @@ def dashboard(request):
     active_sem = context['active_semester']
     ensure_tuition_invoice(user, active_sem)
     context['journey'] = build_journey_status(user=user)
+    journey = context['journey']
+    profile = getattr(user, 'profile', None)
+    terminal = bool(journey and journey.get('terminal_status'))
+
+    if terminal:
+        context.update({
+            'page_title': 'پنل دانشجو',
+            'terminal_status': True,
+            'academic_status': journey.get('academic_status'),
+            'academic_status_display': (
+                profile.get_academic_status_display() if profile else ''
+            ),
+            'status_note': getattr(profile, 'status_note', '') if profile else '',
+            'clearance': journey.get('clearance'),
+            'lifecycle_requests': journey.get('lifecycle_requests') or [],
+            'current_enrollments': [],
+            'enrollment_count': 0,
+            'total_units': 0,
+            'graded_count': 0,
+            'upcoming_exams': [],
+            'my_requests': [],
+            'pending_requests_count': 0,
+            'my_payments': Payment.objects.filter(student=user).order_by('-created_at')[:3],
+            'pending_assignments': [],
+            'announcements': Announcement.objects.filter(
+                is_active=True, target__in=['all', 'students']
+            ).order_by('-created_at')[:5],
+        })
+        return render(request, 'dashboard/student_home.html', context)
+
     all_current = student_enrollment_qs(user, active_sem) if active_sem else student_enrollment_qs(user)
     course_ids = list(all_current.values_list('course_id', flat=True))
     graded = all_current.filter(final_grade__isnull=False)
@@ -194,6 +224,12 @@ def dashboard(request):
 
     context.update({
         'page_title': 'پنل دانشجو',
+        'terminal_status': False,
+        'academic_status': journey.get('academic_status') if journey else 'active',
+        'academic_status_display': (
+            profile.get_academic_status_display() if profile else 'در حال تحصیل'
+        ),
+        'clearance': journey.get('clearance') if journey else None,
         'current_enrollments': all_current[:8],
         'enrollment_count': all_current.count(),
         'total_units': sum(e.course.credits for e in all_current),
@@ -245,6 +281,12 @@ def student_registration(request):
     ensure_tuition_invoice(request.user, semester)
     paid = tuition_first_paid(request.user, semester)
 
+    if getattr(profile, 'academic_status', 'active') in ('graduated', 'withdrawn', 'expelled', 'leave'):
+        messages.warning(
+            request,
+            'با وضعیت تحصیلی فعلی امکان انتخاب واحد وجود ندارد.',
+        )
+        return redirect('dashboard:dashboard')
     if not semester:
         messages.warning(request, 'ترم فعالی تعریف نشده است.')
         return redirect('dashboard:dashboard')
@@ -595,6 +637,96 @@ def student_requests(request):
         'requests': StudentRequest.objects.filter(student=request.user).order_by('-created_at'),
     })
     return render(request, 'dashboard/student_requests.html', ctx)
+
+
+@role_required('student')
+def student_clearance(request):
+    """پیشرفت چک‌لیست تسویه پایان‌تحصیل."""
+    from .onboarding import get_or_create_clearance
+
+    ctx = panel_context(request, 'تسویه پایان‌تحصیل', 'clearance')
+    clearance = get_or_create_clearance(request.user)
+    items = list(clearance.items.all())
+    done = sum(1 for i in items if i.status in ('cleared', 'waived'))
+    total = len(items) or 1
+    ctx.update({
+        'clearance': clearance,
+        'items': items,
+        'progress_pct': int(round(100 * done / total)),
+    })
+    return render(request, 'dashboard/student_clearance.html', ctx)
+
+
+@role_required('student')
+def student_lifecycle(request):
+    """ثبت و پیگیری درخواست فارغ‌التحصیلی / انصراف / مرخصی."""
+    from .models import StudentLifecycleRequest
+    from .onboarding import get_or_create_clearance
+
+    ctx = panel_context(request, 'پایان مسیر تحصیلی', 'lifecycle')
+    profile = getattr(request.user, 'profile', None)
+    academic_status = getattr(profile, 'academic_status', 'active') if profile else 'active'
+    clearance = get_or_create_clearance(request.user)
+    existing = StudentLifecycleRequest.objects.filter(student=request.user).order_by('-created_at')
+
+    if request.method == 'POST':
+        action = (request.POST.get('action') or 'submit').strip()
+        if action == 'cancel':
+            pk = request.POST.get('request_id')
+            req = existing.filter(
+                pk=pk, status__in=('draft', 'submitted')
+            ).first()
+            if req:
+                req.status = 'cancelled'
+                req.save(update_fields=['status', 'updated_at'])
+                messages.info(request, 'درخواست لغو شد.')
+            return redirect('dashboard:student_lifecycle')
+
+        req_type = (request.POST.get('request_type') or '').strip()
+        reason = (request.POST.get('reason') or '').strip()
+        valid_types = {c[0] for c in StudentLifecycleRequest.TYPE_CHOICES}
+        if req_type not in valid_types:
+            messages.error(request, 'نوع درخواست معتبر نیست.')
+            return redirect('dashboard:student_lifecycle')
+        if academic_status in ('graduated', 'withdrawn', 'expelled'):
+            messages.warning(request, 'وضعیت تحصیلی شما نهایی است؛ درخواست جدید ثبت نمی‌شود.')
+            return redirect('dashboard:student_lifecycle')
+        open_exists = existing.filter(
+            status__in=('draft', 'submitted', 'under_review')
+        ).exists()
+        if open_exists:
+            messages.warning(request, 'یک درخواست باز دارید؛ تا تعیین وضعیت صبر کنید.')
+            return redirect('dashboard:student_lifecycle')
+        if req_type in ('graduation', 'withdrawal') and not clearance.is_complete:
+            messages.warning(
+                request,
+                'برای فارغ‌التحصیلی یا انصراف، ابتدا تسویه باید تکمیل شود (یا همزمان توسط آموزش پیگیری شود). '
+                'درخواست شما به‌عنوان «ارسال‌شده» ثبت می‌شود ولی تأیید نهایی منوط به تسویه است.',
+            )
+
+        req = StudentLifecycleRequest(
+            student=request.user,
+            request_type=req_type,
+            reason=reason,
+            status='submitted',
+        )
+        attachment = request.FILES.get('attachment')
+        if attachment:
+            req.attachment = attachment
+        req.save()
+        messages.success(request, 'درخواست ثبت شد و پس از بررسی آموزش اعمال می‌شود.')
+        return redirect('dashboard:student_lifecycle')
+
+    ctx.update({
+        'academic_status': academic_status,
+        'academic_status_display': (
+            profile.get_academic_status_display() if profile else ''
+        ),
+        'clearance': clearance,
+        'requests': existing,
+        'type_choices': StudentLifecycleRequest.TYPE_CHOICES,
+    })
+    return render(request, 'dashboard/student_lifecycle.html', ctx)
 
 
 @role_required('student')

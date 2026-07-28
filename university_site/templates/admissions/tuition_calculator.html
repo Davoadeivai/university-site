@@ -29,7 +29,7 @@
                 <option value="">ابتدا مقطع را انتخاب کنید</option>
                 {% for t in tuitions %}
                 <option value="{{ t.major_id }}" data-degree="{{ t.degree_code }}"
-                        {% if result and result.ts.major_id == t.major_id %}selected{% endif %}>
+                        {% if result and result.ts.major_id == t.major_id or preselect_major_id == t.major_id|stringformat:"s" %}selected{% endif %}>
                     {{ t.major.name }}{% if t.major.group %} — {{ t.major.group.name }}{% endif %}
                 </option>
                 {% endfor %}

@@ -364,3 +364,173 @@ class StudentDiscountClaim(models.Model):
 
     def __str__(self):
         return f'{self.student} — {self.get_discount_type_display()} ({self.percent}%)'
+
+
+class StudentClearance(models.Model):
+    """تسویه پایان‌تحصیل / انصراف."""
+    STATUS_CHOICES = [
+        ('open', 'باز'),
+        ('in_progress', 'در حال انجام'),
+        ('completed', 'تکمیل‌شده'),
+    ]
+    student = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='clearance', verbose_name=_('دانشجو'),
+    )
+    status = models.CharField(_('وضعیت کل'), max_length=20, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(_('زمان تکمیل'), blank=True, null=True)
+
+    class Meta:
+        verbose_name = _('تسویه پایان‌تحصیل')
+        verbose_name_plural = _('تسویه‌های پایان‌تحصیل')
+
+    def __str__(self):
+        return f'تسویه {self.student.get_full_name() or self.student.username}'
+
+    def refresh_status(self, save=True):
+        items = list(self.items.all())
+        if not items:
+            new_status = 'open'
+        elif all(i.status in ('cleared', 'waived') for i in items):
+            new_status = 'completed'
+        elif any(i.status in ('cleared', 'waived') for i in items):
+            new_status = 'in_progress'
+        else:
+            new_status = 'open'
+        self.status = new_status
+        if new_status == 'completed' and not self.completed_at:
+            from django.utils import timezone
+            self.completed_at = timezone.now()
+        elif new_status != 'completed':
+            self.completed_at = None
+        if save:
+            self.save(update_fields=['status', 'completed_at', 'updated_at'])
+        return self.status
+
+    @property
+    def is_complete(self):
+        return self.status == 'completed'
+
+    def ensure_items(self):
+        existing = set(self.items.values_list('department', flat=True))
+        for code, _ in StudentClearanceItem.DEPARTMENT_CHOICES:
+            if code not in existing:
+                StudentClearanceItem.objects.create(clearance=self, department=code)
+
+
+class StudentClearanceItem(models.Model):
+    DEPARTMENT_CHOICES = [
+        ('library', 'کتابخانه'),
+        ('finance', 'مالی / شهریه'),
+        ('education', 'آموزش'),
+        ('lab', 'آزمایشگاه'),
+        ('security', 'حراست'),
+        ('dorm', 'خوابگاه'),
+    ]
+    ITEM_STATUS = [
+        ('pending', 'در انتظار'),
+        ('cleared', 'تسویه'),
+        ('waived', 'معاف'),
+    ]
+    clearance = models.ForeignKey(
+        StudentClearance, on_delete=models.CASCADE, related_name='items', verbose_name=_('تسویه'),
+    )
+    department = models.CharField(_('واحد'), max_length=20, choices=DEPARTMENT_CHOICES)
+    status = models.CharField(_('وضعیت'), max_length=20, choices=ITEM_STATUS, default='pending')
+    cleared_at = models.DateTimeField(_('تاریخ'), blank=True, null=True)
+    note = models.CharField(_('یادداشت'), max_length=300, blank=True)
+
+    class Meta:
+        verbose_name = _('مورد تسویه')
+        verbose_name_plural = _('موارد تسویه')
+        unique_together = ['clearance', 'department']
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.get_department_display()} — {self.get_status_display()}'
+
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
+        if self.status in ('cleared', 'waived') and not self.cleared_at:
+            self.cleared_at = timezone.now()
+        if self.status == 'pending':
+            self.cleared_at = None
+        super().save(*args, **kwargs)
+        self.clearance.refresh_status()
+
+
+class StudentLifecycleRequest(models.Model):
+    """درخواست فارغ‌التحصیلی / انصراف / مرخصی (تأیید ادمین)."""
+    TYPE_CHOICES = [
+        ('graduation', 'فارغ‌التحصیلی'),
+        ('withdrawal', 'انصراف از تحصیل'),
+        ('leave', 'مرخصی تحصیلی'),
+    ]
+    STATUS_CHOICES = [
+        ('draft', 'پیش‌نویس'),
+        ('submitted', 'ارسال‌شده'),
+        ('under_review', 'در حال بررسی'),
+        ('approved', 'تأیید شده'),
+        ('rejected', 'رد شده'),
+        ('cancelled', 'لغو شده'),
+    ]
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='lifecycle_requests', verbose_name=_('دانشجو'),
+    )
+    request_type = models.CharField(_('نوع درخواست'), max_length=20, choices=TYPE_CHOICES)
+    status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='draft')
+    reason = models.TextField(_('دلیل / توضیحات'), blank=True)
+    attachment = models.FileField(
+        _('پیوست'), upload_to='lifecycle/', blank=True, null=True,
+    )
+    admin_response = models.TextField(_('پاسخ ادمین'), blank=True)
+    reviewed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='reviewed_lifecycle_requests', verbose_name=_('بررسی‌کننده'),
+    )
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('درخواست پایان مسیر تحصیلی')
+        verbose_name_plural = _('درخواست‌های پایان مسیر تحصیلی')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.student} — {self.get_request_type_display()} ({self.get_status_display()})'
+
+    @property
+    def needs_clearance(self):
+        return self.request_type in ('graduation', 'withdrawal')
+
+    def apply_approval(self, reviewer=None, note=''):
+        """تأیید و به‌روزرسانی وضعیت تحصیلی دانشجو."""
+        from django.utils import timezone
+        from accounts.models import UserProfile
+
+        mapping = {
+            'graduation': 'graduated',
+            'withdrawal': 'withdrawn',
+            'leave': 'leave',
+        }
+        new_status = mapping.get(self.request_type)
+        if not new_status:
+            return
+        profile, _ = UserProfile.objects.get_or_create(user=self.student)
+        profile.academic_status = new_status
+        profile.status_changed_at = timezone.now()
+        if note:
+            profile.status_note = note[:300]
+        elif self.admin_response:
+            profile.status_note = self.admin_response[:300]
+        profile.save(update_fields=['academic_status', 'status_changed_at', 'status_note', 'updated_at'])
+        self.status = 'approved'
+        self.reviewed_by = reviewer
+        self.reviewed_at = timezone.now()
+        if note:
+            self.admin_response = note
+        self.save(update_fields=[
+            'status', 'reviewed_by', 'reviewed_at', 'admin_response', 'updated_at',
+        ])

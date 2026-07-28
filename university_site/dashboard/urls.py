@@ -25,6 +25,8 @@ urlpatterns = [
     path('payments/<int:pk>/mock/', views.payment_mock, name='payment_mock'),
     path('payments/callback/', views.payment_callback, name='payment_callback'),
     path('payments/discount/', views.tuition_discount_claim, name='tuition_discount_claim'),
+    path('clearance/', views.student_clearance, name='student_clearance'),
+    path('lifecycle/', views.student_lifecycle, name='student_lifecycle'),
 
     # استاد
     path('teaching/', views.professor_courses, name='professor_courses'),
