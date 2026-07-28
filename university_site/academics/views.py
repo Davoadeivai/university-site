@@ -45,9 +45,35 @@ def majors_list(request):
 def major_detail(request, slug):
     major = get_object_or_404(Major, slug=slug, is_active=True)
     courses = major.courses.all().order_by('semester')
+    has_pdf = bool(major.curriculum_pdf)
+    has_word = bool(major.curriculum_word)
+    has_text = bool((major.curriculum or '').strip())
+
+    view_format = (request.GET.get('view') or '').strip().lower()
+    if view_format not in ('pdf', 'word', 'text'):
+        if has_pdf:
+            view_format = 'pdf'
+        elif has_text:
+            view_format = 'text'
+        elif has_word:
+            view_format = 'word'
+        else:
+            view_format = ''
+
+    if view_format == 'pdf' and not has_pdf:
+        view_format = 'text' if has_text else ('word' if has_word else '')
+    if view_format == 'word' and not has_word:
+        view_format = 'pdf' if has_pdf else ('text' if has_text else '')
+    if view_format == 'text' and not has_text:
+        view_format = 'pdf' if has_pdf else ('word' if has_word else '')
+
     context = {
         'major': major,
         'courses': courses,
+        'has_pdf': has_pdf,
+        'has_word': has_word,
+        'has_text': has_text,
+        'view_format': view_format,
         'page_title': f"{major.name} - {major.get_degree_display()}",
     }
     return render(request, 'academics/major_detail.html', context)
