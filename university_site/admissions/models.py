@@ -227,7 +227,8 @@ class TuitionStructure(models.Model):
 
     @property
     def degree_code(self):
-        return self.major.degree
+        from core.degree_map import to_canonical_degree
+        return to_canonical_degree(self.major.degree) or self.major.degree
 
     @property
     def major_name(self):

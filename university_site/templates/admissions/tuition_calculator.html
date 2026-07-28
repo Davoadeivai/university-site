@@ -17,7 +17,8 @@
             <select name="degree" class="form-select" id="degreeSelect" required>
                 <option value="">انتخاب کنید...</option>
                 {% for deg in degrees %}
-                <option value="{{ deg.code }}" {% if result and result.ts.degree_code == deg.code %}selected{% endif %}>
+                <option value="{{ deg.code }}"
+                    {% if preselect_degree == deg.code or result and result.ts.degree_code == deg.code %}selected{% endif %}>
                     {{ deg.label }}
                 </option>
                 {% endfor %}
@@ -34,6 +35,9 @@
                 </option>
                 {% endfor %}
             </select>
+            {% if not tuitions %}
+            <div class="form-text text-warning mt-1">هنوز ساختار شهریه‌ای ثبت نشده است.</div>
+            {% endif %}
         </div>
         <div class="row g-2 mb-3">
             <div class="col-4">
@@ -191,7 +195,7 @@ if(degSel && majSel){
         }
     }
     degSel.addEventListener('change', filterMajors);
-    if(degSel.value) filterMajors();
+    filterMajors();
 }
 </script>
 {% endblock %}

@@ -636,9 +636,27 @@ def track_application(request):
 #  شهریه‌ساز آنلاین
 # ─────────────────────────────────────────────
 def tuition_calculator(request):
-    tuitions = TuitionStructure.objects.filter(
-        is_active=True
-    ).select_related('major', 'major__group').order_by('major__degree', 'major__name')
+    from academics.models import Major
+    from core.degree_map import CANONICAL_DEGREES, to_canonical_degree
+
+    # اطمینان از وجود ساختار شهریه برای همه رشته‌های فعال (مقاطع بدون داده قبلاً در لیست نبودند)
+    from admissions.tuition_seed import ensure_tuition_structures_for_active_majors, needs_tuition_seed
+    if needs_tuition_seed():
+        ensure_tuition_structures_for_active_majors()
+
+    degree_order = {code: i for i, (code, _) in enumerate(CANONICAL_DEGREES)}
+    tuitions = list(
+        TuitionStructure.objects.filter(
+            is_active=True,
+            major__is_active=True,
+        ).select_related('major', 'major__group')
+    )
+    tuitions.sort(
+        key=lambda t: (
+            degree_order.get(to_canonical_degree(t.major.degree) or t.major.degree, 100),
+            t.major.name,
+        )
+    )
     discounts = TuitionDiscount.objects.filter(is_active=True)
     history = TuitionStructure.objects.filter(
         is_active=False
@@ -647,6 +665,11 @@ def tuition_calculator(request):
     preselect_major_id = (
         request.GET.get('major_id') or request.GET.get('major') or ''
     ).strip()
+    preselect_degree = to_canonical_degree(request.GET.get('degree') or '')
+    if preselect_major_id.isdigit() and not preselect_degree:
+        maj = Major.objects.filter(pk=int(preselect_major_id), is_active=True).first()
+        if maj:
+            preselect_degree = to_canonical_degree(maj.degree) or maj.degree
 
     result = None
     if request.method == 'POST':
@@ -692,17 +715,13 @@ def tuition_calculator(request):
                     'lab': lab,
                     'note': 'مبالغ تقریبی است؛ فاکتور نهایی پس از پذیرش در پنل دانشجو صادر می‌شود.',
                 }
+                preselect_degree = to_canonical_degree(ts.major.degree) or ts.major.degree
+                preselect_major_id = str(ts.major_id)
             else:
                 messages.warning(request, 'اطلاعات شهریه برای این رشته ثبت نشده است.')
 
-    # گروه‌بندی بر اساس کد مقطع برای فیلتر JS
-    degrees = []
-    seen = set()
-    for t in tuitions:
-        code = t.major.degree
-        if code not in seen:
-            seen.add(code)
-            degrees.append({'code': code, 'label': t.major.get_degree_display()})
+    # همیشه هر ۵ مقطع رسمی — نه فقط مقاطعی که قبلاً شهریه داشتند
+    degrees = [{'code': code, 'label': label} for code, label in CANONICAL_DEGREES]
 
     return render(request, 'admissions/tuition_calculator.html', {
         'tuitions': tuitions,
@@ -711,6 +730,7 @@ def tuition_calculator(request):
         'history': history,
         'result': result,
         'preselect_major_id': preselect_major_id,
+        'preselect_degree': preselect_degree,
         'page_title': 'محاسبه‌گر شهریه',
     })
 
@@ -777,9 +797,24 @@ def complete_documents(request, code):
 
 
 def tuition_info(request):
-    tuitions = TuitionStructure.objects.filter(
-        is_active=True
-    ).select_related('major', 'major__group').order_by('major__degree', 'major__name')
+    from core.degree_map import CANONICAL_DEGREES, to_canonical_degree
+    from admissions.tuition_seed import ensure_tuition_structures_for_active_majors, needs_tuition_seed
+    if needs_tuition_seed():
+        ensure_tuition_structures_for_active_majors()
+
+    degree_order = {code: i for i, (code, _) in enumerate(CANONICAL_DEGREES)}
+    tuitions = list(
+        TuitionStructure.objects.filter(
+            is_active=True,
+            major__is_active=True,
+        ).select_related('major', 'major__group')
+    )
+    tuitions.sort(
+        key=lambda t: (
+            degree_order.get(to_canonical_degree(t.major.degree) or t.major.degree, 100),
+            t.major.name,
+        )
+    )
     discounts = TuitionDiscount.objects.filter(is_active=True)
     history = TuitionStructure.objects.filter(
         is_active=False
