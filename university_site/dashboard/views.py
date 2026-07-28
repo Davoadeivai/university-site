@@ -1243,6 +1243,9 @@ def staff_student_export(request):
     degree = (request.GET.get('degree') or '').strip()
     download = (request.GET.get('download') or '').strip().lower()
 
+    from core.degree_map import CANONICAL_DEGREES, hub_degree_label, major_degree_q, to_canonical_degree
+    degree = to_canonical_degree(degree) if degree else ''
+
     # #32: یک queryset واحد — فیلتر major از طریق profile یا enrollment در یک مرحله
     base_qs = (
         UserProfile.objects.filter(role='student')
@@ -1250,7 +1253,8 @@ def staff_student_export(request):
         .order_by('user__last_name', 'user__first_name')
     )
     if degree:
-        base_qs = base_qs.filter(major__degree=degree)
+        major_ids = Major.objects.filter(major_degree_q(degree)).values_list('pk', flat=True)
+        base_qs = base_qs.filter(major_id__in=major_ids)
     if major_id:
         enrolled_user_ids = (
             Enrollment.objects.filter(course__major_id=major_id)
@@ -1269,8 +1273,7 @@ def staff_student_export(request):
     if selected_major:
         title = f'لیست دانشجویان رشته {selected_major.name} ({selected_major.get_degree_display()})'
     elif degree:
-        labels = dict(Major._meta.get_field('degree').choices)
-        title = f'لیست دانشجویان مقطع {labels.get(degree, degree)}'
+        title = f'لیست دانشجویان مقطع {hub_degree_label(degree)}'
 
     from core.jalali import jalali_now_stamp
     stamp = jalali_now_stamp('%Y%m%d')
@@ -1292,7 +1295,7 @@ def staff_student_export(request):
             messages.error(request, 'خطا در تهیه فایل ورد. لطفاً دوباره تلاش کنید.')
             return redirect(request.get_full_path().replace('&download=word', '').replace('?download=word', ''))
 
-    degrees = Major._meta.get_field('degree').choices
+    degrees = CANONICAL_DEGREES
     ctx = panel_context(request, 'خروجی لیست دانشجویان', 'student_export')
     ctx.update({
         'majors': majors,

@@ -724,11 +724,13 @@ class DownloadableDocument(models.Model):
     ]
     DEGREE_LEVEL_CHOICES = [
         ('general', _('عمومی (بدون پوشه مقطع)')),
-        ('master', _('کارشناسی ارشد')),
-        ('bachelor_continuous', _('کارشناسی پیوسته')),
+        ('associate_cont', _('کاردانی پیوسته')),
         ('bachelor_discontinuous', _('کارشناسی ناپیوسته')),
-        ('associate', _('کاردانی ناپیوسته')),
+        ('bachelor_continuous', _('کارشناسی پیوسته')),
         ('associate_tech', _('کاردانی فنی')),
+        ('master', _('کارشناسی ارشد')),
+        # قدیمی
+        ('associate', _('کاردانی ناپیوسته')),
     ]
     title = models.CharField(_('عنوان'), max_length=300)
     category = models.CharField(_('دسته'), max_length=20, choices=CATEGORY_CHOICES, default='form')
@@ -766,27 +768,33 @@ class DownloadableDocument(models.Model):
 
     @classmethod
     def degree_folder_meta(cls):
-        """پوشه‌های مقطع برای نمایش در سایت (به‌ترتیب)."""
+        """پوشه‌های مقطع برای نمایش در سایت (به‌ترتیب رسمی)."""
         icons = {
-            'master': 'fas fa-user-graduate',
-            'bachelor_continuous': 'fas fa-graduation-cap',
+            'associate_cont': 'fas fa-certificate',
             'bachelor_discontinuous': 'fas fa-book-reader',
-            'associate': 'fas fa-certificate',
+            'bachelor_continuous': 'fas fa-graduation-cap',
             'associate_tech': 'fas fa-cogs',
+            'master': 'fas fa-user-graduate',
+            'associate': 'fas fa-folder',
             'general': 'fas fa-folder-open',
         }
+        order = [
+            'associate_cont',
+            'bachelor_discontinuous',
+            'bachelor_continuous',
+            'associate_tech',
+            'master',
+            'associate',
+            'general',
+        ]
+        label_map = dict(cls.DEGREE_LEVEL_CHOICES)
         folders = []
-        for key, label in cls.DEGREE_LEVEL_CHOICES:
-            if key == 'general':
+        for key in order:
+            if key not in label_map:
                 continue
             folders.append({
                 'key': key,
-                'label': label,
+                'label': label_map[key],
                 'icon': icons.get(key, 'fas fa-folder'),
             })
-        folders.append({
-            'key': 'general',
-            'label': 'عمومی و سایر فایل‌ها',
-            'icon': icons['general'],
-        })
         return folders

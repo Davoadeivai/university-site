@@ -27,17 +27,16 @@ def department_detail(request, slug):
 
 
 def majors_list(request):
+    from core.degree_map import CANONICAL_DEGREES, major_degree_q, to_canonical_degree
+
     degree = request.GET.get('degree')
     majors = Major.objects.filter(is_active=True).select_related('department', 'group')
     if degree:
-        # پشتیبانی از فیلتر پایه (کاردانی/کارشناسی) و دقیق (پیوسته/ناپیوسته)
-        if degree in ('associate', 'bachelor'):
-            majors = majors.filter(degree__startswith=degree)
-        else:
-            majors = majors.filter(degree=degree)
+        majors = majors.filter(major_degree_q(degree))
     context = {
         'majors': majors,
-        'degree': degree,
+        'degree': to_canonical_degree(degree) if degree else '',
+        'degree_filters': CANONICAL_DEGREES,
         'page_title': 'رشته‌های تحصیلی',
     }
     return render(request, 'academics/majors.html', context)

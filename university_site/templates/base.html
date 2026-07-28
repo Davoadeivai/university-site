@@ -224,17 +224,20 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}">
                             <i class="fas fa-route me-1" style="width:16px;"></i> مسیر یکپارچه دانشجو
                         </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=associate&step=1">
-                            <i class="fas fa-book me-1" style="width:16px;"></i> کاردانی
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=associate_cont&step=1">
+                            <i class="fas fa-book me-1" style="width:16px;"></i> کاردانی پیوسته
                         </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=bachelor&step=1">
-                            <i class="fas fa-book-open me-1" style="width:16px;"></i> کارشناسی
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=bachelor_disc&step=1">
+                            <i class="fas fa-book-open me-1" style="width:16px;"></i> کارشناسی ناپیوسته
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=bachelor_cont&step=1">
+                            <i class="fas fa-graduation-cap me-1" style="width:16px;"></i> کارشناسی پیوسته
+                        </a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=associate_tech&step=1">
+                            <i class="fas fa-cogs me-1" style="width:16px;"></i> کاردانی فنی
                         </a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=master&step=1">
                             <i class="fas fa-scroll me-1" style="width:16px;"></i> کارشناسی ارشد
-                        </a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:student_path' %}?degree=phd&step=1">
-                            <i class="fas fa-university me-1" style="width:16px;"></i> دکتری
                         </a></li>
 
                         <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,0.12);margin:4px 0;"></li>

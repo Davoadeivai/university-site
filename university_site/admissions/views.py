@@ -74,9 +74,13 @@ def _active_application_exists(national_id: str = '', phone: str = '') -> Applic
 
 
 def admissions_view(request):
-    admission_infos = AdmissionInfo.objects.filter(is_active=True)
+    from core.degree_map import CANONICAL_DEGREES
+
+    order = {code: i for i, (code, _) in enumerate(CANONICAL_DEGREES)}
+    infos = list(AdmissionInfo.objects.filter(is_active=True))
+    infos.sort(key=lambda x: order.get(x.degree, 100))
     context = {
-        'admission_infos': admission_infos,
+        'admission_infos': infos,
         'page_title': 'پذیرش دانشجو',
     }
     return render(request, 'admissions/admissions.html', context)
@@ -91,14 +95,19 @@ def apply_otp_send(request):
     from urllib.parse import urlencode
 
     # deeplink از مسیر دانشجو
+    from core.degree_map import to_canonical_degree
     for key in ('degree', 'major', 'major_id'):
         val = (request.GET.get(key) or '').strip()
         if val:
+            if key == 'degree':
+                val = to_canonical_degree(val) or val
             request.session[f'apply_pre_{key}'] = val
 
     def _apply_redirect():
         params = {}
-        degree = request.session.get('apply_pre_degree') or ''
+        degree = to_canonical_degree(
+            request.session.get('apply_pre_degree') or ''
+        ) or (request.session.get('apply_pre_degree') or '')
         major = (
             request.session.get('apply_pre_major')
             or request.session.get('apply_pre_major_id')
@@ -106,6 +115,7 @@ def apply_otp_send(request):
         )
         if degree:
             params['degree'] = degree
+            request.session['apply_pre_degree'] = degree
         if major:
             params['major'] = major
         target = reverse('admissions:apply')
@@ -154,10 +164,13 @@ def apply_otp_verify(request):
     """تأیید کد OTP"""
     from django.urls import reverse
     from urllib.parse import urlencode
+    from core.degree_map import to_canonical_degree
 
     def _apply_redirect():
         params = {}
-        degree = request.session.get('apply_pre_degree') or ''
+        degree = to_canonical_degree(
+            request.session.get('apply_pre_degree') or ''
+        ) or (request.session.get('apply_pre_degree') or '')
         major = (
             request.session.get('apply_pre_major')
             or request.session.get('apply_pre_major_id')
@@ -165,6 +178,7 @@ def apply_otp_verify(request):
         )
         if degree:
             params['degree'] = degree
+            request.session['apply_pre_degree'] = degree
         if major:
             params['major'] = major
         target = reverse('admissions:apply')
@@ -226,16 +240,8 @@ def apply(request):
         or ''
     ).strip()
     if preselect_degree:
-        from core.degree_map import normalize_degree_query, COARSE_TO_MAJOR_PREFIXES
-        nd = normalize_degree_query(preselect_degree)
-        if nd in COARSE_TO_MAJOR_PREFIXES:
-            preselect_degree = nd
-        elif nd.startswith('bachelor'):
-            preselect_degree = 'bachelor'
-        elif nd.startswith('associate'):
-            preselect_degree = 'associate'
-        elif nd in ('master', 'phd'):
-            preselect_degree = nd
+        from core.degree_map import to_canonical_degree
+        preselect_degree = to_canonical_degree(preselect_degree) or preselect_degree
 
     if require_otp and (not phone or not verified):
         messages.warning(request, 'لطفاً ابتدا شماره موبایل خود را تأیید کنید.')
@@ -253,6 +259,13 @@ def apply(request):
             'post': post,
             'preselect_degree': preselect_degree,
             'preselect_major': preselect_major,
+            'degree_choices': [
+                c for c in Application.DEGREE_CHOICES
+                if c[0] in {
+                    'associate_cont', 'bachelor_disc', 'bachelor_cont',
+                    'associate_tech', 'master',
+                }
+            ],
             'prev_degree_choices': Application.PREV_DEGREE_CHOICES,
             'tips': [
                 'مدارک را واضح و رنگی آپلود کنید (حداکثر ۲ مگابایت).',
@@ -280,10 +293,18 @@ def apply(request):
             errors.append('آدرس الزامی است.')
 
         degree = choice_value(p.get('degree', ''), Application.DEGREE_CHOICES)
+        if degree:
+            from core.degree_map import to_canonical_degree
+            degree = to_canonical_degree(degree) or degree
         if not degree:
             errors.append('مقطع را انتخاب کنید.')
         else:
             info = AdmissionInfo.objects.filter(degree=degree, is_active=True).first()
+            if not info:
+                # سازگاری با رکورد قدیمی associate/bachelor
+                from core.degree_map import LEGACY_TO_CANONICAL
+                legacy = [k for k, v in LEGACY_TO_CANONICAL.items() if v == degree]
+                info = AdmissionInfo.objects.filter(degree__in=legacy, is_active=True).first()
             if info and not info.is_open:
                 errors.append(f'پذیرش مقطع {info.get_degree_display()} در حال حاضر بسته است.')
             if info and info.capacity and info.capacity > 0:
@@ -331,12 +352,13 @@ def apply(request):
         major_id = p.get('desired_major')
         major2_id = p.get('desired_major2') or None
         major_obj = major2_obj = None
+        from core.degree_map import degrees_compatible
         if not major_id:
             errors.append('رشته اولویت اول را انتخاب کنید.')
         else:
             try:
                 major_obj = Major.objects.get(pk=int(major_id), is_active=True)
-                if degree and major_obj.admission_degree != degree:
+                if degree and not degrees_compatible(degree, major_obj.degree):
                     errors.append('رشته اولویت اول با مقطع انتخاب‌شده هم‌خوان نیست.')
                 if getattr(major_obj, 'capacity', 0):
                     enrolled = Application.objects.filter(
@@ -349,7 +371,7 @@ def apply(request):
         if major2_id:
             try:
                 major2_obj = Major.objects.get(pk=int(major2_id), is_active=True)
-                if degree and major2_obj.admission_degree != degree:
+                if degree and not degrees_compatible(degree, major2_obj.degree):
                     errors.append('رشته اولویت دوم با مقطع انتخاب‌شده هم‌خوان نیست.')
                 if major_obj and major2_obj.pk == major_obj.pk:
                     errors.append('اولویت اول و دوم نباید یکسان باشند.')
@@ -360,16 +382,24 @@ def apply(request):
             errors.append('پذیرش قوانین الزامی است.')
 
         allowed_prev = {
+            'associate_cont': {'diploma', 'associate'},
+            'associate_tech': {'diploma', 'associate'},
+            'bachelor_cont': {'diploma', 'associate', 'bachelor', 'discontinuous_bachelor'},
+            'bachelor_disc': {'associate', 'diploma', 'discontinuous_bachelor'},
+            'master': {'bachelor', 'discontinuous_bachelor', 'master'},
             'associate': {'diploma', 'associate'},
             'bachelor': {'diploma', 'associate', 'bachelor', 'discontinuous_bachelor'},
-            'master': {'bachelor', 'discontinuous_bachelor', 'master'},
             'phd': {'master'},
         }
         if degree in allowed_prev and prev_degree not in allowed_prev[degree]:
             need = {
+                'associate_cont': 'دیپلم یا کاردانی',
+                'associate_tech': 'دیپلم یا کاردانی',
+                'bachelor_cont': 'دیپلم، کاردانی، کارشناسی یا کارشناسی ناپیوسته',
+                'bachelor_disc': 'کاردانی یا معادل',
+                'master': 'کارشناسی، کارشناسی ناپیوسته یا کارشناسی ارشد',
                 'associate': 'دیپلم یا کاردانی',
                 'bachelor': 'دیپلم، کاردانی، کارشناسی یا کارشناسی ناپیوسته',
-                'master': 'کارشناسی، کارشناسی ناپیوسته یا کارشناسی ارشد',
                 'phd': 'کارشناسی ارشد',
             }
             errors.append(

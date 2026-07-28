@@ -30,14 +30,17 @@ class Department(models.Model):
 
 
 class Major(models.Model):
+    # مقاطع رسمی + کدهای قدیمی برای سازگاری داده
     DEGREE_CHOICES = [
         ('associate_cont', 'کاردانی پیوسته'),
+        ('bachelor_disc', 'کارشناسی ناپیوسته'),
+        ('bachelor_cont', 'کارشناسی پیوسته'),
+        ('associate_tech', 'کاردانی فنی'),
+        ('master', 'کارشناسی ارشد'),
+        # قدیمی (فقط برای رکوردهای قبلی)
         ('associate_disc', 'کاردانی ناپیوسته'),
         ('associate', 'کاردانی'),
-        ('bachelor_cont', 'کارشناسی پیوسته'),
-        ('bachelor_disc', 'کارشناسی ناپیوسته'),
         ('bachelor', 'کارشناسی'),
-        ('master', 'کارشناسی ارشد'),
         ('phd', 'دکتری'),
     ]
     department = models.ForeignKey(
@@ -105,14 +108,9 @@ class Major(models.Model):
 
     @property
     def admission_degree(self):
-        """مقطع پایه برای فرم پذیرش (بدون پیوسته/ناپیوسته)."""
-        if self.degree.startswith('associate'):
-            return 'associate'
-        if self.degree.startswith('bachelor'):
-            return 'bachelor'
-        if self.degree == 'phd':
-            return 'phd'
-        return self.degree
+        """کد مقطع رسمی برای فرم پذیرش / فیلتر رشته."""
+        from core.degree_map import admission_degree_for_major
+        return admission_degree_for_major(self)
 
     @property
     def current_tuition(self):

@@ -157,7 +157,7 @@
     </h5>
 
     <h6 class="fw-bold mb-3"><i class="fas fa-certificate text-purple"></i> سوابق تحصیلی</h6>
-    <p class="text-muted mb-3" style="font-size:13px;">فرم پذیرش برای همه مقاطع (کاردانی تا دکتری) یکسان است. آخرین مدرک باید با مقطع درخواستی سازگار باشد.</p>
+    <p class="text-muted mb-3" style="font-size:13px;">فرم پذیرش برای مقاطع رسمی موسسه یکسان است. آخرین مدرک باید با مقطع درخواستی سازگار باشد.</p>
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <label class="form-label" for="prev_degree">آخرین مدرک <span class="text-danger">*</span></label>
@@ -195,10 +195,17 @@
             <label class="form-label" for="degree">مقطع درخواستی <span class="text-danger">*</span></label>
             <select name="degree" id="degree" class="form-select" required>
                 <option value="">انتخاب کنید...</option>
-                <option value="associate" {% if post.degree == 'associate' or preselect_degree == 'associate' %}selected{% endif %}>کاردانی</option>
-                <option value="bachelor"  {% if post.degree == 'bachelor' or preselect_degree == 'bachelor' %}selected{% endif %}>کارشناسی</option>
-                <option value="master"    {% if post.degree == 'master' or preselect_degree == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
-                <option value="phd"       {% if post.degree == 'phd' or preselect_degree == 'phd' %}selected{% endif %}>دکتری</option>
+                {% if degree_choices %}
+                    {% for code, label in degree_choices %}
+                    <option value="{{ code }}" {% if post.degree == code or preselect_degree == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="associate_cont" {% if post.degree == 'associate_cont' or preselect_degree == 'associate_cont' %}selected{% endif %}>کاردانی پیوسته</option>
+                    <option value="bachelor_disc" {% if post.degree == 'bachelor_disc' or preselect_degree == 'bachelor_disc' %}selected{% endif %}>کارشناسی ناپیوسته</option>
+                    <option value="bachelor_cont" {% if post.degree == 'bachelor_cont' or preselect_degree == 'bachelor_cont' %}selected{% endif %}>کارشناسی پیوسته</option>
+                    <option value="associate_tech" {% if post.degree == 'associate_tech' or preselect_degree == 'associate_tech' %}selected{% endif %}>کاردانی فنی</option>
+                    <option value="master" {% if post.degree == 'master' or preselect_degree == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
+                {% endif %}
             </select>
         </div>
         <div class="col-md-4">
@@ -362,10 +369,11 @@ toggleMilitary();
     var all2 = major2 ? cacheOptions(major2) : [];
 
     var hints = {
-        associate: 'برای کاردانی معمولاً دیپلم کافی است.',
-        bachelor: 'برای کارشناسی: دیپلم، کاردانی یا کارشناسی.',
-        master: 'برای کارشناسی ارشد: مدرک کارشناسی (یا ارشد) لازم است.',
-        phd: 'برای دکتری: مدرک کارشناسی ارشد لازم است.'
+        associate_cont: 'برای کاردانی پیوسته معمولاً دیپلم کافی است.',
+        associate_tech: 'برای کاردانی فنی معمولاً دیپلم کافی است.',
+        bachelor_cont: 'برای کارشناسی پیوسته: دیپلم، کاردانی یا کارشناسی.',
+        bachelor_disc: 'برای کارشناسی ناپیوسته: معمولاً کاردانی لازم است.',
+        master: 'برای کارشناسی ارشد: مدرک کارشناسی (یا ارشد) لازم است.'
     };
 
     function fillSelect(sel, all, deg, keepEmptyLabel){

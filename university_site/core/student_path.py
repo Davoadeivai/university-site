@@ -88,19 +88,15 @@ def student_path(request):
         doc_degree = document_degree_for_major(selected_major.degree)
         apply_degree = admission_degree_for_major(selected_major)
     elif degree:
-        doc_degree = document_degree_for_query(degree)
-        if degree in ('associate', 'bachelor', 'master', 'phd'):
-            apply_degree = degree
-        elif selected_major is None and degree.startswith('bachelor'):
-            apply_degree = 'bachelor'
-        elif degree.startswith('associate'):
-            apply_degree = 'associate'
+        from core.degree_map import to_canonical_degree
+        apply_degree = to_canonical_degree(degree) or degree
+        doc_degree = document_degree_for_query(apply_degree)
 
     apply_url = reverse('admissions:apply_otp_send')
     if apply_degree or selected_major:
         from urllib.parse import urlencode
         q = {}
-        if apply_degree in ('associate', 'bachelor', 'master', 'phd'):
+        if apply_degree:
             q['degree'] = apply_degree
         if selected_major:
             q['major'] = selected_major.pk

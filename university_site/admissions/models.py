@@ -9,9 +9,14 @@ from django.utils import timezone
 # ─────────────────────────────────────────────
 class AdmissionInfo(models.Model):
     DEGREE_CHOICES = [
+        ('associate_cont', 'کاردانی پیوسته'),
+        ('bachelor_disc', 'کارشناسی ناپیوسته'),
+        ('bachelor_cont', 'کارشناسی پیوسته'),
+        ('associate_tech', 'کاردانی فنی'),
+        ('master', 'کارشناسی ارشد'),
+        # قدیمی
         ('associate', 'کاردانی'),
         ('bachelor', 'کارشناسی'),
-        ('master', 'کارشناسی ارشد'),
         ('phd', 'دکتری'),
     ]
     degree = models.CharField(_('مقطع'), max_length=20, choices=DEGREE_CHOICES, unique=True)
@@ -56,10 +61,15 @@ class Application(models.Model):
         ('waiting',    'لیست انتظار'),
     ]
     DEGREE_CHOICES = [
+        ('associate_cont', 'کاردانی پیوسته'),
+        ('bachelor_disc', 'کارشناسی ناپیوسته'),
+        ('bachelor_cont', 'کارشناسی پیوسته'),
+        ('associate_tech', 'کاردانی فنی'),
+        ('master', 'کارشناسی ارشد'),
+        # قدیمی
         ('associate', 'کاردانی'),
-        ('bachelor',  'کارشناسی'),
-        ('master',    'کارشناسی ارشد'),
-        ('phd',       'دکتری'),
+        ('bachelor', 'کارشناسی'),
+        ('phd', 'دکتری'),
     ]
     GENDER_CHOICES = [('male', 'مرد'), ('female', 'زن')]
     MILITARY_CHOICES = [
