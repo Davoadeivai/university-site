@@ -1,0 +1,127 @@
+{% extends "admin/base_site.html" %}
+{% load i18n humanize %}
+
+{% block content_title %}گزارش مالی یکپارچه{% endblock %}
+
+{% block breadcrumbs %}
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">خانه</a></li>
+    <li class="breadcrumb-item">گزارش مالی</li>
+  </ol>
+{% endblock %}
+
+{% block content %}
+<div class="fin-wrap">
+
+  <div class="fin-cards">
+    <div class="fin-card paid">
+      <div class="n">{{ summary.paid|intcomma }}</div>
+      <div class="l">پرداخت‌شده (تومان)</div>
+    </div>
+    <div class="fin-card pending">
+      <div class="n">{{ summary.pending|intcomma }}</div>
+      <div class="l">در انتظار / منتظر تأیید</div>
+    </div>
+    <div class="fin-card overdue">
+      <div class="n">{{ summary.overdue|intcomma }}</div>
+      <div class="l">معوق</div>
+    </div>
+    <div class="fin-card total">
+      <div class="n">{{ summary.grand|intcomma }}</div>
+      <div class="l">جمع کل</div>
+    </div>
+  </div>
+
+  <form method="get" class="fin-filters">
+    <input type="search" name="q" value="{{ cur_q }}" placeholder="جستجو: کد ملی یا نام خانوادگی">
+    <select name="status">
+      {% for key, label in status_choices %}
+        <option value="{{ key }}" {% if key == cur_status %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="source">
+      <option value="" {% if not cur_source %}selected{% endif %}>هر دو منبع</option>
+      <option value="admissions" {% if cur_source == 'admissions' %}selected{% endif %}>پذیرش</option>
+      <option value="dashboard" {% if cur_source == 'dashboard' %}selected{% endif %}>داشبورد</option>
+    </select>
+    <button type="submit">اعمال</button>
+    <a class="fin-clear" href="?">پاک کردن</a>
+    <span class="fin-count">{{ row_count }} ردیف</span>
+  </form>
+
+  <div class="fin-table-wrap">
+    <table class="fin-table">
+      <thead>
+        <tr>
+          <th>منبع</th>
+          <th>شخص</th>
+          <th>شناسه</th>
+          <th>بابت</th>
+          <th>مبلغ</th>
+          <th>روش</th>
+          <th>سررسید</th>
+          <th>تاریخ پرداخت</th>
+          <th>وضعیت</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr class="st-{{ r.status_key }}">
+            <td><span class="fin-src {{ r.source }}">{{ r.source }}</span></td>
+            <td>
+              {% if r.url %}<a href="{{ r.url }}">{{ r.person }}</a>{% else %}{{ r.person }}{% endif %}
+            </td>
+            <td class="mono">{{ r.national_id }}</td>
+            <td>{{ r.title }}</td>
+            <td class="mono num">{{ r.amount|intcomma }}</td>
+            <td>{{ r.method }}</td>
+            <td>{{ r.due }}</td>
+            <td>{{ r.paid }}</td>
+            <td><span class="fin-badge b-{{ r.status_key }}">{{ r.status }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="9" class="fin-empty">هیچ پرداختی با این فیلتر پیدا نشد.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="fin-note">
+    این نما فقط‌خواندنی است و پرداخت‌های «پذیرش» و «داشبورد» را کنار هم می‌آورد.
+    برای ویرایش، روی نام شخص کلیک کنید تا به رکورد اصلی بروید.
+    هر منبع حداکثر ۴۰۰ ردیف اخیر را نشان می‌دهد؛ برای محدودتر شدن از فیلترها استفاده کنید.
+  </p>
+</div>
+
+<style>
+.fin-wrap { padding: 4px 0 24px; }
+.fin-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.fin-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center; }
+.fin-card .n { font-size: 22px; font-weight: 800; color: #0f2744; }
+.fin-card .l { font-size: 12px; color: #64748b; margin-top: 4px; }
+.fin-card.paid    { border-color: #86efac; }
+.fin-card.pending { border-color: #fcd34d; }
+.fin-card.overdue { border-color: #fca5a5; }
+.fin-card.total   { border-color: #93c5fd; }
+.fin-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.fin-filters input, .fin-filters select { padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; }
+.fin-filters button { padding: 7px 16px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; font-family: inherit; font-size: 13px; }
+.fin-clear { font-size: 13px; color: #64748b; text-decoration: none; }
+.fin-count { margin-right: auto; font-size: 12px; color: #64748b; }
+.fin-table-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; }
+.fin-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+.fin-table thead th { background: #f1f5f9; padding: 10px; text-align: right; font-weight: 700; font-size: 12px; color: #475569; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+.fin-table tbody td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; }
+.fin-table tbody tr:hover { background: #f8fafc; }
+.fin-table tr.st-review { background: #fffbeb; }
+.fin-table .mono { font-family: monospace; direction: ltr; text-align: right; }
+.fin-table .num { font-weight: 600; }
+.fin-src { font-size: 11px; padding: 2px 7px; border-radius: 6px; background: #e2e8f0; color: #334155; white-space: nowrap; }
+.fin-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; color: #fff; white-space: nowrap; }
+.b-paid { background: #16a34a; } .b-pending { background: #f59e0b; }
+.b-review { background: #d97706; } .b-overdue { background: #dc2626; }
+.b-failed { background: #991b1b; } .b-waived { background: #64748b; }
+.fin-empty { text-align: center; padding: 26px; color: #94a3b8; }
+.fin-note { font-size: 12px; color: #64748b; margin-top: 12px; line-height: 1.9; }
+</style>
+{% endblock %}

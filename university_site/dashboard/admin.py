@@ -6,6 +6,7 @@ from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
+from core.admin_guards import require_model_view_permission
 from core.admin_jalali import JalaliAdminMixin
 from core.jalali import format_jalali_date, format_jalali_datetime
 
@@ -83,6 +84,7 @@ class EnrollmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
         ]
         return custom + urls
 
+    @require_model_view_permission
     def enrollment_report_view(self, request):
         """داشبورد آماری انتخاب‌واحد به تفکیک رشته و ترم"""
         from academics.models import Major
@@ -216,6 +218,7 @@ class StudentRequestAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['student', 'request_type', 'title', 'status', 'created_jalali']
     list_filter = ['request_type', 'status', 'created_at']
     search_fields = ['student__first_name', 'student__last_name', 'title']
+    list_select_related = ('student',)
 
 
 @admin.register(Payment)
@@ -234,6 +237,7 @@ class PaymentAdmin(JalaliAdminMixin, admin.ModelAdmin):
         'authority', 'transaction_id', 'payment_date_jalali_ro',
         'created_jalali', 'reminder_sent_at', 'exam_barcode',
     ]
+    list_select_related = ('student', 'semester')
     actions = ['confirm_offline_payments', 'reject_offline_payments']
 
     @admin.display(description='تاریخ پرداخت (شمسی)')
@@ -278,6 +282,7 @@ class StudentDiscountClaimAdmin(JalaliAdminMixin, admin.ModelAdmin):
     ]
     list_filter = ['status', 'discount_type', 'semester']
     search_fields = ['student__first_name', 'student__last_name', 'student__username']
+    list_select_related = ('student', 'semester')
     actions = ['approve_claims', 'reject_claims']
 
     @admin.display(description='بررسی', ordering='reviewed_at')
@@ -308,6 +313,7 @@ class ExamScheduleAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['course', 'semester', 'exam_type', 'date_jalali', 'start_time', 'end_time', 'location']
     list_filter = ['exam_type', 'semester', 'date']
     search_fields = ['course__name', 'location']
+    list_select_related = ('course', 'semester')
 
 
 @admin.register(Assignment)
@@ -318,6 +324,7 @@ class AssignmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     ]
     list_filter = ['assignment_type', 'semester', 'is_active']
     search_fields = ['course__name', 'professor__first_name', 'professor__last_name', 'title']
+    list_select_related = ('course', 'semester', 'professor')
 
 
 @admin.register(AssignmentSubmission)
@@ -325,6 +332,7 @@ class AssignmentSubmissionAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['assignment', 'student', 'submitted_jalali', 'grade', 'status']
     list_filter = ['status', 'assignment__semester']
     search_fields = ['student__first_name', 'student__last_name', 'assignment__title']
+    list_select_related = ('assignment', 'student')
 
     @admin.display(description='ارسال', ordering='submitted_at')
     def submitted_jalali(self, obj):
@@ -336,6 +344,7 @@ class AttendanceAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['enrollment', 'date_jalali', 'status']
     list_filter = ['status', 'date']
     search_fields = ['enrollment__student__first_name', 'enrollment__student__last_name']
+    list_select_related = ('enrollment', 'enrollment__student')
 
 
 class StudentClearanceItemInline(admin.TabularInline):
@@ -353,6 +362,7 @@ class StudentClearanceAdmin(JalaliAdminMixin, admin.ModelAdmin):
         'student__profile__national_id',
     ]
     autocomplete_fields = ['student']
+    list_select_related = ('student',)
     inlines = [StudentClearanceItemInline]
     readonly_fields = ['created_at', 'updated_at', 'completed_at']
 
@@ -381,6 +391,7 @@ class StudentLifecycleRequestAdmin(JalaliAdminMixin, admin.ModelAdmin):
         'student__profile__national_id', 'reason',
     ]
     autocomplete_fields = ['student', 'reviewed_by']
+    list_select_related = ('student', 'reviewed_by')
     readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
     actions = ['approve_requests', 'reject_requests', 'mark_under_review']
 

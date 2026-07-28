@@ -4,8 +4,12 @@
 """
 from __future__ import annotations
 
+import logging
+
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+
+logger = logging.getLogger(__name__)
 
 STAFF_GROUP_NAME = 'مدیر دانشگاه'
 
@@ -58,9 +62,19 @@ def ensure_staff_group() -> Group:
 def sync_user_role_access(user, role: str) -> None:
     """
     همگام‌سازی دسترسی جنگو با نقش پروفایل:
-    - staff  → is_staff=True، عضو گروه مدیر دانشگاه، بدون superuser
-    - admin  → is_staff=True، is_superuser=True
-    - سایر   → حذف از گروه مدیر؛ staff/superuser دست نخورده نمی‌ماند اگر قبلاً فقط به‌خاطر نقش بود
+    - staff / admin → is_staff=True و عضویت در گروه «مدیر دانشگاه»
+    - سایر نقش‌ها   → خروج از گروه مدیر؛ is_staff فقط اگر صرفاً به‌خاطر نقش روشن بود خاموش می‌شود
+
+    امنیت — این تابع عمداً هرگز `is_superuser` را نمی‌نویسد، نه روشن و نه خاموش:
+
+    * نوشتن True یعنی هر کسی که مجوز ویرایش پروفایل دارد (گروه «مدیر دانشگاه»
+      این مجوز را دارد) می‌تواند نقش خودش را روی admin بگذارد و superuser شود.
+    * نوشتن False یعنی ذخیرهٔ سادهٔ پروفایلِ یک superuser واقعی او را از سیستم
+      بیرون می‌اندازد، و یک کاربر staff می‌تواند با تغییر نقشِ دیگران دسترسی
+      مدیر اصلی را سلب کند.
+
+    اعطا و سلب superuser باید صراحتاً توسط یک superuser موجود یا با
+    `manage.py createsuperuser` انجام شود. موارد نیازمند رسیدگی دستی لاگ می‌شوند.
     """
     from django.contrib.auth.models import User
 
@@ -69,21 +83,26 @@ def sync_user_role_access(user, role: str) -> None:
 
     group = ensure_staff_group()
 
-    if role == 'admin':
-        user.is_staff = True
-        user.is_superuser = True
-        user.save(update_fields=['is_staff', 'is_superuser'])
-        user.groups.remove(group)
-        return
-
-    if role == 'staff':
-        user.is_staff = True
-        user.is_superuser = False
-        user.save(update_fields=['is_staff', 'is_superuser'])
+    if role in ('admin', 'staff'):
+        if role == 'admin' and not user.is_superuser:
+            logger.warning(
+                'نقش «admin» برای کاربر %s (pk=%s) ثبت شد اما superuser اعطا نشد. '
+                'در صورت نیاز باید دستی توسط یک superuser موجود انجام شود.',
+                user.username, user.pk,
+            )
+        if not user.is_staff:
+            user.is_staff = True
+            user.save(update_fields=['is_staff'])
         user.groups.add(group)
         return
 
     # دانشجو / استاد: از گروه مدیر خارج شو؛ پرچم staff را فقط اگر عضو گروه مدیر بود خاموش کن
+    if user.is_superuser:
+        logger.warning(
+            'کاربر %s (pk=%s) نقش «%s» گرفت ولی همچنان superuser است. '
+            'سلب دسترسی superuser باید دستی انجام شود.',
+            user.username, user.pk, role,
+        )
     was_manager = user.groups.filter(name=STAFF_GROUP_NAME).exists()
     user.groups.remove(group)
     if was_manager and not user.is_superuser:

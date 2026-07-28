@@ -4,6 +4,9 @@ from django.utils.html import format_html
 
 from core.admin_jalali import JalaliAdminMixin
 from core.jalali import format_jalali_date, format_jalali_datetime
+
+# ثبت لاگ فعالیت ادمین (LogEntry) — فقط‌خواندنی، مخصوص superuser
+from core import admin_logentry  # noqa: F401
 from .models import (
     SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
     InstitutionGoal, BoardMember, CityInfo, CityAttraction,
@@ -112,6 +115,7 @@ class FAQAdmin(admin.ModelAdmin):
 class PageViewAdmin(admin.ModelAdmin):
     list_display = ['path', 'ip', 'date']
     list_filter = ['date']
+    search_fields = ['path', 'ip', 'user_agent']
     readonly_fields = ['path', 'ip', 'date', 'user_agent']
 
 
@@ -135,6 +139,7 @@ class BoardMemberAdmin(admin.ModelAdmin):
 class CityInfoAdmin(admin.ModelAdmin):
     list_display = ['title', 'order', 'is_active']
     list_editable = ['order', 'is_active']
+    list_filter = ['is_active']
     search_fields = ['title', 'content']
     fieldsets = (
         (None, {
@@ -200,6 +205,7 @@ class PresidencyOfficeAdmin(admin.ModelAdmin):
 class PresidencyOfficeUnitAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug', 'order', 'is_active']
     list_editable = ['order', 'is_active']
+    list_filter = ['is_active']
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ['title', 'content']
 
@@ -271,11 +277,17 @@ class InternationalActivityAdmin(admin.ModelAdmin):
 
 @admin.register(PublicRelations)
 class PublicRelationsAdmin(admin.ModelAdmin):
+    # سینگلتون است و changelist به فرم تغییر ریدایرکت می‌شود؛ فیلتر لیست بی‌معنی است
     list_display = ['manager_name', 'phone', 'email']
-    search_fields = ['manager_name', 'description', 'duties']
+    search_fields = ['manager_name', 'description', 'duties', 'manager_bio']
     fieldsets = (
         ('معرفی', {'fields': ('description', 'duties', 'phone', 'email', 'address')}),
-        ('مدیر', {'fields': ('manager_name', 'manager_photo', 'manager_email', 'manager_phone')}),
+        ('مدیر', {
+            'fields': (
+                'manager_name', 'manager_photo', 'manager_bio',
+                'manager_email', 'manager_phone',
+            ),
+        }),
     )
 
     def has_add_permission(self, request):
@@ -338,8 +350,28 @@ class VicePresidencyAdmin(admin.ModelAdmin):
     list_display  = ['get_vice_type_display', 'full_name', 'academic_rank', 'phone', 'is_active']
     list_editable = ['is_active']
     list_filter   = ['vice_type', 'is_active']
-    search_fields = ['full_name', 'bio', 'resume', 'description']
+    search_fields = ['full_name', 'bio', 'resume', 'description', 'achievements']
     inlines       = [ViceUnitInline, ViceAchievementInline]
+    fieldsets = (
+        ('معاونت', {'fields': ('vice_type', 'is_active')}),
+        ('معاون', {
+            'fields': (
+                'full_name', 'academic_rank', 'photo',
+                ('email', 'phone', 'office'),
+                'bio', 'education', 'resume', 'message',
+            ),
+        }),
+        ('معرفی معاونت', {'fields': ('description', 'duties', 'goals')}),
+        ('یادداشت آزاد', {
+            'fields': ('achievements',),
+            'description': (
+                'متن آزاد. برای <strong>دستاوردهای ساختاریافته</strong> از جدول '
+                '«دستاوردهای معاونت» در پایین همین صفحه استفاده کنید تا در سایت '
+                'قابل نمایش باشد؛ این کادر فقط یادداشت داخلی است.'
+            ),
+            'classes': ('collapse',),
+        }),
+    )
 
     def get_vice_type_display(self, obj):
         return obj.get_vice_type_display()
@@ -352,6 +384,7 @@ class ViceUnitAdmin(admin.ModelAdmin):
     list_editable = ['order', 'is_active']
     list_filter   = ['vice', 'is_active']
     search_fields = ['name', 'manager', 'duties']
+    list_select_related = ('vice',)
 
 
 @admin.register(ViceAchievement)
@@ -360,6 +393,7 @@ class ViceAchievementAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
     list_filter   = ['vice', 'is_active']
     search_fields = ['title', 'description']
+    list_select_related = ('vice',)
 
 
 # ─── چارت سازمانی ───────────────────────────────────────────────
@@ -377,7 +411,8 @@ class OrganizationalChartAdmin(admin.ModelAdmin):
     list_display = ['name', 'node_type', 'parent', 'person_name', 'order', 'is_active']
     list_editable = ['order', 'is_active']
     list_filter = ['node_type', 'is_active']
-    search_fields = ['name', 'person_name', 'title']
+    search_fields = ['name', 'person_name', 'title', 'person_email', 'person_phone']
+    list_select_related = ('parent',)
     inlines = [OrganizationalChartInline]
     
     fieldsets = (
@@ -400,6 +435,7 @@ class OrganizationalChartAdmin(admin.ModelAdmin):
 class BankAccountAdmin(admin.ModelAdmin):
     list_display = ['title', 'bank_name', 'account_number', 'order', 'is_active']
     list_editable = ['order', 'is_active']
+    list_filter = ['is_active', 'bank_name']
     search_fields = ['title', 'bank_name', 'account_number', 'iban']
 
 
@@ -420,6 +456,7 @@ class DownloadableDocumentAdmin(JalaliAdminMixin, admin.ModelAdmin):
         'title',
         'degree_level',
         'category',
+        'section',
         'description',
         'external_url',
         'order',

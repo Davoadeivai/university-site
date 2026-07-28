@@ -214,6 +214,55 @@ def notify_profile_updated(profile, changed_fields: list[str]) -> bool:
     return notify_phone(profile.phone, msg)
 
 
+def notify_contact_reply(message) -> bool:
+    """پاسخ کارشناس به پیام «تماس با ما» → پیامک به فرستنده.
+
+    تا پیش از این فیلد `reply` فقط در دیتابیس ذخیره می‌شد و به دست
+    فرستنده نمی‌رسید؛ این تابع آن را به یک اطلاع‌رسانی واقعی وصل می‌کند.
+    """
+    phone = normalize_phone(getattr(message, 'phone', '') or '')
+    if not phone:
+        return False
+    label = _site_label()
+    subject = ''
+    try:
+        subject = message.get_subject_display()
+    except Exception:
+        subject = ''
+    body = (message.reply or '').strip()
+    if not body:
+        return False
+    msg = f'{label}: پاسخ به پیام شما'
+    if subject:
+        msg += f' ({subject})'
+    msg += f' — {body}'
+    return notify_phone(phone, msg)
+
+
+def email_contact_reply(message) -> bool:
+    """همان پاسخ از طریق ایمیل، اگر ایمیل فرستنده موجود باشد."""
+    to = (getattr(message, 'email', '') or '').strip()
+    body = (message.reply or '').strip()
+    if not to or not body:
+        return False
+    from django.core.mail import send_mail
+
+    label = _site_label()
+    try:
+        subject = f'{label} — پاسخ به پیام شما'
+        text = (
+            f'{message.full_name} عزیز،\n\n'
+            f'پیام شما:\n{message.message}\n\n'
+            f'پاسخ ما:\n{body}\n\n'
+            f'{label}'
+        )
+        send_mail(subject, text, None, [to], fail_silently=False)
+        return True
+    except Exception:
+        logger.exception('contact reply email failed for %s', to)
+        return False
+
+
 def notify_announcement(announcement) -> int:
     """اطلاعیه داخلی داشبورد → مخاطبان هدف."""
     roles = _ANNOUNCEMENT_TARGET_ROLES.get(announcement.target, ['student'])

@@ -4,6 +4,7 @@ from django.urls import path, reverse
 from django.utils.html import format_html, mark_safe
 from django.utils.translation import gettext_lazy as _
 
+from core.admin_guards import require_model_view_permission
 from core.admin_jalali import JalaliAdminMixin
 
 from .application_export import excel_response, print_html_response, word_response
@@ -131,6 +132,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         'action_mark_interview',
         'action_mark_incomplete',
         'action_mark_waiting',
+        'action_create_student_accounts',
         'action_export_excel',
         'action_export_word',
         'action_export_print',
@@ -257,14 +259,19 @@ class ApplicationAdmin(admin.ModelAdmin):
             'desired_major2',
         ).order_by('degree', 'desired_major__group__name', 'desired_major__name', 'last_name')
 
+    # این سه ویو کد ملی، موبایل، ایمیل و معدل متقاضیان را برمی‌گردانند؛
+    # admin_view فقط is_staff را چک می‌کند، پس گارد مجوز مدل الزامی است.
+    @require_model_view_permission
     def export_excel_view(self, request):
         qs = self._export_queryset(request)
         return excel_response(qs, 'applications.xlsx', title='لیست درخواست‌های پذیرش')
 
+    @require_model_view_permission
     def export_word_view(self, request):
         qs = self._export_queryset(request)
         return word_response(qs, 'applications.docx', title='لیست درخواست‌های پذیرش')
 
+    @require_model_view_permission
     def export_print_view(self, request):
         qs = self._export_queryset(request)
         title = 'لیست درخواست‌های پذیرش'
@@ -429,6 +436,74 @@ class ApplicationAdmin(admin.ModelAdmin):
     def action_mark_waiting(self, request, queryset):
         self._bulk_status(request, queryset, 'waiting', 'لیست انتظار')
 
+    @admin.action(description='ساخت حساب دانشجویی برای پذیرفته‌شدگان انتخاب‌شده')
+    def action_create_student_accounts(self, request, queryset):
+        """
+        متقاضی پذیرفته‌شده → حساب کاربری + پروفایل دانشجو.
+
+        ۱۵ فیلد مشترک بین Application و UserProfile توسط
+        `dashboard.onboarding.sync_profile_from_application` کپی می‌شود، پس
+        اطلاعات هویتی دوباره دستی وارد نمی‌شود. نام کاربری = کد ملی.
+        رمز عبور تصادفی ساخته می‌شود؛ دانشجو با «فراموشی رمز» یا لینک ورود
+        پیامکی وارد می‌شود — رمز هیچ‌جا نمایش یا ذخیره نمی‌شود.
+        """
+        from django.contrib.auth.models import User
+        from django.db import transaction
+        from django.utils.crypto import get_random_string
+
+        from accounts.models import UserProfile
+        from dashboard.onboarding import sync_profile_from_application
+
+        created, linked, skipped = 0, 0, []
+
+        for app in queryset.select_related('desired_major'):
+            if app.status != 'accepted':
+                skipped.append(f'{app.tracking_code} (پذیرفته نشده)')
+                continue
+            nid = (app.national_id or '').strip()
+            if not nid:
+                skipped.append(f'{app.tracking_code} (بدون کد ملی)')
+                continue
+
+            try:
+                with transaction.atomic():
+                    user = User.objects.filter(username=nid).first()
+                    if user is None:
+                        user = User.objects.create_user(
+                            username=nid,
+                            email=(app.email or '').strip(),
+                            # make_random_password در جنگو ۵ حذف شده است
+                            password=get_random_string(20),
+                            first_name=app.first_name or '',
+                            last_name=app.last_name or '',
+                        )
+                        created += 1
+                    else:
+                        linked += 1
+
+                    profile, _ = UserProfile.objects.get_or_create(user=user)
+                    if profile.role == 'student' or not profile.role:
+                        profile.role = 'student'
+                        profile.save(update_fields=['role'])
+                    # ۱۵ فیلد مشترک را از پرونده پذیرش پر می‌کند
+                    sync_profile_from_application(user, app)
+            except Exception as exc:  # noqa: BLE001
+                skipped.append(f'{app.tracking_code} ({exc})')
+
+        if created or linked:
+            self.message_user(
+                request,
+                f'{created} حساب جدید ساخته شد، {linked} متقاضی به حساب موجود وصل شد. '
+                'اطلاعات هویتی از پرونده پذیرش کپی شد.',
+                messages.SUCCESS,
+            )
+        if skipped:
+            preview = '، '.join(skipped[:5])
+            more = f' و {len(skipped) - 5} مورد دیگر' if len(skipped) > 5 else ''
+            self.message_user(
+                request, f'{len(skipped)} مورد رد شد: {preview}{more}', messages.WARNING,
+            )
+
     @admin.action(description='خروجی اکسل از انتخاب‌شده‌ها')
     def action_export_excel(self, request, queryset):
         qs = queryset.select_related(
@@ -461,6 +536,7 @@ class TuitionStructureAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
     search_fields = ['major__name', 'academic_year']
     autocomplete_fields = ['major']
+    list_select_related = ('major', 'major__group')
     fieldsets = (
         ('اطلاعات پایه', {
             'fields': ('major', 'academic_year', 'is_active')
@@ -526,6 +602,7 @@ class StudentPaymentAdmin(JalaliAdminMixin, admin.ModelAdmin):
     ]
     readonly_fields = ['paid_at']
     autocomplete_fields = ['application']
+    list_select_related = ('application',)
     fieldsets = (
         ('متقاضی و قسط', {
             'fields': ('application', 'installment_no', 'amount', 'due_date', 'status')
@@ -561,10 +638,14 @@ class AdmissionOTPAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['phone', 'created_jalali', 'expires_jalali', 'is_used', 'attempts']
     list_filter = ['is_used', 'created_at']
     search_fields = ['phone']
-    readonly_fields = ['phone', 'code', 'created_at', 'expires_at', 'attempts', 'is_used']
+    readonly_fields = ['phone', 'created_at', 'expires_at', 'attempts', 'is_used']
     fieldsets = (
         ('کد تأیید موبایل', {
-            'fields': ('phone', 'code', 'is_used', 'attempts', 'created_at', 'expires_at'),
-            'description': 'کدها فقط برای پیگیری امنیتی نمایش داده می‌شوند و قابل ویرایش نیستند.',
+            'fields': ('phone', 'is_used', 'attempts', 'created_at', 'expires_at'),
+            'description': (
+                'خودِ کد نمایش داده نمی‌شود؛ نمایش آن یعنی دارندهٔ دسترسی می‌تواند '
+                'کد فعال یک شماره را بخواند و مرحلهٔ تأیید موبایل را جای او بگذراند. '
+                'شمارهٔ تلاش، زمان انقضا و وضعیت مصرف برای پیگیری امنیتی کافی است.'
+            ),
         }),
     )

@@ -234,7 +234,7 @@ JAZZMIN_SETTINGS = {
         'core.BankAccount': 'fas fa-university',
         'core.PaymentIdentifier': 'fas fa-barcode',
         'core.DownloadableDocument': 'fas fa-file-download',
-        'core.PageView': 'fas fa-chart-line',
+        'admin.LogEntry': 'fas fa-history',
 
         'admissions': 'fas fa-user-graduate',
         'admissions.AdmissionInfo': 'fas fa-info-circle',
@@ -318,11 +318,12 @@ JAZZMIN_SETTINGS = {
                 'new_window': True,
             },
             {
-                'name': 'رشته‌های تحصیلات تکمیلی',
-                'url': '/admin/academics/major/?degree__exact=master',
-                'icon': 'fas fa-graduation-cap',
-                'permissions': ['academics.view_major'],
+                'name': 'گزارش مالی یکپارچه',
+                'url': '/admin/finance-overview/',
+                'icon': 'fas fa-coins',
+                'permissions': ['dashboard.view_payment'],
             },
+            # «رشته‌های تحصیلات تکمیلی» حذف شد — با لینک آکادمیک پایین تکراری بود
         ],
         'admissions': [
             {

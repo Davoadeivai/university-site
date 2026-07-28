@@ -22,7 +22,6 @@ MODEL_HELP = {
     'cityinfo': 'معرفی شهر بهنمیر',
     'cityattraction': 'جاذبه‌های گردشگری بهنمیر',
     'presidencyoffice': 'دفتر ریاست و شرح وظایف',
-    'officeunit': 'واحدهای دفتر ریاست (دبیرخانه‌ها)',
     'presidencyofficeunit': 'واحدهای دفتر ریاست (دبیرخانه‌ها)',
     'deputyvice': 'معاونین دانشگاه',
     'internationaloffice': 'دفتر امور بین‌الملل',
@@ -38,7 +37,6 @@ MODEL_HELP = {
     'paymentidentifier': 'شناسه‌های واریز',
     'downloadabledocument': 'فرم‌ها و آیین‌نامه‌های قابل دانلود',
     'graduatestudiesinfo': 'اطلاعات تحصیلات تکمیلی و مدیر بخش',
-    'graduatemajor': 'رشته‌های کارشناسی ارشد',
     'admissioninfo': 'متن و شرایط پذیرش',
     'application': 'درخواست‌های ثبت‌نام آنلاین دانشجویان',
     'tuitionstructure': 'شهریه رشته‌ها',
@@ -83,6 +81,53 @@ MODEL_HELP = {
     'logentry': 'لاگ فعالیت‌های ادمین',
     'pageview': 'آمار بازدید صفحات (فنی)',
 }
+
+# ─────────────────────────────────────────────────────────────────────
+#  گروه‌بندی معنایی — اپ core به‌تنهایی ۲۶ مدل دارد و در یک فهرست تخت
+#  پیدا کردن یک بخش سخت است. کلید: object_name به صورت lowercase.
+# ─────────────────────────────────────────────────────────────────────
+SECTION_MAP = {
+    'معرفی موسسه': (
+        'sitesettings', 'institutiongoal', 'boardmember',
+        'cityinfo', 'cityattraction', 'organizationalchart',
+    ),
+    'ریاست و معاونت‌ها': (
+        'presidencyoffice', 'presidencyofficeunit', 'officeunit', 'deputyvice',
+        'vicepresidency', 'viceunit', 'viceachievement',
+        'internationaloffice', 'internationalactivity',
+        'publicrelations', 'pressrelease', 'securityoffice',
+        'graduatestudiesinfo',
+    ),
+    'مالی و اسناد': (
+        'bankaccount', 'paymentidentifier', 'downloadabledocument',
+        'tuitionstructure', 'tuitiondiscount', 'studentpayment',
+        'payment', 'tuitioninstallmentplan', 'studentdiscountclaim',
+    ),
+    'محتوای سایت': (
+        'slider', 'quicklink', 'event', 'faq', 'news', 'category', 'gallery',
+        'pageview',
+    ),
+    'پذیرش و دانشجو': (
+        'application', 'admissioninfo', 'admissionotp',
+        'userprofile', 'announcement', 'otpcode',
+        'studentclearance', 'studentlifecyclerequest', 'studentrequest',
+    ),
+    'آموزش': (
+        'department', 'academicgroup', 'major', 'course',
+        'academiccalendar', 'laboratory', 'professor', 'publication',
+        'semester', 'enrollment', 'teachingassignment',
+        'examschedule', 'assignment', 'assignmentsubmission', 'attendance',
+    ),
+}
+
+_KEY_TO_SECTION = {
+    key: section for section, keys in SECTION_MAP.items() for key in keys
+}
+
+
+def _section_for(key: str) -> str:
+    return _KEY_TO_SECTION.get(key, 'سایر')
+
 
 # میانبرهای پیشنهادی داشبورد (object_name lowercase)
 QUICK_KEYS = (
@@ -158,6 +203,7 @@ def _flatten_models(dashboard_list) -> list[dict]:
                 'can_delete': can_delete,
                 'help': MODEL_HELP.get(key, f'مدیریت بخش «{name}» در {app_name}'),
                 'letter': _first_letter(name),
+                'section': _section_for(key),
                 'key': key,
             })
     items.sort(key=lambda m: (m['name'], m['app_name']))
@@ -165,25 +211,27 @@ def _flatten_models(dashboard_list) -> list[dict]:
 
 
 def _live_counters():
+    """شمارنده‌ها از تنها منبع حقیقت در core.admin_search خوانده می‌شوند."""
     counters = {
         'messages_new': 0,
         'applications_pending': 0,
         'messages_url': '',
         'applications_url': '',
+        'queue': [],
+        'total_pending': 0,
     }
     try:
-        from django.urls import reverse
-        from contact.models import ContactMessage
-        from admissions.models import Application
+        from core.admin_search import build_work_queue
 
-        counters['messages_new'] = ContactMessage.objects.filter(status='new').count()
-        counters['messages_url'] = reverse('admin:contact_contactmessage_changelist') + '?status__exact=new'
-        counters['applications_pending'] = Application.objects.filter(
-            status__in=['pending', 'reviewing', 'incomplete']
-        ).count()
-        counters['applications_url'] = (
-            reverse('admin:admissions_application_changelist') + '?status__exact=pending'
-        )
+        queue = build_work_queue()
+        counters['queue'] = queue
+        counters['total_pending'] = sum(i['count'] for i in queue)
+        for item in queue:
+            counters[item['key']] = item['count']
+            if item['key'] == 'messages_new':
+                counters['messages_url'] = item['url']
+            elif item['key'] == 'applications_pending':
+                counters['applications_url'] = item['url']
     except Exception:
         pass
     return counters
@@ -223,6 +271,19 @@ def admin_dashboard_catalog(dashboard_list):
     left_col = items[:mid]
     right_col = items[mid:]
 
+    # گروه‌بندی معنایی — ترتیب طبق SECTION_MAP، «سایر» همیشه آخر
+    by_section = defaultdict(list)
+    for item in items:
+        by_section[item['section']].append(item)
+    section_order = list(SECTION_MAP.keys()) + ['سایر']
+    sections = [
+        {'name': s, 'items': by_section[s], 'count': len(by_section[s])}
+        for s in section_order
+        if by_section.get(s)
+    ]
+
+    counters = _live_counters()
+
     return {
         'items': items,
         'left_col': left_col,
@@ -230,7 +291,10 @@ def admin_dashboard_catalog(dashboard_list):
         'alpha_groups': alpha_groups,
         'letters': letters,
         'quick': quick,
+        'sections': sections,
         'total': len(items),
-        'counters': _live_counters(),
+        'counters': counters,
+        'work_queue': counters.get('queue') or [],
+        'total_pending': counters.get('total_pending', 0),
         'apps': apps,
     }

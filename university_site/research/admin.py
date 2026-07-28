@@ -32,11 +32,14 @@ class ThesisAdmin(admin.ModelAdmin):
 @admin.register(Conference)
 class ConferenceAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['title', 'date_jalali', 'location', 'is_upcoming']
-    list_filter = ['is_upcoming']
+    list_filter = ['is_upcoming', 'date']
     list_editable = ['is_upcoming']
+    search_fields = ['title', 'description', 'organizer', 'location']
 
 
 @admin.register(IndustryPartnership)
 class IndustryPartnershipAdmin(admin.ModelAdmin):
     list_display = ['company_name', 'partnership_type', 'is_active']
     list_editable = ['is_active']
+    list_filter = ['is_active', 'partnership_type']
+    search_fields = ['company_name', 'description', 'partnership_type']

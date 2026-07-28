@@ -168,7 +168,9 @@ class OTPCode(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} — {self.code}"
+        # کد خام هرگز اینجا نیاید: این رشته در LogEntry.object_repr ادمین
+        # به‌صورت دائمی ذخیره می‌شود و بعد از انقضای کد هم باقی می‌ماند.
+        return f"{self.user.username} — کد تأیید {self.pk}"
 
     def is_valid(self):
         return not self.is_used and timezone.now() <= self.expires_at

@@ -14,6 +14,7 @@ class ProfessorAdmin(admin.ModelAdmin):
     list_filter = ['rank', 'status', 'department', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['first_name', 'last_name', 'email']
+    list_select_related = ('department',)
     inlines = [PublicationInline]
     fieldsets = (
         ('اطلاعات اصلی', {'fields': ('first_name', 'last_name', 'slug', 'photo', 'rank', 'status', 'department')}),
@@ -29,3 +30,4 @@ class PublicationAdmin(admin.ModelAdmin):
     list_display = ['title', 'professor', 'pub_type', 'year']
     list_filter = ['pub_type', 'year']
     search_fields = ['title', 'professor__last_name']
+    list_select_related = ('professor',)

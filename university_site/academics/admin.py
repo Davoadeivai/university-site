@@ -79,6 +79,7 @@ class MajorAdmin(admin.ModelAdmin):
     inlines         = [CourseInline]
     search_fields   = ['name', 'description']
     autocomplete_fields = ['group', 'department']
+    list_select_related = ('group', 'department')
     readonly_fields = ['enrollment_count', 'enrollment_summary']
     fieldsets = (
         ('اطلاعات اصلی', {
@@ -174,8 +175,9 @@ class MajorAdmin(admin.ModelAdmin):
 class CourseAdmin(admin.ModelAdmin):
     list_display = ['name', 'code', 'major', 'credits', 'course_type', 'semester']
     list_filter = ['course_type', 'semester', 'major__degree', 'major']
-    search_fields = ['name', 'code', 'major__name']
+    search_fields = ['name', 'code', 'major__name', 'prerequisites']
     autocomplete_fields = ['major']
+    list_select_related = ('major',)
     fieldsets = (
         ('اطلاعات درس', {
             'fields': ('major', 'name', 'code', 'credits', 'course_type', 'semester', 'prerequisites')
@@ -194,13 +196,15 @@ class AcademicCalendarAdmin(JalaliAdminMixin, admin.ModelAdmin):
     ]
     list_filter = ['semester', 'academic_year', 'is_important']
     list_editable = ['is_important']
+    search_fields = ['title', 'description', 'academic_year']
 
 
 @admin.register(Laboratory)
 class LaboratoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'department', 'supervisor', 'location', 'is_active']
     list_filter  = ['department', 'is_active']
-    search_fields = ['name', 'supervisor']
+    search_fields = ['name', 'supervisor', 'equipment']
+    list_select_related = ('department',)
 
 
 @admin.register(AcademicGroup)
@@ -209,6 +213,7 @@ class AcademicGroupAdmin(admin.ModelAdmin):
     list_editable       = ['order', 'is_active']
     list_filter         = ['department', 'is_active']
     search_fields       = ['name', 'head', 'description', 'research_areas']
+    list_select_related = ('department',)
     prepopulated_fields = {'slug': ('name',)}
     inlines             = [GroupMajorInline]
     fieldsets = (

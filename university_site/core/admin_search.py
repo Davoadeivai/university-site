@@ -59,30 +59,123 @@ def admin_nav_search_index(request):
     return JsonResponse({'items': items, 'total': len(items)})
 
 
+# ─────────────────────────────────────────────────────────────────────
+#  صف کار ادمین — تنها منبع حقیقت برای شمارنده‌ها
+#  (هم رندر سمت سرور در templatetag و هم پولینگ JSON از اینجا می‌خوانند)
+# ─────────────────────────────────────────────────────────────────────
+
+def _queue_specs():
+    """هر ورودی: (کلید, برچسب, ساخت‌کننده queryset, آدرس، آیکون، فوریت)"""
+    from accounts.models import UserProfile  # noqa: F401  (بارگذاری تنبل اپ‌ها)
+
+    def _url(viewname, query=''):
+        try:
+            return reverse(viewname) + query
+        except NoReverseMatch:
+            return ''
+
+    specs = []
+
+    try:
+        from admissions.models import Application
+        specs.append((
+            'applications_pending', 'پذیرش در انتظار بررسی',
+            lambda: Application.objects.filter(
+                status__in=['pending', 'reviewing', 'incomplete']).count(),
+            _url('admin:admissions_application_changelist', '?status__exact=pending'),
+            'fa-user-graduate', True,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from contact.models import ContactMessage
+        specs.append((
+            'messages_new', 'پیام خوانده‌نشده',
+            lambda: ContactMessage.objects.filter(status='new').count(),
+            _url('admin:contact_contactmessage_changelist', '?status__exact=new'),
+            'fa-envelope', True,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from dashboard.models import Payment
+        specs.append((
+            'payments_review', 'پرداخت آفلاین منتظر تأیید',
+            lambda: Payment.objects.filter(status='review').count(),
+            _url('admin:dashboard_payment_changelist', '?status__exact=review'),
+            'fa-money-check-alt', True,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from dashboard.models import StudentDiscountClaim
+        specs.append((
+            'discounts_pending', 'درخواست تخفیف معلق',
+            lambda: StudentDiscountClaim.objects.filter(status='pending').count(),
+            _url('admin:dashboard_studentdiscountclaim_changelist', '?status__exact=pending'),
+            'fa-percent', False,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from dashboard.models import StudentLifecycleRequest
+        specs.append((
+            'lifecycle_pending', 'درخواست وضعیت تحصیلی',
+            lambda: StudentLifecycleRequest.objects.filter(
+                status__in=['submitted', 'under_review']).count(),
+            _url('admin:dashboard_studentlifecyclerequest_changelist', '?status__exact=submitted'),
+            'fa-file-signature', False,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from dashboard.models import StudentClearance
+        specs.append((
+            'clearance_open', 'تسویه ناتمام',
+            lambda: StudentClearance.objects.exclude(status='completed').count(),
+            _url('admin:dashboard_studentclearance_changelist', ''),
+            'fa-clipboard-check', False,
+        ))
+    except Exception:
+        pass
+
+    return specs
+
+
+def build_work_queue() -> list[dict]:
+    """صف کارهای معطل ادمین — فقط مواردی که شمارش‌شان > ۰ نیست هم برگردانده می‌شوند."""
+    out = []
+    for key, label, counter, url, icon, urgent in _queue_specs():
+        try:
+            count = counter()
+        except Exception:
+            continue
+        out.append({
+            'key': key, 'label': label, 'count': count,
+            'url': url, 'icon': icon, 'urgent': urgent,
+        })
+    return out
+
+
 @staff_member_required
 @require_GET
 def admin_live_counters(request):
-    """شمارنده‌های زنده برای داشبورد."""
-    data = {
-        'messages_new': 0,
-        'applications_pending': 0,
-        'messages_url': '',
-        'applications_url': '',
-    }
-    try:
-        from contact.models import ContactMessage
-        data['messages_new'] = ContactMessage.objects.filter(status='new').count()
-        data['messages_url'] = reverse('admin:contact_contactmessage_changelist') + '?status__exact=new'
-    except Exception:
-        pass
-    try:
-        from admissions.models import Application
-        data['applications_pending'] = Application.objects.filter(
-            status__in=['pending', 'reviewing', 'incomplete']
-        ).count()
-        data['applications_url'] = reverse('admin:admissions_application_changelist') + '?status__exact=pending'
-    except Exception:
-        pass
+    """شمارنده‌های زنده برای داشبورد (پولینگ صفحه اول)."""
+    queue = build_work_queue()
+    data = {item['key']: item['count'] for item in queue}
+    data['queue'] = queue
+    data['total_pending'] = sum(i['count'] for i in queue)
+    # سازگاری با نسخه قبلی قالب
+    for item in queue:
+        if item['key'] == 'messages_new':
+            data['messages_url'] = item['url']
+        elif item['key'] == 'applications_pending':
+            data['applications_url'] = item['url']
     return JsonResponse(data)
 
 

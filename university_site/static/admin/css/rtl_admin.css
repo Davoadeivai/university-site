@@ -960,3 +960,59 @@ fieldset {
     min-height: 2.2rem;
     align-items: flex-start !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   صف کارهای معطل + نمای گروه‌بندی موضوعی داشبورد
+   ═══════════════════════════════════════════════════════════════ */
+.admin-worklist .card-header { display: flex; align-items: center; gap: 10px; }
+.admin-worklist-total { margin-right: auto; font-size: 12px; color: #64748b; }
+.admin-worklist-total.has { color: #b45309; font-weight: 700; }
+
+.admin-queue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+.admin-queue-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; padding: 14px 10px; text-decoration: none;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.admin-queue-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(15,39,68,.10); }
+.admin-queue-num { font-size: 26px; font-weight: 800; line-height: 1; color: #0f2744; }
+.admin-queue-label { font-size: 12px; color: #64748b; text-align: center; }
+.admin-queue-card.is-urgent { border-color: #fca5a5; background: #fef2f2; }
+.admin-queue-card.is-urgent .admin-queue-num { color: #dc2626; }
+.admin-queue-card.is-open   { border-color: #fcd34d; background: #fffbeb; }
+.admin-queue-card.is-open .admin-queue-num { color: #b45309; }
+.admin-queue-card.is-clear  { opacity: .55; }
+.admin-queue-card.is-clear .admin-queue-num { color: #94a3b8; }
+.admin-queue-empty { color: #94a3b8; font-size: 13px; padding: 10px; }
+
+.admin-quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.admin-quick-btn {
+    display: inline-block; padding: 7px 14px; border-radius: 8px;
+    background: #0f2744; color: #fff; text-decoration: none; font-size: 13px;
+}
+.admin-quick-btn:hover { background: #1a3a5c; color: #fff; }
+
+.admin-sections-head {
+    display: flex; align-items: center; gap: 12px;
+    margin: 18px 0 10px; flex-wrap: wrap;
+}
+.admin-sections-head h5 { margin: 0; font-size: 15px; font-weight: 700; }
+.admin-view-toggle { margin-right: auto; display: flex; gap: 6px; }
+.admin-view-btn {
+    border: 1px solid #cbd5e1; background: #fff; color: #475569;
+    border-radius: 8px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+    font-family: inherit;
+}
+.admin-view-btn.active { background: #0f2744; color: #fff; border-color: #0f2744; }
+.admin-section-block { margin-bottom: 14px; }
+
+@media (prefers-color-scheme: dark) {
+    .admin-queue-card { background: #1e293b; border-color: #334155; }
+    .admin-queue-num  { color: #e2e8f0; }
+    .admin-view-btn   { background: #1e293b; color: #cbd5e1; border-color: #334155; }
+}

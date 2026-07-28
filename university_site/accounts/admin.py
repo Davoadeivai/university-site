@@ -55,6 +55,7 @@ class UserProfileAdmin(admin.ModelAdmin):
         'student_id', 'national_id', 'phone', 'major__name',
     ]
     autocomplete_fields = ['user', 'major']
+    list_select_related = ('user', 'major')
     readonly_fields = ['status_changed_at']
     fieldsets = (
         ('کاربر و نقش', {
@@ -77,6 +78,19 @@ class UserProfileAdmin(admin.ModelAdmin):
             'fields': ('prev_degree', 'prev_major', 'prev_school', 'prev_grad_year', 'gpa', 'bio')
         }),
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        نقش فقط توسط superuser قابل تغییر است.
+
+        گروه «مدیر دانشگاه» مجوز change_userprofile دارد؛ اگر این فیلد باز بماند
+        هر عضو آن گروه می‌تواند نقش خودش را روی «admin» بگذارد. فرم افزودن هم امن
+        است چون UserProfile.role مقدار پیش‌فرض 'student' دارد.
+        """
+        ro = list(super().get_readonly_fields(request, obj))
+        if not request.user.is_superuser and 'role' not in ro:
+            ro.append('role')
+        return ro
 
     def save_model(self, request, obj, form, change):
         from django.utils import timezone
@@ -106,10 +120,15 @@ class OTPCodeAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = ['user', 'created_jalali', 'expires_jalali', 'is_used']
     list_filter = ['is_used', 'created_at']
     search_fields = ['user__username', 'user__first_name', 'user__last_name']
-    readonly_fields = ['user', 'code', 'created_at', 'expires_at', 'is_used']
+    list_select_related = ('user',)
+    readonly_fields = ['user', 'created_at', 'expires_at', 'is_used']
     fieldsets = (
         ('کد تأیید بازیابی رمز', {
-            'fields': ('user', 'code', 'is_used', 'created_at', 'expires_at'),
-            'description': 'کدها فقط برای پیگیری امنیتی نمایش داده می‌شوند و قابل ویرایش نیستند.',
+            'fields': ('user', 'is_used', 'created_at', 'expires_at'),
+            'description': (
+                'خودِ کد نمایش داده نمی‌شود؛ نمایش آن یعنی دارندهٔ دسترسی می‌تواند '
+                'کد فعال هر کاربر را بخواند و وارد حسابش شود. زمان ایجاد، انقضا و '
+                'وضعیت مصرف برای پیگیری امنیتی کافی است.'
+            ),
         }),
     )
