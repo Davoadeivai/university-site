@@ -15,31 +15,30 @@
 <section class="section">
     <div class="container">
         <div class="row g-4">
-            <div class="col-md-6 col-lg-3" data-aos="fade-up">
-                <a href="{% url 'core:graduate_majors' %}" class="quick-link-card">
-                    <div class="quick-link-icon"><i class="fas fa-book-open"></i></div>
-                    <div class="quick-link-title">رشته ها</div>
-                </a>
-            </div>
-            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="40">
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
                 <a href="{% url 'core:graduate_manager' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-user-tie"></i></div>
                     <div class="quick-link-title">مدیر تحصیلات تکمیلی</div>
                 </a>
             </div>
-            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="80">
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="40">
                 <a href="{% url 'core:graduate_news' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-newspaper"></i></div>
                     <div class="quick-link-title">اخبار تحصیلات تکمیلی</div>
                 </a>
             </div>
-            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="120">
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="80">
                 <a href="{% url 'core:documents' %}?degree=master" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
                     <div class="quick-link-title">آیین‌نامه‌ها و فرم‌ها</div>
                 </a>
             </div>
         </div>
+        <p class="text-muted mt-4 mb-0" style="font-size:14px;" data-aos="fade-up">
+            برای مشاهده و انتخاب رشته‌های کارشناسی ارشد به
+            <a href="{% url 'core:student_path' %}?degree=master&step=1">پذیرش دانشجو ← انتخاب رشته ← کارشناسی ارشد</a>
+            بروید.
+        </p>
         {% if info and info.intro %}
         <div class="dept-card mt-5" data-aos="fade-up">
             <p class="text-muted mb-0" style="font-size:15px;line-height:2.2;">{{ info.intro|linebreaksbr }}</p>
