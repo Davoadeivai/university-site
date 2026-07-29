@@ -2,6 +2,18 @@
 from django.utils import translation
 
 
+class ClearHttp3AltSvcMiddleware:
+    """مرورگر را از HTTP/3 منصرف می‌کند — روی دیتای موبایل ایران اغلب گیر می‌کند."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response['Alt-Svc'] = 'clear'
+        return response
+
+
 class ForcePersianMiddleware:
     """
     LocaleMiddleware ممکن است به‌خاطر Accept-Language مرورگر، ادمین را انگلیسی کند.
