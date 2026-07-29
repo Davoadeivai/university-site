@@ -94,6 +94,28 @@ class Application(models.Model):
         ('discontinuous_bachelor', 'کارشناسی ناپیوسته'),
         ('master', 'کارشناسی ارشد'),
     ]
+    QUOTA_CHOICES = [
+        ('free',      'آزاد'),
+        ('region1',   'منطقه ۱'),
+        ('region2',   'منطقه ۲'),
+        ('region3',   'منطقه ۳'),
+        ('shahed',    'شاهد و ایثارگر'),
+        ('disabled',  'معلولین'),
+        ('staff',     'کارکنان موسسه'),
+    ]
+    DIPLOMA_TYPE_CHOICES = [
+        ('math',       'ریاضی و فیزیک'),
+        ('science',    'علوم تجربی'),
+        ('humanities', 'علوم انسانی'),
+        ('technical',  'فنی و حرفه‌ای'),
+        ('vocational', 'کار و دانش'),
+        ('islamic',    'علوم و معارف اسلامی'),
+        ('other',      'سایر'),
+    ]
+    MARITAL_CHOICES = [
+        ('single',  'مجرد'),
+        ('married', 'متأهل'),
+    ]
 
     # ── شناسه یکتا ──
     tracking_code = models.CharField(_('کد رهگیری'), max_length=12, unique=True, blank=True)
@@ -102,27 +124,48 @@ class Application(models.Model):
     first_name  = models.CharField(_('نام'), max_length=100)
     last_name   = models.CharField(_('نام خانوادگی'), max_length=100)
     father_name = models.CharField(_('نام پدر'), max_length=100, blank=True, default='')
-    national_id = models.CharField(_('کد ملی'), max_length=10)
+    national_id = models.CharField(_('کد ملی'), max_length=10, db_index=True)
+    birth_cert_no = models.CharField(_('شماره شناسنامه'), max_length=15, blank=True, default='')
+    birth_place   = models.CharField(_('محل تولد'), max_length=100, blank=True, default='')
+    issue_place   = models.CharField(_('محل صدور'), max_length=100, blank=True, default='')
     birth_date  = models.DateField(_('تاریخ تولد'), null=True, blank=True)
     gender      = models.CharField(_('جنسیت'), max_length=10, choices=GENDER_CHOICES, default='male')
+    marital_status = models.CharField(
+        _('وضعیت تأهل'), max_length=10, choices=MARITAL_CHOICES, default='single', blank=True,
+    )
     military    = models.CharField(_('وضعیت نظام وظیفه'), max_length=20,
                                    choices=MILITARY_CHOICES, default='na', blank=True)
+    quota       = models.CharField(
+        _('سهمیه'), max_length=20, choices=QUOTA_CHOICES, default='free', blank=True,
+        help_text=_('مبنای قانونی پذیرش و تخفیف شهریه'),
+    )
 
     # ── اطلاعات تماس ──
     phone           = models.CharField(_('موبایل'), max_length=15, blank=True, default='')
     phone_emergency = models.CharField(_('تلفن اضطراری'), max_length=15, blank=True)
+    guardian_name   = models.CharField(_('نام ولی / تماس اضطراری'), max_length=150,
+                                       blank=True, default='')
     email           = models.EmailField(_('ایمیل'), blank=True)
+    province        = models.CharField(_('استان'), max_length=50, blank=True, default='')
+    city            = models.CharField(_('شهر'), max_length=80, blank=True, default='')
     address         = models.TextField(_('آدرس'), default='')
     postal_code     = models.CharField(_('کد پستی'), max_length=10, blank=True)
 
     # ── سوابق تحصیلی ──
     prev_degree        = models.CharField(_('آخرین مدرک'), max_length=50,
                                           choices=PREV_DEGREE_CHOICES, default='diploma')
+    diploma_type       = models.CharField(_('نوع دیپلم'), max_length=20,
+                                          choices=DIPLOMA_TYPE_CHOICES, blank=True, default='')
     prev_major         = models.CharField(_('رشته مدرک قبلی'), max_length=200, blank=True)
     prev_school        = models.CharField(_('نام مدرسه/مرکز'), max_length=200, blank=True)
     prev_grad_year     = models.CharField(_('سال فارغ‌التحصیلی'), max_length=10, blank=True)
     gpa                = models.DecimalField(_('معدل'), max_digits=4, decimal_places=2,
                                              blank=True, null=True)
+    diploma_gpa        = models.DecimalField(_('معدل کتبی دیپلم'), max_digits=4, decimal_places=2,
+                                             blank=True, null=True)
+    academic_record_code = models.CharField(_('کد سوابق تحصیلی'), max_length=30,
+                                            blank=True, default='',
+                                            help_text=_('برای استعلام از سامانه سنجش'))
 
     # ── رشته درخواستی ──
     degree         = models.CharField(_('مقطع'), max_length=20, choices=DEGREE_CHOICES)
@@ -173,6 +216,19 @@ class Application(models.Model):
         verbose_name = _('درخواست پذیرش')
         verbose_name_plural = _('درخواست‌های پذیرش')
         ordering = ['-created_at']
+        constraints = [
+            # یک درخواست فعال به ازای هر کد ملی. درخواست رد‌شده مستثنی است تا
+            # متقاضی بتواند پس از رد دوباره اقدام کند.
+            models.UniqueConstraint(
+                fields=['national_id'],
+                condition=~models.Q(status='rejected') & ~models.Q(national_id=''),
+                name='uniq_active_application_per_national_id',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['status', 'degree']),
+            models.Index(fields=['phone']),
+        ]
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} — {self.get_degree_display()} ({self.tracking_code})"

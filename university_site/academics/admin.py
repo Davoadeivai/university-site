@@ -178,9 +178,13 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ['name', 'code', 'major__name', 'prerequisites']
     autocomplete_fields = ['major']
     list_select_related = ('major',)
+    filter_horizontal = ['prereq_courses', 'coreq_courses']
     fieldsets = (
         ('اطلاعات درس', {
-            'fields': ('major', 'name', 'code', 'credits', 'course_type', 'semester', 'prerequisites')
+            'fields': (
+                'major', 'name', 'code', 'credits', 'course_type', 'semester',
+                'prereq_courses', 'coreq_courses', 'prerequisites',
+            )
         }),
         ('توضیحات', {
             'fields': ('description',),

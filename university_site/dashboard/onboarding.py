@@ -77,6 +77,11 @@ def sync_profile_from_application(user: User, app: Application | None = None) ->
     _fill('military', app.military)
     _fill('address', app.address)
     _fill('postal_code', app.postal_code)
+    # فیلدهایی که تا پیش از این در فرم پذیرش نبودند و پروفایل خالی می‌ماند
+    _fill('province', getattr(app, 'province', ''))
+    _fill('city', getattr(app, 'city', ''))
+    _fill('quota', getattr(app, 'quota', ''))
+    _fill('marital_status', getattr(app, 'marital_status', ''))
     _fill('prev_degree', app.prev_degree)
     _fill('prev_major', app.prev_major)
     _fill('prev_school', app.prev_school)

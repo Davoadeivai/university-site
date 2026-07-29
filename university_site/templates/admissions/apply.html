@@ -110,6 +110,39 @@
                 <option value="na"      {% if post.military == 'na' or not post %}selected{% endif %}>مشمول نمی‌شود</option>
             </select>
         </div>
+
+        <div class="col-md-3">
+            <label class="form-label" for="birth_cert_no">شماره شناسنامه</label>
+            <input type="text" name="birth_cert_no" id="birth_cert_no" class="form-control"
+                   maxlength="15" inputmode="numeric" value="{{ post.birth_cert_no|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="birth_place">محل تولد</label>
+            <input type="text" name="birth_place" id="birth_place" class="form-control"
+                   value="{{ post.birth_place|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="issue_place">محل صدور</label>
+            <input type="text" name="issue_place" id="issue_place" class="form-control"
+                   value="{{ post.issue_place|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="marital_status">وضعیت تأهل</label>
+            <select name="marital_status" id="marital_status" class="form-select">
+                {% for val, label in marital_choices %}
+                <option value="{{ val }}" {% if post.marital_status == val or not post and val == 'single' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="quota">سهمیه <span class="text-danger">*</span></label>
+            <select name="quota" id="quota" class="form-select">
+                {% for val, label in quota_choices %}
+                <option value="{{ val }}" {% if post.quota == val or not post and val == 'free' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">سهمیه مبنای قانونی پذیرش و تخفیف شهریه است.</div>
+        </div>
     </div>
 
     <hr class="my-4">
@@ -137,13 +170,32 @@
             <label class="form-label" for="email">ایمیل</label>
             <input type="email" name="email" id="email" class="form-control" value="{{ post.email|default:'' }}">
         </div>
-        <div class="col-md-9">
-            <label class="form-label" for="address">آدرس <span class="text-danger">*</span></label>
-            <textarea name="address" id="address" class="form-control" rows="2" required>{{ post.address|default:'' }}</textarea>
+        <div class="col-md-4">
+            <label class="form-label" for="guardian_name">نام ولی / صاحب تلفن اضطراری</label>
+            <input type="text" name="guardian_name" id="guardian_name" class="form-control"
+                   value="{{ post.guardian_name|default:'' }}" placeholder="نام و نسبت">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
+            <label class="form-label" for="province">استان <span class="text-danger">*</span></label>
+            <select name="province" id="province" class="form-select" required>
+                <option value="">انتخاب استان...</option>
+                {% for pv in province_choices %}
+                <option value="{{ pv }}" {% if post.province == pv %}selected{% endif %}>{{ pv }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="city">شهر <span class="text-danger">*</span></label>
+            <input type="text" name="city" id="city" class="form-control" required
+                   value="{{ post.city|default:'' }}">
+        </div>
+        <div class="col-md-4">
             <label class="form-label" for="postal_code">کد پستی</label>
             <input type="text" name="postal_code" id="postal_code" class="form-control" maxlength="10" value="{{ post.postal_code|default:'' }}">
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="address">آدرس <span class="text-danger">*</span></label>
+            <textarea name="address" id="address" class="form-control" rows="2" required>{{ post.address|default:'' }}</textarea>
         </div>
     </div>
 </div>
@@ -181,6 +233,29 @@
         <div class="col-md-1">
             <label class="form-label" for="prev_grad_year">سال فراغت</label>
             <input type="text" name="prev_grad_year" id="prev_grad_year" class="form-control" maxlength="4" placeholder="1402" value="{{ post.prev_grad_year|default:'' }}">
+        </div>
+        <div class="col-md-4" id="diplomaTypeDiv">
+            <label class="form-label" for="diploma_type">نوع دیپلم</label>
+            <select name="diploma_type" id="diploma_type" class="form-select">
+                <option value="">انتخاب کنید...</option>
+                {% for val, label in diploma_type_choices %}
+                <option value="{{ val }}" {% if post.diploma_type == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">تعیین‌کننده مجاز بودن رشته انتخابی است.</div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="diploma_gpa">معدل کتبی دیپلم</label>
+            <input type="number" name="diploma_gpa" id="diploma_gpa" class="form-control"
+                   min="0" max="20" step="0.01" placeholder="16.4"
+                   value="{{ post.diploma_gpa|default:'' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="academic_record_code">کد سوابق تحصیلی</label>
+            <input type="text" name="academic_record_code" id="academic_record_code"
+                   class="form-control" inputmode="numeric" maxlength="30"
+                   value="{{ post.academic_record_code|default:'' }}">
+            <div class="form-text">برای استعلام از سامانه سنجش.</div>
         </div>
         <div class="col-md-2">
             <label class="form-label" for="gpa">معدل</label>

@@ -137,7 +137,21 @@ class Course(models.Model):
     code = models.CharField(_('کد درس'), max_length=20, blank=True)
     credits = models.PositiveIntegerField(_('تعداد واحد'), default=3)
     course_type = models.CharField(_('نوع درس'), max_length=20, choices=COURSE_TYPE, default='required')
-    prerequisites = models.CharField(_('پیش‌نیاز'), max_length=300, blank=True)
+    # متن آزاد قدیمی — فقط برای نمایش/سازگاری. منطق روی prereq_courses است.
+    prerequisites = models.CharField(
+        _('پیش‌نیاز (متن)'), max_length=300, blank=True,
+        help_text=_('فقط توضیح نمایشی. برای اعمال واقعی از «دروس پیش‌نیاز» استفاده کنید.'),
+    )
+    prereq_courses = models.ManyToManyField(
+        'self', symmetrical=False, blank=True,
+        related_name='is_prereq_for', verbose_name=_('دروس پیش‌نیاز'),
+        help_text=_('دانشجو تا این دروس را پاس نکند نمی‌تواند این درس را بردارد.'),
+    )
+    coreq_courses = models.ManyToManyField(
+        'self', symmetrical=False, blank=True,
+        related_name='is_coreq_for', verbose_name=_('دروس هم‌نیاز'),
+        help_text=_('باید هم‌زمان یا پیش از این درس گرفته شده باشند.'),
+    )
     description = models.TextField(_('توضیحات'), blank=True)
     semester = models.PositiveIntegerField(_('ترم'), default=1)
 

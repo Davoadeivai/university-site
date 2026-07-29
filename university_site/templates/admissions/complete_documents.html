@@ -9,9 +9,9 @@
     <div class="uni-card p-4">
         <p class="mb-2">کد رهگیری: <strong>{{ app.tracking_code }}</strong></p>
         <p class="text-muted mb-3" style="font-size:13px;">{{ app.first_name }} {{ app.last_name }} — تاریخ ثبت: {{ app.created_at|jalali_date:"short" }}</p>
-        {% if app.admin_notes %}
+        {% if app.reject_reason %}
         <div class="alert alert-warning" style="font-size:14px;">
-            <strong>توضیح کارشناس:</strong> {{ app.admin_notes }}
+            <strong>توضیح کارشناس:</strong> {{ app.reject_reason }}
         </div>
         {% endif %}
         <div class="alert alert-info mb-3" style="font-size:13px;line-height:1.9;">

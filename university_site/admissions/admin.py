@@ -150,22 +150,23 @@ class ApplicationAdmin(admin.ModelAdmin):
             'fields': (
                 ('first_name', 'last_name', 'father_name'),
                 ('national_id', 'birth_date', 'birth_date_jalali_ro', 'gender'),
-                'military',
+                ('birth_cert_no', 'birth_place', 'issue_place'),
+                ('marital_status', 'military', 'quota'),
             )
         }),
         ('اطلاعات تماس', {
             'fields': (
-                ('phone', 'phone_emergency'),
+                ('phone', 'phone_emergency', 'guardian_name'),
                 'email',
+                ('province', 'city', 'postal_code'),
                 'address',
-                'postal_code',
             )
         }),
         ('سوابق تحصیلی', {
             'fields': (
-                ('prev_degree', 'prev_major'),
+                ('prev_degree', 'diploma_type', 'prev_major'),
                 ('prev_school', 'prev_grad_year'),
-                'gpa',
+                ('gpa', 'diploma_gpa', 'academic_record_code'),
             )
         }),
         ('رشته و مقطع درخواستی', {
@@ -193,7 +194,11 @@ class ApplicationAdmin(admin.ModelAdmin):
                 'reject_reason',
                 ('interview_date', 'interview_date_jalali_ro'),
             ),
-            'description': 'یادداشت داخلی، دلیل رد و زمان مصاحبه برای پیگیری پذیرش.',
+            'description': (
+                '<strong>یادداشت داخلی</strong> فقط برای کارشناسان است و به متقاضی نمایش داده '
+                '<strong>نمی‌شود</strong>. هر پیامی که باید متقاضی ببیند (دلیل رد، مدرک ناقص) '
+                'را در «دلیل رد» بنویسید — همان در صفحهٔ پیگیری نمایش داده می‌شود.'
+            ),
         }),
     )
 

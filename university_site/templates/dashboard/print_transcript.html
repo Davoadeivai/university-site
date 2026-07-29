@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}کارنامه رسمی نمرات{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-print-none mb-3 d-flex flex-wrap gap-2">
+    <button onclick="window.print()" class="btn btn-primary">
+      <i class="fas fa-print ms-1"></i> چاپ / ذخیره PDF
+    </button>
+    <a href="{% url 'dashboard:student_grades' %}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-right ms-1"></i> بازگشت به نمرات
+    </a>
+  </div>
+
+  <div class="tr-sheet">
+
+    <header class="tr-head">
+      <div class="tr-head-text">
+        <div class="tr-inst">{{ site.university_name_fa|default:'موسسه آموزش عالی علامه امینی بهنمیر' }}</div>
+        <div class="tr-min">جمهوری اسلامی ایران — وزارت علوم، تحقیقات و فناوری</div>
+      </div>
+      {% if site.logo %}<img class="tr-logo" src="{{ site.logo.url }}" alt="نشان موسسه">{% endif %}
+    </header>
+
+    <h1 class="tr-title">کارنامهٔ رسمی نمرات</h1>
+
+    <table class="tr-meta">
+      <tr>
+        <th>نام و نام خانوادگی</th><td>{{ student.get_full_name|default:student.username }}</td>
+        <th>شماره دانشجویی</th><td class="ltr">{{ profile.student_id|default:'—' }}</td>
+      </tr>
+      <tr>
+        <th>کد ملی</th><td class="ltr">{{ profile.national_id|default:'—' }}</td>
+        <th>رشته</th><td>{% if profile.major %}{{ profile.major.name }}{% else %}—{% endif %}</td>
+      </tr>
+      <tr>
+        <th>مقطع</th>
+        <td>{% if profile.major %}{{ profile.major.get_degree_display }}{% else %}—{% endif %}</td>
+        <th>وضعیت</th><td>{{ profile.get_academic_status_display|default:'—' }}</td>
+      </tr>
+    </table>
+
+    {% for blk in by_semester %}
+    <div class="tr-sem">
+      <div class="tr-sem-head">
+        <span>{{ blk.semester.name }}</span>
+        <span class="tr-sem-gpa">
+          معدل ترم: <strong>{{ blk.gpa|default:'—' }}</strong>
+          &nbsp;·&nbsp; واحد: <strong>{{ blk.units }}</strong>
+        </span>
+      </div>
+      <table class="tr-grades">
+        <thead>
+          <tr>
+            <th style="width:36px;">#</th>
+            <th>نام درس</th>
+            <th style="width:80px;">کد</th>
+            <th style="width:60px;">واحد</th>
+            <th style="width:150px;">استاد</th>
+            <th style="width:70px;">نمره</th>
+            <th style="width:70px;">نتیجه</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for en in blk.items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ en.course.name }}</td>
+            <td class="ltr">{{ en.course.code|default:'—' }}</td>
+            <td class="num">{{ en.course.credits }}</td>
+            <td>{% if en.teaching_assignment %}{{ en.teaching_assignment.professor.get_full_name }}{% else %}—{% endif %}</td>
+            <td class="num"><strong>{{ en.final_grade }}</strong></td>
+            <td>
+              {% if en.is_passed %}
+                <span class="ok">قبول</span>
+              {% else %}
+                <span class="no">مردود</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% empty %}
+      <p class="tr-empty">هنوز هیچ نمرهٔ نهایی ثبت نشده است.</p>
+    {% endfor %}
+
+    <table class="tr-summary">
+      <tr>
+        <th>کل واحد گذرانده</th><td class="num">{{ standing.passed_units }}</td>
+        <th>کل واحد رشته</th><td class="num">{{ standing.total_required|default:'—' }}</td>
+      </tr>
+      <tr>
+        <th>واحد باقیمانده</th><td class="num">{{ standing.remaining_units }}</td>
+        <th>معدل کل</th><td class="num"><strong>{{ standing.cumulative_gpa|default:'—' }}</strong></td>
+      </tr>
+    </table>
+
+    <p class="tr-note">
+      این کارنامه به‌صورت سیستمی صادر شده و بدون مهر و امضای اداره آموزش فاقد اعتبار رسمی است.
+      تاریخ صدور: {% now "Y/m/d" %}
+    </p>
+
+    <footer class="tr-foot">
+      <div>اداره آموزش</div>
+      <div class="tr-stamp">محل مهر و امضا</div>
+    </footer>
+
+  </div>
+</div>
+
+<style>
+.tr-sheet{max-width:840px;margin:0 auto;background:#fff;color:#111;
+  border:1px solid #d8e0e8;border-radius:10px;padding:30px 32px}
+.tr-head{display:flex;align-items:center;gap:16px;
+  border-bottom:2px solid #0a4a74;padding-bottom:12px;margin-bottom:20px}
+.tr-head-text{flex:1}
+.tr-inst{font-size:16px;font-weight:800;color:#0a4a74}
+.tr-min{font-size:11.5px;color:#5b6b7a;margin-top:2px}
+.tr-logo{height:54px;width:auto}
+.tr-title{font-size:18px;font-weight:800;text-align:center;margin:0 0 18px}
+.tr-meta{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
+.tr-meta th{background:#f2f6f9;color:#41525f;font-weight:700;text-align:right;
+  padding:7px 10px;border:1px solid #dde5ec;white-space:nowrap;width:1%}
+.tr-meta td{padding:7px 10px;border:1px solid #dde5ec}
+.ltr{direction:ltr;text-align:right}
+.num{text-align:center;font-variant-numeric:tabular-nums}
+.tr-sem{margin-bottom:16px}
+.tr-sem-head{display:flex;justify-content:space-between;align-items:center;
+  background:#0a4a74;color:#fff;padding:7px 12px;border-radius:6px 6px 0 0;font-size:13px}
+.tr-sem-gpa{font-size:12.5px}
+.tr-grades{width:100%;border-collapse:collapse;font-size:12.5px}
+.tr-grades th{background:#f2f6f9;color:#41525f;font-weight:700;padding:6px 8px;
+  border:1px solid #dde5ec;text-align:right}
+.tr-grades td{padding:6px 8px;border:1px solid #dde5ec}
+.ok{color:#15803d;font-weight:700}
+.no{color:#b91c1c;font-weight:700}
+.tr-summary{width:100%;border-collapse:collapse;font-size:13px;margin-top:18px}
+.tr-summary th{background:#fffdf5;color:#8a6d1f;font-weight:700;text-align:right;
+  padding:8px 10px;border:1px solid #e8dcae;white-space:nowrap;width:1%}
+.tr-summary td{padding:8px 10px;border:1px solid #e8dcae}
+.tr-note{margin-top:16px;font-size:11.5px;color:#5b6b7a;line-height:2;
+  border-right:3px solid #c9a227;padding-right:10px}
+.tr-empty{text-align:center;color:#94a3b8;padding:26px}
+.tr-foot{display:flex;justify-content:space-between;align-items:flex-end;
+  margin-top:30px;font-size:13px;color:#41525f}
+.tr-stamp{border:1px dashed #b9c6d2;border-radius:6px;padding:20px 28px;
+  color:#93a2ae;font-size:12px}
+@media print{
+  .d-print-none{display:none !important}
+  body{background:#fff !important}
+  .container{padding:0 !important;max-width:100% !important}
+  .tr-sheet{border:none;border-radius:0;padding:0;max-width:100%}
+  .tr-sem{break-inside:avoid}
+  @page{margin:13mm}
+}
+</style>
+{% endblock %}

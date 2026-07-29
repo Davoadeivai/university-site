@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
@@ -63,15 +64,53 @@ class Enrollment(models.Model):
         verbose_name=_('کلاس / استاد انتخابی'),
     )
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='registered')
-    mid_term_grade = models.DecimalField(_('نمره میان‌ترم'), max_digits=5, decimal_places=2, null=True, blank=True)
-    final_grade = models.DecimalField(_('نمره نهایی'), max_digits=5, decimal_places=2, null=True, blank=True)
-    attendance_score = models.DecimalField(_('نمره حضور'), max_digits=5, decimal_places=2, null=True, blank=True)
+    # اعتبارسنجی سمت سرور — پیش از این فقط min/max روی widget بود و با
+    # یک POST مستقیم می‌شد نمرهٔ ۹۹ یا منفی ثبت کرد.
+    mid_term_grade = models.DecimalField(
+        _('نمره میان‌ترم'), max_digits=5, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(20)],
+    )
+    final_grade = models.DecimalField(
+        _('نمره نهایی'), max_digits=5, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(20)],
+    )
+    attendance_score = models.DecimalField(
+        _('نمره حضور'), max_digits=5, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(20)],
+    )
+    retake_of = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='retakes', verbose_name=_('تکرار درسِ'),
+    )
+    exam_seat_no = models.CharField(_('شماره صندلی امتحان'), max_length=10, blank=True, default='')
     enrolled_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = _('ثبت‌نام درس')
         verbose_name_plural = _('ثبت‌نام دروس')
         unique_together = ['student', 'course', 'semester']
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(final_grade__isnull=True)
+                    | models.Q(final_grade__gte=0, final_grade__lte=20)
+                ),
+                name='enrollment_final_grade_range',
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(mid_term_grade__isnull=True)
+                    | models.Q(mid_term_grade__gte=0, mid_term_grade__lte=20)
+                ),
+                name='enrollment_midterm_grade_range',
+            ),
+        ]
+
+    @property
+    def is_passed(self) -> bool:
+        from django.conf import settings
+        pass_mark = getattr(settings, 'PASSING_GRADE', 10)
+        return self.final_grade is not None and float(self.final_grade) >= pass_mark
 
     def __str__(self):
         return f"{self.student.get_full_name()} - {self.course.name}"
@@ -82,8 +121,13 @@ class TeachingAssignment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='teaching_assignments', verbose_name=_('درس'))
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='teaching_assignments', verbose_name=_('ترم'))
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_('دانشکده'))
-    class_schedule = models.TextField(_('برنامه کلاس'), blank=True)
+    # متن نمایشی. برنامهٔ واقعی برای تشخیص تداخل در ClassSession است.
+    class_schedule = models.TextField(_('برنامه کلاس (متن)'), blank=True)
     classroom = models.CharField(_('کلاس'), max_length=50, blank=True)
+    capacity = models.PositiveIntegerField(
+        _('ظرفیت کلاس'), default=0,
+        help_text=_('۰ یعنی بدون محدودیت. با پر شدن ظرفیت، انتخاب واحد بسته می‌شود.'),
+    )
     is_active = models.BooleanField(_('فعال'), default=True)
 
     class Meta:
@@ -93,6 +137,66 @@ class TeachingAssignment(models.Model):
 
     def __str__(self):
         return f"{self.professor.get_full_name()} - {self.course.name}"
+
+    @property
+    def taken_seats(self) -> int:
+        return self.enrollments.exclude(status='dropped').count()
+
+    @property
+    def remaining_seats(self):
+        """None یعنی بدون محدودیت."""
+        if not self.capacity:
+            return None
+        return max(0, self.capacity - self.taken_seats)
+
+    @property
+    def is_full(self) -> bool:
+        rem = self.remaining_seats
+        return rem is not None and rem <= 0
+
+    def schedule_display(self) -> str:
+        sessions = list(self.sessions.all())
+        if sessions:
+            return '، '.join(str(s) for s in sessions)
+        return self.class_schedule or '—'
+
+
+class ClassSession(models.Model):
+    """یک جلسهٔ هفتگی از یک کلاس.
+
+    تا پیش از این برنامهٔ کلاس یک متن آزاد بود («شنبه و دوشنبه ۱۰–۱۲») و
+    تداخل ساعت به‌هیچ‌وجه قابل تشخیص نبود. با این مدل، هر جلسه روز و ساعت
+    مشخص دارد و موتور انتخاب واحد می‌تواند تداخل را ببیند.
+    """
+    DAY_CHOICES = [
+        (0, 'شنبه'), (1, 'یکشنبه'), (2, 'دوشنبه'), (3, 'سه‌شنبه'),
+        (4, 'چهارشنبه'), (5, 'پنجشنبه'), (6, 'جمعه'),
+    ]
+
+    teaching_assignment = models.ForeignKey(
+        TeachingAssignment, on_delete=models.CASCADE,
+        related_name='sessions', verbose_name=_('کلاس'),
+    )
+    day = models.PositiveSmallIntegerField(_('روز'), choices=DAY_CHOICES)
+    start_time = models.TimeField(_('ساعت شروع'))
+    end_time = models.TimeField(_('ساعت پایان'))
+
+    class Meta:
+        verbose_name = _('جلسه کلاس')
+        verbose_name_plural = _('جلسات کلاس')
+        ordering = ['day', 'start_time']
+        unique_together = ['teaching_assignment', 'day', 'start_time']
+
+    def __str__(self):
+        return (
+            f"{self.get_day_display()} "
+            f"{self.start_time.strftime('%H:%M')}–{self.end_time.strftime('%H:%M')}"
+        )
+
+    def overlaps(self, other: 'ClassSession') -> bool:
+        if self.day != other.day:
+            return False
+        return self.start_time < other.end_time and other.start_time < self.end_time
 
 
 class StudentRequest(models.Model):

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models, transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -27,6 +27,7 @@ from .forms import (
 from .models import (
     Assignment,
     AssignmentSubmission,
+    Attendance,
     Enrollment,
     ExamSchedule,
     Payment,
@@ -273,6 +274,7 @@ def student_registration(request):
     """انتخاب واحد + انتخاب استاد/کلاس (در صورت چند ارائه)."""
     from collections import defaultdict
     from academics.models import Course
+    from .enrollment_rules import can_enroll, check_final_submission, get_standing
     from .onboarding import ensure_tuition_invoice, sync_profile_from_application, tuition_first_paid
 
     ctx = panel_context(request, 'انتخاب واحد', 'registration')
@@ -345,8 +347,6 @@ def student_registration(request):
                 units_now = sum(e.course.credits for e in locked)
                 if course.id in locked_map:
                     messages.info(request, 'این درس قبلاً انتخاب شده است.')
-                elif units_now + course.credits > MAX_REGISTRATION_UNITS:
-                    messages.error(request, f'سقف واحد ({MAX_REGISTRATION_UNITS}) پر می‌شود.')
                 else:
                     ta = None
                     ta_id = request.POST.get('teaching_assignment_id')
@@ -361,6 +361,18 @@ def student_registration(request):
                     elif len(opts) > 1:
                         messages.error(request, 'لطفاً استاد / کلاس مورد نظر را انتخاب کنید.')
                         return redirect('dashboard:student_registration')
+
+                    # آیین‌نامه: پیش‌نیاز، هم‌نیاز، درس گذرانده، سقف واحد،
+                    # ظرفیت کلاس و تداخل ساعت — همه داخل همان قفل تراکنش
+                    problems = can_enroll(
+                        request.user, course, semester, ta, units_now,
+                        standing=get_standing(request.user, semester),
+                    )
+                    if problems:
+                        for p in problems:
+                            messages.error(request, p)
+                        return redirect('dashboard:student_registration')
+
                     Enrollment.objects.update_or_create(
                         student=request.user,
                         course=course,
@@ -388,24 +400,47 @@ def student_registration(request):
                 messages.success(request, f'درس «{course.name}» حذف شد.')
         return redirect('dashboard:student_registration')
 
+    standing = get_standing(request.user, semester)
+
     rows = []
     for course in courses:
         opts = offerings_by_course.get(course.id) or []
         en = enrolled_map.get(course.id)
+        primary = None
+        if en and en.teaching_assignment_id:
+            primary = en.teaching_assignment
+        elif len(opts) == 1:
+            primary = opts[0]
+
+        # دلیل غیرقابل‌انتخاب بودن را همین‌جا نشان بده، نه بعد از کلیک
+        blockers = []
+        if en is None:
+            blockers = can_enroll(
+                request.user, course, semester,
+                primary if len(opts) == 1 else None,
+                total_units, standing=standing,
+            )
+
         rows.append({
             'course': course,
             'enrolled': en is not None,
             'enrollment': en,
             'offerings': opts,
-            'professor': en.teaching_assignment.professor if en and en.teaching_assignment_id else (opts[0].professor if len(opts) == 1 else None),
-            'schedule': en.teaching_assignment.class_schedule if en and en.teaching_assignment_id else (opts[0].class_schedule if len(opts) == 1 else ''),
-            'classroom': en.teaching_assignment.classroom if en and en.teaching_assignment_id else (opts[0].classroom if len(opts) == 1 else ''),
+            'blockers': blockers,
+            'blocked': bool(blockers),
+            'professor': primary.professor if primary else None,
+            'schedule': primary.schedule_display() if primary else '',
+            'classroom': primary.classroom if primary else '',
+            'seats_left': primary.remaining_seats if primary else None,
         })
 
     ctx.update({
         'rows': rows,
         'total_units': total_units,
-        'max_units': MAX_REGISTRATION_UNITS,
+        'max_units': standing.max_units,
+        'min_units': standing.min_units,
+        'standing': standing,
+        'submission_issues': check_final_submission(request.user, semester, standing),
         'major': profile.major,
         'semester': semester,
     })
@@ -607,6 +642,8 @@ def student_grades(request):
         total_c = sum(e.course.credits for e in graded) or 1
         avg = round(total_w / total_c, 2)
 
+    from .enrollment_rules import get_standing
+
     ctx.update({
         'grades_locked': False,
         'no_grades_yet': no_grades_yet,
@@ -614,8 +651,54 @@ def student_grades(request):
         'by_semester': by_semester.values(),
         'grade_average': avg,
         'graded_count': len(graded),
+        'standing': get_standing(request.user, semester),
     })
     return render(request, 'dashboard/student_grades.html', ctx)
+
+
+@role_required('student')
+def print_transcript(request):
+    """کارنامهٔ رسمی نمرات، قابل چاپ — فقط پس از تسویهٔ کامل شهریه."""
+    from .enrollment_rules import get_standing
+    from .onboarding import tuition_fully_settled
+
+    ctx = panel_context(request, 'کارنامه رسمی', 'grades')
+    semester = ctx['active_semester']
+    if not tuition_fully_settled(request.user, semester):
+        messages.error(request, 'کارنامه پس از تسویهٔ کامل شهریه صادر می‌شود.')
+        return redirect('dashboard:student_payments')
+
+    enrollments = (
+        student_enrollment_qs(request.user)
+        .filter(final_grade__isnull=False)
+        .select_related('course', 'semester', 'teaching_assignment__professor')
+        .order_by('semester__start_date', 'course__name')
+    )
+
+    by_semester = {}
+    for en in enrollments:
+        if not tuition_fully_settled(request.user, en.semester):
+            continue
+        key = en.semester_id
+        if key not in by_semester:
+            by_semester[key] = {'semester': en.semester, 'items': [], 'units': 0,
+                                'weighted': 0.0}
+        blk = by_semester[key]
+        blk['items'].append(en)
+        blk['units'] += en.course.credits
+        blk['weighted'] += float(en.final_grade) * en.course.credits
+    for blk in by_semester.values():
+        blk['gpa'] = round(blk['weighted'] / blk['units'], 2) if blk['units'] else None
+
+    from core.models import SiteSettings
+    return render(request, 'dashboard/print_transcript.html', {
+        **ctx,
+        'site': SiteSettings.objects.first(),
+        'by_semester': list(by_semester.values()),
+        'standing': get_standing(request.user, semester),
+        'student': request.user,
+        'profile': getattr(request.user, 'profile', None),
+    })
 
 
 @role_required('student')
@@ -1085,6 +1168,78 @@ def professor_course_detail(request, pk):
         'student_count': enrollments.count(),
     })
     return render(request, 'dashboard/professor_course_detail.html', ctx)
+
+
+@role_required('professor')
+def professor_attendance(request, pk):
+    """ثبت حضور و غیاب یک جلسه.
+
+    مدل Attendance از قبل وجود داشت ولی هیچ راهی برای ثبتش از پنل استاد نبود
+    و فقط از ادمین قابل استفاده بود.
+    """
+    from datetime import date as _date
+
+    ta = get_object_or_404(
+        TeachingAssignment.objects.select_related('course', 'semester'),
+        pk=pk, professor=request.user, is_active=True,
+    )
+    enrollments = list(
+        Enrollment.objects.filter(course=ta.course, semester=ta.semester)
+        .exclude(status='dropped')
+        .select_related('student')
+        .order_by('student__last_name', 'student__username')
+    )
+
+    raw_date = (request.POST.get('session_date') or request.GET.get('date') or '').strip()
+    try:
+        session_date = _date.fromisoformat(raw_date) if raw_date else timezone.localdate()
+    except ValueError:
+        session_date = timezone.localdate()
+
+    if request.method == 'POST':
+        saved = 0
+        with transaction.atomic():
+            for en in enrollments:
+                status = request.POST.get(f'status_{en.pk}')
+                if status not in dict(Attendance.STATUS_CHOICES):
+                    continue
+                Attendance.objects.update_or_create(
+                    enrollment=en, date=session_date,
+                    defaults={'status': status,
+                              'notes': (request.POST.get(f'note_{en.pk}') or '').strip()},
+                )
+                saved += 1
+        messages.success(request, f'حضور و غیاب {saved} دانشجو برای {session_date} ثبت شد.')
+        return redirect(
+            f"{reverse('dashboard:professor_attendance', args=[ta.pk])}?date={session_date}"
+        )
+
+    existing = {
+        a.enrollment_id: a
+        for a in Attendance.objects.filter(
+            enrollment__in=enrollments, date=session_date
+        )
+    }
+    rows = [{'enrollment': en, 'record': existing.get(en.pk)} for en in enrollments]
+
+    # خلاصهٔ غیبت هر دانشجو در کل ترم
+    absent_counts = dict(
+        Attendance.objects
+        .filter(enrollment__in=enrollments, status='absent')
+        .values_list('enrollment')
+        .annotate(n=Count('id'))
+    )
+    for r in rows:
+        r['absent_total'] = absent_counts.get(r['enrollment'].pk, 0)
+
+    ctx = panel_context(request, f'حضور و غیاب — {ta.course.name}', 'teaching')
+    ctx.update({
+        'teaching': ta,
+        'rows': rows,
+        'session_date': session_date,
+        'status_choices': Attendance.STATUS_CHOICES,
+    })
+    return render(request, 'dashboard/professor_attendance.html', ctx)
 
 
 @role_required('professor')

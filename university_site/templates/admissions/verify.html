@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}استعلام اصالت کارنامه{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+
+      <div class="text-center mb-4">
+        <div style="font-size:44px;color:#0a4a74;"><i class="fas fa-certificate"></i></div>
+        <h3 class="fw-bold mt-2 mb-2">استعلام اصالت کارنامهٔ پذیرش</h3>
+        <p class="text-muted mb-0" style="font-size:14px;line-height:2;">
+          کد اصالت درج‌شده روی کارنامه را وارد کنید تا معتبر بودن آن بررسی شود.
+          <br>
+          <span style="font-size:13px;">هیچ اطلاعات هویتی‌ای در نتیجهٔ استعلام نمایش داده نمی‌شود.</span>
+        </p>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <form method="get" class="row g-2 align-items-end">
+            <div class="col-sm-8">
+              <label class="form-label fw-bold" for="code">کد اصالت</label>
+              <input type="text" name="code" id="code" value="{{ code }}" required
+                     class="form-control form-control-lg text-center"
+                     style="font-family:monospace;letter-spacing:.25em;direction:ltr;text-transform:uppercase;"
+                     placeholder="XXXXX-XXXXX" maxlength="13">
+            </div>
+            <div class="col-sm-4">
+              <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="fas fa-search ms-1"></i> بررسی
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% if checked and result %}
+        {% if result.valid %}
+        <div class="card border-0 shadow-sm" style="border-top:4px solid #16a34a !important;">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+              <span style="font-size:32px;color:#16a34a;" class="ms-3"><i class="fas fa-check-circle"></i></span>
+              <div>
+                <h5 class="fw-bold mb-1" style="color:#15803d;">کارنامه معتبر است</h5>
+                <p class="text-muted mb-0" style="font-size:13px;">
+                  این کد اصالت متعلق به یک پذیرش ثبت‌شده در سامانه است.
+                </p>
+              </div>
+            </div>
+            <table class="table table-sm mb-0" style="font-size:14px;">
+              <tbody>
+                <tr><th style="width:40%;" class="text-muted fw-normal">مقطع</th><td class="fw-bold">{{ result.degree }}</td></tr>
+                <tr><th class="text-muted fw-normal">رشته</th><td class="fw-bold">{{ result.major }}</td></tr>
+                <tr><th class="text-muted fw-normal">تاریخ ثبت پرونده</th><td class="fw-bold">{{ result.year }}</td></tr>
+                <tr><th class="text-muted fw-normal">حروف اول نام</th><td class="fw-bold">{{ result.initials }}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="card border-0 shadow-sm" style="border-top:4px solid #dc2626 !important;">
+          <div class="card-body p-4 text-center">
+            <span style="font-size:34px;color:#dc2626;"><i class="fas fa-times-circle"></i></span>
+            <h5 class="fw-bold mt-2 mb-2" style="color:#b91c1c;">کد اصالت نامعتبر است</h5>
+            <p class="text-muted mb-0" style="font-size:13.5px;line-height:2;">
+              هیچ کارنامهٔ پذیرشی با این کد در سامانه ثبت نشده است.
+              کد را دوباره بررسی کنید؛ اگر باز هم نتیجه همین بود،
+              کارنامه معتبر نیست یا از این موسسه صادر نشده است.
+            </p>
+          </div>
+        </div>
+        {% endif %}
+      {% endif %}
+
+      <p class="text-center text-muted mt-4 mb-0" style="font-size:12.5px;line-height:2;">
+        کد اصالت در کادر طلایی پایین کارنامه به شکل <span style="font-family:monospace;">XXXXX-XXXXX</span> درج شده است.
+      </p>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

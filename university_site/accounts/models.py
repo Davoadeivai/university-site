@@ -77,7 +77,19 @@ class UserProfile(models.Model):
         verbose_name=_('رشته تحصیلی'),
     )
     bio = models.TextField(_('بیوگرافی'), blank=True)
-    national_id = models.CharField(_('کد ملی'), max_length=10, blank=True)
+    national_id = models.CharField(_('کد ملی'), max_length=10, blank=True, db_index=True)
+    quota = models.CharField(
+        _('سهمیه'), max_length=20, blank=True, default='',
+        help_text=_('از پروندهٔ پذیرش منتقل می‌شود؛ مبنای تخفیف شهریه'),
+    )
+    entry_semester = models.ForeignKey(
+        'dashboard.Semester', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='entered_students', verbose_name=_('ترم ورود'),
+        help_text=_('مبنای محاسبه سنوات تحصیلی'),
+    )
+    marital_status = models.CharField(
+        _('وضعیت تأهل'), max_length=10, blank=True, default='',
+    )
     birth_date = models.DateField(_('تاریخ تولد'), blank=True, null=True)
     gender = models.CharField(_('جنسیت'), max_length=10, choices=GENDER_CHOICES, blank=True)
     military = models.CharField(
@@ -107,6 +119,14 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = _('پروفایل')
         verbose_name_plural = _('پروفایل‌ها')
+        constraints = [
+            # دو دانشجو نباید یک کد ملی داشته باشند (مقدار خالی مستثنی است)
+            models.UniqueConstraint(
+                fields=['national_id'],
+                condition=~models.Q(national_id=''),
+                name='uniq_profile_national_id',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.get_role_display()}"

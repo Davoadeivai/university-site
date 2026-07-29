@@ -188,14 +188,30 @@ def register_view(request):
         from admissions.models import Application
 
         national_id = only_digits(request.POST.get('national_id', ''))
-        email = request.POST.get('email', '').strip()
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        student_id = only_digits(request.POST.get('student_id', ''))
-        department = request.POST.get('department', '').strip()
-        phone = only_digits(request.POST.get('phone', ''))
+
+        # هویت از پروندهٔ پذیرش خوانده می‌شود، نه از کیبورد متقاضی.
+        # قبلاً پنج فیلد (نام، نام خانوادگی، ایمیل، موبایل، کد ملی) دوباره
+        # تایپ می‌شد در حالی که همه در Application موجودند؛ و «دانشکده» و
+        # «شماره دانشجویی» را خود کاربر وارد می‌کرد که هیچ‌کدام دادهٔ کاربر نیست.
+        src_app = (
+            Application.objects.filter(national_id=national_id, status='accepted')
+            .select_related('desired_major', 'desired_major__department')
+            .order_by('-id')
+            .first()
+        )
+        first_name = (src_app.first_name if src_app else '').strip()
+        last_name = (src_app.last_name if src_app else '').strip()
+        email = (src_app.email if src_app else '').strip()
+        phone = only_digits(src_app.phone if src_app else '')
+        # دانشکده از رشتهٔ پذیرش مشتق می‌شود
+        department = ''
+        if src_app and src_app.desired_major_id:
+            dep = getattr(src_app.desired_major, 'department', None)
+            department = getattr(dep, 'name', '') or ''
+        # شمارهٔ دانشجویی را موسسه صادر می‌کند؛ تا آن زمان خالی می‌ماند
+        student_id = ''
 
         role = 'student'
 
@@ -206,22 +222,27 @@ def register_view(request):
             except ValidationError as e:
                 pwd_error = ' '.join(e.messages)
 
-        accepted = Application.objects.filter(national_id=national_id, status='accepted').exists()
+        accepted = src_app is not None
 
         if not national_id or not password1 or not password2:
-            messages.error(request, 'لطفاً تمام فیلدهای الزامی را پر کنید.')
+            messages.error(request, 'لطفاً کد ملی و رمز عبور را وارد کنید.')
         elif not is_valid_national_id(national_id):
             messages.error(request, 'کد ملی معتبر نیست.')
-        elif not is_valid_mobile(phone):
-            messages.error(request, 'شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.')
+        elif accepted and phone and not is_valid_mobile(phone):
+            messages.error(
+                request,
+                'شماره موبایل ثبت‌شده در پروندهٔ پذیرش معتبر نیست. با موسسه تماس بگیرید.',
+            )
         elif not accepted:
             messages.error(
                 request,
                 'ثبت‌نام دانشجویی فقط پس از پذیرش نهایی ممکن است. '
                 'وضعیت درخواست را از صفحه پیگیری بررسی کنید.',
             )
-        elif UserProfile.objects.filter(phone=phone).exists():
+        elif phone and UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'این شماره موبایل قبلاً ثبت‌نام شده است.')
+        elif UserProfile.objects.filter(national_id=national_id).exists():
+            messages.error(request, 'برای این کد ملی قبلاً حساب ساخته شده است. وارد شوید.')
         elif password1 != password2:
             messages.error(request, 'رمز عبور و تکرار آن یکسان نیستند.')
         elif pwd_error:
@@ -243,13 +264,7 @@ def register_view(request):
                 'department': department,
                 'phone': phone,
             }
-            from admissions.models import Application
-            app = (
-                Application.objects.filter(national_id=national_id, status='accepted')
-                .select_related('desired_major')
-                .order_by('-id')
-                .first()
-            )
+            app = src_app
             if app and app.desired_major_id:
                 profile_defaults['major'] = app.desired_major
             UserProfile.objects.update_or_create(

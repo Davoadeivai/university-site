@@ -15,6 +15,7 @@ from .models import (
     Payment, ExamSchedule, Assignment, AssignmentSubmission, Attendance,
     TuitionInstallmentPlan, StudentDiscountClaim,
     StudentClearance, StudentClearanceItem, StudentLifecycleRequest,
+    ClassSession,
 )
 from .onboarding import reapply_discount_to_pending
 
@@ -180,11 +181,30 @@ class EnrollmentAdmin(JalaliAdminMixin, admin.ModelAdmin):
         )
 
 
+class ClassSessionInline(admin.TabularInline):
+    model = ClassSession
+    extra = 1
+    verbose_name = 'جلسه هفتگی'
+    verbose_name_plural = 'جلسات هفتگی (مبنای تشخیص تداخل ساعت)'
+
+
+@admin.register(ClassSession)
+class ClassSessionAdmin(admin.ModelAdmin):
+    list_display = ['teaching_assignment', 'day', 'start_time', 'end_time']
+    list_filter = ['day', 'teaching_assignment__semester']
+    search_fields = [
+        'teaching_assignment__course__name',
+        'teaching_assignment__professor__last_name',
+    ]
+    list_select_related = ('teaching_assignment', 'teaching_assignment__course')
+
+
 @admin.register(TeachingAssignment)
 class TeachingAssignmentAdmin(admin.ModelAdmin):
+    inlines = [ClassSessionInline]
     list_display = [
         'professor', 'course', 'major_name', 'semester',
-        'department', 'classroom', 'enrollment_count', 'is_active',
+        'department', 'classroom', 'seats_display', 'enrollment_count', 'is_active',
     ]
     list_filter = [
         'semester',
@@ -198,6 +218,17 @@ class TeachingAssignmentAdmin(admin.ModelAdmin):
         'course__name', 'course__major__name',
     ]
     list_select_related = ('professor', 'course', 'course__major', 'semester', 'department')
+
+    @admin.display(description='ظرفیت / باقیمانده')
+    def seats_display(self, obj):
+        if not obj.capacity:
+            return 'نامحدود'
+        left = obj.remaining_seats
+        color = '#dc2626' if left == 0 else ('#f59e0b' if left <= 3 else '#16a34a')
+        return format_html(
+            '<span style="color:{};font-weight:700;">{} / {}</span>',
+            color, left, obj.capacity,
+        )
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(_enroll_count=Count('enrollments'))

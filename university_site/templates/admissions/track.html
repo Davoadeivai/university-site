@@ -131,7 +131,9 @@
         <div class="alert alert-warning mt-3" style="font-size:14px;">
             <i class="fas fa-exclamation-triangle"></i>
             مدارک ناقص است.
-            {% if app.admin_notes %}<div class="mt-1"><strong>توضیح:</strong> {{ app.admin_notes }}</div>{% endif %}
+            {# admin_notes یادداشت داخلی کارشناس است و نباید به متقاضی نشان داده شود؛
+               پیام قابل نمایش به متقاضی در reject_reason نوشته می‌شود. #}
+            {% if app.reject_reason %}<div class="mt-1"><strong>توضیح:</strong> {{ app.reject_reason }}</div>{% endif %}
             <div class="mt-2">
                 <a href="{% url 'admissions:complete_documents' app.tracking_code %}" class="btn btn-sm btn-warning">تکمیل / آپلود مجدد مدارک</a>
             </div>
@@ -167,6 +169,17 @@
             </div>
             {% endif %}
         </div>
+
+        {% if app.status == 'accepted' %}
+        <div class="alert alert-success d-flex flex-wrap align-items-center gap-2 mt-4 mb-0">
+            <i class="fas fa-certificate"></i>
+            <span style="font-size:14px;">کارنامهٔ رسمی پذیرش شما با کد اصالت قابل استعلام آماده است.</span>
+            <a href="{% url 'admissions:admission_letter' app.tracking_code %}"
+               class="btn btn-sm btn-success ms-auto">
+                <i class="fas fa-file-alt ms-1"></i> مشاهده و چاپ کارنامه
+            </a>
+        </div>
+        {% endif %}
 
         {% if app.status == 'accepted' and journey %}
         <div class="mt-4 pt-4" style="border-top:1px solid var(--border,#e5e7eb);">

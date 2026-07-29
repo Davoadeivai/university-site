@@ -9,12 +9,61 @@
     {% endif %}
 </div>
 
-<div class="alert alert-info" style="font-size:14px;">
-    <div class="d-flex justify-content-between flex-wrap gap-2">
-        <div>رشته: <strong>{% if major %}{{ major.name }}{% else %}—{% endif %}</strong></div>
-        <div>واحد انتخاب‌شده: <strong>{{ total_units }}</strong> / {{ max_units }}</div>
+{# ── وضعیت تحصیلی و سقف واحد ── #}
+<div class="uni-card p-3 mb-3">
+    <div class="row g-3 align-items-center">
+        <div class="col-md-3">
+            <div class="text-muted" style="font-size:12px;">رشته</div>
+            <div class="fw-bold">{% if major %}{{ major.name }}{% else %}—{% endif %}</div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-muted" style="font-size:12px;">واحد این ترم</div>
+            <div class="fw-bold">
+                <span style="font-size:20px;">{{ total_units }}</span>
+                <span class="text-muted">/ {{ max_units }}</span>
+                <span class="text-muted" style="font-size:12px;">(حداقل {{ min_units }})</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-muted" style="font-size:12px;">معدل کل</div>
+            <div class="fw-bold">{{ standing.cumulative_gpa|default:'—' }}</div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-muted" style="font-size:12px;">پیشرفت تحصیلی</div>
+            {% if standing.total_required %}
+            <div class="fw-bold">{{ standing.passed_units }} از {{ standing.total_required }} واحد</div>
+            <div class="progress mt-1" style="height:6px;">
+                <div class="progress-bar bg-success" role="progressbar"
+                     style="width: {{ standing.progress_percent }}%;"
+                     aria-valuenow="{{ standing.progress_percent }}"
+                     aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            {% else %}
+            <div class="fw-bold">{{ standing.passed_units }} واحد گذرانده</div>
+            {% endif %}
+        </div>
     </div>
-    <div class="mt-2 text-muted" style="font-size:12px;">اگر چند استاد/کلاس برای یک درس باشد، یکی را انتخاب کنید.</div>
+
+    {% if standing.is_probation %}
+    <div class="alert alert-warning mt-3 mb-0" style="font-size:13px;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>مشروط:</strong> معدل ترم گذشته شما {{ standing.last_semester_gpa }} است،
+        بنابراین سقف واحد شما این ترم <strong>{{ standing.max_units }}</strong> واحد است.
+    </div>
+    {% endif %}
+
+    {% if submission_issues %}
+    <div class="alert alert-warning mt-3 mb-0" style="font-size:13px;">
+        {% for issue in submission_issues %}
+        <div><i class="fas fa-info-circle"></i> {{ issue }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="mt-2 text-muted" style="font-size:12px;">
+        اگر چند استاد/کلاس برای یک درس باشد، یکی را انتخاب کنید.
+        درس‌هایی که پیش‌نیازشان را نگذرانده‌اید یا با برنامه شما تداخل دارند، قفل هستند.
+    </div>
 </div>
 
 {% if rows %}
@@ -23,17 +72,25 @@
         <thead>
             <tr>
                 <th>درس</th>
-                <th>واحد</th>
+                <th style="width:60px;">واحد</th>
                 <th>استاد / کلاس</th>
-                <th></th>
+                <th style="width:110px;">ظرفیت</th>
+                <th style="width:130px;"></th>
             </tr>
         </thead>
         <tbody>
             {% for row in rows %}
-            <tr>
+            <tr {% if row.blocked %}style="background:#fafafa;"{% endif %}>
                 <td>
-                    <div class="fw-bold">{{ row.course.name }}</div>
+                    <div class="fw-bold {% if row.blocked %}text-muted{% endif %}">{{ row.course.name }}</div>
                     {% if row.course.code %}<div class="text-muted" style="font-size:12px;">{{ row.course.code }}</div>{% endif %}
+                    {% if row.blockers %}
+                        {% for b in row.blockers %}
+                        <div class="text-danger mt-1" style="font-size:12px;">
+                            <i class="fas fa-lock"></i> {{ b }}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                 </td>
                 <td>{{ row.course.credits }}</td>
                 <td>
@@ -45,22 +102,38 @@
                         <form method="post" class="d-flex flex-wrap gap-2 align-items-center" id="enroll-{{ row.course.id }}">
                             {% csrf_token %}
                             <input type="hidden" name="course_id" value="{{ row.course.id }}">
-                            <select name="teaching_assignment_id" class="form-select form-select-sm" style="min-width:220px;" required>
+                            <select name="teaching_assignment_id" class="form-select form-select-sm"
+                                    style="min-width:220px;" required {% if row.blocked %}disabled{% endif %}>
                                 <option value="">انتخاب استاد / کلاس…</option>
                                 {% for off in row.offerings %}
-                                <option value="{{ off.id }}">
+                                <option value="{{ off.id }}" {% if off.is_full %}disabled{% endif %}>
                                     {{ off.professor.get_full_name|default:off.professor.username }}
-                                    {% if off.class_schedule %} — {{ off.class_schedule }}{% endif %}
+                                    {% with sched=off.schedule_display %}{% if sched != '—' %} — {{ sched }}{% endif %}{% endwith %}
                                     {% if off.classroom %} ({{ off.classroom }}){% endif %}
+                                    {% if off.is_full %} — ظرفیت تکمیل{% elif off.remaining_seats %} — {{ off.remaining_seats }} جای خالی{% endif %}
                                 </option>
                                 {% endfor %}
                             </select>
                         </form>
                     {% elif row.offerings|length == 1 %}
                         {{ row.offerings.0.professor.get_full_name|default:row.offerings.0.professor.username }}
-                        {% if row.offerings.0.class_schedule %}<div class="text-muted" style="font-size:12px;">{{ row.offerings.0.class_schedule }}</div>{% endif %}
+                        {% with sched=row.offerings.0.schedule_display %}
+                        {% if sched != '—' %}<div class="text-muted" style="font-size:12px;">{{ sched }}</div>{% endif %}
+                        {% endwith %}
+                        {% if row.offerings.0.classroom %}<div class="text-muted" style="font-size:12px;">{{ row.offerings.0.classroom }}</div>{% endif %}
                     {% else %}
                         <span class="text-muted">هنوز اعلام نشده</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row.seats_left is None %}
+                        <span class="text-muted" style="font-size:12px;">نامحدود</span>
+                    {% elif row.seats_left == 0 %}
+                        <span class="badge bg-danger">تکمیل</span>
+                    {% elif row.seats_left <= 3 %}
+                        <span class="badge bg-warning text-dark">{{ row.seats_left }} جا</span>
+                    {% else %}
+                        <span class="badge bg-success">{{ row.seats_left }} جا</span>
                     {% endif %}
                 </td>
                 <td class="text-end">
@@ -70,6 +143,10 @@
                         <input type="hidden" name="course_id" value="{{ row.course.id }}">
                         <button type="submit" name="action" value="drop" class="btn btn-sm btn-outline-danger">حذف</button>
                     </form>
+                    {% elif row.blocked %}
+                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                        <i class="fas fa-lock"></i> قفل
+                    </button>
                     {% elif row.offerings|length > 1 %}
                     <button type="submit" form="enroll-{{ row.course.id }}" name="action" value="enroll" class="btn btn-sm btn-primary">انتخاب</button>
                     {% else %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}تأیید هویت برای پیگیری{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+
+          <div class="text-center mb-4">
+            <div class="mb-3" style="font-size:44px;color:#0a4a74;">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h4 class="fw-bold mb-2">تأیید هویت</h4>
+            <p class="text-muted mb-0" style="font-size:14px;line-height:2;">
+              چون کد ملی محرمانه نیست، برای دیدن جزئیات پرونده یک کد تأیید
+              به شماره‌ی ثبت‌شده در همان پرونده می‌فرستیم.
+              <br>
+              <span class="fw-bold" style="direction:ltr;display:inline-block;">{{ masked_phone }}</span>
+            </p>
+          </div>
+
+          {% if not code_sent %}
+            <form method="post" action="{% url 'admissions:track_otp' %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="send">
+              <input type="hidden" name="query" value="{{ query }}">
+              <button type="submit" class="btn btn-primary w-100 py-2">
+                <i class="fas fa-paper-plane ms-1"></i> ارسال کد تأیید
+              </button>
+            </form>
+          {% else %}
+            <form method="post" action="{% url 'admissions:track_otp' %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="verify">
+              <input type="hidden" name="query" value="{{ query }}">
+              <label class="form-label fw-bold">کد ۶ رقمی پیامک‌شده</label>
+              <input type="text" name="otp_code" inputmode="numeric" maxlength="6"
+                     autocomplete="one-time-code" required
+                     class="form-control form-control-lg text-center mb-3"
+                     style="letter-spacing:.6em;direction:ltr;font-family:monospace;"
+                     placeholder="------">
+              <button type="submit" class="btn btn-success w-100 py-2 mb-2">
+                <i class="fas fa-check ms-1"></i> تأیید و مشاهده پرونده
+              </button>
+            </form>
+            <form method="post" action="{% url 'admissions:track_otp' %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="send">
+              <input type="hidden" name="query" value="{{ query }}">
+              <button type="submit" class="btn btn-link w-100 text-muted" style="font-size:13px;">
+                کد را دریافت نکردم — ارسال مجدد
+              </button>
+            </form>
+          {% endif %}
+
+          <hr class="my-4">
+          <p class="text-muted mb-0" style="font-size:13px;line-height:2;">
+            <i class="fas fa-lightbulb ms-1 text-warning"></i>
+            اگر <strong>کد رهگیری ۱۲ رقمی</strong> خود را دارید، با آن بدون نیاز به
+            پیامک مستقیم وارد پرونده می‌شوید.
+            <a href="{% url 'admissions:track' %}">بازگشت به پیگیری</a>
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

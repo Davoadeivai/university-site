@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}کارنامه پذیرش — {{ app.tracking_code }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-print-none mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <button onclick="window.print()" class="btn btn-primary">
+      <i class="fas fa-print ms-1"></i> چاپ / ذخیره PDF
+    </button>
+    <a href="{% url 'admissions:track' %}?q={{ app.tracking_code }}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-right ms-1"></i> بازگشت به پیگیری
+    </a>
+    <span class="text-muted me-auto" style="font-size:13px;">
+      برای ذخیره به‌صورت PDF، در پنجرهٔ چاپ مقصد را «Save as PDF» انتخاب کنید.
+    </span>
+  </div>
+
+  <div class="letter">
+
+    <header class="letter-head">
+      <div class="lh-right">
+        <div class="lh-inst">{{ site.university_name_fa|default:'موسسه آموزش عالی علامه امینی بهنمیر' }}</div>
+        <div class="lh-min">جمهوری اسلامی ایران — وزارت علوم، تحقیقات و فناوری</div>
+      </div>
+      {% if site.logo %}
+        <img class="lh-logo" src="{{ site.logo.url }}" alt="نشان موسسه">
+      {% endif %}
+    </header>
+
+    <h1 class="letter-title">کارنامهٔ پذیرش تحصیلی</h1>
+
+    <table class="letter-table">
+      <tbody>
+        <tr>
+          <th>نام و نام خانوادگی</th><td>{{ app.first_name }} {{ app.last_name }}</td>
+          <th>نام پدر</th><td>{{ app.father_name|default:'—' }}</td>
+        </tr>
+        <tr>
+          <th>کد ملی</th><td class="ltr">{{ app.national_id }}</td>
+          <th>شماره شناسنامه</th><td class="ltr">{{ app.birth_cert_no|default:'—' }}</td>
+        </tr>
+        <tr>
+          <th>مقطع</th><td>{{ app.get_degree_display }}</td>
+          <th>سهمیه</th><td>{{ app.get_quota_display|default:'—' }}</td>
+        </tr>
+        <tr>
+          <th>رشتهٔ پذیرفته‌شده</th>
+          <td colspan="3"><strong>{% if app.desired_major %}{{ app.desired_major.name }}{% else %}—{% endif %}</strong>
+            {% if app.desired_major.department %}<span class="muted"> — {{ app.desired_major.department.name }}</span>{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>شیفت</th><td>{{ app.get_shift_display }}</td>
+          <th>وضعیت</th><td><span class="badge-ok">{{ app.get_status_display }}</span></td>
+        </tr>
+        <tr>
+          <th>کد رهگیری</th><td class="ltr mono">{{ app.tracking_code }}</td>
+          <th>تاریخ ثبت</th><td>{{ app.created_at|date:"Y/m/d" }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="letter-verify">
+      <div class="lv-code">
+        <div class="lv-label">کد اصالت</div>
+        <div class="lv-value">{{ verification_code }}</div>
+        <div class="lv-hint">
+          اصالت این کارنامه را در نشانی زیر بررسی کنید:<br>
+          <span class="ltr">{{ verify_url }}</span>
+        </div>
+      </div>
+      <div class="lv-barcode">
+        {{ barcode|safe }}
+      </div>
+    </div>
+
+    <p class="letter-note">
+      این کارنامه به‌صورت خودکار توسط سامانهٔ پذیرش صادر شده و بدون کد اصالت فاقد اعتبار است.
+      پذیرش نهایی منوط به تأیید مدارک فیزیکی و پرداخت شهریه در موعد مقرر است.
+    </p>
+
+    <footer class="letter-foot">
+      <div>مدیریت پذیرش و امور آموزشی</div>
+      <div class="lf-stamp">محل مهر و امضا</div>
+    </footer>
+
+  </div>
+</div>
+
+<style>
+.letter{
+  max-width: 820px; margin: 0 auto; background:#fff; color:#111;
+  border:1px solid #d8e0e8; border-radius:10px; padding:32px 34px;
+}
+.letter-head{
+  display:flex; align-items:center; gap:16px;
+  border-bottom:2px solid #0a4a74; padding-bottom:14px; margin-bottom:22px;
+}
+.lh-right{flex:1}
+.lh-inst{font-size:17px; font-weight:800; color:#0a4a74}
+.lh-min{font-size:12px; color:#5b6b7a; margin-top:3px}
+.lh-logo{height:58px; width:auto}
+.letter-title{
+  font-size:19px; font-weight:800; text-align:center; margin:0 0 22px;
+  letter-spacing:-.01em;
+}
+.letter-table{width:100%; border-collapse:collapse; font-size:13.5px}
+.letter-table th{
+  background:#f2f6f9; color:#41525f; font-weight:700; text-align:right;
+  padding:9px 11px; border:1px solid #dde5ec; white-space:nowrap; width:1%;
+}
+.letter-table td{padding:9px 11px; border:1px solid #dde5ec}
+.letter-table .ltr{direction:ltr; text-align:right}
+.letter-table .mono{font-family:monospace; letter-spacing:.05em}
+.letter-table .muted{color:#6b7a88}
+.badge-ok{background:#16a34a; color:#fff; padding:2px 10px; border-radius:10px; font-size:12px}
+
+.letter-verify{
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  margin-top:22px; padding:16px; border:1px dashed #c9a227; border-radius:8px;
+  background:#fffdf5;
+}
+.lv-code{flex:1; min-width:230px}
+.lv-label{font-size:11px; color:#8a7a3f; letter-spacing:.08em}
+.lv-value{
+  font-family:monospace; font-size:22px; font-weight:700; color:#8a6d1f;
+  letter-spacing:.12em; direction:ltr; margin:2px 0 6px;
+}
+.lv-hint{font-size:11.5px; color:#6b7a88; line-height:1.9}
+.lv-barcode svg{max-width:100%; height:auto}
+
+.letter-note{
+  margin-top:18px; font-size:12px; color:#5b6b7a; line-height:2;
+  border-right:3px solid #c9a227; padding-right:11px;
+}
+.letter-foot{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  margin-top:34px; font-size:13px; color:#41525f;
+}
+.lf-stamp{
+  border:1px dashed #b9c6d2; border-radius:6px; padding:22px 30px;
+  color:#93a2ae; font-size:12px;
+}
+
+@media print{
+  .d-print-none{display:none !important}
+  body{background:#fff !important}
+  .container{padding:0 !important; max-width:100% !important}
+  .letter{border:none; border-radius:0; padding:0; max-width:100%}
+  @page{margin:14mm}
+}
+</style>
+{% endblock %}

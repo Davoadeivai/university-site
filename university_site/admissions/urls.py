@@ -12,7 +12,11 @@ urlpatterns = [
     path('ثبت-موفق/<str:code>/', views.apply_success, name='apply_success'),
     # پیگیری
     path('پیگیری/', views.track_application, name='track'),
+    path('پیگیری/تایید/', views.track_otp, name='track_otp'),
     path('تکمیل-مدارک/<str:code>/', views.complete_documents, name='complete_documents'),
+    # کارنامه پذیرش و استعلام اصالت
+    path('کارنامه/<str:code>/', views.admission_letter, name='admission_letter'),
+    path('استعلام/', views.verify_certificate, name='verify'),
     # شهریه
     path('شهریه/', views.tuition_info, name='tuition'),
     path('محاسبه-شهریه/', views.tuition_calculator, name='tuition_calc'),

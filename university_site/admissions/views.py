@@ -3,9 +3,13 @@ from __future__ import annotations
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
+from django.urls import reverse
 from django.utils import timezone
 from academics.models import Major
+from core.jalali import format_jalali_date
+from core.models import SiteSettings
 from core.iran import (
+    IRAN_PROVINCES,
     choice_value,
     is_valid_email,
     is_valid_mobile,
@@ -267,6 +271,10 @@ def apply(request):
                 }
             ],
             'prev_degree_choices': Application.PREV_DEGREE_CHOICES,
+            'quota_choices': Application.QUOTA_CHOICES,
+            'diploma_type_choices': Application.DIPLOMA_TYPE_CHOICES,
+            'marital_choices': Application.MARITAL_CHOICES,
+            'province_choices': IRAN_PROVINCES,
             'tips': [
                 'مدارک را واضح و رنگی آپلود کنید (حداکثر ۲ مگابایت).',
                 'کد رهگیری را بعد از ثبت حتماً ذخیره کنید.',
@@ -410,6 +418,31 @@ def apply(request):
         if gpa_err:
             errors.append(gpa_err)
 
+        # ── فیلدهای هویتی و تحصیلی تکمیلی ──
+        quota = choice_value(p.get('quota', 'free'), Application.QUOTA_CHOICES, 'free')
+        marital_status = choice_value(
+            p.get('marital_status', 'single'), Application.MARITAL_CHOICES, 'single'
+        )
+        diploma_type = choice_value(p.get('diploma_type', ''), Application.DIPLOMA_TYPE_CHOICES, '')
+        birth_cert_no = only_digits(p.get('birth_cert_no', ''))
+        academic_record_code = only_digits(p.get('academic_record_code', ''))
+        province = (p.get('province') or '').strip()
+        city = (p.get('city') or '').strip()
+        birth_place = (p.get('birth_place') or '').strip()
+        issue_place = (p.get('issue_place') or '').strip()
+        guardian_name = (p.get('guardian_name') or '').strip()
+
+        if not province:
+            errors.append('استان محل سکونت الزامی است.')
+        if not city:
+            errors.append('شهر محل سکونت الزامی است.')
+        if prev_degree == 'diploma' and not diploma_type:
+            errors.append('نوع دیپلم را انتخاب کنید.')
+
+        diploma_gpa_val, dgpa_err = parse_gpa(p.get('diploma_gpa'))
+        if dgpa_err:
+            errors.append(dgpa_err.replace('معدل', 'معدل کتبی دیپلم'))
+
         birth_year = _normalize_digits(p.get('birth_year', ''))
         birth_month = _normalize_digits(p.get('birth_month', ''))
         birth_day = _normalize_digits(p.get('birth_day', ''))
@@ -451,19 +484,30 @@ def apply(request):
             last_name=(p.get('last_name') or '').strip(),
             father_name=(p.get('father_name') or '').strip(),
             national_id=national_id,
+            birth_cert_no=birth_cert_no,
+            birth_place=birth_place,
+            issue_place=issue_place,
             birth_date=birth_date,
             gender=gender or 'male',
+            marital_status=marital_status or 'single',
             military=military or 'na',
+            quota=quota or 'free',
             phone=submit_phone or '',
             phone_emergency=phone_emergency,
+            guardian_name=guardian_name,
             email=email,
+            province=province,
+            city=city,
             address=(p.get('address') or '').strip(),
             postal_code=postal_code,
             prev_degree=prev_degree or 'diploma',
+            diploma_type=diploma_type,
             prev_major=(p.get('prev_major') or '').strip(),
             prev_school=(p.get('prev_school') or '').strip(),
             prev_grad_year=prev_grad_year,
             gpa=gpa_val,
+            diploma_gpa=diploma_gpa_val,
+            academic_record_code=academic_record_code,
             degree=degree or 'bachelor',
             desired_major=major_obj,
             desired_major2=major2_obj,
@@ -506,6 +550,11 @@ def apply_success(request, code):
 # ─────────────────────────────────────────────
 #  پیگیری وضعیت
 # ─────────────────────────────────────────────
+def _mask_phone(phone: str) -> str:
+    p = ''.join(ch for ch in (phone or '') if ch.isdigit())
+    return f'{p[:4]}****{p[-3:]}' if len(p) >= 8 else '***'
+
+
 def _normalize_track_query(raw):
     """نرمال‌سازی کد رهگیری / کد ملی (ارقام فارسی، فاصله، خط تیره)."""
     q = _normalize_digits(raw or '')
@@ -532,9 +581,37 @@ def _track_lookup_candidates(query):
     return [c for c in cands if c]
 
 
+def _track_session_key(app_pk) -> str:
+    return f'track_ok_{app_pk}'
+
+
+def _track_is_unlocked(request, app) -> bool:
+    """آیا بیننده مجاز به دیدن جزئیات این پرونده است؟
+
+    کد رهگیری ۱۲ رقمی تصادفی است و فقط دست خود متقاضی است، پس خودش
+    عامل احراز هویت محسوب می‌شود. اما کد ملی در ایران محرمانه نیست؛
+    برای آن تأیید پیامکی به شمارهٔ ثبت‌شده لازم است.
+    """
+    if request.session.get(_track_session_key(app.pk)):
+        return True
+    if request.user.is_authenticated:
+        if request.user.is_superuser or request.user.is_staff:
+            return True
+        try:
+            role = request.user.profile.role
+            uid = (request.user.profile.national_id or request.user.username or '').strip()
+        except Exception:
+            role, uid = '', (request.user.username or '').strip()
+        if role in ('admin', 'staff'):
+            return True
+        if uid and uid == (app.national_id or '').strip():
+            return True
+    return False
+
+
 def track_application(request):
     from django.db.models import Q
-    from core.sms import normalize_phone
+    from core.sms import check_rate_limit, normalize_phone
 
     # PRG: بعد از POST به GET برو تا نتیجه در آدرس بماند و رفرش خراب نشود
     if request.method == 'POST':
@@ -548,19 +625,48 @@ def track_application(request):
 
     app = None
     timeline = []
+    needs_otp = False
     query = _normalize_track_query(request.GET.get('q', ''))
     if query:
+        # جلوگیری از پیمایش کد ملی‌ها
+        allowed, rl_msg = check_rate_limit(request, scope='track', limit=12, window=300)
+        if not allowed:
+            messages.error(request, rl_msg)
+            return render(request, 'admissions/track.html', {
+                'app': None, 'query': '', 'timeline': [], 'journey': None,
+                'viewer_is_staff': False, 'needs_otp': False,
+                'page_title': 'پیگیری وضعیت درخواست',
+            })
+
         qs = Application.objects.select_related(
             'desired_major', 'desired_major2',
         )
         candidates = _track_lookup_candidates(query)
-        app = qs.filter(
-            Q(tracking_code__in=candidates) | Q(national_id__in=candidates)
-        ).first()
+        digits = ''.join(ch for ch in query if ch.isdigit())
+
+        # کد رهگیری = راز خود متقاضی → دسترسی مستقیم
+        app = qs.filter(tracking_code__in=candidates).first()
+        matched_by_code = app is not None
+
         if app is None:
-            phone = normalize_phone(query)
-            if phone and len(phone) >= 10:
-                app = qs.filter(phone=phone).first()
+            app = qs.filter(national_id__in=candidates).first()
+            if app is None:
+                phone = normalize_phone(query)
+                if phone and len(phone) >= 10:
+                    app = qs.filter(phone=phone).first()
+
+        if app is not None:
+            if matched_by_code:
+                request.session[_track_session_key(app.pk)] = True
+            elif not _track_is_unlocked(request, app):
+                # کد ملی / موبایل محرمانه نیست → تأیید پیامکی لازم است
+                needs_otp = True
+                request.session['track_pending_pk'] = app.pk
+                return render(request, 'admissions/track_verify.html', {
+                    'page_title': 'تأیید هویت برای پیگیری',
+                    'masked_phone': _mask_phone(app.phone),
+                    'query': query,
+                })
         if app is None:
             messages.error(
                 request,
@@ -628,8 +734,162 @@ def track_application(request):
         'timeline': timeline,
         'journey': journey,
         'viewer_is_staff': viewer_is_staff,
+        'needs_otp': needs_otp,
         'page_title': 'پیگیری وضعیت درخواست',
     })
+
+
+def admission_letter(request, code):
+    """کارنامهٔ پذیرش قابل چاپ — فقط برای پرونده‌ای که بیننده به آن دسترسی دارد."""
+    from django.http import Http404
+
+    from dashboard.barcode import barcode_svg
+    from .verification import make_verification_code
+
+    app = (
+        Application.objects
+        .select_related('desired_major', 'desired_major__department', 'desired_major2')
+        .filter(tracking_code=code)
+        .first()
+    )
+    if not app:
+        raise Http404('کارنامه‌ای با این کد رهگیری یافت نشد.')
+    if app.status != 'accepted':
+        messages.info(request, 'کارنامهٔ پذیرش فقط برای پرونده‌های پذیرفته‌شده صادر می‌شود.')
+        return redirect('admissions:track')
+    if not _track_is_unlocked(request, app):
+        request.session['track_pending_pk'] = app.pk
+        messages.warning(request, 'برای دریافت کارنامه ابتدا هویت خود را تأیید کنید.')
+        return redirect('admissions:track_otp')
+
+    site = SiteSettings.objects.first()
+    verification_code = make_verification_code(app)
+    verify_path = request.build_absolute_uri(reverse('admissions:verify'))
+
+    return render(request, 'admissions/admission_letter.html', {
+        'app': app,
+        'site': site,
+        'verification_code': verification_code,
+        'verify_url': verify_path,
+        'barcode': barcode_svg(app.tracking_code, height=48, module_width=2),
+        'page_title': f'کارنامه پذیرش — {app.tracking_code}',
+    })
+
+
+def verify_certificate(request):
+    """استعلام عمومی اصالت کارنامه — بدون افشای اطلاعات هویتی."""
+    from core.sms import check_rate_limit
+    from .verification import find_by_code, normalize_code
+
+    raw = (request.GET.get('code') or request.POST.get('code') or '').strip()
+    result = None
+    checked = False
+
+    if raw:
+        allowed, rl_msg = check_rate_limit(request, scope='verify', limit=15, window=300)
+        if not allowed:
+            messages.error(request, rl_msg)
+        else:
+            checked = True
+            app = find_by_code(raw)
+            if app:
+                result = {
+                    'valid': True,
+                    'degree': app.get_degree_display(),
+                    'major': app.desired_major.name if app.desired_major_id else '—',
+                    'year': format_jalali_date(app.created_at, 'short') if app.created_at else '',
+                    # فقط حرف اول نام — برای تطبیق کافی است، برای شناسایی نه
+                    'initials': f'{(app.first_name or "؟")[:1]}. {(app.last_name or "؟")[:1]}.',
+                }
+            else:
+                result = {'valid': False}
+
+    return render(request, 'admissions/verify.html', {
+        'code': normalize_code(raw) if raw else '',
+        'result': result,
+        'checked': checked,
+        'page_title': 'استعلام اصالت کارنامه',
+    })
+
+
+def track_otp(request):
+    """ارسال و تأیید کد پیامکی برای باز کردن پیگیری با کد ملی."""
+    from django.urls import reverse
+    from urllib.parse import urlencode
+    from core.sms import (
+        can_send_otp, can_verify_otp, clear_otp_verify_attempts,
+        mark_otp_sent, mark_otp_verify_failed, send_otp,
+    )
+
+    pk = request.session.get('track_pending_pk')
+    if not pk:
+        return redirect('admissions:track')
+    app = Application.objects.filter(pk=pk).first()
+    if not app:
+        request.session.pop('track_pending_pk', None)
+        return redirect('admissions:track')
+
+    query = _normalize_track_query(request.GET.get('q') or request.POST.get('query') or '')
+    ctx = {
+        'page_title': 'تأیید هویت برای پیگیری',
+        'masked_phone': _mask_phone(app.phone),
+        'query': query,
+    }
+
+    if request.method != 'POST':
+        return render(request, 'admissions/track_verify.html', ctx)
+
+    action = request.POST.get('action') or 'send'
+
+    if action == 'send':
+        if not app.phone:
+            messages.error(request, 'برای این پرونده شماره موبایلی ثبت نشده. با موسسه تماس بگیرید.')
+            return render(request, 'admissions/track_verify.html', ctx)
+        ok, err = can_send_otp(app.phone, scope='track')
+        if not ok:
+            messages.error(request, err)
+            return render(request, 'admissions/track_verify.html', ctx)
+        otp = AdmissionOTP.create_for_phone(app.phone)
+        sent = send_otp(app.phone, otp.code, f'کد پیگیری پذیرش: {otp.code}\nاعتبار ۱۰ دقیقه')
+        if not sent:
+            otp.is_used = True
+            otp.save(update_fields=['is_used'])
+            messages.error(request, 'ارسال پیامک ناموفق بود. چند لحظه بعد تلاش کنید.')
+            return render(request, 'admissions/track_verify.html', ctx)
+        mark_otp_sent(app.phone, scope='track')
+        messages.success(request, f'کد تأیید به {_mask_phone(app.phone)} ارسال شد.')
+        ctx['code_sent'] = True
+        return render(request, 'admissions/track_verify.html', ctx)
+
+    # action == 'verify'
+    ok, err = can_verify_otp(app.phone, scope='track')
+    if not ok:
+        messages.error(request, err)
+        return redirect('admissions:track')
+
+    code = _normalize_digits(request.POST.get('otp_code', ''))
+    otp = (
+        AdmissionOTP.objects.filter(phone=app.phone, is_used=False)
+        .order_by('-created_at').first()
+    )
+    if not otp or not otp.is_valid() or otp.code != code:
+        if otp:
+            otp.attempts += 1
+            otp.save(update_fields=['attempts'])
+        mark_otp_verify_failed(app.phone, scope='track')
+        messages.error(request, 'کد تأیید نادرست یا منقضی است.')
+        ctx['code_sent'] = True
+        return render(request, 'admissions/track_verify.html', ctx)
+
+    otp.is_used = True
+    otp.save(update_fields=['is_used'])
+    clear_otp_verify_attempts(app.phone, scope='track')
+    request.session[_track_session_key(app.pk)] = True
+    request.session.pop('track_pending_pk', None)
+    target = reverse('admissions:track')
+    if query:
+        target += '?' + urlencode({'q': query})
+    return redirect(target)
 
 
 # ─────────────────────────────────────────────

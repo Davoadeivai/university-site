@@ -423,7 +423,21 @@ OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
 OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
 OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)
 # موقتاً False: مرحله تأیید موبایل پذیرش غیرفعال است (مستقیم فرم). برای فعال‌سازی دوباره True کنید.
-ADMISSION_REQUIRE_MOBILE_OTP = config('ADMISSION_REQUIRE_MOBILE_OTP', default=False, cast=bool)
+# تأیید موبایل پیش‌فرض روشن است: با خاموش بودنش هر کسی با هر شماره‌ای
+# می‌تواند درخواست پذیرش ثبت کند و مرحلهٔ OTP کامل دور زده می‌شود.
+ADMISSION_REQUIRE_MOBILE_OTP = config('ADMISSION_REQUIRE_MOBILE_OTP', default=True, cast=bool)
+
+# ─────────────────────────────────────────────────────────────
+#  قوانین آموزشی (آیین‌نامه) — مبنای موتور انتخاب واحد
+# ─────────────────────────────────────────────────────────────
+PASSING_GRADE = config('PASSING_GRADE', default=10, cast=float)
+MIN_REGISTRATION_UNITS = config('MIN_REGISTRATION_UNITS', default=12, cast=int)
+MAX_REGISTRATION_UNITS = config('MAX_REGISTRATION_UNITS', default=20, cast=int)
+# دانشجوی مشروط (معدل ترم قبل زیر حد نصاب) سقف واحد کمتری دارد
+PROBATION_GPA = config('PROBATION_GPA', default=12, cast=float)
+PROBATION_MAX_UNITS = config('PROBATION_MAX_UNITS', default=14, cast=int)
+# ترم آخر: اگر واحد باقیمانده کم باشد، حداقل واحد اعمال نمی‌شود
+ALLOW_FINAL_TERM_UNDERLOAD = config('ALLOW_FINAL_TERM_UNDERLOAD', default=True, cast=bool)
 
 # -----------------------------------------------------------------------------
 # Online payment (mock | zarinpal)

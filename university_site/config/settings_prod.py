@@ -34,9 +34,9 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # -----------------------------------------------------------------------------
-# Database (default mysql for cPanel)
+# Database (default sqlite for local/dev fallback)
 # -----------------------------------------------------------------------------
-DB_ENGINE = config('DB_ENGINE', default='mysql')
+DB_ENGINE = config('DB_ENGINE', default='sqlite')
 
 if DB_ENGINE == 'postgres':
     DATABASES = {
@@ -124,8 +124,9 @@ KAVENEGAR_OTP_TEMPLATE = config('KAVENEGAR_OTP_TEMPLATE', default='')
 OTP_SEND_COOLDOWN = config('OTP_SEND_COOLDOWN', default=60, cast=int)
 OTP_MAX_SEND_PER_HOUR = config('OTP_MAX_SEND_PER_HOUR', default=5, cast=int)
 OTP_MAX_VERIFY_ATTEMPTS = config('OTP_MAX_VERIFY_ATTEMPTS', default=5, cast=int)
-# موقتاً False: مرحله تأیید موبایل پذیرش غیرفعال است. برای فعال‌سازی دوباره True کنید.
-ADMISSION_REQUIRE_MOBILE_OTP = config('ADMISSION_REQUIRE_MOBILE_OTP', default=False, cast=bool)
+# تأیید موبایل در محیط عملیاتی باید روشن بماند — با False هر کسی با هر شماره‌ای
+# درخواست ثبت می‌کند و کل مرحلهٔ OTP بی‌اثر می‌شود.
+ADMISSION_REQUIRE_MOBILE_OTP = config('ADMISSION_REQUIRE_MOBILE_OTP', default=True, cast=bool)
 
 # Harden cookies further when SSL is on
 if SECURE_SSL_REDIRECT:

@@ -1,0 +1,99 @@
+{% extends 'dashboard/panel_base.html' %}
+{% block panel_content %}
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h5 class="fw-bold mb-0">
+    <i class="fas fa-clipboard-check text-primary ms-1"></i>
+    حضور و غیاب — {{ teaching.course.name }}
+  </h5>
+  <a href="{% url 'dashboard:professor_course_detail' teaching.pk %}"
+     class="btn btn-sm btn-outline-secondary ms-auto">
+    <i class="fas fa-arrow-right ms-1"></i> بازگشت به کلاس
+  </a>
+</div>
+
+<form method="get" class="card border-0 shadow-sm mb-3">
+  <div class="card-body p-3 d-flex flex-wrap gap-2 align-items-end">
+    <div>
+      <label class="form-label mb-1 fw-bold" for="date" style="font-size:13px;">تاریخ جلسه</label>
+      <input type="date" name="date" id="date" class="form-control"
+             value="{{ session_date|date:'Y-m-d' }}">
+    </div>
+    <button type="submit" class="btn btn-outline-primary">نمایش</button>
+    <span class="text-muted ms-auto" style="font-size:13px;">
+      {{ rows|length }} دانشجو در این کلاس
+    </span>
+  </div>
+</form>
+
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="session_date" value="{{ session_date|date:'Y-m-d' }}">
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" style="font-size:14px;">
+        <thead class="table-light">
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>دانشجو</th>
+            <th style="width:120px;">شماره دانشجویی</th>
+            <th style="width:300px;">وضعیت</th>
+            <th style="width:90px;" class="text-center">کل غیبت</th>
+            <th>یادداشت</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+          <tr>
+            <td class="text-muted">{{ forloop.counter }}</td>
+            <td class="fw-bold">
+              {{ r.enrollment.student.get_full_name|default:r.enrollment.student.username }}
+            </td>
+            <td class="text-muted" style="direction:ltr;">
+              {{ r.enrollment.student.profile.student_id|default:'—' }}
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm w-100" role="group">
+                {% for val, label in status_choices %}
+                <input type="radio" class="btn-check"
+                       name="status_{{ r.enrollment.pk }}"
+                       id="s{{ r.enrollment.pk }}_{{ val }}" value="{{ val }}"
+                       {% if r.record.status == val %}checked{% elif not r.record and val == 'present' %}checked{% endif %}>
+                <label class="btn btn-outline-{% if val == 'present' %}success{% elif val == 'absent' %}danger{% elif val == 'late' %}warning{% else %}secondary{% endif %}"
+                       for="s{{ r.enrollment.pk }}_{{ val }}">{{ label }}</label>
+                {% endfor %}
+              </div>
+            </td>
+            <td class="text-center">
+              {% if r.absent_total %}
+                <span class="badge bg-danger">{{ r.absent_total }}</span>
+              {% else %}
+                <span class="text-muted">۰</span>
+              {% endif %}
+            </td>
+            <td>
+              <input type="text" name="note_{{ r.enrollment.pk }}" class="form-control form-control-sm"
+                     value="{{ r.record.notes|default:'' }}" placeholder="اختیاری">
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">
+            هیچ دانشجویی در این کلاس ثبت‌نام نکرده است.
+          </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if rows %}
+  <div class="mt-3 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-save ms-1"></i> ثبت حضور و غیاب {{ session_date|date:'Y/m/d' }}
+    </button>
+  </div>
+  {% endif %}
+</form>
+
+{% endblock %}
