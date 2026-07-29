@@ -7,9 +7,10 @@ PassengerPython "/home/cp29524/virtualenv/apps/university_site/3.11/bin/python"
 PassengerAppEnv production
 Options -Indexes
 
-# موبایل/اپراتورهای ایران اغلب با HTTP/3 (QUIC) مشکل دارند و صفحه سفید/لودنشده می‌ماند.
+# موبایل/اپراتورهای ایران اغلب با HTTP/3 (QUIC) مشکل دارند.
 <IfModule LiteSpeed>
 QuicEnable off
+SpdyEnabled off
 </IfModule>
 <IfModule mod_headers.c>
 Header always unset Alt-Svc
@@ -20,12 +21,14 @@ Header always set Alt-Svc "clear"
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
-# اجبار HTTPS (به‌خصوص برای موبایل و هدر امنیتی کوکی)
+# صفحه تست موبایل (بدون Django)
+RewriteRule ^mobile-check\.html$ - [L]
+
+# اجبار HTTPS
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !=https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# Map /static/ and /media/ to collectstatic/media roots (Jazzmin lives in public/static)
 RewriteRule ^static/(.*)$ public/static/$1 [L]
 RewriteRule ^media/(.*)$ public/media/$1 [L]
 </IfModule>
