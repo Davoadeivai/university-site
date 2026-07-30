@@ -1,5 +1,5 @@
 ﻿// ============================================================
-//  موسسه آموزش عالی علامه امینی بهنمیر - اسکریپت اصلی
+//  موسسه آموزش عالی علامه امینی - اسکریپت اصلی
 // ============================================================
 
 function escapeHtml(str) {
@@ -439,4 +439,68 @@ function appendMsg(text, type) {
     }
 
     document.addEventListener('DOMContentLoaded', initSiteLiveSearch);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   هدر فشرده‌شونده — بنر با اسکرول جمع می‌شود و صفحه را پس می‌دهد.
+   هدر sticky است؛ پیش از این ~۲۱۰ پیکسل روی مانیتور بزرگ همیشه
+   اشغال بود. IntersectionObserver به‌جای شنوندهٔ scroll تا در هر
+   فریم محاسبه‌ای انجام نشود.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+    var header = document.getElementById('siteHeader');
+    if (!header) return;
+
+    var sentinel = document.createElement('div');
+    sentinel.setAttribute('aria-hidden', 'true');
+    sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none;';
+    if (header.parentNode) header.parentNode.insertBefore(sentinel, header);
+
+    if (!('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (entries) {
+        header.classList.toggle('is-condensed', !entries[0].isIntersecting);
+    }, { rootMargin: '0px', threshold: 0 }).observe(sentinel);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   تایم‌لاین تقویم آموزشی — اسکرول خودکار به مرحلهٔ جاری روی موبایل
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+    var track = document.querySelector('.acal-track');
+    if (!track) return;
+    var current = track.querySelector('.acal-node.is-now, .acal-node.is-next');
+    if (!current) return;
+    // فقط وقتی نوار افقی واقعاً سرریز دارد
+    if (track.scrollWidth <= track.clientWidth + 8) return;
+    var offset = current.offsetLeft - (track.clientWidth / 2) + (current.offsetWidth / 2);
+    try {
+        track.scrollTo({ left: offset, behavior: 'smooth' });
+    } catch (e) {
+        track.scrollLeft = offset;
+    }
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   دکمهٔ بازگشت به بالا — با همان sentinel هدر، بدون شنوندهٔ scroll
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+    var btn = document.querySelector('.to-top');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+
+    if (!('IntersectionObserver' in window)) return;
+    var probe = document.createElement('div');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'position:absolute;top:70vh;height:1px;width:1px;pointer-events:none;';
+    document.body.appendChild(probe);
+    new IntersectionObserver(function (e) {
+        btn.classList.toggle('is-on', !e[0].isIntersecting);
+    }).observe(probe);
 })();

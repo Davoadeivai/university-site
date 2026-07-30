@@ -6,10 +6,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}موسسه آموزش عالی علامه امینی بهنمیر - آموزش کارشناسی، کارشناسی ارشد و کاردانی - پذیرش دانشجو{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}موسسه آموزش عالی علامه امینی بهنمیر، کارشناسی، کارشناسی ارشد، کاردانی، پذیرش دانشجو{% endblock %}">
+    <meta name="description" content="{% block meta_description %}موسسه آموزش عالی علامه امینی - آموزش کارشناسی، کارشناسی ارشد و کاردانی - پذیرش دانشجو{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}موسسه آموزش عالی علامه امینی، کارشناسی، کارشناسی ارشد، کاردانی، پذیرش دانشجو{% endblock %}">
     <meta name="robots" content="index, follow">
-    <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر{% endif %}{% endblock %}</title>
+    <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}{% endblock %}</title>
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <!-- Local vendor assets (بدون وابستگی به Google/CDN خارجی — بدون نیاز به VPN) -->
@@ -18,11 +18,14 @@
     <link rel="stylesheet" href="{% static 'vendor/vazirmatn/vazirmatn.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/aos/aos.css' %}">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260728a">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260730a">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if request.resolver_match.url_name == 'home' %}home-page{% endif %}">
 <a class="skip-link" href="#mainContent">پرش به محتوای اصلی</a>
+
+<!-- نوار پیشرفت خواندن — روی صفحات بلند نشان می‌دهد چقدر مانده -->
+<div class="read-progress" aria-hidden="true"><span></span></div>
 
 <!-- Top Bar -->
 <div class="topbar">
@@ -85,10 +88,28 @@
 <!-- Sticky header: banner + navbar -->
 <header class="site-header" id="siteHeader">
 
-<!-- Institution banner (all pages; larger on home) -->
+<!-- Institution banner — متن زنده، نه تصویر. تغییر نام یک ویرایش ساده است. -->
 <div class="site-banner">
-    <a href="{% url 'core:home' %}" aria-label="موسسه آموزش عالی علامه امینی بهنمیر">
-        <img src="{% static 'images/banner-complete-786x86.png' %}" alt="موسسه آموزش عالی علامه امینی بهنمیر">
+    <a href="{% url 'core:home' %}">
+        <span class="bnr-mark">
+            <img src="{% static 'images/mark-institute.png' %}" alt="" aria-hidden="true">
+            <span class="bnr-en">
+                Allameh Amini<br>Higher Education Institute
+            </span>
+        </span>
+
+        <span class="bnr-name">
+            <span class="bnr-fa">{{ site_settings.university_name_fa|default:"موسسه آموزش عالی علامه امینی" }}</span>
+            <span class="bnr-rule" aria-hidden="true"><i></i><b></b><i></i></span>
+            <span class="bnr-sub">دانش · مهارت · آینده</span>
+        </span>
+
+        <span class="bnr-state">
+            <span class="bnr-min">
+                جمهوری اسلامی ایران<br>وزارت علوم، تحقیقات و فناوری
+            </span>
+            <img src="{% static 'images/mark-iran.png' %}" alt="" aria-hidden="true">
+        </span>
     </a>
 </div>
 
@@ -340,11 +361,11 @@
                         <div class="footer-logo mb-3">
                             <i class="fas fa-university footer-logo-icon"></i>
                             <div>
-                                <h5 class="mb-0">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر{% endif %}</h5>
+                                <h5 class="mb-0">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}</h5>
                                 <small>بهنمیر — مازندران</small>
                             </div>
                         </div>
-                        <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}موسسه آموزش عالی علامه امینی بهنمیر با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
+                        <p class="footer-desc">{% if site_settings %}{{ site_settings.about_short }}{% else %}موسسه آموزش عالی علامه امینی با هدف ارتقاء سطح علمی و عملی دانشجویان تأسیس شده است.{% endif %}</p>
                         <div class="social-links mt-3">
                             {% if site_settings %}
                             {% if site_settings.telegram %}<a href="{{ site_settings.telegram }}" class="social-btn telegram" target="_blank" rel="noopener noreferrer" aria-label="تلگرام"><i class="fab fa-telegram"></i></a>{% endif %}
@@ -504,11 +525,16 @@
     </div>
 </div>
 
+<!-- بازگشت به بالا — پس از ۷۰٪ ارتفاع صفحه ظاهر می‌شود -->
+<button type="button" class="to-top" aria-label="بازگشت به بالای صفحه">
+    <i class="fas fa-chevron-up" aria-hidden="true"></i>
+</button>
+
 <!-- Local vendor JS -->
 <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
 <script src="{% static 'vendor/aos/aos.js' %}" defer></script>
 <!-- Custom JS -->
-<script src="{% static 'js/main.js' %}?v=20260728a" defer></script>
+<script src="{% static 'js/main.js' %}?v=20260730a" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

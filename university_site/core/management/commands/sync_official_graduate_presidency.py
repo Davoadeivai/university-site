@@ -36,19 +36,19 @@ OFFICE_UNITS = [
     {
         'slug': 'dabirkhane-heyat-raise',
         'title': 'دبیرخانه هیأت رئیسه',
-        'content': 'دبیرخانه هیأت رئیسه موسسه آموزش عالی علامه امینی بهنمیر.',
+        'content': 'دبیرخانه هیأت رئیسه موسسه آموزش عالی علامه امینی.',
         'order': 2,
     },
     {
         'slug': 'dabirkhane-heyat-omana',
         'title': 'دبیرخانه هیأت امناء',
-        'content': 'دبیرخانه هیأت امناء موسسه آموزش عالی علامه امینی بهنمیر.',
+        'content': 'دبیرخانه هیأت امناء موسسه آموزش عالی علامه امینی.',
         'order': 3,
     },
     {
         'slug': 'dabirkhane-jazb',
         'title': 'دبیرخانه هیأت اجرایی جذب هیأت علمی',
-        'content': 'دبیرخانه هیأت اجرایی جذب هیأت علمی موسسه آموزش عالی علامه امینی بهنمیر.',
+        'content': 'دبیرخانه هیأت اجرایی جذب هیأت علمی موسسه آموزش عالی علامه امینی.',
         'order': 4,
     },
 ]
@@ -125,7 +125,7 @@ class Command(BaseCommand):
         info, _ = GraduateStudiesInfo.objects.get_or_create(pk=1)
         info.manager_name = 'خانم ماریا چاری'
         if not info.intro:
-            info.intro = 'مدیریت تحصیلات تکمیلی موسسه آموزش عالی علامه امینی بهنمیر.'
+            info.intro = 'مدیریت تحصیلات تکمیلی موسسه آموزش عالی علامه امینی.'
         info.save()
         self.stdout.write(self.style.SUCCESS('GraduateStudiesInfo manager updated'))
 

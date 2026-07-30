@@ -433,7 +433,7 @@ def password_reset_request(request):
                 reset_url = request.build_absolute_uri(
                     f'/accounts/password-reset/{uid}/{token}/'
                 )
-                subject = 'بازیابی رمز عبور — موسسه آموزش عالی علامه امینی بهنمیر'
+                subject = 'بازیابی رمز عبور — موسسه آموزش عالی علامه امینی'
                 html_body = render_to_string(
                     'accounts/email/password_reset_email.html',
                     {'user': user, 'reset_url': reset_url},

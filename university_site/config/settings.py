@@ -170,7 +170,7 @@ LOGOUT_REDIRECT_URL = '/'
 # -----------------------------------------------------------------------------
 JAZZMIN_SETTINGS = {
     'site_title': 'پنل مدیریت | علامه امینی',
-    'site_header': 'موسسه آموزش عالی علامه امینی بهنمیر',
+    'site_header': 'موسسه آموزش عالی علامه امینی',
     'site_brand': 'علامه امینی',
     'welcome_sign': 'به پنل مدیریت موسسه خوش آمدید',
     'copyright': 'طراحی، اجرا و پشتیبانی توسط شرکت آرکاروناک — arkaronak.ir',
@@ -395,11 +395,11 @@ if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     DEFAULT_FROM_EMAIL = config(
         'DEFAULT_FROM_EMAIL',
-        default=f'موسسه آموزش عالی علامه امینی بهنمیر <{EMAIL_HOST_USER}>',
+        default=f'موسسه آموزش عالی علامه امینی <{EMAIL_HOST_USER}>',
     )
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی بهنمیر <noreply@localhost>'
+    DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی <noreply@localhost>'
 
 PASSWORD_RESET_TIMEOUT = 3600
 
@@ -410,7 +410,7 @@ SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
 KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
 SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
 # پیشوند متن پیامک‌های اطلاع‌رسانی
-SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی بهنمیر')
+SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی')
 PUBLIC_SITE_URL = config('PUBLIC_SITE_URL', default='https://portal.aab.ac.ir')
 # نسبت اقساط شهریه: قسط۱ (ثبت‌نام) / قسط۲ (میانی) / قسط۳ (کارت امتحان) — جمع باید ۱۰۰ باشد
 TUITION_INSTALLMENT_RATIOS = (

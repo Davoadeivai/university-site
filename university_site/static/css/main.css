@@ -1,5 +1,5 @@
 ﻿/* ============================================================
-   موسسه آموزش عالی علامه امینی بهنمیر - استایل اصلی - Vazirmatn Font
+   موسسه آموزش عالی علامه امینی - استایل اصلی - Vazirmatn Font
    ============================================================ */
 
 :root {
@@ -1487,3 +1487,532 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 .min-w-0 { min-width: 0; }
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+   بنر موسسه — متن زنده به‌جای تصویر
+   ───────────────────────────────────────────────────────────────────────
+   نسخهٔ قبلی یک PNG با ابعاد ۷۸۶×۸۶ بود که با width:100% کشیده می‌شد؛
+   روی مانیتور ۱۹۲۰ حدود ۲.۴ برابر بزرگ‌نمایی و محو می‌شد و روی موبایل
+   به ۴۳ پیکسل می‌رسید که نام موسسه ناخوانا بود. نام هم داخل پیکسل‌ها
+   پخته بود و تغییرش به طراح نیاز داشت.
+
+   حالا: ارتفاع ثابت، متن واقعی (سئو + screen reader)، طلای گرادیانی با
+   عمق کنده‌کاری‌شده، و فشرده‌شدن هنگام اسکرول.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+    --bnr-navy-900: #061a2c;
+    --bnr-navy-700: #10365a;
+    --bnr-navy-500: #1a4a76;
+    --bnr-gold-300: #f5dfa0;
+    --bnr-gold-500: #d4af57;
+    --bnr-gold-700: #8a6a22;
+    --bnr-h: 92px;
+    --bnr-h-md: 76px;
+    --bnr-h-sm: 62px;
+    --bnr-h-cond: 56px;
+}
+
+.site-banner {
+    position: relative;
+    width: 100%;
+    line-height: normal;
+    overflow: hidden;
+    background:
+        radial-gradient(120% 180% at 82% 15%, rgba(212, 175, 87, .13) 0%, transparent 58%),
+        linear-gradient(105deg, var(--bnr-navy-500) 0%, var(--bnr-navy-700) 52%, var(--bnr-navy-900) 100%);
+}
+
+/* بافت گره‌چینی — با CSS ساخته می‌شود، بدون هیچ فایل تصویری */
+.site-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .05;
+    background-image:
+        repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 14px),
+        repeating-linear-gradient(-45deg, #fff 0 1px, transparent 1px 14px);
+}
+
+/* خط طلایی موییِ پایین — یک پیکسل، با محوشدگی در دو سر */
+.site-banner::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%, var(--bnr-gold-700) 12%, var(--bnr-gold-300) 50%,
+        var(--bnr-gold-700) 88%, transparent 100%);
+}
+
+.site-banner > a {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: clamp(12px, 2.4vw, 34px);
+    height: var(--bnr-h);
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 0 clamp(12px, 2.2vw, 28px);
+    text-decoration: none;
+    transition: height var(--duration-base) var(--easing-standard);
+}
+
+.bnr-mark { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bnr-mark img {
+    display: block;
+    height: calc(var(--bnr-h) - 26px);
+    width: auto;
+    transition: height var(--duration-base) var(--easing-standard);
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .35));
+}
+
+/* ── نام موسسه: طلای گرادیانی با عمق ── */
+.bnr-name { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.bnr-fa {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.05rem, 2.5vw, 1.85rem);
+    letter-spacing: .012em;
+    line-height: 1.25;
+    white-space: nowrap;
+    /* گرادیان طلا داخل خود حروف — نه رنگ تخت */
+    background: linear-gradient(178deg,
+        #fffaf0 0%, var(--bnr-gold-300) 26%, var(--bnr-gold-500) 54%,
+        var(--bnr-gold-700) 82%, var(--bnr-gold-500) 100%);
+    background-size: 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* عمق کنده‌کاری: تاباندن از بالا، سایه به پایین */
+    filter:
+        drop-shadow(0 1px 0 rgba(255, 250, 235, .22))
+        drop-shadow(0 2px 3px rgba(0, 0, 0, .55));
+}
+.bnr-sub {
+    margin-top: 5px;
+    font-size: clamp(.58rem, .82vw, .72rem);
+    letter-spacing: .32em;
+    color: rgba(245, 223, 160, .62);
+    white-space: nowrap;
+    text-transform: none;
+}
+/* خط تزئینی زیر نام — لوزی وسط، دو بازوی محوشونده */
+.bnr-rule {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: min(100%, 320px);
+    margin-top: 6px;
+}
+.bnr-rule i {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--bnr-gold-500));
+}
+.bnr-rule i:last-child { background: linear-gradient(90deg, var(--bnr-gold-500), transparent); }
+.bnr-rule b {
+    width: 5px; height: 5px;
+    background: var(--bnr-gold-300);
+    transform: rotate(45deg);
+    flex: none;
+}
+
+.bnr-state { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.bnr-state img {
+    display: block;
+    height: calc(var(--bnr-h) - 34px);
+    width: auto;
+    transition: height var(--duration-base) var(--easing-standard);
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .4));
+}
+.bnr-min {
+    font-size: clamp(.56rem, .78vw, .69rem);
+    line-height: 1.75;
+    color: rgba(255, 255, 255, .58);
+    white-space: nowrap;
+    text-align: left;
+}
+.bnr-en {
+    font-size: clamp(.52rem, .74vw, .66rem);
+    letter-spacing: .1em;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, .5);
+    direction: ltr;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ── درخشش طلا: یک‌بار هنگام بارگذاری ── */
+@media (prefers-reduced-motion: no-preference) {
+    .bnr-fa {
+        background-size: 220% 100%;
+        animation: bnrSheen 1500ms var(--easing-standard) 1 both;
+    }
+    @keyframes bnrSheen {
+        from { background-position: 100% 0; }
+        to   { background-position: 42% 0; }
+    }
+}
+
+/* ── حالت فشرده هنگام اسکرول ── */
+.site-header.is-condensed .site-banner > a { height: var(--bnr-h-cond); }
+.site-header.is-condensed .bnr-mark img { height: calc(var(--bnr-h-cond) - 18px); }
+.site-header.is-condensed .bnr-state img { height: calc(var(--bnr-h-cond) - 22px); }
+.site-header.is-condensed .bnr-fa { font-size: clamp(.92rem, 1.6vw, 1.15rem); }
+.site-header.is-condensed .bnr-sub,
+.site-header.is-condensed .bnr-rule,
+.site-header.is-condensed .bnr-min,
+.site-header.is-condensed .bnr-en { display: none; }
+
+/* ── واکنش‌گرا: حذف عناصر، نه کوچک‌کردن تا ناخوانایی ── */
+@media (max-width: 1100px) {
+    .site-banner > a { height: var(--bnr-h-md); }
+    .bnr-mark img { height: calc(var(--bnr-h-md) - 22px); }
+    .bnr-state img { height: calc(var(--bnr-h-md) - 28px); }
+    .bnr-en, .bnr-min { display: none; }
+}
+@media (max-width: 640px) {
+    .site-banner > a {
+        height: var(--bnr-h-sm);
+        grid-template-columns: auto 1fr auto;
+        gap: 9px;
+    }
+    .bnr-mark img { height: calc(var(--bnr-h-sm) - 18px); }
+    .bnr-state img { height: calc(var(--bnr-h-sm) - 22px); }
+    .bnr-sub, .bnr-rule { display: none; }
+    .bnr-fa { font-size: .95rem; letter-spacing: 0; }
+}
+@media (max-width: 380px) {
+    .bnr-fa { font-size: .82rem; }
+}
+
+.site-banner > a:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   تایم‌لاین تقویم آموزشی — کارت‌های قابل کلیک
+   ───────────────────────────────────────────────────────────────────────
+   هر مرحله یک کارت مستطیلی با لبهٔ نورانی طلایی و یک نیم‌دایره در بالا
+   است که آیکون مرحله داخلش می‌نشیند. کارت به صفحهٔ واقعی همان مرحله در
+   پنل دانشجو لینک می‌شود (انتخاب واحد، برنامه کلاس، کارت امتحان و …) و
+   وضعیتش — گذشته / در جریان / بعدی — خودکار از تاریخ محاسبه می‌شود.
+   ═══════════════════════════════════════════════════════════════════════ */
+.acal {
+    position: relative;
+    padding: clamp(30px, 4.5vw, 56px) 0 clamp(26px, 3.5vw, 44px);
+    background:
+        radial-gradient(120% 160% at 80% -10%, rgba(212, 175, 87, .14) 0%, transparent 58%),
+        radial-gradient(90% 130% at 12% 110%, rgba(13, 148, 136, .10) 0%, transparent 60%),
+        linear-gradient(112deg, #133c62 0%, #0c2a46 48%, #06192b 100%);
+    color: #fff;
+    overflow: hidden;
+    isolation: isolate;
+}
+/* بافت گره‌چینی نامحسوس */
+.acal::before {
+    content: "";
+    position: absolute; inset: 0; z-index: -1;
+    opacity: .045; pointer-events: none;
+    background-image:
+        repeating-linear-gradient(60deg, #fff 0 1px, transparent 1px 18px),
+        repeating-linear-gradient(-60deg, #fff 0 1px, transparent 1px 18px);
+}
+.acal::after {
+    content: "";
+    position: absolute; inset: auto 0 0 0; height: 1px;
+    background: linear-gradient(90deg, transparent, #8a6a22 14%, #f5dfa0 50%, #8a6a22 86%, transparent);
+}
+
+.acal-head {
+    max-width: 1360px; margin: 0 auto clamp(24px, 3.4vw, 40px);
+    padding: 0 clamp(14px, 2.4vw, 28px);
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+}
+.acal-head h2 {
+    margin: 0; font-weight: 800; letter-spacing: -.012em;
+    font-size: clamp(1.12rem, 2.2vw, 1.55rem);
+    background: linear-gradient(180deg, #fffaf0, #f5dfa0 45%, #d4af57);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+}
+.acal-head p { margin: 0; font-size: .86rem; color: rgba(255, 255, 255, .6); }
+.acal-year {
+    margin-inline-start: auto;
+    font-size: .8rem; font-weight: 700; color: #f5dfa0;
+    background: rgba(245, 223, 160, .1);
+    border: 1px solid rgba(245, 223, 160, .3);
+    border-radius: 999px; padding: 4px 14px; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── ریل کارت‌ها ── */
+.acal-track {
+    display: flex; align-items: stretch;
+    gap: clamp(10px, 1.5vw, 20px);
+    max-width: 1360px; margin: 0 auto;
+    padding: 26px clamp(14px, 2.4vw, 28px) 10px;
+    list-style: none;
+    overflow-x: auto; overflow-y: visible;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 223, 160, .35) transparent;
+}
+.acal-track::-webkit-scrollbar { height: 6px; }
+.acal-track::-webkit-scrollbar-thumb { background: rgba(245, 223, 160, .35); border-radius: 4px; }
+
+.acal-node {
+    position: relative;
+    flex: 1 1 0; min-width: 178px;
+    scroll-snap-align: center;
+    display: flex;
+}
+/* خط اتصال بین کارت‌ها — از مرکز نیم‌دایره‌ها */
+.acal-node::before {
+    content: "";
+    position: absolute;
+    top: -13px; inset-inline: -12px;
+    height: 2px;
+    background: rgba(245, 223, 160, .22);
+    z-index: 0;
+}
+.acal-node:first-child::before { inset-inline-start: 50%; }
+.acal-node:last-child::before  { inset-inline-end: 50%; }
+.acal-node.is-past::before     { background: rgba(245, 223, 160, .5); }
+
+/* ── کارت ── */
+.acal-card {
+    --tone: #d4af57;
+    --tone-soft: rgba(212, 175, 87, .16);
+    position: relative;
+    z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 30px 12px 16px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .075) 0%, rgba(255, 255, 255, .02) 100%),
+        rgba(6, 25, 43, .55);
+    border: 1px solid rgba(245, 223, 160, .26);
+    /* لبهٔ نورانی طلایی */
+    box-shadow:
+        0 0 0 1px rgba(245, 223, 160, .07),
+        0 0 18px -6px rgba(245, 223, 160, .3),
+        0 10px 26px -12px rgba(0, 0, 0, .6);
+    transition: transform var(--duration-base) var(--easing-standard),
+                box-shadow var(--duration-base) var(--easing-standard),
+                border-color var(--duration-base) var(--easing-standard);
+}
+/* نیم‌دایرهٔ بالای کارت — آیکون مرحله داخلش */
+.acal-cap {
+    position: absolute;
+    top: -22px; left: 50%; transform: translateX(-50%);
+    width: 52px; height: 26px;
+    border-radius: 26px 26px 0 0;
+    background: linear-gradient(180deg, var(--tone), rgba(6, 25, 43, .9));
+    border: 1px solid rgba(245, 223, 160, .45);
+    border-bottom: none;
+    display: grid; place-items: end center;
+    padding-bottom: 3px;
+    box-shadow: 0 -3px 14px -4px var(--tone);
+}
+.acal-cap i {
+    font-size: 13px;
+    color: #06192b;
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .35));
+}
+
+.acal-day {
+    font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+    font-weight: 800; line-height: 1.15; color: #fff;
+    font-variant-numeric: tabular-nums; letter-spacing: -.015em;
+    white-space: nowrap;
+}
+.acal-month {
+    font-size: clamp(.64rem, .95vw, .75rem);
+    color: rgba(255, 255, 255, .62); white-space: nowrap;
+}
+.acal-label {
+    margin-top: 7px;
+    font-size: clamp(.74rem, 1.05vw, .86rem);
+    font-weight: 600; line-height: 1.65;
+    color: rgba(255, 255, 255, .93);
+    text-wrap: balance;
+}
+.acal-desc {
+    font-size: .68rem; line-height: 1.7;
+    color: rgba(255, 255, 255, .5);
+    text-wrap: pretty;
+}
+.acal-go {
+    margin-top: 8px;
+    font-size: .66rem; font-weight: 700;
+    color: var(--tone);
+    display: inline-flex; align-items: center; gap: 4px;
+    opacity: .85;
+}
+
+/* تصویر اختیاری پشت کارت */
+.acal-card.has-img { overflow: hidden; }
+.acal-bg {
+    position: absolute; inset: 0; z-index: -1;
+    background-size: cover; background-position: center;
+    opacity: .2;
+}
+
+/* ── رنگ‌های قابل انتخاب از پنل ── */
+.acal-card.tone-gold   { --tone: #d4af57; --tone-soft: rgba(212, 175, 87, .16); }
+.acal-card.tone-teal   { --tone: #2dd4bf; --tone-soft: rgba(45, 212, 191, .16); }
+.acal-card.tone-violet { --tone: #a78bfa; --tone-soft: rgba(167, 139, 250, .16); }
+.acal-card.tone-rose   { --tone: #fb7185; --tone-soft: rgba(251, 113, 133, .16); }
+.acal-card.tone-amber  { --tone: #fbbf24; --tone-soft: rgba(251, 191, 36, .16); }
+.acal-card.tone-sky    { --tone: #38bdf8; --tone-soft: rgba(56, 189, 248, .16); }
+
+/* ── وضعیت مراحل ── */
+.acal-node.is-past .acal-card {
+    opacity: .62;
+    border-color: rgba(255, 255, 255, .1);
+    box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .5);
+}
+.acal-node.is-past .acal-cap { background: rgba(255, 255, 255, .16); border-color: rgba(255, 255, 255, .2); box-shadow: none; }
+.acal-node.is-past .acal-cap i { color: rgba(255, 255, 255, .75); }
+.acal-node.is-past .acal-day { color: rgba(255, 255, 255, .5); }
+
+.acal-node.is-now .acal-card {
+    border-color: var(--tone);
+    background:
+        linear-gradient(180deg, var(--tone-soft) 0%, rgba(255, 255, 255, .02) 100%),
+        rgba(6, 25, 43, .62);
+    box-shadow:
+        0 0 0 1px var(--tone),
+        0 0 30px -6px var(--tone),
+        0 14px 34px -14px rgba(0, 0, 0, .7);
+}
+.acal-node.is-now .acal-day   { color: #fff; }
+.acal-node.is-now .acal-label { color: #fff; }
+
+.acal-node.is-next .acal-card { border-color: rgba(245, 223, 160, .5); }
+
+/* کارت قابل کلیک */
+a.acal-card:hover,
+a.acal-card:focus-visible {
+    transform: translateY(-5px);
+    border-color: var(--tone);
+    box-shadow:
+        0 0 0 1px var(--tone),
+        0 0 26px -6px var(--tone),
+        0 18px 38px -14px rgba(0, 0, 0, .7);
+    outline: none;
+}
+a.acal-card:hover .acal-go { opacity: 1; }
+a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--tone); }
+
+/* نشان وضعیت */
+.acal-badge {
+    display: inline-block; margin-top: 7px;
+    font-size: .63rem; font-weight: 800; letter-spacing: .01em;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.acal-node.is-now  .acal-badge { background: var(--tone, #f5dfa0); color: #06192b; }
+.acal-node.is-next .acal-badge {
+    background: rgba(245, 223, 160, .14); color: #f5dfa0;
+    border: 1px solid rgba(245, 223, 160, .4);
+}
+.acal-node.is-past .acal-badge { background: rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .6); }
+
+@media (prefers-reduced-motion: no-preference) {
+    .acal-node.is-now .acal-cap { animation: acalGlow 2.6s ease-in-out infinite; }
+    @keyframes acalGlow {
+        0%, 100% { box-shadow: 0 -3px 14px -4px var(--tone); }
+        50%      { box-shadow: 0 -3px 24px 0 var(--tone); }
+    }
+}
+
+/* ── موبایل: کارت‌های عمودی تمام‌عرض ── */
+@media (max-width: 760px) {
+    .acal-track {
+        flex-direction: column; gap: 24px;
+        overflow-x: visible; scroll-snap-type: none;
+        padding-top: 28px;
+    }
+    .acal-node { min-width: 0; width: 100%; }
+    /* خط عمودی سمت راست */
+    .acal-node::before {
+        top: auto; bottom: -24px; height: 24px;
+        inset-inline: auto; inset-inline-start: 50%;
+        width: 2px; transform: translateX(-50%);
+    }
+    .acal-node:last-child::before { display: none; }
+    .acal-node:first-child::before { inset-inline-start: 50%; }
+    .acal-card { padding: 28px 16px 18px; }
+    .acal-day { font-size: 1.45rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   نوار پیشرفت خواندن — بالای هدر چسبان
+   ───────────────────────────────────────────────────────────────────────
+   روی صفحات بلند (اخبار، آیین‌نامه، معرفی رشته) به کاربر می‌گوید چقدر
+   از صفحه مانده. با scroll-driven animation خالص CSS، بدون شنوندهٔ
+   scroll در جاوااسکریپت — پس در هر فریم محاسبه‌ای انجام نمی‌شود.
+   ═══════════════════════════════════════════════════════════════════════ */
+.read-progress {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 3px;
+    z-index: 1040;
+    background: transparent;
+    pointer-events: none;
+}
+.read-progress > span {
+    display: block;
+    height: 100%;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--bnr-gold-700), var(--bnr-gold-300), var(--bnr-gold-500));
+    box-shadow: 0 0 8px rgba(245, 223, 160, .5);
+    transform: scaleX(0);
+}
+@supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .read-progress > span {
+            animation: readGrow linear both;
+            animation-timeline: scroll(root block);
+        }
+        @keyframes readGrow { to { transform: scaleX(1); } }
+    }
+}
+/* مرورگرهای قدیمی: نوار را پنهان کن تا خط تزئینی بی‌معنی نماند */
+@supports not (animation-timeline: scroll()) {
+    .read-progress { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   دکمهٔ «بازگشت به بالا» — فقط وقتی واقعاً لازم است ظاهر می‌شود
+   ═══════════════════════════════════════════════════════════════════════ */
+.to-top {
+    position: fixed;
+    inset-block-end: 22px;
+    inset-inline-start: 22px;
+    z-index: 1035;
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    border: 1px solid rgba(245, 223, 160, .35);
+    border-radius: 50%;
+    background: linear-gradient(140deg, var(--bnr-navy-700), var(--bnr-navy-900));
+    color: var(--bnr-gold-300);
+    box-shadow: 0 6px 20px rgba(6, 26, 44, .35);
+    cursor: pointer;
+    opacity: 0; visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity var(--duration-base) var(--easing-standard),
+                transform var(--duration-base) var(--easing-standard),
+                visibility var(--duration-base) var(--easing-standard);
+}
+.to-top.is-on { opacity: 1; visibility: visible; transform: translateY(0); }
+.to-top:hover { border-color: var(--bnr-gold-300); color: #fff; }
+.to-top:focus-visible { outline: none; box-shadow: var(--focus-ring); }

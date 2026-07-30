@@ -170,21 +170,133 @@ class AcademicCalendar(models.Model):
         ('spring', 'بهار'),
         ('summer', 'تابستان'),
     ]
+    # هر مرحله به یک قابلیت واقعی پنل دانشجو وصل می‌شود تا کلیک روی آن
+    # کاربر را به همان صفحه ببرد — نه یک تصویر بی‌عمل.
+    ACTION_CHOICES = [
+        ('',                    'بدون لینک'),
+        ('registration',        'انتخاب واحد'),
+        ('schedule',            'برنامه کلاس'),
+        ('payments',            'پرداخت شهریه'),
+        ('exams',               'برنامه امتحانات'),
+        ('exam_card',           'کارت ورود به جلسه'),
+        ('grades',              'نمرات و کارنامه'),
+        ('courses',             'دروس من'),
+        ('clearance',           'تسویه حساب'),
+        ('requests',            'درخواست‌های دانشجویی'),
+        ('admissions_apply',    'ثبت درخواست پذیرش'),
+        ('admissions_track',    'پیگیری پذیرش'),
+        ('tuition_calc',        'محاسبه شهریه'),
+        ('external',            'لینک دلخواه (آدرس دستی)'),
+    ]
+    # نام مسیر جنگو برای هر اقدام — در قالب به URL تبدیل می‌شود
+    ACTION_URLS = {
+        'registration':     'dashboard:student_registration',
+        'schedule':         'dashboard:student_schedule',
+        'payments':         'dashboard:student_payments',
+        'exams':            'dashboard:student_exams',
+        'exam_card':        'dashboard:student_exam_card',
+        'grades':           'dashboard:student_grades',
+        'courses':          'dashboard:student_courses',
+        'clearance':        'dashboard:student_clearance',
+        'requests':         'dashboard:student_requests',
+        'admissions_apply': 'admissions:apply',
+        'admissions_track': 'admissions:track',
+        'tuition_calc':     'admissions:tuition_calc',
+    }
+    TONE_CHOICES = [
+        ('gold',   'طلایی (پیش‌فرض)'),
+        ('teal',   'فیروزه‌ای'),
+        ('violet', 'بنفش'),
+        ('rose',   'گلی'),
+        ('amber',  'کهربایی'),
+        ('sky',    'آبی آسمانی'),
+    ]
+
     title = models.CharField(_('عنوان'), max_length=200)
-    description = models.TextField(_('توضیحات'), blank=True)
+    description = models.TextField(
+        _('توضیحات'), blank=True,
+        help_text=_('در باکس تایم‌لاین زیر عنوان نمایش داده می‌شود.'),
+    )
     start_date = models.DateField(_('تاریخ شروع'))
     end_date = models.DateField(_('تاریخ پایان'))
     semester = models.CharField(_('نیم‌سال'), max_length=20, choices=SEMESTER_CHOICES)
     academic_year = models.CharField(_('سال تحصیلی'), max_length=20)
     is_important = models.BooleanField(_('مهم'), default=False)
 
+    # ── نمایش و لینک در تایم‌لاین صفحهٔ اصلی ──
+    action = models.CharField(
+        _('کلیک روی این مرحله کاربر را ببرد به'), max_length=30,
+        choices=ACTION_CHOICES, blank=True, default='',
+        help_text=_('صفحهٔ مرتبط در پنل دانشجو یا سایت.'),
+    )
+    external_url = models.CharField(
+        _('آدرس دلخواه'), max_length=300, blank=True, default='',
+        help_text=_('فقط اگر گزینهٔ «لینک دلخواه» را انتخاب کرده‌اید.'),
+    )
+    icon = models.CharField(
+        _('آیکون'), max_length=60, blank=True, default='',
+        help_text=_('کلاس Font Awesome، مثلاً fa-check-square. خالی = خودکار.'),
+    )
+    tone = models.CharField(
+        _('رنگ باکس'), max_length=10, choices=TONE_CHOICES, default='gold',
+    )
+    image = models.ImageField(
+        _('تصویر مرحله'), upload_to='calendar/', blank=True, null=True,
+        help_text=_('اختیاری — پشت باکس این مرحله نمایش داده می‌شود.'),
+    )
+    order = models.PositiveIntegerField(
+        _('ترتیب'), default=0,
+        help_text=_('در صورت برابری، تاریخ شروع ملاک است.'),
+    )
+    is_active = models.BooleanField(_('نمایش در تایم‌لاین'), default=True)
+
     class Meta:
         verbose_name = _('تقویم آموزشی')
         verbose_name_plural = _('تقویم آموزشی')
-        ordering = ['start_date']
+        ordering = ['order', 'start_date']
 
     def __str__(self):
         return f"{self.title} - {self.academic_year}"
+
+    # ── کمکی‌های نمایش ──
+    DEFAULT_ICONS = {
+        'registration': 'fa-check-square',
+        'schedule': 'fa-calendar-alt',
+        'payments': 'fa-money-check-alt',
+        'exams': 'fa-file-alt',
+        'exam_card': 'fa-id-card',
+        'grades': 'fa-award',
+        'courses': 'fa-book',
+        'clearance': 'fa-clipboard-check',
+        'requests': 'fa-paper-plane',
+        'admissions_apply': 'fa-user-graduate',
+        'admissions_track': 'fa-search',
+        'tuition_calc': 'fa-calculator',
+    }
+
+    @property
+    def display_icon(self) -> str:
+        if self.icon:
+            return self.icon.strip()
+        return self.DEFAULT_ICONS.get(self.action, 'fa-circle-dot')
+
+    def get_action_url(self) -> str:
+        """آدرس مقصد این مرحله (یا رشتهٔ خالی)."""
+        from django.urls import NoReverseMatch, reverse
+
+        if self.action == 'external':
+            return (self.external_url or '').strip()
+        name = self.ACTION_URLS.get(self.action)
+        if not name:
+            return ''
+        try:
+            return reverse(name)
+        except NoReverseMatch:
+            return ''
+
+    @property
+    def is_multi_day(self) -> bool:
+        return bool(self.end_date and self.end_date != self.start_date)
 
 
 class Laboratory(models.Model):

@@ -17,7 +17,9 @@ from core.models import (
     OrganizationalChart,
     BankAccount, PaymentIdentifier, DownloadableDocument,
     GraduateStudiesInfo,
+    HomeFeature,
 )
+from core.academic_timeline import build_timeline
 from news.models import News, Category, Gallery
 from academics.models import Department, Major, AcademicCalendar
 from faculty.models import Professor
@@ -88,6 +90,8 @@ def home(request):
         'upcoming_events': upcoming_events,
         'departments': departments,
         'calendar_items': calendar_items,
+        'timeline': build_timeline(),
+        'home_features': HomeFeature.objects.filter(is_active=True),
         'featured_professors': featured_professors,
         'faqs': faqs,
         'gallery_images': gallery_images,

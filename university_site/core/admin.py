@@ -18,6 +18,7 @@ from .models import (
     OrganizationalChart,
     BankAccount, PaymentIdentifier, DownloadableDocument,
     GraduateStudiesInfo,
+    HomeFeature, HomeSection,
 )
 
 
@@ -496,3 +497,70 @@ class DownloadableDocumentAdmin(JalaliAdminMixin, admin.ModelAdmin):
         actions = super().get_actions(request)
         actions.pop('delete_selected', None)
         return actions
+
+
+# ─── مزایای تحصیل و بخش‌های صفحه اصلی ─────────────────────────────
+
+@admin.register(HomeFeature)
+class HomeFeatureAdmin(admin.ModelAdmin):
+    list_display = ['title', 'icon_preview', 'tone', 'has_image', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    list_filter = ['is_active', 'tone']
+    search_fields = ['title', 'description']
+    fieldsets = (
+        ('محتوا', {
+            'fields': ('title', 'description', 'link'),
+        }),
+        ('ظاهر', {
+            'fields': ('icon', 'tone', 'image'),
+            'description': (
+                'آیکون را از <a href="https://fontawesome.com/search?o=r&m=free" '
+                'target="_blank" rel="noopener">فهرست Font Awesome</a> انتخاب کنید '
+                '(مثلاً <code>fa-flask</code>). اگر تصویر بگذارید، جای آیکون نمایش داده می‌شود.'
+            ),
+        }),
+        ('نمایش', {'fields': ('order', 'is_active')}),
+    )
+
+    @admin.display(description='آیکون')
+    def icon_preview(self, obj):
+        return format_html(
+            '<i class="fas {}" style="font-size:20px;color:{};"></i> <code>{}</code>',
+            obj.display_icon if hasattr(obj, 'display_icon') else obj.icon,
+            obj.color, obj.icon,
+        )
+
+    @admin.display(description='تصویر', boolean=True)
+    def has_image(self, obj):
+        return bool(obj.image)
+
+
+@admin.register(HomeSection)
+class HomeSectionAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'title', 'has_image', 'overlay', 'is_visible']
+    list_editable = ['is_visible']
+    list_filter = ['is_visible', 'overlay']
+    fieldsets = (
+        ('بخش', {
+            'fields': ('key', 'is_visible'),
+            'description': (
+                'برای هر بخش صفحهٔ اصلی یک رکورد بسازید. '
+                'اگر رکوردی نسازید، همان متن و ظاهر پیش‌فرض قالب باقی می‌ماند.'
+            ),
+        }),
+        ('متن (اختیاری)', {
+            'fields': ('title', 'subtitle'),
+            'description': 'خالی بگذارید تا عنوان پیش‌فرض قالب حفظ شود.',
+        }),
+        ('تصویر پس‌زمینه', {
+            'fields': ('image', 'overlay'),
+            'description': (
+                'تصویر پشت کل بخش نمایش داده می‌شود. '
+                '«پوشش» لایه‌ای است که روی تصویر می‌آید تا متن خوانا بماند.'
+            ),
+        }),
+    )
+
+    @admin.display(description='تصویر', boolean=True)
+    def has_image(self, obj):
+        return bool(obj.image)

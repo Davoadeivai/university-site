@@ -24,7 +24,7 @@ def _org_chart_file_upload_to(instance, filename):
 
 
 class SiteSettings(models.Model):
-    university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی بهنمیر')
+    university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی')
     university_name_en = models.CharField(
         _('نام دانشگاه (انگلیسی)'), max_length=200,
         default='Allameh Amini Higher Education Institute',
@@ -798,3 +798,119 @@ class DownloadableDocument(models.Model):
                 'icon': icons.get(key, 'fas fa-folder'),
             })
         return folders
+
+
+class HomeFeature(models.Model):
+    """مزیت تحصیل در موسسه — بخش «مزایا» در صفحهٔ اصلی.
+
+    تا پیش از این شش کارت این بخش کاملاً در قالب هاردکد بود و تغییر متن
+    یا آیکونشان به دیپلوی نیاز داشت.
+    """
+    TONE_CHOICES = [
+        ('blue',   'آبی'),
+        ('green',  'سبز'),
+        ('gold',   'طلایی'),
+        ('violet', 'بنفش'),
+        ('red',    'قرمز'),
+        ('amber',  'کهربایی'),
+        ('teal',   'فیروزه‌ای'),
+    ]
+    TONE_HEX = {
+        'blue': '#1a73e8', 'green': '#0b9e6b', 'gold': '#a07820',
+        'violet': '#7c3aed', 'red': '#dc2626', 'amber': '#d97706',
+        'teal': '#0d9488',
+    }
+
+    title = models.CharField(_('عنوان'), max_length=120)
+    description = models.CharField(_('توضیح کوتاه'), max_length=250, blank=True)
+    icon = models.CharField(
+        _('آیکون'), max_length=60, default='fa-star',
+        help_text=_('کلاس Font Awesome، مثلاً fa-graduation-cap'),
+    )
+    tone = models.CharField(_('رنگ آیکون'), max_length=10, choices=TONE_CHOICES, default='blue')
+    image = models.ImageField(
+        _('تصویر'), upload_to='features/', blank=True, null=True,
+        help_text=_('اختیاری — اگر بگذارید جای آیکون نمایش داده می‌شود.'),
+    )
+    link = models.CharField(_('لینک'), max_length=300, blank=True, default='')
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('مزیت تحصیل')
+        verbose_name_plural = _('مزایای تحصیل (صفحه اصلی)')
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def color(self) -> str:
+        return self.TONE_HEX.get(self.tone, '#1a73e8')
+
+
+class HomeSection(models.Model):
+    """ظاهر هر بخش صفحهٔ اصلی — عنوان، زیرعنوان، تصویر پس‌زمینه.
+
+    هر لایهٔ صفحهٔ اصلی با یک کلید ثابت شناخته می‌شود. اگر رکوردی برای آن
+    کلید وجود داشته باشد، عنوان و تصویر پس‌زمینه‌اش از پنل خوانده می‌شود؛
+    وگرنه همان متن پیش‌فرض قالب می‌ماند. یعنی افزودن رکورد اختیاری است و
+    نبودش چیزی را نمی‌شکند.
+    """
+    SECTION_CHOICES = [
+        ('stats',       'نوار آمار'),
+        ('timeline',    'تقویم آموزشی'),
+        ('features',    'مزایای تحصیل'),
+        ('quicklinks',  'دسترسی سریع'),
+        ('news',        'اخبار و اطلاعیه‌ها'),
+        ('departments', 'دانشکده‌ها و گروه‌ها'),
+        ('faculty',     'هیئت علمی'),
+        ('events',      'رویدادها'),
+        ('gallery',     'گالری تصاویر'),
+        ('alumni',      'فارغ‌التحصیلان'),
+        ('faq',         'پرسش‌های متداول'),
+        ('cta',         'فراخوان پایانی'),
+    ]
+    OVERLAY_CHOICES = [
+        ('none',  'بدون پوشش'),
+        ('light', 'پوشش روشن'),
+        ('dark',  'پوشش تیره'),
+        ('navy',  'پوشش سرمه‌ای'),
+    ]
+
+    key = models.CharField(
+        _('بخش'), max_length=30, choices=SECTION_CHOICES, unique=True,
+    )
+    title = models.CharField(
+        _('عنوان'), max_length=200, blank=True,
+        help_text=_('خالی = عنوان پیش‌فرض قالب حفظ می‌شود.'),
+    )
+    subtitle = models.CharField(_('زیرعنوان'), max_length=300, blank=True)
+    image = models.ImageField(
+        _('تصویر پس‌زمینه'), upload_to='sections/', blank=True, null=True,
+    )
+    overlay = models.CharField(
+        _('پوشش روی تصویر'), max_length=10, choices=OVERLAY_CHOICES, default='light',
+        help_text=_('برای خوانا ماندن متن روی تصویر.'),
+    )
+    is_visible = models.BooleanField(
+        _('نمایش این بخش'), default=True,
+        help_text=_('برداشتن تیک، کل بخش را از صفحهٔ اصلی حذف می‌کند.'),
+    )
+
+    class Meta:
+        verbose_name = _('بخش صفحه اصلی')
+        verbose_name_plural = _('بخش‌های صفحه اصلی (تصویر و عنوان)')
+        ordering = ['key']
+
+    def __str__(self):
+        return self.get_key_display()
+
+    @property
+    def overlay_css(self) -> str:
+        return {
+            'none':  'transparent',
+            'light': 'rgba(255,255,255,.88)',
+            'dark':  'rgba(10,20,30,.72)',
+            'navy':  'rgba(6,26,44,.80)',
+        }.get(self.overlay, 'rgba(255,255,255,.88)')

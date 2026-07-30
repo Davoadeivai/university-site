@@ -98,11 +98,11 @@ if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     DEFAULT_FROM_EMAIL = config(
         'DEFAULT_FROM_EMAIL',
-        default=f'موسسه آموزش عالی علامه امینی بهنمیر <{EMAIL_HOST_USER}>',
+        default=f'موسسه آموزش عالی علامه امینی <{EMAIL_HOST_USER}>',
     )
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی بهنمیر <noreply@localhost>'
+    DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی <noreply@localhost>'
 
 PASSWORD_RESET_TIMEOUT = 3600
 
@@ -112,7 +112,7 @@ PASSWORD_RESET_TIMEOUT = 3600
 SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
 KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
 SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
-SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی بهنمیر')
+SMS_SITE_LABEL = config('SMS_SITE_LABEL', default='موسسه آموزش عالی علامه امینی')
 PUBLIC_SITE_URL = config('PUBLIC_SITE_URL', default='https://portal.aab.ac.ir')
 TUITION_INSTALLMENT_RATIOS = (
     config('TUITION_INSTALLMENT_R1', default=40, cast=int),

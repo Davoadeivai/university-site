@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from core.admin_jalali import JalaliAdminMixin
+from core.jalali import format_jalali_date
 
 from .models import Department, Major, Course, AcademicCalendar, Laboratory, AcademicGroup
 
@@ -195,12 +196,89 @@ class CourseAdmin(admin.ModelAdmin):
 @admin.register(AcademicCalendar)
 class AcademicCalendarAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_display = [
-        'title', 'semester', 'academic_year_jalali',
-        'start_date_jalali', 'end_date_jalali', 'is_important',
+        'title', 'step_preview', 'semester', 'academic_year_jalali',
+        'start_date_jalali', 'end_date_jalali',
+        'action_link', 'order', 'is_important', 'is_active',
     ]
-    list_filter = ['semester', 'academic_year', 'is_important']
-    list_editable = ['is_important']
+    list_filter = ['is_active', 'semester', 'academic_year', 'is_important', 'action', 'tone']
+    list_editable = ['order', 'is_important', 'is_active']
     search_fields = ['title', 'description', 'academic_year']
+    fieldsets = (
+        ('مرحله', {
+            'fields': ('title', 'description'),
+            'description': (
+                'این مراحل در <strong>تایم‌لاین صفحهٔ اصلی</strong> نمایش داده می‌شوند. '
+                'وضعیت هر مرحله (گذشته / در جریان / بعدی) خودکار از تاریخ محاسبه می‌شود.'
+            ),
+        }),
+        ('زمان‌بندی', {
+            'fields': (
+                ('start_date', 'start_date_jalali_ro'),
+                ('end_date', 'end_date_jalali_ro'),
+                ('semester', 'academic_year'),
+            ),
+            'description': (
+                'تاریخ‌ها را میلادی وارد کنید؛ معادل شمسی کنارشان نمایش داده می‌شود. '
+                'برای مرحلهٔ یک‌روزه، تاریخ پایان را برابر تاریخ شروع بگذارید.'
+            ),
+        }),
+        ('کلیک و مقصد', {
+            'fields': ('action', 'external_url'),
+            'description': (
+                'با انتخاب یک مورد، کلیک روی این مرحله در تایم‌لاین کاربر را به همان '
+                'صفحهٔ پنل دانشجو می‌برد. «بدون لینک» یعنی مرحله فقط نمایشی است.'
+            ),
+        }),
+        ('ظاهر', {
+            'fields': ('icon', 'tone', 'image', 'order'),
+            'description': (
+                'آیکون را از <a href="https://fontawesome.com/search?o=r&m=free" '
+                'target="_blank" rel="noopener">Font Awesome</a> بردارید '
+                '(مثلاً <code>fa-check-square</code>). خالی = آیکون خودکار بر اساس مقصد.'
+            ),
+        }),
+        ('نمایش', {'fields': ('is_important', 'is_active')}),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(super().get_readonly_fields(request, obj))
+        for f in ('start_date_jalali_ro', 'end_date_jalali_ro'):
+            if f not in ro:
+                ro.append(f)
+        return ro
+
+    @admin.display(description='شروع (شمسی)')
+    def start_date_jalali_ro(self, obj):
+        return format_jalali_date(obj.start_date, 'full') if obj and obj.start_date else '—'
+
+    @admin.display(description='پایان (شمسی)')
+    def end_date_jalali_ro(self, obj):
+        return format_jalali_date(obj.end_date, 'full') if obj and obj.end_date else '—'
+
+    @admin.display(description='نما')
+    def step_preview(self, obj):
+        from core.models import HomeFeature  # noqa: F401  (رنگ‌ها هم‌خوان بمانند)
+        tones = {
+            'gold': '#c9a24c', 'teal': '#0d9488', 'violet': '#7c3aed',
+            'rose': '#e11d48', 'amber': '#d97706', 'sky': '#0284c7',
+        }
+        return format_html(
+            '<span style="display:inline-flex;align-items:center;gap:6px;">'
+            '<i class="fas {}" style="color:{};font-size:16px;"></i>'
+            '<span style="width:10px;height:10px;border-radius:50%;background:{};'
+            'display:inline-block;"></span></span>',
+            obj.display_icon, tones.get(obj.tone, '#c9a24c'), tones.get(obj.tone, '#c9a24c'),
+        )
+
+    @admin.display(description='مقصد کلیک')
+    def action_link(self, obj):
+        if not obj.action:
+            return format_html('<span style="color:#94a3b8;">—</span>')
+        url = obj.get_action_url()
+        label = obj.get_action_display()
+        if url:
+            return format_html('<a href="{}" target="_blank">{}</a>', url, label)
+        return format_html('<span style="color:#dc2626;">{} (آدرس نامعتبر)</span>', label)
 
 
 @admin.register(Laboratory)

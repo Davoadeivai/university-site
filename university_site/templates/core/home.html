@@ -282,7 +282,7 @@
                         <i class="fas fa-calendar-alt"></i>
                         تاریخ شروع کلاس‌ها: ۱ مهرماه ۱۴۰۴
                     </div>
-                    <h1 class="uni-slide-title">موسسه آموزش عالی<br>علامه امینی بهنمیر</h1>
+                    <h1 class="uni-slide-title">موسسه آموزش عالی<br>علامه امینی</h1>
                     <p class="uni-slide-subtitle">مرکز برتر آموزش عالی؛ جایی که دانش، نوآوری و توسعه فردی با هم تلاقی می‌یابند</p>
                     <div class="uni-slide-actions">
                         <a href="{% url 'core:student_path' %}" class="hero-btn">
@@ -485,62 +485,49 @@
     </div>
 </section>
 
-<!-- ===== FEATURES (از لندینگ یکپارچه شد) ===== -->
-<section class="section" style="background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);">
+<!-- ===== تقویم آموزشی — مراحل نیمسال با وضعیت زنده ===== -->
+{% include 'core/_academic_timeline.html' %}
+
+<!-- ===== FEATURES — از پنل ادمین: «مزایای تحصیل» ===== -->
+{% with sec=sections.features %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section"
+  {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"
+  {% else %}style="background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title">مزایای تحصیل در موسسه آموزش عالی علامه امینی بهنمیر</h2>
-            <p class="section-subtitle">یک تجربه آموزشی کامل و آینده‌ساز</p>
+            <h2 class="section-title">{{ sec.title|default:"مزایای تحصیل در موسسه آموزش عالی علامه امینی" }}</h2>
+            <p class="section-subtitle">{{ sec.subtitle|default:"یک تجربه آموزشی کامل و آینده‌ساز" }}</p>
         </div>
         <div class="row g-4">
+            {% for f in home_features %}
             <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                {% if f.link %}<a href="{{ f.link }}" class="text-decoration-none text-reset">{% endif %}
                 <div class="dept-card text-center h-100 py-4">
-                    <div class="dept-icon" style="color:#1a73e8;"><i class="fas fa-graduation-cap"></i></div>
-                    <h3 class="dept-title">اساتید برجسته</h3>
-                    <p class="text-muted" style="font-size:14px;">هیئت علمی با سابقه پژوهشی و تجربه عملی در صنعت</p>
+                    {% if f.image %}
+                    <img src="{{ f.image.url }}" alt="{{ f.title }}" loading="lazy"
+                         style="width:56px;height:56px;object-fit:contain;margin-bottom:10px;">
+                    {% else %}
+                    <div class="dept-icon" style="color:{{ f.color }};"><i class="fas {{ f.icon }}"></i></div>
+                    {% endif %}
+                    <h3 class="dept-title">{{ f.title }}</h3>
+                    {% if f.description %}
+                    <p class="text-muted" style="font-size:14px;">{{ f.description }}</p>
+                    {% endif %}
                 </div>
+                {% if f.link %}</a>{% endif %}
             </div>
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="50">
-                <div class="dept-card text-center h-100 py-4">
-                    <div class="dept-icon" style="color:#0b9e6b;"><i class="fas fa-flask"></i></div>
-                    <h3 class="dept-title">آزمایشگاه‌های مجهز</h3>
-                    <p class="text-muted" style="font-size:14px;">فضاهای پژوهشی پیشرفته برای یادگیری عملی</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="dept-card text-center h-100 py-4">
-                    <div class="dept-icon" style="color:#a07820;"><i class="fas fa-handshake"></i></div>
-                    <h3 class="dept-title">ارتباط با صنعت</h3>
-                    <p class="text-muted" style="font-size:14px;">شبکه همکاری برای کارآموزی و اشتغال فارغ‌التحصیلان</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="150">
-                <div class="dept-card text-center h-100 py-4">
-                    <div class="dept-icon" style="color:#7c3aed;"><i class="fas fa-laptop-code"></i></div>
-                    <h3 class="dept-title">آموزش مجازی</h3>
-                    <p class="text-muted" style="font-size:14px;">یادگیری آنلاین در هر زمان و مکان</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="dept-card text-center h-100 py-4">
-                    <div class="dept-icon" style="color:#dc2626;"><i class="fas fa-book"></i></div>
-                    <h3 class="dept-title">کتابخانه دیجیتال</h3>
-                    <p class="text-muted" style="font-size:14px;">دسترسی به منابع علمی، مقالات و پایان‌نامه‌ها</p>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="250">
-                <div class="dept-card text-center h-100 py-4">
-                    <div class="dept-icon" style="color:#d97706;"><i class="fas fa-medal"></i></div>
-                    <h3 class="dept-title">رتبه ممتاز</h3>
-                    <p class="text-muted" style="font-size:14px;">ارزیابی‌های سالانه علمی و آموزشی در سطح کشور</p>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 <!-- ===== QUICK LINKS ===== -->
-<section class="section">
+{% with sec=sections.quicklinks %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">دسترسی سریع</h2>
@@ -610,9 +597,13 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 <!-- ===== NEWS + ANNOUNCEMENTS ===== -->
-<section class="section section-alt">
+{% with sec=sections.news %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="row g-5">
             <!-- Latest News -->
@@ -760,9 +751,13 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 <!-- ===== DEPARTMENTS ===== -->
-<section class="section">
+{% with sec=sections.departments %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">دانشکده‌ها و گروه‌های آموزشی</h2>
@@ -814,9 +809,13 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 <!-- ===== FACULTY ===== -->
-<section class="section section-alt">
+{% with sec=sections.faculty %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">هیئت علمی برگزیده</h2>
@@ -865,10 +864,14 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 <!-- ===== EVENTS ===== -->
 {% if upcoming_events %}
-<section class="section">
+{% with sec=sections.events %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">رویدادهای آینده</h2>
@@ -908,10 +911,14 @@
     </div>
 </section>
 {% endif %}
+{% endwith %}
+{% endif %}
 
 <!-- ===== GALLERY ===== -->
 {% if gallery_images %}
-<section class="section section-alt">
+{% with sec=sections.gallery %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">گالری تصاویر</h2>
@@ -932,10 +939,14 @@
     </div>
 </section>
 {% endif %}
+{% endwith %}
+{% endif %}
 
 <!-- ===== ALUMNI ===== -->
 {% if alumni %}
-<section class="section">
+{% with sec=sections.alumni %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">فارغ‌التحصیلان موفق</h2>
@@ -969,10 +980,14 @@
     </div>
 </section>
 {% endif %}
+{% endwith %}
+{% endif %}
 
 <!-- ===== FAQ ===== -->
 {% if faqs %}
-<section class="section section-alt">
+{% with sec=sections.faq %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">سوالات متداول</h2>
@@ -1010,6 +1025,8 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 {% endif %}
 
 <!-- ===== CTA ===== -->

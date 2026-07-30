@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         settings_obj, _ = SiteSettings.objects.get_or_create(pk=1)
-        settings_obj.university_name_fa = 'موسسه آموزش عالی علامه امینی بهنمیر'
+        settings_obj.university_name_fa = 'موسسه آموزش عالی علامه امینی'
         if settings_obj.university_name_en in ('', 'Jame University', 'University'):
             settings_obj.university_name_en = 'Allameh Amini Higher Education Institute'
         settings_obj.external_lms_url = SAMAWEB

@@ -147,7 +147,7 @@ SMS_ENABLED=True
 KAVENEGAR_API_KEY=...
 KAVENEGAR_OTP_TEMPLATE=نام_الگوی_تأیید_شده
 SMS_SENDER_NUMBER=خط_اختصاصی_درصورت_داشتن
-SMS_SITE_LABEL=موسسه آموزش عالی علامه امینی بهنمیر
+SMS_SITE_LABEL=موسسه آموزش عالی علامه امینی
 ```
 
 سپس `touch tmp/restart.txt`

@@ -21,7 +21,7 @@ _ANNOUNCEMENT_TARGET_ROLES = {
 
 
 def _site_label() -> str:
-    return getattr(settings, 'SMS_SITE_LABEL', '') or 'موسسه آموزش عالی علامه امینی بهنمیر'
+    return getattr(settings, 'SMS_SITE_LABEL', '') or 'موسسه آموزش عالی علامه امینی'
 
 
 def _clip(text: str, max_len: int = _SMS_MAX_LEN) -> str:

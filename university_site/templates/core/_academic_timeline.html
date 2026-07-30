@@ -1,0 +1,67 @@
+{# تایم‌لاین تقویم آموزشی — کارت قابل کلیک برای هر مرحله #}
+{% if timeline.has_data %}
+{% with sec=sections.timeline %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="acal" aria-labelledby="acalTitle"
+  {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+  <div class="acal-head">
+    <h2 id="acalTitle">{{ sec.title|default:"تقویم آموزشی" }}</h2>
+    <p>{{ sec.subtitle|default:"روی هر مرحله بزنید تا به صفحهٔ مربوطه بروید" }}</p>
+    {% if timeline.academic_year %}
+    <span class="acal-year">سال تحصیلی {{ timeline.academic_year|jalali_years }}</span>
+    {% endif %}
+  </div>
+
+  <ol class="acal-track">
+    {% for n in timeline.nodes %}
+    <li class="acal-node{% if n.is_past %} is-past{% elif n.is_now %} is-now{% elif n.is_next %} is-next{% endif %}">
+
+      {# اگر مرحله مقصد دارد، کارت لینک است؛ وگرنه یک div ساده #}
+      {% if n.url %}<a href="{{ n.url }}"{% else %}<div{% endif %}
+        class="acal-card tone-{{ n.tone }}{% if n.image %} has-img{% endif %}"
+        {% if n.url %}title="{{ n.title }} — {{ n.action_label }}"{% endif %}>
+
+        {% if n.image %}<span class="acal-bg" style="background-image:url('{{ n.image.url }}');"></span>{% endif %}
+
+        <span class="acal-cap" aria-hidden="true"><i class="fas {{ n.icon }}"></i></span>
+
+        <span class="acal-day">
+          {% if n.is_multi_day %}
+            {{ n.start|jalali_date:"day" }} تا {{ n.end|jalali_date:"day" }}
+          {% else %}
+            {{ n.start|jalali_date:"day" }}
+          {% endif %}
+        </span>
+        <span class="acal-month">
+          {{ n.start|jalali_date:"month" }} {{ n.start|jalali_date:"year" }}
+        </span>
+
+        <span class="acal-label">{{ n.title }}</span>
+        {% if n.description %}<span class="acal-desc">{{ n.description }}</span>{% endif %}
+
+        {% if n.is_now %}
+          <span class="acal-badge">در جریان</span>
+        {% elif n.is_next and n.days_left is not None %}
+          <span class="acal-badge">
+            {% if n.days_left == 0 %}امروز
+            {% elif n.days_left == 1 %}فردا
+            {% else %}{{ n.days_left }} روز دیگر{% endif %}
+          </span>
+        {% elif n.is_past %}
+          <span class="acal-badge">انجام شد</span>
+        {% endif %}
+
+        {% if n.url %}
+        <span class="acal-go">
+          {{ n.action_label }} <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        </span>
+        {% endif %}
+
+      {% if n.url %}</a>{% else %}</div>{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+{% endwith %}
+{% endif %}
