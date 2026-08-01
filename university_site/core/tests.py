@@ -180,6 +180,31 @@ class HomeSectionTests(TestCase):
         res = self.client.get(reverse('core:home'))
         self.assertEqual(res.status_code, 200)
 
+    def test_every_seeded_form_file_exists_in_the_repo(self):
+        """هر فرمی که دستور ثبت می‌کند باید فایل PDF همراهش باشد.
+
+        فایل‌ها در core/seed_files/forms/ نگه داشته می‌شوند چون دیپلوی
+        پوشهٔ media را دست نمی‌زند؛ اگر یکی جا بماند، لینک دانلود روی
+        سایت ۴۰۴ می‌دهد بدون اینکه چیزی خطا بدهد.
+        """
+        import os
+        from core.management.commands.seed_academic_forms import FORMS, SEED_DIR
+
+        missing = [name for name, *_ in FORMS
+                   if not os.path.isfile(os.path.join(SEED_DIR, name))]
+        self.assertEqual(missing, [], 'فایل این فرم‌ها در مخزن نیست: %s' % missing)
+
+    def test_seeding_forms_is_idempotent(self):
+        from django.core.management import call_command
+        from core.models import DownloadableDocument
+
+        import io
+        call_command('seed_academic_forms', verbosity=0, stdout=io.StringIO())
+        first = DownloadableDocument.objects.count()
+        call_command('seed_academic_forms', verbosity=0, stdout=io.StringIO())
+        self.assertEqual(DownloadableDocument.objects.count(), first,
+                         'اجرای دوباره نباید رکورد تکراری بسازد')
+
     def test_no_multiline_django_comments_in_templates(self):
         """کامنت {# … #} در جنگو فقط تک‌خطی است.
 
