@@ -131,8 +131,10 @@
         <div class="alert alert-warning mt-3" style="font-size:14px;">
             <i class="fas fa-exclamation-triangle"></i>
             مدارک ناقص است.
-            {# admin_notes یادداشت داخلی کارشناس است و نباید به متقاضی نشان داده شود؛
-               پیام قابل نمایش به متقاضی در reject_reason نوشته می‌شود. #}
+            {% comment %}
+              admin_notes یادداشت داخلی کارشناس است و نباید به متقاضی نشان
+              داده شود؛ پیام قابل نمایش در reject_reason نوشته می‌شود.
+            {% endcomment %}
             {% if app.reject_reason %}<div class="mt-1"><strong>توضیح:</strong> {{ app.reject_reason }}</div>{% endif %}
             <div class="mt-2">
                 <a href="{% url 'admissions:complete_documents' app.tracking_code %}" class="btn btn-sm btn-warning">تکمیل / آپلود مجدد مدارک</a>

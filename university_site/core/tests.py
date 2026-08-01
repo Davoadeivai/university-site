@@ -180,6 +180,30 @@ class HomeSectionTests(TestCase):
         res = self.client.get(reverse('core:home'))
         self.assertEqual(res.status_code, 200)
 
+    def test_no_multiline_django_comments_in_templates(self):
+        """کامنت {# … #} در جنگو فقط تک‌خطی است.
+
+        اگر چندخطی نوشته شود، جنگو آن را کامنت نمی‌شناسد و **متنش را روی
+        صفحه چاپ می‌کند**. یک‌بار این اتفاق در تایم‌لاین و در صفحهٔ پیگیری
+        پذیرش افتاد و متن توضیحی به کاربر نمایش داده شد.
+        """
+        from pathlib import Path
+        from django.conf import settings as dj_settings
+
+        offenders = []
+        for base in dj_settings.TEMPLATES[0]['DIRS']:
+            for path in Path(base).rglob('*.html'):
+                for no, line in enumerate(
+                        path.read_text(encoding='utf-8').splitlines(), start=1):
+                    if '{#' in line and '#}' not in line:
+                        offenders.append('%s:%d' % (path.name, no))
+
+        self.assertEqual(
+            offenders, [],
+            'کامنت چندخطی {# … #} روی صفحه چاپ می‌شود؛ از {%% comment %%} '
+            'استفاده کنید: %s' % offenders,
+        )
+
     def test_every_section_choice_is_wired_into_the_page(self):
         """هر کلیدی که در پنل انتخاب‌شدنی است باید در قالب هم استفاده شود.
 
