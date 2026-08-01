@@ -44,8 +44,52 @@ def log(msg: str) -> None:
     sys.stdout.flush()
 
 
-def copy_tree(src: str, dst: str) -> int:
-    """کپی بازگشتی با بازنویسی. تعداد فایل‌های کپی‌شده را برمی‌گرداند."""
+def _ensure_dir(path: str) -> bool:
+    """ساخت پوشه، با یک تلاش برای باز کردن مجوز پوشهٔ والد.
+
+    روی سرور بعضی پوشه‌ها (مثلاً locale/fa) مجوز نوشتن ندارند و
+    makedirs با PermissionError می‌افتاد و کل دیپلوی را متوقف می‌کرد.
+    """
+    if os.path.isdir(path):
+        return True
+    try:
+        os.makedirs(path, exist_ok=True)
+        return True
+    except PermissionError:
+        pass
+    parent = os.path.dirname(path)
+    try:
+        os.chmod(parent, 0o755)
+        os.makedirs(path, exist_ok=True)
+        return True
+    except OSError:
+        return False
+
+
+def _copy_file(src: str, dst: str) -> bool:
+    """کپی با بازنویسی؛ اگر مقصد فقط‌خواندنی بود مجوزش باز می‌شود."""
+    try:
+        shutil.copyfile(src, dst)
+        return True
+    except PermissionError:
+        pass
+    try:
+        if os.path.exists(dst):
+            os.chmod(dst, 0o644)
+        else:
+            os.chmod(os.path.dirname(dst), 0o755)
+        shutil.copyfile(src, dst)
+        return True
+    except OSError:
+        return False
+
+
+def copy_tree(src: str, dst: str, skipped: list) -> int:
+    """کپی بازگشتی با بازنویسی. تعداد فایل‌های کپی‌شده را برمی‌گرداند.
+
+    هرچه قابل کپی نباشد در `skipped` ثبت می‌شود و کار متوقف نمی‌شود —
+    یک پوشهٔ ترجمهٔ بدون مجوز نباید جلوی رسیدن کد و CSS را بگیرد.
+    """
     count = 0
     for root, dirs, files in os.walk(src):
         rel = os.path.relpath(root, src)
@@ -57,13 +101,18 @@ def copy_tree(src: str, dst: str) -> int:
             continue
 
         dest_dir = dst if rel == '.' else os.path.join(dst, rel)
-        os.makedirs(dest_dir, exist_ok=True)
+        if not _ensure_dir(dest_dir):
+            skipped.append(rel + os.sep)
+            dirs[:] = []          # وارد زیرشاخه‌هایش هم نشو
+            continue
 
         for name in files:
             if name in KEEP or name.endswith('.pyc'):
                 continue
-            shutil.copy2(os.path.join(root, name), os.path.join(dest_dir, name))
-            count += 1
+            if _copy_file(os.path.join(root, name), os.path.join(dest_dir, name)):
+                count += 1
+            else:
+                skipped.append(os.path.join(rel, name) if rel != '.' else name)
     return count
 
 
@@ -100,8 +149,16 @@ def main() -> int:
         log('!! پوشهٔ مقصد پیدا نشد: %s' % TARGET)
         return 1
 
-    n = copy_tree(SOURCE, TARGET)
+    skipped: list = []
+    n = copy_tree(SOURCE, TARGET, skipped)
     log('\n%d فایل کپی شد.' % n)
+    if skipped:
+        log('\n%d مورد به‌خاطر نداشتن مجوز رد شد:' % len(skipped))
+        for item in skipped[:30]:
+            log('  - %s' % item)
+        if len(skipped) > 30:
+            log('  … و %d مورد دیگر' % (len(skipped) - 30))
+        log('اگر بین این‌ها فایل کد یا CSS نبود، مشکلی نیست.')
 
     # migrate پیش از collectstatic — اگر ساختار دیتابیس عقب باشد،
     # دستورهای بعدی هم می‌شکنند.
