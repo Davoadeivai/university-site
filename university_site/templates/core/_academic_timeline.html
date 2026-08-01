@@ -47,9 +47,9 @@
             {% elif n.days_left == 1 %}فردا
             {% else %}{{ n.days_left }} روز دیگر{% endif %}
           </span>
-        {% elif n.is_past %}
-          <span class="acal-badge">انجام شد</span>
         {% endif %}
+        {# مرحلهٔ گذشته نشان نمی‌گیرد: محو بودن کارت و تیک روی نیم‌دایره
+           همان را می‌گویند، و «انجام شد» روی همهٔ کارت‌ها فقط تکرار بود. #}
 
         {% if n.url %}
         <span class="acal-go">

@@ -1826,8 +1826,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 /* ── کارت ── */
 .acal-card {
-    --tone: #c9922b;
-    --tone-soft: rgba(201, 146, 43, .12);
+    --tone: #b8862b;
+    --tone-soft: rgba(184, 134, 43, .13);
+    --tone-line: #ecdcb8;
+    --tone-wash: #fdf8ec;
     position: relative;
     z-index: 1;
     display: flex; flex-direction: column; align-items: center;
@@ -1838,14 +1840,15 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     text-decoration: none;
     color: inherit;
     border-radius: 16px;
+    /* شست‌وشوی رنگی بسیار ملایم از رنگ خود مرحله — کارت‌ها کنار هم
+       یک طیف نرم می‌سازند، نه هفت جعبهٔ سفید یکسان */
     background:
-        linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-    border: 1px solid rgba(201, 146, 43, .3);
+        linear-gradient(170deg, var(--tone-wash) 0%, #ffffff 62%);
+    border: 1px solid var(--tone-line);
     /* لبهٔ نورانی طلایی */
     box-shadow:
-        0 0 0 1px rgba(255, 255, 255, .9) inset,
-        0 0 18px -4px rgba(201, 146, 43, .35),
-        0 10px 26px -14px rgba(16, 54, 90, .35);
+        0 1px 0 rgba(255, 255, 255, .9) inset,
+        0 8px 22px -16px rgba(16, 54, 90, .5);
     transition: transform var(--duration-base) var(--easing-standard),
                 box-shadow var(--duration-base) var(--easing-standard),
                 border-color var(--duration-base) var(--easing-standard);
@@ -1858,8 +1861,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     border-radius: 26px 26px 0 0;
     /* fallback برای مرورگرهای قدیمی که color-mix ندارند */
     background: var(--tone);
-    background: linear-gradient(180deg, var(--tone), color-mix(in srgb, var(--tone) 62%, #ffffff));
-    border: 1px solid rgba(255, 255, 255, .75);
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--tone) 82%, #ffffff),
+        var(--tone));
+    border: 1px solid rgba(255, 255, 255, .85);
     border-bottom: none;
     display: grid; place-items: end center;
     padding-bottom: 3px;
@@ -1910,36 +1915,70 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 
 /* ── رنگ‌های قابل انتخاب از پنل ── */
-.acal-card.tone-gold   { --tone: #c9922b; --tone-soft: rgba(201, 146, 43, .12); }
-.acal-card.tone-teal   { --tone: #0d8a8a; --tone-soft: rgba(13, 138, 138, .11); }
-.acal-card.tone-violet { --tone: #6d5bd0; --tone-soft: rgba(109, 91, 208, .11); }
-.acal-card.tone-rose   { --tone: #d9506d; --tone-soft: rgba(217, 80, 109, .11); }
-.acal-card.tone-amber  { --tone: #d1791f; --tone-soft: rgba(209, 121, 31, .11); }
-.acal-card.tone-sky    { --tone: #2b6ca8; --tone-soft: rgba(43, 108, 168, .11); }
+/* هر رنگ سه لایه دارد: خودِ رنگ برای آیکون و متن، یک خط دور کم‌رنگ،
+   و یک شست‌وشوی بسیار روشن برای زمینهٔ کارت. */
+.acal-card.tone-gold {
+    --tone: #b8862b; --tone-soft: rgba(184, 134, 43, .13);
+    --tone-line: #ecdcb8; --tone-wash: #fdf8ec;
+}
+.acal-card.tone-teal {
+    --tone: #17827c; --tone-soft: rgba(23, 130, 124, .12);
+    --tone-line: #cfe6e3; --tone-wash: #f0faf8;
+}
+.acal-card.tone-violet {
+    --tone: #6b5cc4; --tone-soft: rgba(107, 92, 196, .12);
+    --tone-line: #ddd8f2; --tone-wash: #f6f4fd;
+}
+.acal-card.tone-rose {
+    --tone: #c4566f; --tone-soft: rgba(196, 86, 111, .12);
+    --tone-line: #f0d7dd; --tone-wash: #fdf4f6;
+}
+.acal-card.tone-amber {
+    --tone: #c07326; --tone-soft: rgba(192, 115, 38, .12);
+    --tone-line: #f0dcc4; --tone-wash: #fdf6ee;
+}
+.acal-card.tone-sky {
+    --tone: #3579b4; --tone-soft: rgba(53, 121, 180, .12);
+    --tone-line: #d3e3f1; --tone-wash: #f1f7fc;
+}
 
 /* ── وضعیت مراحل ── */
 .acal-node.is-past .acal-card {
-    opacity: .66;
-    border-color: var(--border);
-    box-shadow: 0 6px 18px -14px rgba(16, 54, 90, .4);
+    /* نشان «انجام شد» برداشته شد؛ خاکستری‌شدن و تیکِ روی نیم‌دایره
+       همان معنی را بدون تکرار متن می‌رسانند. */
+    background: linear-gradient(170deg, #f7f9fc 0%, #ffffff 62%);
+    border-color: #e3e9f1;
+    box-shadow: 0 4px 14px -14px rgba(16, 54, 90, .35);
 }
-.acal-node.is-past .acal-cap { background: #c7d3e0; border-color: #ffffff; box-shadow: none; }
+.acal-node.is-past .acal-cap {
+    background: #b9c6d6; border-color: #ffffff; box-shadow: none;
+}
+/* تیک کوچک روی نیم‌دایرهٔ مرحلهٔ انجام‌شده */
+.acal-node.is-past .acal-cap i::before { content: "\f00c"; }
 .acal-node.is-past .acal-cap i { color: #ffffff; }
-.acal-node.is-past .acal-day { color: var(--text-muted); }
+.acal-node.is-past .acal-day   { color: #8496a8; }
+.acal-node.is-past .acal-label { color: #6d7f92; }
+.acal-node.is-past .acal-go    { color: #8496a8; }
 
 .acal-node.is-now .acal-card {
     border-color: var(--tone);
     background:
-        linear-gradient(180deg, var(--tone-soft) 0%, #ffffff 100%);
+        linear-gradient(170deg, var(--tone-soft) 0%, #ffffff 78%);
     box-shadow:
         0 0 0 1px var(--tone),
-        0 0 30px -8px var(--tone),
-        0 14px 34px -16px rgba(16, 54, 90, .45);
+        0 0 34px -10px var(--tone),
+        0 14px 34px -18px rgba(16, 54, 90, .4);
 }
 .acal-node.is-now .acal-day   { color: var(--primary); }
 .acal-node.is-now .acal-label { color: var(--text-dark); }
 
-.acal-node.is-next .acal-card { border-color: rgba(201, 146, 43, .55); }
+.acal-node.is-next .acal-card {
+    border-color: var(--tone);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, .9) inset,
+        0 0 20px -12px var(--tone),
+        0 8px 22px -16px rgba(16, 54, 90, .5);
+}
 
 /* کارت قابل کلیک */
 a.acal-card:hover,
@@ -1948,8 +1987,8 @@ a.acal-card:focus-visible {
     border-color: var(--tone);
     box-shadow:
         0 0 0 1px var(--tone),
-        0 0 26px -8px var(--tone),
-        0 18px 38px -16px rgba(16, 54, 90, .45);
+        0 0 28px -12px var(--tone),
+        0 18px 38px -20px rgba(16, 54, 90, .4);
     outline: none;
 }
 a.acal-card:hover .acal-go { opacity: 1; }
