@@ -5,5 +5,5 @@ deployment:
     - /usr/bin/rsync -a --delete --exclude=.env --exclude=media/ --exclude=logs/ --exclude=db.sqlite3 --exclude=public/ --exclude=staticfiles/ --exclude=__pycache__/ --exclude=.git/ $DEPLOYPATH/university_site/ /home/cp29524/apps/university_site/
     - cd /home/cp29524/apps/university_site && /home/cp29524/virtualenv/apps/university_site/3.11/bin/python manage.py migrate --noinput
     - cd /home/cp29524/apps/university_site && /home/cp29524/virtualenv/apps/university_site/3.11/bin/python manage.py collectstatic --noinput
-    - /bin/mkdir -p /home/cp29524/apps/tmp
-    - /bin/touch /home/cp29524/apps/tmp/restart.txt
+    - /bin/mkdir -p /home/cp29524/apps/university_site/tmp
+    - /bin/touch /home/cp29524/apps/university_site/tmp/restart.txt
