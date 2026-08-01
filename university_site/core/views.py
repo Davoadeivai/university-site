@@ -264,6 +264,14 @@ def documents(request):
     if degree and degree not in {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES}:
         degree = document_degree_for_query(degree)
     category = request.GET.get('category', '')
+    # «بخش» (آموزش / پژوهش / …) — بدون این فیلتر، دسته‌بندی فقط در پنل
+    # دیده می‌شد و کاربر سایت راهی برای جدا کردنشان نداشت
+    section_keys = {k for k, _ in DownloadableDocument.SECTION_CHOICES if k}
+    section = request.GET.get('section', '')
+    if section not in section_keys:
+        section = ''
+    if section:
+        docs = docs.filter(section=section)
 
     degree_keys = {k for k, _ in DownloadableDocument.DEGREE_LEVEL_CHOICES}
     show_folders = degree not in degree_keys
@@ -293,6 +301,9 @@ def documents(request):
         'current_degree_label': current_degree_label if not show_folders else '',
         'current_category': category,
         'categories': DownloadableDocument.CATEGORY_CHOICES,
+        'current_section': section,
+        'current_section_label': dict(DownloadableDocument.SECTION_CHOICES).get(section, ''),
+        'sections': [(k, v) for k, v in DownloadableDocument.SECTION_CHOICES if k],
         'page_title': 'آیین‌نامه‌ها و فرم‌ها',
     }
     return render(request, 'core/documents.html', context)

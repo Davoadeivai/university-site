@@ -194,6 +194,31 @@ class HomeSectionTests(TestCase):
                    if not os.path.isfile(os.path.join(SEED_DIR, name))]
         self.assertEqual(missing, [], 'فایل این فرم‌ها در مخزن نیست: %s' % missing)
 
+    def test_documents_page_filters_by_section(self):
+        """فیلتر «آموزش / پژوهش» باید واقعاً فهرست را جدا کند."""
+        import io
+        from django.core.management import call_command
+        from core.models import DownloadableDocument
+
+        call_command('seed_academic_forms', verbosity=0, stdout=io.StringIO())
+        url = reverse('core:documents')
+
+        research = self.client.get(url, {'degree': 'master', 'section': 'research'})
+        body = research.content.decode()
+        self.assertIn('پروپوزال', body)
+        self.assertNotIn('برگه حذف و اضافه واحد', body)
+
+        academic = self.client.get(url, {'degree': 'master', 'section': 'academic'})
+        body = academic.content.decode()
+        self.assertNotIn('پروپوزال', body)
+
+        # بخش نامعتبر نباید صفحه را بشکند یا همه‌چیز را پنهان کند
+        bogus = self.client.get(url, {'section': 'nope'})
+        self.assertEqual(bogus.status_code, 200)
+
+        self.assertEqual(
+            DownloadableDocument.objects.filter(section='research').count(), 8)
+
     def test_seeding_forms_is_idempotent(self):
         from django.core.management import call_command
         from core.models import DownloadableDocument

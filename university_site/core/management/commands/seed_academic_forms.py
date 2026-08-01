@@ -19,6 +19,10 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 # (نام فایل, عنوان, دسته, مقطع, ترتیب, توضیح)
+# همهٔ این‌ها زیر بخش «آموزش» ثبت می‌شوند.
+ACADEMIC_SECTION = 'academic'
+RESEARCH_SECTION = 'research'
+
 FORMS = [
     ('add-drop-form.pdf',
      'برگه حذف و اضافه واحد',
@@ -81,6 +85,50 @@ FORMS = [
      'تسویه حساب پایان تحصیل ویژهٔ کارشناسی ارشد، شامل تأیید اداره پژوهش.'),
 ]
 
+# فرم‌های پایان‌نامه — بخش «پژوهش». ترتیبشان همان ترتیب واقعی مراحل کار
+# است، از پیشنهاد موضوع تا تحویل نسخه‌ها؛ شماره‌های رسمی خود موسسه حفظ شده.
+RESEARCH_FORMS = [
+    ('thesis-0-topic-proposal.pdf',
+     'فرم صفر — پیشنهاد موضوع پایان‌نامه',
+     'form', 'master', 10,
+     'گام اول: دو موضوع پیشنهادی و استاد راهنمای پیشنهادی، برای طرح در شورای تحصیلات تکمیلی گروه.'),
+
+    ('thesis-1-proposal.pdf',
+     'فرم شمارهٔ ۱ — پروپوزال (پیشنهاد تحقیق)',
+     'form', 'master', 20,
+     'پروپوزال کامل: مسئله، پیشینه، روش‌شناسی، زمان‌بندی و هزینه‌ها. با هدایت استاد راهنما تکمیل و تایپ شود.'),
+
+    ('thesis-2-progress-report.pdf',
+     'فرم شمارهٔ ۲ — گزارش پیشرفت کار سه‌ماهه',
+     'form', 'master', 30,
+     'گزارش دوره‌ای پیشرفت پایان‌نامه، با امضای استاد راهنما و مشاور.'),
+
+    ('thesis-3-defense-request.pdf',
+     'فرم شمارهٔ ۳ — درخواست دفاع از پایان‌نامه',
+     'form', 'master', 40,
+     'حداکثر سه هفته پیش از زمان پیشنهادی دفاع تحویل شود. نیازمند تأیید گروه، مالی، پژوهش و معاونت آموزش.'),
+
+    ('thesis-4-defense-date.pdf',
+     'فرم شمارهٔ ۴ — تعیین تاریخ و ساعت جلسهٔ دفاع',
+     'form', 'master', 50,
+     'اعلام زمان دفاع و اخذ موافقت کتبی هیئت داوران؛ بدون آن جلسهٔ دفاع برگزار نمی‌شود.'),
+
+    ('thesis-5-revision-approval.pdf',
+     'فرم شمارهٔ ۵ — تأیید اصلاحات پایان‌نامه',
+     'form', 'master', 60,
+     'تأیید اینکه اصلاحات مورد نظر هیئت داوران در نسخهٔ نهایی اعمال شده است.'),
+
+    ('thesis-6-copies-delivery.pdf',
+     'فرم شمارهٔ ۶ — تحویل نسخه‌های پایان‌نامه',
+     'form', 'master', 70,
+     'تحویل نسخه‌ها به استاد راهنما، مشاور و کتابخانه به‌همراه CD؛ پیش‌نیاز تسویه حساب.'),
+
+    ('thesis-7-originality-undertaking.pdf',
+     'فرم شمارهٔ ۷ — تعهدنامه اصالت پایان‌نامه',
+     'form', 'master', 80,
+     'تعهد به اصالت اثر و رعایت حقوق مالکیت معنوی، با امضای دانشجو و معاونت‌های پژوهش و تحصیلات تکمیلی.'),
+]
+
 SEED_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     'seed_files', 'forms',
@@ -105,47 +153,64 @@ class Command(BaseCommand):
         dest_dir = os.path.join(settings.MEDIA_ROOT, MEDIA_SUBDIR)
         os.makedirs(dest_dir, exist_ok=True)
 
-        created = updated = skipped = missing = 0
+        created = updated = skipped = missing = fixed = 0
 
-        for name, title, category, degree, order, desc in FORMS:
-            source = os.path.join(SEED_DIR, name)
-            if not os.path.isfile(source):
-                self.stdout.write(self.style.ERROR('  ! فایل پیدا نشد: %s' % name))
-                missing += 1
-                continue
+        groups = (
+            ('آموزش', ACADEMIC_SECTION, FORMS),
+            ('پژوهش', RESEARCH_SECTION, RESEARCH_FORMS),
+        )
 
-            target = os.path.join(dest_dir, name)
-            if replace or not os.path.exists(target):
-                shutil.copyfile(source, target)
+        for label, section, entries in groups:
+            self.stdout.write(self.style.MIGRATE_HEADING('\nبخش %s' % label))
 
-            obj = DownloadableDocument.objects.filter(title=title).first()
-            rel_path = '%s/%s' % (MEDIA_SUBDIR, name)
+            for name, title, category, degree, order, desc in entries:
+                source = os.path.join(SEED_DIR, name)
+                if not os.path.isfile(source):
+                    self.stdout.write(self.style.ERROR('  ! فایل پیدا نشد: %s' % name))
+                    missing += 1
+                    continue
 
-            if obj is None:
-                DownloadableDocument.objects.create(
-                    title=title, category=category, degree_level=degree,
-                    description=desc, file=rel_path, order=order, is_active=True,
-                )
-                created += 1
-                self.stdout.write('  + %s' % title)
-            elif replace:
-                obj.category = category
-                obj.degree_level = degree
-                obj.description = desc
-                obj.file = rel_path
-                obj.order = order
-                obj.is_active = True
-                obj.save()
-                updated += 1
-                self.stdout.write('  ~ %s' % title)
-            else:
-                # ویرایش ادمین نباید بی‌اجازه بازنویسی شود
-                skipped += 1
-                self.stdout.write('  = %s (دست‌نخورده)' % title)
+                target = os.path.join(dest_dir, name)
+                if replace or not os.path.exists(target):
+                    shutil.copyfile(source, target)
+
+                obj = DownloadableDocument.objects.filter(title=title).first()
+                rel_path = '%s/%s' % (MEDIA_SUBDIR, name)
+
+                if obj is None:
+                    DownloadableDocument.objects.create(
+                        title=title, category=category, section=section,
+                        degree_level=degree, description=desc, file=rel_path,
+                        order=order, is_active=True,
+                    )
+                    created += 1
+                    self.stdout.write('  + %s' % title)
+                elif replace:
+                    obj.category = category
+                    obj.section = section
+                    obj.degree_level = degree
+                    obj.description = desc
+                    obj.file = rel_path
+                    obj.order = order
+                    obj.is_active = True
+                    obj.save()
+                    updated += 1
+                    self.stdout.write('  ~ %s' % title)
+                elif obj.section != section:
+                    # رکورد از اجرای قبلی مانده و هنوز بخش ندارد؛ فقط همین
+                    # یک فیلد را می‌گذاریم تا بقیهٔ ویرایش‌های ادمین بماند
+                    obj.section = section
+                    obj.save(update_fields=['section'])
+                    fixed += 1
+                    self.stdout.write('  → %s (به بخش %s منتقل شد)' % (title, label))
+                else:
+                    # ویرایش ادمین نباید بی‌اجازه بازنویسی شود
+                    skipped += 1
+                    self.stdout.write('  = %s (دست‌نخورده)' % title)
 
         self.stdout.write(self.style.SUCCESS(
-            '\n%d جدید، %d به‌روز، %d دست‌نخورده%s.' % (
-                created, updated, skipped,
+            '\n%d جدید، %d به‌روز، %d منتقل‌شده، %d دست‌نخورده%s.' % (
+                created, updated, fixed, skipped,
                 '، %d فایل گم‌شده' % missing if missing else '',
             )
         ))

@@ -720,6 +720,8 @@ class DownloadableDocument(models.Model):
     ]
     SECTION_CHOICES = [
         ('', _('عمومی')),
+        ('academic', _('آموزش')),
+        ('research', _('پژوهش')),
         ('graduate', _('تحصیلات تکمیلی')),
     ]
     DEGREE_LEVEL_CHOICES = [

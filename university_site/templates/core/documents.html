@@ -9,6 +9,7 @@
             {% else %}
             {{ current_degree_label }}
             {% endif %}
+            {% if current_section_label %} — بخش {{ current_section_label }}{% endif %}
         </p>
     </div>
 </div>
@@ -16,11 +17,27 @@
 <section class="section">
     <div class="container">
 
+        {# بخش‌ها: آموزش / پژوهش / … — روی هر دو نمای پوشه و فهرست کار می‌کند #}
+        <ul class="nav nav-pills gap-1 flex-wrap mb-4" data-aos="fade-up">
+            <li class="nav-item">
+                <a class="nav-link {% if not current_section %}active{% endif %}"
+                   href="{% if current_degree %}?degree={{ current_degree }}{% else %}?{% endif %}"
+                   style="font-family:'Vazirmatn',sans-serif;font-size:13px;">همه بخش‌ها</a>
+            </li>
+            {% for key, label in sections %}
+            <li class="nav-item">
+                <a class="nav-link {% if current_section == key %}active{% endif %}"
+                   href="?{% if current_degree %}degree={{ current_degree }}&amp;{% endif %}section={{ key }}"
+                   style="font-family:'Vazirmatn',sans-serif;font-size:13px;">{{ label }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+
         {% if show_folders %}
         <div class="row g-3" data-aos="fade-up">
             {% for folder in folders %}
             <div class="col-6 col-md-4 col-lg-3">
-                <a href="?degree={{ folder.key }}" class="uni-card p-4 h-100 text-decoration-none d-block doc-folder-card"
+                <a href="?degree={{ folder.key }}{% if current_section %}&amp;section={{ current_section }}{% endif %}" class="uni-card p-4 h-100 text-decoration-none d-block doc-folder-card"
                    style="transition:transform .2s,box-shadow .2s;">
                     <div class="d-flex align-items-center gap-3 mb-2">
                         <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;">
@@ -39,18 +56,18 @@
 
         {% else %}
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4" data-aos="fade-up">
-            <a href="{% url 'core:documents' %}" class="btn btn-outline-primary btn-sm">
+            <a href="{% url 'core:documents' %}{% if current_section %}?section={{ current_section }}{% endif %}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-arrow-right me-1"></i> بازگشت به پوشه‌ها
             </a>
             <ul class="nav nav-pills gap-1 flex-wrap mb-0">
                 <li class="nav-item">
                     <a class="nav-link {% if not current_category %}active{% endif %}"
-                       href="?degree={{ current_degree }}" style="font-family:'Vazirmatn',sans-serif;font-size:13px;">همه</a>
+                       href="?degree={{ current_degree }}{% if current_section %}&amp;section={{ current_section }}{% endif %}" style="font-family:'Vazirmatn',sans-serif;font-size:13px;">همه</a>
                 </li>
                 {% for key, label in categories %}
                 <li class="nav-item">
                     <a class="nav-link {% if current_category == key %}active{% endif %}"
-                       href="?degree={{ current_degree }}&category={{ key }}" style="font-family:'Vazirmatn',sans-serif;font-size:13px;">{{ label }}</a>
+                       href="?degree={{ current_degree }}&amp;category={{ key }}{% if current_section %}&amp;section={{ current_section }}{% endif %}" style="font-family:'Vazirmatn',sans-serif;font-size:13px;">{{ label }}</a>
                 </li>
                 {% endfor %}
             </ul>
