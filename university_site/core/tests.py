@@ -180,6 +180,52 @@ class HomeSectionTests(TestCase):
         res = self.client.get(reverse('core:home'))
         self.assertEqual(res.status_code, 200)
 
+    def test_every_section_choice_is_wired_into_the_page(self):
+        """هر کلیدی که در پنل انتخاب‌شدنی است باید در قالب هم استفاده شود.
+
+        وگرنه ادمین برای بخشی تصویر آپلود می‌کند و هیچ اتفاقی نمی‌افتد.
+        """
+        from pathlib import Path
+        from django.conf import settings as dj_settings
+        from core.models import HomeSection
+
+        templates = ''
+        for base in dj_settings.TEMPLATES[0]['DIRS']:
+            for name in ('core/home.html', 'core/_academic_timeline.html'):
+                path = Path(base) / name
+                if path.exists():
+                    templates += path.read_text(encoding='utf-8')
+
+        missing = [key for key, _ in HomeSection.SECTION_CHOICES
+                   if 'sections.%s' % key not in templates]
+        self.assertEqual(missing, [], 'این بخش‌ها در قالب وصل نشده‌اند: %s' % missing)
+
+    def test_hiding_the_stats_bar_removes_it(self):
+        from core.models import HomeSection
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('دانشجوی فعال', body)
+        HomeSection.objects.update_or_create(
+            key='stats', defaults={'is_visible': False})
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn('دانشجوی فعال', body)
+
+    def test_cta_title_comes_from_the_panel(self):
+        from core.models import HomeSection
+        HomeSection.objects.update_or_create(
+            key='cta', defaults={'title': 'همین حالا اقدام کنید', 'is_visible': True})
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('همین حالا اقدام کنید', body)
+        self.assertNotIn('آماده‌اید دانشجوی ما شوید؟', body)
+
+    def test_dark_overlay_flag_needs_both_image_and_overlay(self):
+        from core.models import HomeSection
+        sec = HomeSection(key='news', overlay='dark')
+        self.assertFalse(sec.is_dark_overlay, 'بدون تصویر نباید متن سفید شود')
+        sec.image = 'home/bg.jpg'
+        self.assertTrue(sec.is_dark_overlay)
+        sec.overlay = 'light'
+        self.assertFalse(sec.is_dark_overlay)
+
     def test_custom_title_replaces_default(self):
         from core.models import HomeSection
         HomeSection.objects.update_or_create(

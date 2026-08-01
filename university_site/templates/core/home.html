@@ -450,7 +450,10 @@
 </script>
 
 <!-- ===== STATS BAR ===== -->
-<section class="stats-bar">
+{% with sec=sections.stats %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="stats-bar{% if sec.image %} has-bg{% endif %}{% if sec.is_dark_overlay %} sec-on-dark{% endif %}"
+  {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="row g-3 justify-content-center">
             <div class="col-6 col-md-3">
@@ -484,6 +487,8 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 <!-- ===== تقویم آموزشی — مراحل نیمسال با وضعیت زنده ===== -->
 {% include 'core/_academic_timeline.html' %}
@@ -527,7 +532,7 @@
 <!-- ===== QUICK LINKS ===== -->
 {% with sec=sections.quicklinks %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">دسترسی سریع</h2>
@@ -603,7 +608,7 @@
 <!-- ===== NEWS + ANNOUNCEMENTS ===== -->
 {% with sec=sections.news %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section section-alt{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="row g-5">
             <!-- Latest News -->
@@ -757,7 +762,7 @@
 <!-- ===== DEPARTMENTS ===== -->
 {% with sec=sections.departments %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">دانشکده‌ها و گروه‌های آموزشی</h2>
@@ -815,7 +820,7 @@
 <!-- ===== FACULTY ===== -->
 {% with sec=sections.faculty %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section section-alt{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">هیئت علمی برگزیده</h2>
@@ -871,7 +876,7 @@
 {% if upcoming_events %}
 {% with sec=sections.events %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">رویدادهای آینده</h2>
@@ -918,7 +923,7 @@
 {% if gallery_images %}
 {% with sec=sections.gallery %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section section-alt{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">گالری تصاویر</h2>
@@ -946,7 +951,7 @@
 {% if alumni %}
 {% with sec=sections.alumni %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">فارغ‌التحصیلان موفق</h2>
@@ -987,7 +992,7 @@
 {% if faqs %}
 {% with sec=sections.faq %}
 {% if sec.is_visible|default_if_none:True %}
-<section class="section section-alt" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
+<section class="section section-alt{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">سوالات متداول</h2>
@@ -1030,12 +1035,14 @@
 {% endif %}
 
 <!-- ===== CTA ===== -->
-<section class="section" style="background: var(--gradient-primary); color: white; margin-top: 0;">
+{% with sec=sections.cta %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section" style="margin-top:0;color:white;{% if sec.image %}background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;{% else %}background:var(--gradient-primary);{% endif %}">
     <div class="container">
         <div class="row align-items-center" data-aos="fade-up">
             <div class="col-lg-8 text-center text-lg-start mb-4 mb-lg-0">
-                <h2 class="fw-900 mb-2" style="font-size:28px;">آماده‌اید دانشجوی ما شوید؟</h2>
-                <p style="opacity:0.85; font-size:16px;">همین امروز ثبت‌نام کنید و آینده‌ای روشن را آغاز کنید</p>
+                <h2 class="fw-900 mb-2" style="font-size:28px;">{{ sec.title|default:"آماده‌اید دانشجوی ما شوید؟" }}</h2>
+                <p style="opacity:0.9; font-size:16px;">{{ sec.subtitle|default:"همین امروز ثبت‌نام کنید و آینده‌ای روشن را آغاز کنید" }}</p>
             </div>
             <div class="col-lg-4 text-center text-lg-end">
                 <a href="{% url 'admissions:apply_otp_send' %}" class="hero-btn" style="background: var(--gradient-gold);">
@@ -1049,5 +1056,7 @@
         </div>
     </div>
 </section>
+{% endif %}
+{% endwith %}
 
 {% endblock %}

@@ -9,7 +9,7 @@
    زمینهٔ صفحه روشن و کمی مایل به آبی است تا سفیدِ کارت‌ها روی آن بنشیند.
    ─────────────────────────────────────────────────────────────────────*/
 :root {
-    --primary: #714c68;        /* سرمه‌ای موسسه — همان سرمه‌ای بنر */
+    --primary: #8d9393;        /* سرمه‌ای موسسه — همان سرمه‌ای بنر */
     --primary-light: #6d824a;  /* آبی روشن‌تر برای هاور و گرادیان */
     --secondary: #c9922b;      /* طلای موسسه — روی سفید هم خوانا */
     --gold-light: #e3ba58;     /* طلای روشن — فقط سر گرادیان و درخشش */
@@ -129,7 +129,7 @@ body {
     align-items: center;
     gap: .45rem;
     background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.07));
-    border: 1px solid rgba(246, 217, 124, 0.35);
+    border: 1px solid rgba(165, 156, 132, 0.35);
     border-radius: 999px;
     padding: .28rem .55rem .28rem .75rem;
     width: 168px;
@@ -615,6 +615,25 @@ body {
     position: relative;
     z-index: 5;
 }
+/* نوار آمار وقتی ادمین تصویر پس‌زمینه گذاشته */
+.stats-bar.has-bg { background-color: transparent; }
+
+/* ── بخش‌هایی که تصویر با پوشش تیره دارند ──────────────────────────────
+   متن صفحه به‌طور پیش‌فرض تیره است. اگر ادمین تصویری با پوشش تیره یا
+   سرمه‌ای انتخاب کند، همان متن روی زمینهٔ تیره ناخوانا می‌شود. این کلاس
+   را قالب فقط در همان حالت اضافه می‌کند. */
+.sec-on-dark,
+.sec-on-dark .section-title,
+.sec-on-dark .stat-number,
+.sec-on-dark .stat-icon { color: #fff; }
+.sec-on-dark .section-subtitle,
+.sec-on-dark .stat-label,
+.sec-on-dark .text-muted { color: rgba(255, 255, 255, .75) !important; }
+.sec-on-dark .uni-card {
+    background: rgba(255, 255, 255, .96);
+    color: var(--text-dark);
+}
+
 .stat-item { text-align: center; padding: 0 20px; }
 .stat-number { font-size: 36px; font-weight: 900; color: var(--primary); line-height: 1; }
 .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }

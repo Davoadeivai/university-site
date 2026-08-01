@@ -915,3 +915,13 @@ class HomeSection(models.Model):
             'dark':  'rgba(10,20,30,.72)',
             'navy':  'rgba(6,26,44,.80)',
         }.get(self.overlay, 'rgba(255,255,255,.88)')
+
+    @property
+    def is_dark_overlay(self) -> bool:
+        """پوشش تیره انتخاب شده و تصویری هم هست؟
+
+        متن بخش‌ها به‌طور پیش‌فرض تیره است. اگر ادمین تصویری با پوشش تیره
+        بگذارد، آن متن روی زمینهٔ تیره ناخوانا می‌شود؛ قالب با این پرچم
+        کلاس `sec-on-dark` را اضافه می‌کند تا رنگ متن روشن شود.
+        """
+        return bool(self.image) and self.overlay in ('dark', 'navy')

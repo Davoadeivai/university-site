@@ -556,10 +556,28 @@ class HomeSectionAdmin(admin.ModelAdmin):
             'fields': ('image', 'overlay'),
             'description': (
                 'تصویر پشت کل بخش نمایش داده می‌شود. '
-                '«پوشش» لایه‌ای است که روی تصویر می‌آید تا متن خوانا بماند.'
+                '«پوشش» لایه‌ای است که روی تصویر می‌آید تا متن خوانا بماند: '
+                'با پوشش روشن متن تیره می‌ماند، و با پوشش تیره یا سرمه‌ای '
+                'متن آن بخش خودکار سفید می‌شود. '
+                'تصویر افقی و حداقل ۱۹۲۰ پیکسل عرض بهترین نتیجه را می‌دهد.'
             ),
         }),
     )
+
+    def get_queryset(self, request):
+        """ردیف‌ها به ترتیب ظاهرشدن در صفحه، نه الفبایی.
+
+        ترتیب الفبایی کلیدها (alumni, cta, departments…) هیچ ربطی به
+        چیدمان صفحه ندارد و پیدا کردن بخش را سخت می‌کند.
+        """
+        from django.db.models import Case, IntegerField, When
+
+        order = Case(
+            *[When(key=k, then=i)
+              for i, (k, _label) in enumerate(self.model.SECTION_CHOICES)],
+            default=99, output_field=IntegerField(),
+        )
+        return super().get_queryset(request).annotate(_page_order=order).order_by('_page_order')
 
     @admin.display(description='تصویر', boolean=True)
     def has_image(self, obj):
