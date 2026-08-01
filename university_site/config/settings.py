@@ -440,6 +440,13 @@ PROBATION_MAX_UNITS = config('PROBATION_MAX_UNITS', default=14, cast=int)
 # ترم آخر: اگر واحد باقیمانده کم باشد، حداقل واحد اعمال نمی‌شود
 ALLOW_FINAL_TERM_UNDERLOAD = config('ALLOW_FINAL_TERM_UNDERLOAD', default=True, cast=bool)
 
+# ثبت‌نام دانشجو — اگر True باشد فقط کسی که پروندهٔ پذیرش «پذیرفته‌شده» دارد
+# می‌تواند حساب بسازد. با False فرم برای همه باز است و هویت از خود فرم گرفته
+# می‌شود. در هر دو حالت، اگر پروندهٔ پذیرش وجود داشته باشد اطلاعات آن مرجع است.
+REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP = config(
+    'REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP', default=False, cast=bool
+)
+
 # -----------------------------------------------------------------------------
 # Online payment (mock | zarinpal)
 # -----------------------------------------------------------------------------

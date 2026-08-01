@@ -162,12 +162,63 @@ class RegistrationDeduplicationTests(TestCase):
         self.assertEqual(profile.student_id, '')
         self.assertEqual(profile.department, 'فنی و مهندسی')
 
-    def test_registration_requires_accepted_application(self):
+    @override_settings(REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP=True)
+    def test_gate_blocks_signup_without_accepted_application(self):
+        """وقتی گیت روشن است، بدون پذیرش نهایی حساب ساخته نمی‌شود."""
         self.app.status = 'pending'
         self.app.save(update_fields=['status'])
         self.client.post(reverse('accounts:register'), {
             'national_id': VALID_NID,
+            'first_name': 'مریم', 'last_name': 'رضایی', 'phone': '09121234567',
             'password1': 'Str0ng!Pass2026',
             'password2': 'Str0ng!Pass2026',
         })
         self.assertFalse(User.objects.filter(username=VALID_NID).exists())
+
+    @override_settings(REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP=False)
+    def test_open_signup_without_application(self):
+        """گیت خاموش: هویت از خود فرم گرفته می‌شود و حساب ساخته می‌شود."""
+        self.app.status = 'pending'
+        self.app.save(update_fields=['status'])
+        self.client.post(reverse('accounts:register'), {
+            'national_id': VALID_NID,
+            'first_name': 'مریم', 'last_name': 'رضایی',
+            'phone': '09121234567', 'email': 'm@example.com',
+            'password1': 'Str0ng!Pass2026',
+            'password2': 'Str0ng!Pass2026',
+        })
+        user = User.objects.filter(username=VALID_NID).first()
+        self.assertIsNotNone(user, 'ثبت‌نام باز کار نکرد')
+        self.assertEqual(user.first_name, 'مریم')
+        profile = UserProfile.objects.get(user=user)
+        self.assertEqual(profile.phone, '09121234567')
+        # بدون پرونده، این‌ها هنوز تعیین نشده‌اند و نباید جعل شوند
+        self.assertEqual(profile.student_id, '')
+        self.assertIsNone(profile.major)
+
+    @override_settings(REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP=False)
+    def test_open_signup_still_validates_mobile(self):
+        self.app.status = 'pending'
+        self.app.save(update_fields=['status'])
+        self.client.post(reverse('accounts:register'), {
+            'national_id': VALID_NID,
+            'first_name': 'مریم', 'last_name': 'رضایی', 'phone': '12345',
+            'password1': 'Str0ng!Pass2026',
+            'password2': 'Str0ng!Pass2026',
+        })
+        self.assertFalse(User.objects.filter(username=VALID_NID).exists())
+
+    @override_settings(REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP=False)
+    def test_application_data_still_wins_when_accepted(self):
+        """گیت باز شدن نباید مسیر جعل هویت را باز کند."""
+        self.client.post(reverse('accounts:register'), {
+            'national_id': VALID_NID,
+            'first_name': 'نام جعلی', 'last_name': 'جعلی',
+            'phone': '09990000000', 'email': 'attacker@example.com',
+            'password1': 'Str0ng!Pass2026',
+            'password2': 'Str0ng!Pass2026',
+        })
+        user = User.objects.get(username=VALID_NID)
+        self.assertEqual(user.first_name, 'مریم')
+        self.assertEqual(user.email, 'm@example.com')
+        self.assertEqual(UserProfile.objects.get(user=user).phone, '09121234567')

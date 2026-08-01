@@ -44,7 +44,8 @@
                                    placeholder="کد ملی ۱۰ رقمی"
                                    value="{{ pref.national_id|default:'' }}">
                             <div class="form-text text-muted" style="font-size:12px;">
-                                کد ملی شما نام کاربری‌تان است و باید همان کد ملی پروندهٔ پذیرش باشد.
+                                کد ملی شما نام کاربری‌تان است. اگر پروندهٔ پذیرش دارید،
+                                همان کد ملی را وارد کنید تا اطلاعات پرونده به حسابتان وصل شود.
                             </div>
                         </div>
 
@@ -80,6 +81,34 @@
                                     شمارهٔ دانشجویی پس از ثبت‌نام توسط آموزش صادر می‌شود.
                                 </div>
                             </div>
+                        </div>
+                        {% else %}
+                        {# پروندهٔ پذیرش پیدا نشد — هویت را خود کاربر وارد می‌کند #}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">نام <span class="text-danger">*</span></label>
+                                <input type="text" name="first_name" id="first_name" class="form-control"
+                                       required value="{{ pref.first_name|default:'' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">نام خانوادگی <span class="text-danger">*</span></label>
+                                <input type="text" name="last_name" id="last_name" class="form-control"
+                                       required value="{{ pref.last_name|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">شماره موبایل <span class="text-danger">*</span></label>
+                            <input type="tel" name="phone" id="phone" class="form-control"
+                                   required maxlength="11" placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                                   style="direction:ltr;text-align:left;"
+                                   value="{{ pref.phone|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">ایمیل</label>
+                            <input type="email" name="email" id="email" class="form-control"
+                                   style="direction:ltr;text-align:left;"
+                                   placeholder="اختیاری"
+                                   value="{{ pref.email|default:'' }}">
                         </div>
                         {% endif %}
 

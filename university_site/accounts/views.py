@@ -201,10 +201,17 @@ def register_view(request):
             .order_by('-id')
             .first()
         )
-        first_name = (src_app.first_name if src_app else '').strip()
-        last_name = (src_app.last_name if src_app else '').strip()
-        email = (src_app.email if src_app else '').strip()
-        phone = only_digits(src_app.phone if src_app else '')
+        # اگر پرونده نبود، هویت از خود فرم گرفته می‌شود تا ثبت‌نام مسدود نشود.
+        if src_app:
+            first_name = (src_app.first_name or '').strip()
+            last_name = (src_app.last_name or '').strip()
+            email = (src_app.email or '').strip()
+            phone = only_digits(src_app.phone or '')
+        else:
+            first_name = (request.POST.get('first_name') or '').strip()
+            last_name = (request.POST.get('last_name') or '').strip()
+            email = (request.POST.get('email') or '').strip()
+            phone = only_digits(request.POST.get('phone') or '')
         # دانشکده از رشتهٔ پذیرش مشتق می‌شود
         department = ''
         if src_app and src_app.desired_major_id:
@@ -233,12 +240,18 @@ def register_view(request):
                 request,
                 'شماره موبایل ثبت‌شده در پروندهٔ پذیرش معتبر نیست. با موسسه تماس بگیرید.',
             )
-        elif not accepted:
+        elif not accepted and getattr(
+            django_settings, 'REQUIRE_ACCEPTED_APPLICATION_FOR_SIGNUP', False
+        ):
             messages.error(
                 request,
                 'ثبت‌نام دانشجویی فقط پس از پذیرش نهایی ممکن است. '
                 'وضعیت درخواست را از صفحه پیگیری بررسی کنید.',
             )
+        elif not accepted and not (first_name and last_name):
+            messages.error(request, 'نام و نام خانوادگی را وارد کنید.')
+        elif not accepted and not is_valid_mobile(phone):
+            messages.error(request, 'شماره موبایل معتبر نیست.')
         elif phone and UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'این شماره موبایل قبلاً ثبت‌نام شده است.')
         elif UserProfile.objects.filter(national_id=national_id).exists():
@@ -275,12 +288,30 @@ def register_view(request):
             sync_profile_from_application(user, app)
             login(request, user)
             ensure_tuition_invoice(user)
+            if accepted:
+                messages.success(
+                    request,
+                    'حساب کاربری ساخته شد. مرحله بعد: پرداخت شهریه. '
+                    'پروفایل و عکس پرسنلی را از صفحه «پروفایل من» تکمیل/بررسی کنید.',
+                )
+                return redirect('dashboard:student_payments')
+            # بدون پروندهٔ پذیرش هنوز رشته و شهریه‌ای نیست؛ اول پروفایل کامل شود
             messages.success(
                 request,
-                'حساب کاربری ساخته شد. مرحله بعد: پرداخت شهریه. '
-                'پروفایل و عکس پرسنلی را از صفحه «پروفایل من» تکمیل/بررسی کنید.',
+                'حساب کاربری ساخته شد. لطفاً پروفایل خود را تکمیل کنید. '
+                'پس از تأیید پذیرش، رشته و شهریه به حساب شما اضافه می‌شود.',
             )
-            return redirect('dashboard:student_payments')
+            return redirect('accounts:profile')
+
+        # فرم که رد شد، نوشته‌های کاربر نباید پاک شوند
+        if not accepted:
+            pref.update({
+                'national_id': national_id,
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'phone': phone,
+            })
 
     context = {'page_title': 'ثبت‌نام', 'pref': pref, 'accepted_app': accepted_app}
     return render(request, 'accounts/register.html', context)
