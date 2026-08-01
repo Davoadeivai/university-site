@@ -202,13 +202,14 @@ class HomeSectionTests(TestCase):
     def test_features_come_from_database(self):
         from core.models import HomeFeature
         HomeFeature.objects.all().delete()
-        HomeFeature.objects.create(title='مزیت یکتا', description='توضیح',
-                                   icon='fa-flask', tone='green', order=1)
+        feature = HomeFeature.objects.create(title='مزیت یکتا', description='توضیح',
+                                             icon='fa-flask', tone='green', order=1)
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertIn('مزیت یکتا', body)
         self.assertIn('fa-flask', body)
-        # رنگ از مدل می‌آید نه از قالب
-        self.assertIn('#0b9e6b', body)
+        # رنگ از مدل می‌آید نه از قالب — هگز را از خود مدل بخوان تا تست با
+        # هر بار عوض‌شدن پالت نشکند
+        self.assertIn(feature.color, body)
 
     def test_inactive_feature_is_hidden(self):
         from core.models import HomeFeature

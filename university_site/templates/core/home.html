@@ -12,7 +12,7 @@
     height: 100vh;
     min-height: 520px;
     overflow: hidden;
-    background: #0a1628;
+    background: #08243d;
 }
 
 /* ─── track ─── */
@@ -87,13 +87,13 @@
     width: fit-content;
     border: 1.5px solid rgba(255,255,255,.3);
 }
-.uni-slide-badge.badge-danger  { background: rgba(220,38,38,.85);  color: #fff; }
-.uni-slide-badge.badge-warning { background: rgba(217,119,6,.9);   color: #fff; }
-.uni-slide-badge.badge-success { background: rgba(22,163,74,.85);  color: #fff; }
+.uni-slide-badge.badge-danger  { background: rgba(217,45,32,.85);  color: #fff; }
+.uni-slide-badge.badge-warning { background: rgba(201,146,43,.9);   color: #fff; }
+.uni-slide-badge.badge-success { background: rgba(15,157,120,.85);  color: #fff; }
 .uni-slide-badge.badge-info    { background: rgba(14,165,233,.85); color: #fff; }
-.uni-slide-badge.badge-primary { background: rgba(37,99,235,.85);  color: #fff; }
-.uni-slide-badge.badge-dark    { background: rgba(15,23,42,.85);   color: #fff; }
-.uni-slide-badge.badge-gold    { background: rgba(201,168,76,.9);  color: #fff; }
+.uni-slide-badge.badge-primary { background: rgba(43,108,168,.85);  color: #fff; }
+.uni-slide-badge.badge-dark    { background: rgba(8,36,61,.85);   color: #fff; }
+.uni-slide-badge.badge-gold    { background: rgba(227,186,88,.9);  color: #fff; }
 
 .uni-slide-title {
     font-size: clamp(26px, 4.5vw, 56px);
@@ -169,7 +169,7 @@
     left: 0;
     height: 3px;
     width: 0%;
-    background: linear-gradient(90deg,#3b82d4,#7c5cd8);
+    background: linear-gradient(90deg,#2b6ca8,#c9922b);
     z-index: 11;
     transition: width linear;
 }
@@ -493,7 +493,7 @@
 {% if sec.is_visible|default_if_none:True %}
 <section class="section"
   {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"
-  {% else %}style="background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);"{% endif %}>
+  {% else %}style="background:linear-gradient(180deg,#f3f7fc 0%,#fff 100%);"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <h2 class="section-title">{{ sec.title|default:"مزایای تحصیل در موسسه آموزش عالی علامه امینی" }}</h2>

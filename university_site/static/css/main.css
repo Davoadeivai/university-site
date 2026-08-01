@@ -2,19 +2,26 @@
    موسسه آموزش عالی علامه امینی - استایل اصلی - Vazirmatn Font
    ============================================================ */
 
+/* ── پالت ──────────────────────────────────────────────────────────────
+   سرمه‌ای و طلا، هم‌خانواده با بنر بالای صفحه. قبلاً صفحه از آبی #2563eb
+   و کهربایی #f59e0b استفاده می‌کرد که با سرمه‌ای/طلای بنر یکی نبود و
+   دو هویت رنگی جدا می‌ساخت؛ حالا هر دو از یک خانواده‌اند.
+   زمینهٔ صفحه روشن و کمی مایل به آبی است تا سفیدِ کارت‌ها روی آن بنشیند.
+   ─────────────────────────────────────────────────────────────────────*/
 :root {
-    --primary: #1a3a5c;
-    --primary-light: #2563eb;
-    --secondary: #f59e0b;
-    --accent: #10b981;
-    --danger: #ef4444;
-    --text-dark: #1f2937;
-    --text-muted: #6b7280;
-    --bg-light: #f8fafc;
+    --primary: #10365a;        /* سرمه‌ای موسسه — همان سرمه‌ای بنر */
+    --primary-light: #2b6ca8;  /* آبی روشن‌تر برای هاور و گرادیان */
+    --secondary: #c9922b;      /* طلای موسسه — روی سفید هم خوانا */
+    --gold-light: #e3ba58;     /* طلای روشن — فقط سر گرادیان و درخشش */
+    --accent: #0f9d78;         /* سبز موفقیت */
+    --danger: #d92d20;         /* قرمز خطا */
+    --text-dark: #152534;      /* مرکب سرمه‌ای — مشکی خالص چشم را خسته می‌کند */
+    --text-muted: #5b6e82;
+    --bg-light: #f3f7fc;       /* کاغذ سرد — زمینهٔ کلی صفحه */
     --bg-white: #ffffff;
-    --border: #e5e7eb;
-    --shadow: 0 4px 24px rgba(26, 58, 92, 0.10);
-    --shadow-lg: 0 8px 40px rgba(26, 58, 92, 0.18);
+    --border: #dbe4ef;
+    --shadow: 0 4px 24px rgba(16, 54, 90, 0.09);
+    --shadow-lg: 0 8px 40px rgba(16, 54, 90, 0.16);
     --radius: 14px;
     --radius-sm: 8px;
     --duration-fast: 160ms;
@@ -28,9 +35,12 @@
     --space-4: 1rem;
     --space-5: 1.5rem;
     --space-6: 2rem;
-    --focus-ring: 0 0 0 3px rgba(245, 158, 11, 0.45);
-    --gradient-primary: linear-gradient(135deg, #1a3a5c 0%, #2563eb 100%);
-    --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --focus-ring: 0 0 0 3px rgba(201, 146, 43, 0.45);
+    --gradient-primary: linear-gradient(135deg, #10365a 0%, #2b6ca8 100%);
+    --gradient-gold: linear-gradient(135deg, #e3ba58 0%, #b07d1e 100%);
+    /* سرمه‌ای به طلا — امضای رنگی موسسه. زیر تیتر هر بخش تکرار می‌شود و
+       همان دو رنگ بنر را در طول صفحه به هم گره می‌زند. */
+    --gradient-brand: linear-gradient(90deg, #10365a 0%, #2b6ca8 45%, #c9922b 100%);
 }
 
 * { box-sizing: border-box; }
@@ -215,8 +225,8 @@ body {
     align-items: center;
     padding: .7rem .9rem;
     text-decoration: none !important;
-    color: #1f2937 !important;
-    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-dark) !important;
+    border-bottom: 1px solid var(--border);
     position: relative;
     transition: background .12s, padding-right .12s;
 }
@@ -254,7 +264,7 @@ body {
 }
 .site-search-hit-meta {
     font-size: .72rem;
-    color: #6b7280;
+    color: var(--text-muted);
     grid-column: 2;
 }
 .site-search-empty {
@@ -268,7 +278,7 @@ body {
     font-size: .9rem;
 }
 .site-search-empty-text {
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: .78rem;
     margin-bottom: .75rem;
 }
@@ -279,9 +289,9 @@ body {
     justify-content: center;
 }
 .site-search-suggest button {
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    color: #334155;
+    border: 1px solid var(--border);
+    background: var(--bg-light);
+    color: var(--text-muted);
     border-radius: 999px;
     font-size: .72rem;
     padding: .22rem .65rem;
@@ -506,7 +516,7 @@ body {
 
 /* ---- Urgent Bar ---- */
 .urgent-bar {
-    background: linear-gradient(90deg, #ef4444, #dc2626);
+    background: linear-gradient(90deg, #d92d20, #a81d14);
     color: white;
     padding: 8px 0;
     font-size: 13px;
@@ -625,7 +635,7 @@ body {
     display: block;
     width: 60px;
     height: 4px;
-    background: var(--gradient-primary);
+    background: var(--gradient-brand);
     border-radius: 2px;
     margin-top: 10px;
 }
@@ -919,7 +929,7 @@ body {
     font-size: 15px;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 2px solid #1e3a5f;
+    border-bottom: 2px solid var(--primary);
     position: relative;
 }
 .footer-title::after {
@@ -976,8 +986,8 @@ body {
 
 /* ---- Footer Payment Bar ---- */
 .footer-payment-bar {
-    background: linear-gradient(90deg, #1e293b 0%, #1a3a5c 100%);
-    border-top: 2px solid #2563eb;
+    background: linear-gradient(90deg, #0b2540 0%, #10365a 100%);
+    border-top: 2px solid var(--secondary);
     color: #cbd5e1;
 }
 .payment-label {
@@ -1075,7 +1085,7 @@ body {
     height: 250px;
     overflow-y: auto;
     padding: 16px;
-    background: #f8fafc;
+    background: var(--bg-light);
 }
 .chat-msg { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start; }
 .chat-msg i { font-size: 18px; color: var(--primary-light); min-width: 24px; margin-top: 4px; }
@@ -1702,10 +1712,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     position: relative;
     padding: clamp(30px, 4.5vw, 56px) 0 clamp(26px, 3.5vw, 44px);
     background:
-        radial-gradient(120% 160% at 80% -10%, rgba(212, 175, 87, .14) 0%, transparent 58%),
-        radial-gradient(90% 130% at 12% 110%, rgba(13, 148, 136, .10) 0%, transparent 60%),
-        linear-gradient(112deg, #133c62 0%, #0c2a46 48%, #06192b 100%);
-    color: #fff;
+        radial-gradient(120% 160% at 80% -10%, rgba(201, 146, 43, .13) 0%, transparent 58%),
+        radial-gradient(90% 130% at 12% 110%, rgba(43, 108, 168, .10) 0%, transparent 60%),
+        linear-gradient(112deg, #ffffff 0%, #f3f7fc 48%, #eaf1f9 100%);
+    color: var(--text-dark);
     overflow: hidden;
     isolation: isolate;
 }
@@ -1713,15 +1723,15 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .acal::before {
     content: "";
     position: absolute; inset: 0; z-index: -1;
-    opacity: .045; pointer-events: none;
+    opacity: .05; pointer-events: none;
     background-image:
-        repeating-linear-gradient(60deg, #fff 0 1px, transparent 1px 18px),
-        repeating-linear-gradient(-60deg, #fff 0 1px, transparent 1px 18px);
+        repeating-linear-gradient(60deg, var(--primary) 0 1px, transparent 1px 18px),
+        repeating-linear-gradient(-60deg, var(--primary) 0 1px, transparent 1px 18px);
 }
 .acal::after {
     content: "";
     position: absolute; inset: auto 0 0 0; height: 1px;
-    background: linear-gradient(90deg, transparent, #8a6a22 14%, #f5dfa0 50%, #8a6a22 86%, transparent);
+    background: linear-gradient(90deg, transparent, rgba(201,146,43,.35) 14%, var(--secondary) 50%, rgba(201,146,43,.35) 86%, transparent);
 }
 
 .acal-head {
@@ -1732,16 +1742,16 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .acal-head h2 {
     margin: 0; font-weight: 800; letter-spacing: -.012em;
     font-size: clamp(1.12rem, 2.2vw, 1.55rem);
-    background: linear-gradient(180deg, #fffaf0, #f5dfa0 45%, #d4af57);
+    background: var(--gradient-brand);
     -webkit-background-clip: text; background-clip: text;
     color: transparent; -webkit-text-fill-color: transparent;
 }
-.acal-head p { margin: 0; font-size: .86rem; color: rgba(255, 255, 255, .6); }
+.acal-head p { margin: 0; font-size: .86rem; color: var(--text-muted); }
 .acal-year {
     margin-inline-start: auto;
-    font-size: .8rem; font-weight: 700; color: #f5dfa0;
-    background: rgba(245, 223, 160, .1);
-    border: 1px solid rgba(245, 223, 160, .3);
+    font-size: .8rem; font-weight: 700; color: #8a6118;
+    background: rgba(201, 146, 43, .12);
+    border: 1px solid rgba(201, 146, 43, .35);
     border-radius: 999px; padding: 4px 14px; white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
@@ -1756,10 +1766,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     overflow-x: auto; overflow-y: visible;
     scroll-snap-type: x proximity;
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 223, 160, .35) transparent;
+    scrollbar-color: rgba(201, 146, 43, .45) transparent;
 }
 .acal-track::-webkit-scrollbar { height: 6px; }
-.acal-track::-webkit-scrollbar-thumb { background: rgba(245, 223, 160, .35); border-radius: 4px; }
+.acal-track::-webkit-scrollbar-thumb { background: rgba(201, 146, 43, .45); border-radius: 4px; }
 
 .acal-node {
     position: relative;
@@ -1773,17 +1783,17 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     position: absolute;
     top: -13px; inset-inline: -12px;
     height: 2px;
-    background: rgba(245, 223, 160, .22);
+    background: rgba(16, 54, 90, .14);
     z-index: 0;
 }
 .acal-node:first-child::before { inset-inline-start: 50%; }
 .acal-node:last-child::before  { inset-inline-end: 50%; }
-.acal-node.is-past::before     { background: rgba(245, 223, 160, .5); }
+.acal-node.is-past::before     { background: rgba(201, 146, 43, .55); }
 
 /* ── کارت ── */
 .acal-card {
-    --tone: #d4af57;
-    --tone-soft: rgba(212, 175, 87, .16);
+    --tone: #c9922b;
+    --tone-soft: rgba(201, 146, 43, .12);
     position: relative;
     z-index: 1;
     display: flex; flex-direction: column; align-items: center;
@@ -1795,14 +1805,13 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     color: inherit;
     border-radius: 16px;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, .075) 0%, rgba(255, 255, 255, .02) 100%),
-        rgba(6, 25, 43, .55);
-    border: 1px solid rgba(245, 223, 160, .26);
+        linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    border: 1px solid rgba(201, 146, 43, .3);
     /* لبهٔ نورانی طلایی */
     box-shadow:
-        0 0 0 1px rgba(245, 223, 160, .07),
-        0 0 18px -6px rgba(245, 223, 160, .3),
-        0 10px 26px -12px rgba(0, 0, 0, .6);
+        0 0 0 1px rgba(255, 255, 255, .9) inset,
+        0 0 18px -4px rgba(201, 146, 43, .35),
+        0 10px 26px -14px rgba(16, 54, 90, .35);
     transition: transform var(--duration-base) var(--easing-standard),
                 box-shadow var(--duration-base) var(--easing-standard),
                 border-color var(--duration-base) var(--easing-standard);
@@ -1813,8 +1822,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     top: -22px; left: 50%; transform: translateX(-50%);
     width: 52px; height: 26px;
     border-radius: 26px 26px 0 0;
-    background: linear-gradient(180deg, var(--tone), rgba(6, 25, 43, .9));
-    border: 1px solid rgba(245, 223, 160, .45);
+    /* fallback برای مرورگرهای قدیمی که color-mix ندارند */
+    background: var(--tone);
+    background: linear-gradient(180deg, var(--tone), color-mix(in srgb, var(--tone) 62%, #ffffff));
+    border: 1px solid rgba(255, 255, 255, .75);
     border-bottom: none;
     display: grid; place-items: end center;
     padding-bottom: 3px;
@@ -1822,30 +1833,30 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 .acal-cap i {
     font-size: 13px;
-    color: #06192b;
-    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .35));
+    color: #ffffff;
+    filter: drop-shadow(0 1px 1px rgba(16, 54, 90, .45));
 }
 
 .acal-day {
     font-size: clamp(1.3rem, 2.5vw, 1.9rem);
-    font-weight: 800; line-height: 1.15; color: #fff;
+    font-weight: 800; line-height: 1.15; color: var(--primary);
     font-variant-numeric: tabular-nums; letter-spacing: -.015em;
     white-space: nowrap;
 }
 .acal-month {
     font-size: clamp(.64rem, .95vw, .75rem);
-    color: rgba(255, 255, 255, .62); white-space: nowrap;
+    color: var(--text-muted); white-space: nowrap;
 }
 .acal-label {
     margin-top: 7px;
     font-size: clamp(.74rem, 1.05vw, .86rem);
     font-weight: 600; line-height: 1.65;
-    color: rgba(255, 255, 255, .93);
+    color: var(--text-dark);
     text-wrap: balance;
 }
 .acal-desc {
     font-size: .68rem; line-height: 1.7;
-    color: rgba(255, 255, 255, .5);
+    color: var(--text-muted);
     text-wrap: pretty;
 }
 .acal-go {
@@ -1861,41 +1872,40 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .acal-bg {
     position: absolute; inset: 0; z-index: -1;
     background-size: cover; background-position: center;
-    opacity: .2;
+    opacity: .14;
 }
 
 /* ── رنگ‌های قابل انتخاب از پنل ── */
-.acal-card.tone-gold   { --tone: #d4af57; --tone-soft: rgba(212, 175, 87, .16); }
-.acal-card.tone-teal   { --tone: #2dd4bf; --tone-soft: rgba(45, 212, 191, .16); }
-.acal-card.tone-violet { --tone: #a78bfa; --tone-soft: rgba(167, 139, 250, .16); }
-.acal-card.tone-rose   { --tone: #fb7185; --tone-soft: rgba(251, 113, 133, .16); }
-.acal-card.tone-amber  { --tone: #fbbf24; --tone-soft: rgba(251, 191, 36, .16); }
-.acal-card.tone-sky    { --tone: #38bdf8; --tone-soft: rgba(56, 189, 248, .16); }
+.acal-card.tone-gold   { --tone: #c9922b; --tone-soft: rgba(201, 146, 43, .12); }
+.acal-card.tone-teal   { --tone: #0d8a8a; --tone-soft: rgba(13, 138, 138, .11); }
+.acal-card.tone-violet { --tone: #6d5bd0; --tone-soft: rgba(109, 91, 208, .11); }
+.acal-card.tone-rose   { --tone: #d9506d; --tone-soft: rgba(217, 80, 109, .11); }
+.acal-card.tone-amber  { --tone: #d1791f; --tone-soft: rgba(209, 121, 31, .11); }
+.acal-card.tone-sky    { --tone: #2b6ca8; --tone-soft: rgba(43, 108, 168, .11); }
 
 /* ── وضعیت مراحل ── */
 .acal-node.is-past .acal-card {
-    opacity: .62;
-    border-color: rgba(255, 255, 255, .1);
-    box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .5);
+    opacity: .66;
+    border-color: var(--border);
+    box-shadow: 0 6px 18px -14px rgba(16, 54, 90, .4);
 }
-.acal-node.is-past .acal-cap { background: rgba(255, 255, 255, .16); border-color: rgba(255, 255, 255, .2); box-shadow: none; }
-.acal-node.is-past .acal-cap i { color: rgba(255, 255, 255, .75); }
-.acal-node.is-past .acal-day { color: rgba(255, 255, 255, .5); }
+.acal-node.is-past .acal-cap { background: #c7d3e0; border-color: #ffffff; box-shadow: none; }
+.acal-node.is-past .acal-cap i { color: #ffffff; }
+.acal-node.is-past .acal-day { color: var(--text-muted); }
 
 .acal-node.is-now .acal-card {
     border-color: var(--tone);
     background:
-        linear-gradient(180deg, var(--tone-soft) 0%, rgba(255, 255, 255, .02) 100%),
-        rgba(6, 25, 43, .62);
+        linear-gradient(180deg, var(--tone-soft) 0%, #ffffff 100%);
     box-shadow:
         0 0 0 1px var(--tone),
-        0 0 30px -6px var(--tone),
-        0 14px 34px -14px rgba(0, 0, 0, .7);
+        0 0 30px -8px var(--tone),
+        0 14px 34px -16px rgba(16, 54, 90, .45);
 }
-.acal-node.is-now .acal-day   { color: #fff; }
-.acal-node.is-now .acal-label { color: #fff; }
+.acal-node.is-now .acal-day   { color: var(--primary); }
+.acal-node.is-now .acal-label { color: var(--text-dark); }
 
-.acal-node.is-next .acal-card { border-color: rgba(245, 223, 160, .5); }
+.acal-node.is-next .acal-card { border-color: rgba(201, 146, 43, .55); }
 
 /* کارت قابل کلیک */
 a.acal-card:hover,
@@ -1904,8 +1914,8 @@ a.acal-card:focus-visible {
     border-color: var(--tone);
     box-shadow:
         0 0 0 1px var(--tone),
-        0 0 26px -6px var(--tone),
-        0 18px 38px -14px rgba(0, 0, 0, .7);
+        0 0 26px -8px var(--tone),
+        0 18px 38px -16px rgba(16, 54, 90, .45);
     outline: none;
 }
 a.acal-card:hover .acal-go { opacity: 1; }
@@ -1918,12 +1928,12 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     padding: 3px 10px; border-radius: 999px; white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
-.acal-node.is-now  .acal-badge { background: var(--tone, #f5dfa0); color: #06192b; }
+.acal-node.is-now  .acal-badge { background: var(--tone, #c9922b); color: #ffffff; }
 .acal-node.is-next .acal-badge {
-    background: rgba(245, 223, 160, .14); color: #f5dfa0;
-    border: 1px solid rgba(245, 223, 160, .4);
+    background: rgba(201, 146, 43, .12); color: #8a6118;
+    border: 1px solid rgba(201, 146, 43, .4);
 }
-.acal-node.is-past .acal-badge { background: rgba(255, 255, 255, .1); color: rgba(255, 255, 255, .6); }
+.acal-node.is-past .acal-badge { background: #eef2f7; color: var(--text-muted); }
 
 @media (prefers-reduced-motion: no-preference) {
     .acal-node.is-now .acal-cap { animation: acalGlow 2.6s ease-in-out infinite; }

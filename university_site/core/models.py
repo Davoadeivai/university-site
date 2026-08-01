@@ -815,10 +815,11 @@ class HomeFeature(models.Model):
         ('amber',  'کهربایی'),
         ('teal',   'فیروزه‌ای'),
     ]
+    # هم‌خانواده با پالت صفحه (main.css) — همه روی زمینهٔ روشن خوانا هستند
     TONE_HEX = {
-        'blue': '#1a73e8', 'green': '#0b9e6b', 'gold': '#a07820',
-        'violet': '#7c3aed', 'red': '#dc2626', 'amber': '#d97706',
-        'teal': '#0d9488',
+        'blue': '#2b6ca8', 'green': '#0f9d78', 'gold': '#c9922b',
+        'violet': '#6d5bd0', 'red': '#d92d20', 'amber': '#c9922b',
+        'teal': '#0d8a8a',
     }
 
     title = models.CharField(_('عنوان'), max_length=120)
