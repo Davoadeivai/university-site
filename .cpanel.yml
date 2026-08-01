@@ -1,45 +1,9 @@
 ---
-# ═══════════════════════════════════════════════════════════════════
-#  دیپلوی خودکار cPanel — با دکمهٔ «Deploy HEAD Commit»
-#  ─────────────────────────────────────────────────────────────────
-#  این فایل به cPanel می‌گوید بعد از گرفتن آخرین کد از گیت‌هاب،
-#  فایل‌ها را کجا کپی کند.
-#
-#  ⚠ قبل از اولین استفاده، دو مقدار زیر را با مسیر واقعی سرور خودتان
-#    عوض کنید (هر دو در cPanel ← Setup Python App نوشته شده‌اند):
-#
-#      APP_ROOT  = مسیر اپلیکیشن، همان‌جا که manage.py هست
-#      VENV      = مسیر virtualenv، همان خط `source …/activate`
-#
-#    برای دیدنشان:  cPanel ← Setup Python App ← روی اپ کلیک کنید
-#
-#  نکته: rsync فایل‌های .env و media و db را دست نمی‌زند — این‌ها روی
-#  سرور می‌مانند و هرگز از گیت بازنویسی نمی‌شوند.
-# ═══════════════════════════════════════════════════════════════════
 deployment:
   tasks:
-    - export APP_ROOT=/home/cp29524/apps/university_site
-    - export VENV=/home/cp29524/virtualenv/apps/university_site/3.11/bin
-
-    # ۱) کد را از پوشهٔ مخزن به پوشهٔ اپلیکیشن منتقل کن
-    - /usr/bin/rsync -a --delete
-        --exclude '.env'
-        --exclude 'media/'
-        --exclude 'logs/'
-        --exclude 'db.sqlite3'
-        --exclude 'public/'
-        --exclude 'staticfiles/'
-        --exclude '__pycache__/'
-        $DEPLOYPATH/university_site/ $APP_ROOT/
-
-    # ۲) بررسی سازگاری داده با قیدهای جدید — پیش از migrate
-    - cd $APP_ROOT && $VENV/python manage.py preflight_check
-
-    # ۳) ساختار دیتابیس
-    - cd $APP_ROOT && $VENV/python manage.py migrate --noinput
-
-    # ۴) فایل‌های استاتیک — بدون این، هیچ تغییر ظاهری دیده نمی‌شود
-    - cd $APP_ROOT && $VENV/python manage.py collectstatic --noinput
-
-    # ۵) ری‌استارت اپلیکیشن
-    - mkdir -p $APP_ROOT/../tmp && touch $APP_ROOT/../tmp/restart.txt
+    - /bin/mkdir -p /home/cp29524/apps/university_site
+    - /usr/bin/rsync -a --delete --exclude=.env --exclude=media/ --exclude=logs/ --exclude=db.sqlite3 --exclude=public/ --exclude=staticfiles/ --exclude=__pycache__/ --exclude=.git/ $DEPLOYPATH/university_site/ /home/cp29524/apps/university_site/
+    - cd /home/cp29524/apps/university_site && /home/cp29524/virtualenv/apps/university_site/3.11/bin/python manage.py migrate --noinput
+    - cd /home/cp29524/apps/university_site && /home/cp29524/virtualenv/apps/university_site/3.11/bin/python manage.py collectstatic --noinput
+    - /bin/mkdir -p /home/cp29524/apps/tmp
+    - /bin/touch /home/cp29524/apps/tmp/restart.txt
