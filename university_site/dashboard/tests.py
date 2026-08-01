@@ -281,3 +281,31 @@ class GradeRangeTests(TestCase):
         en = Enrollment(student=self.student, course=self.course,
                         semester=self.sem, final_grade=18.75)
         en.full_clean()  # نباید خطا بدهد
+
+
+@override_settings(SMS_ENABLED=False)
+class OfficialFormLinkTests(TestCase):
+    """هر نوع درخواست دانشجویی باید به فرم رسمی خودش وصل باشد."""
+
+    def test_mapping_points_at_real_documents(self):
+        import io
+        from django.core.management import call_command
+        from dashboard.models import StudentRequest
+
+        call_command('seed_academic_forms', verbosity=0, stdout=io.StringIO())
+        mapping = StudentRequest.official_forms_map()
+
+        # هیچ عنوانی نباید بی‌جفت بماند — یعنی نگاشت با عنوان‌های واقعی
+        # فرم‌ها هم‌خوان است، نه با عنوان‌هایی که تایپی دارند
+        missing = set(StudentRequest.OFFICIAL_FORM_TITLES) - set(mapping)
+        self.assertEqual(missing, set(), 'فرم رسمی این انواع پیدا نشد: %s' % missing)
+
+        for doc in mapping.values():
+            self.assertTrue(doc.download_url, 'سند بدون لینک دانلود: %s' % doc.title)
+
+    def test_types_in_mapping_are_valid_choices(self):
+        from dashboard.models import StudentRequest
+
+        valid = {k for k, _ in StudentRequest.REQUEST_TYPE_CHOICES}
+        unknown = set(StudentRequest.OFFICIAL_FORM_TITLES) - valid
+        self.assertEqual(unknown, set(), 'نوع درخواست ناشناخته: %s' % unknown)

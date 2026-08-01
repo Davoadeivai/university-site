@@ -181,11 +181,29 @@ def admin_live_counters(request):
 
 @require_GET
 def public_live_search(request):
-    """جستجوی زنده سایت عمومی — JSON برای باکس ذره‌بین."""
+    """جستجوی زندهٔ سایت — JSON برای باکس ذره‌بین.
+
+    هدف: هرچه در سایت هست با تایپ بخشی از نامش پیدا شود؛ نه فقط صفحات
+    ثابت و اخبار، بلکه فرم‌ها، رشته‌ها، دروس، کتاب‌ها، رویدادها و … .
+
+    نکتهٔ فارسی: کاربر ممکن است «ي» و «ك» عربی یا نیم‌فاصله بنویسد در
+    حالی که متن پایگاه داده شکل دیگری دارد. کوئری به چند شکل تبدیل و
+    همه با OR جستجو می‌شوند — وگرنه «پايان نامه» هرگز «پایان‌نامه» را
+    پیدا نمی‌کرد.
+    """
+    from core.sms import check_rate_limit
+
     q = (request.GET.get('q') or '').strip()
     filter_key = (request.GET.get('filter') or 'all').strip()
     if len(q) < 1:
         return JsonResponse({'results': [], 'query': q})
+
+    # اندپوینت عمومی و بدون احراز هویت است و هر بار چند کوئری icontains
+    # می‌زند؛ بدون سقف، یک اسکریپت ساده می‌تواند دیتابیس را مشغول کند.
+    # دیبونس سمت کلاینت محافظت نیست.
+    allowed, _msg = check_rate_limit(request, 'live_search', limit=90, window=60)
+    if not allowed:
+        return JsonResponse({'results': [], 'query': q, 'throttled': True}, status=429)
 
     def _norm(s: str) -> str:
         return (
@@ -208,7 +226,56 @@ def public_live_search(request):
         tokens = [t for t in nq.replace('-', ' ').split() if len(t) > 1]
         return bool(tokens) and all(t in blob for t in tokens)
 
+    def _variants(query: str) -> list:
+        """شکل‌های محتملِ همان عبارت، برای جستجوی پایگاه داده."""
+        base = query.strip()
+        forms = {
+            base,
+            base.replace('ي', 'ی').replace('ك', 'ک'),
+            base.replace('ی', 'ي').replace('ک', 'ك'),
+            base.replace('‌', ' '),
+            base.replace(' ', '‌'),
+            base.replace('‌', ''),
+        }
+        return [f for f in forms if f]
+
+    def _q_for(fields, query: str):
+        """Q ترکیبی: هر فیلد × هر شکل عبارت."""
+        from django.db.models import Q
+        cond = Q()
+        for field in fields:
+            for form in _variants(query):
+                cond |= Q(**{'%s__icontains' % field: form})
+        return cond
+
     results = []
+
+    def collect(model, fields, url_fn, type_key, group, hint,
+                limit=6, only=None, label=None):
+        """جستجوی یک مدل و افزودن نتایج.
+
+        هر مدلی که آدرسش برقرار نشود بی‌سروصدا رد می‌شود — یک اپ ناقص
+        نباید کل جستجو را بشکند.
+        """
+        try:
+            qs = model.objects.all()
+            if only:
+                qs = qs.filter(**only)
+            for obj in qs.filter(_q_for(fields, q))[:limit]:
+                try:
+                    url = url_fn(obj)
+                except Exception:
+                    continue
+                title = (label(obj) if label else str(obj)) or ''
+                results.append({
+                    'title': title[:90],
+                    'url': url,
+                    'type': type_key,
+                    'filter': group,
+                    'hint': hint,
+                })
+        except Exception:
+            pass
 
     # صفحات ثابت پرکاربرد
     static_pages = [
@@ -311,6 +378,133 @@ def public_live_search(request):
                 'filter': 'pages',
                 'hint': 'رویداد',
             })
+    except Exception:
+        pass
+
+    # ── محتوایی که تا پیش از این در جستجو دیده نمی‌شد ──────────────────
+    # فرم‌ها و آیین‌نامه‌ها پرجستجوترین چیز سایت‌اند و اصلاً پوشش نداشتند.
+    try:
+        from core.models import (
+            DownloadableDocument, CityAttraction, QuickLink, BoardMember,
+            DeputyVice, PressRelease,
+        )
+        collect(
+            DownloadableDocument, ['title', 'description'],
+            lambda d: reverse('core:document_detail', args=[d.pk]),
+            'document', 'docs', 'فرم / آیین‌نامه', limit=8,
+            only={'is_active': True}, label=lambda d: d.title,
+        )
+        collect(
+            QuickLink, ['title'],
+            lambda l: l.url or reverse('core:eservices'),
+            'link', 'pages', 'دسترسی سریع', limit=4,
+            only={'is_active': True}, label=lambda l: l.title,
+        )
+        collect(
+            BoardMember, ['name', 'position'],
+            lambda m: reverse('core:board'),
+            'person', 'pages', 'هیأت امنا', limit=4,
+            label=lambda m: m.name,
+        )
+        collect(
+            DeputyVice, ['name', 'title'],
+            lambda d: reverse('core:deputies'),
+            'person', 'pages', 'معاونت', limit=4,
+            label=lambda d: '%s — %s' % (d.name, d.title),
+        )
+        collect(
+            PressRelease, ['title'],
+            lambda p: reverse('core:public_relations'),
+            'news', 'news', 'اطلاعیه روابط عمومی', limit=4,
+            only={'is_active': True}, label=lambda p: p.title,
+        )
+        collect(
+            CityAttraction, ['name', 'description'],
+            lambda a: reverse('core:city_behnammir'),
+            'page', 'pages', 'جاذبهٔ شهر', limit=3,
+            label=lambda a: a.name,
+        )
+    except Exception:
+        pass
+
+    try:
+        from academics.models import Course, Department, AcademicGroup, Laboratory
+        collect(
+            Course, ['name', 'code'],
+            lambda c: reverse('academics:majors'),
+            'course', 'academics', 'درس', limit=6,
+            label=lambda c: c.name,
+        )
+        collect(
+            Department, ['name'],
+            lambda d: reverse('academics:department_detail', args=[d.slug or d.pk]),
+            'department', 'academics', 'دانشکده', limit=4,
+            only={'is_active': True}, label=lambda d: d.name,
+        )
+        collect(
+            AcademicGroup, ['name'],
+            lambda g: reverse('academics:group_detail', args=[g.slug or g.pk]),
+            'group', 'academics', 'گروه آموزشی', limit=4,
+            only={'is_active': True}, label=lambda g: g.name,
+        )
+        collect(
+            Laboratory, ['name', 'description'],
+            lambda l: reverse('academics:laboratories'),
+            'lab', 'academics', 'آزمایشگاه', limit=3,
+            label=lambda l: l.name,
+        )
+    except Exception:
+        pass
+
+    try:
+        from library.models import Book, Article
+        collect(
+            Book, ['title', 'author'],
+            lambda b: reverse('library:book_detail', args=[b.pk]),
+            'book', 'library', 'کتاب', limit=6,
+            label=lambda b: b.title,
+        )
+        collect(
+            Article, ['title', 'author'],
+            lambda a: reverse('library:library'),
+            'article', 'library', 'مقاله', limit=4,
+            label=lambda a: a.title,
+        )
+    except Exception:
+        pass
+
+    try:
+        from research.models import Journal, Conference, ResearchProject, Thesis
+        collect(
+            Journal, ['title'], lambda j: reverse('research:journals'),
+            'journal', 'research', 'مجله علمی', limit=4, label=lambda j: j.title,
+        )
+        collect(
+            Conference, ['title'], lambda c: reverse('research:conferences'),
+            'conference', 'research', 'همایش', limit=4, label=lambda c: c.title,
+        )
+        collect(
+            ResearchProject, ['title'], lambda p: reverse('research:projects'),
+            'project', 'research', 'طرح پژوهشی', limit=4, label=lambda p: p.title,
+        )
+        collect(
+            Thesis, ['title', 'author'], lambda t: reverse('research:theses'),
+            'thesis', 'research', 'پایان‌نامه', limit=4, label=lambda t: t.title,
+        )
+    except Exception:
+        pass
+
+    try:
+        from news.models import Gallery
+        from contact.models import Alumni
+        collect(
+            Gallery, ['title'], lambda g: reverse('core:gallery'),
+            'gallery', 'pages', 'تصویر گالری', limit=3, label=lambda g: g.title,
+        )
+        collect(
+            Alumni, ['name', 'position'], lambda a: reverse('core:home'),
+            'person', 'pages', 'فارغ‌التحصیل', limit=3, label=lambda a: a.name,
+        )
     except Exception:
         pass
 

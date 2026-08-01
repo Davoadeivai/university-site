@@ -715,9 +715,17 @@ def student_requests(request):
     else:
         form = StudentRequestForm()
 
+    # فرم رسمی هر نوع درخواست، کنار همان گزینه نشان داده می‌شود
+    forms_map = StudentRequest.official_forms_map()
     ctx.update({
         'form': form,
         'requests': StudentRequest.objects.filter(student=request.user).order_by('-created_at'),
+        'official_forms': [
+            {'key': key,
+             'label': dict(StudentRequest.REQUEST_TYPE_CHOICES).get(key, key),
+             'doc': doc}
+            for key, doc in forms_map.items()
+        ],
     })
     return render(request, 'dashboard/student_requests.html', ctx)
 

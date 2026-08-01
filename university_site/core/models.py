@@ -722,6 +722,7 @@ class DownloadableDocument(models.Model):
         ('', _('عمومی')),
         ('academic', _('آموزش')),
         ('research', _('پژوهش')),
+        ('welfare', _('فرهنگی دانشجویی')),
         ('graduate', _('تحصیلات تکمیلی')),
     ]
     DEGREE_LEVEL_CHOICES = [

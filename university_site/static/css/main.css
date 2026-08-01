@@ -119,6 +119,35 @@ body {
     background: linear-gradient(90deg, #c9a227 0%, #f6d97c 50%, #c9a227 100%);
 }
 
+/* ── کلید حالت روشن / تیره ──────────────────────────────────────────
+   دو آیکون روی هم‌اند و بسته به حالت فعلی یکی نمایش داده می‌شود؛ این
+   از عوض‌کردن کلاس آیکون با جاوااسکریپت مطمئن‌تر است. */
+.theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 30px;
+    block-size: 30px;
+    flex: none;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .1);
+    color: var(--secondary);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    transition: var(--transition);
+}
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, .2);
+    border-color: var(--secondary);
+}
+.theme-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.theme-toggle i { grid-area: 1 / 1; transition: opacity .2s, transform .3s; }
+.theme-toggle .fa-sun  { opacity: 0; transform: rotate(-90deg) scale(.6); }
+.theme-toggle .fa-moon { opacity: 1; transform: none; }
+[data-theme="dark"] .theme-toggle .fa-sun  { opacity: 1; transform: none; }
+[data-theme="dark"] .theme-toggle .fa-moon { opacity: 0; transform: rotate(90deg) scale(.6); }
+
 .topbar-search {
     position: relative;
     z-index: 1040;
@@ -128,32 +157,37 @@ body {
     display: inline-flex;
     align-items: center;
     gap: .45rem;
-    background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.07));
-    border: 1px solid rgba(165, 156, 132, 0.35);
+    /* روشن و ملایم — روی نوار سرمه‌ای مثل یک کارت کاغذی می‌نشیند
+       و از شیشهٔ تیرهٔ قبلی هم خواناتر است هم امروزی‌تر */
+    background: rgba(255, 255, 255, .94);
+    border: 1px solid rgba(255, 255, 255, .55);
     border-radius: 999px;
-    padding: .28rem .55rem .28rem .75rem;
-    width: 168px;
+    padding: .3rem .6rem .3rem .8rem;
+    width: 178px;
+    box-shadow: 0 1px 2px rgba(8, 30, 55, .12), 0 6px 16px -10px rgba(8, 30, 55, .5);
     transition: width .28s cubic-bezier(.22,1,.36,1), border-color .2s, box-shadow .2s, background .2s;
     cursor: text;
     margin: 0;
 }
 .topbar-search.is-open .topbar-search-box,
 .topbar-search-box:focus-within {
-    width: min(280px, 68vw);
-    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-    border-color: rgba(246, 217, 124, 0.85);
-    box-shadow: 0 0 0 3px rgba(201,162,39,0.18), 0 8px 22px rgba(0,0,0,0.18);
+    width: min(340px, 74vw);
+    background: #ffffff;
+    border-color: var(--secondary);
+    box-shadow:
+        0 0 0 3px rgba(201, 146, 43, .22),
+        0 10px 26px -12px rgba(8, 30, 55, .55);
 }
 .topbar-search-icon {
-    color: #f6d97c;
+    color: var(--secondary);
     display: inline-flex;
     flex-shrink: 0;
     line-height: 0;
     transition: transform .25s ease;
 }
 .topbar-search-box:focus-within .topbar-search-icon {
-    transform: scale(1.08) rotate(-8deg);
-    filter: drop-shadow(0 0 6px rgba(246,217,124,0.45));
+    transform: scale(1.06);
+    color: var(--primary);
 }
 .topbar-search-input {
     flex: 1;
@@ -161,13 +195,13 @@ body {
     border: 0;
     outline: 0;
     background: transparent;
-    color: #fff;
+    color: var(--text-dark);
     font-size: .84rem;
     padding: .15rem 0;
     appearance: none;
 }
 .topbar-search-input::-webkit-search-cancel-button { display: none; }
-.topbar-search-input::placeholder { color: rgba(255,255,255,0.55); }
+.topbar-search-input::placeholder { color: #8496a8; }
 .topbar-search-clear {
     display: inline-flex;
     align-items: center;
@@ -176,15 +210,15 @@ body {
     height: 22px;
     border: 0;
     border-radius: 50%;
-    background: rgba(255,255,255,0.14);
-    color: rgba(255,255,255,0.85);
+    background: #eef2f7;
+    color: var(--text-muted);
     padding: 0;
     cursor: pointer;
     flex-shrink: 0;
     transition: background .15s, transform .15s;
 }
 .topbar-search-clear:hover {
-    background: rgba(255,255,255,0.28);
+    background: #dde5ee;
     transform: scale(1.06);
 }
 .topbar-search-results {
@@ -1448,6 +1482,41 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 [data-theme="dark"] .announce-card,
 [data-theme="dark"] .chatbot-widget,
 [data-theme="dark"] .msg-bubble { background: var(--bg-white); }
+
+/* بنر و تایم‌لاین در حالت تیره — بدون این، شامپاین روشن مثل یک تختهٔ
+   نورانی وسط صفحهٔ تیره می‌ماند و چشم را می‌زند. */
+[data-theme="dark"] {
+    --bnr-cream-050: #16283c;
+    --bnr-cream-200: #10202f;
+    --bnr-cream-400: #0a1826;
+    --bnr-ink-300: #f0d59a;
+    --bnr-ink-500: #dcb257;
+    --bnr-ink-700: #b98f2f;
+}
+[data-theme="dark"] .bnr-fa {
+    filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .45));
+}
+[data-theme="dark"] .bnr-min,
+[data-theme="dark"] .bnr-en { color: rgba(255, 255, 255, .55); }
+[data-theme="dark"] .bnr-sub { color: rgba(240, 213, 154, .6); }
+[data-theme="dark"] .bnr-state img {
+    filter: none;   /* نشان سفید روی زمینهٔ تیره دوباره خوانا می‌شود */
+}
+[data-theme="dark"] .acal {
+    background:
+        radial-gradient(120% 160% at 80% -10%, rgba(201, 146, 43, .10) 0%, transparent 58%),
+        linear-gradient(112deg, #16283c 0%, #101d2c 48%, #0a1723 100%);
+}
+[data-theme="dark"] .acal-card {
+    background: linear-gradient(170deg, rgba(255, 255, 255, .05) 0%, rgba(255, 255, 255, .02) 100%);
+    border-color: rgba(255, 255, 255, .12);
+}
+[data-theme="dark"] .acal-day { color: #e8eef6; }
+[data-theme="dark"] .acal-label { color: #dbe4ef; }
+[data-theme="dark"] .topbar-search-box { background: #1c2b3d; border-color: #2b3f57; }
+[data-theme="dark"] .topbar-search-input { color: #e6edf5; }
+[data-theme="dark"] .topbar-search-clear { background: #24364c; color: #93a4b8; }
+[data-theme="dark"] .section-alt { background: #131f2c; }
 
 /* مرورگرهای کم‌توان و کاربرانی که حرکت کم می‌خواهند. */
 @media (prefers-reduced-motion: reduce) {

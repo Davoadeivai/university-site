@@ -201,14 +201,55 @@ class ClassSession(models.Model):
 
 class StudentRequest(models.Model):
     REQUEST_TYPE_CHOICES = [
-        ('certificate', 'گواهی'),
-        ('transcript', 'کارنامه'),
+        ('certificate', 'گواهی اشتغال به تحصیل'),
+        ('transcript', 'کارنامه / ریز نمرات'),
         ('recommendation', 'معرفی‌نامه'),
-        ('leave', 'مرخصی'),
-        ('extension', 'تمدید'),
+        ('leave', 'مرخصی تحصیلی'),
+        ('course_drop', 'حذف اضطراری تک‌درس'),
+        ('internship', 'معرفی برای کارآموزی'),
+        ('military', 'معافیت تحصیلی / نظام وظیفه'),
+        ('loan', 'وام دانشجویی'),
+        ('equivalent_degree', 'مدرک معادل کاردانی'),
+        ('academic_issue', 'بررسی مسائل آموزشی'),
+        ('clearance', 'تسویه حساب'),
+        ('extension', 'تمدید سنوات'),
         ('complaint', 'شکایت'),
         ('other', 'سایر'),
     ]
+
+    # هر نوع درخواست، فرم رسمی خودش را دارد. بدون این نگاشت، دانشجو
+    # درخواست را در سامانه ثبت می‌کرد ولی نمی‌دانست کدام برگهٔ کاغذی را
+    # باید پر و امضا کند — و کارشناس آموزش پرونده را ناقص می‌گرفت.
+    OFFICIAL_FORM_TITLES = {
+        'leave': 'برگ درخواست مرخصی تحصیلی',
+        'course_drop': 'فرم درخواست حذف تک‌درس (حذف اضطراری)',
+        'internship': 'فرم شمارهٔ ۱ — درخواست معرفی برای کارآموزی',
+        'military': 'برگ درخواست معافیت تحصیلی دانشجویان مشمول',
+        'loan': 'سند تعهدنامه وام دانشجویی',
+        'equivalent_degree': 'فرم درخواست مدرک معادل (کاردانی)',
+        'academic_issue': 'فرم درخواست بررسی مسائل آموزشی',
+        'clearance': 'فرم تسویه حساب فارغ‌التحصیلان (کاردانی و کارشناسی)',
+    }
+
+    @classmethod
+    def official_forms_map(cls):
+        """{نوع درخواست: سند} — فقط فرم‌هایی که واقعاً ثبت شده‌اند."""
+        from core.models import DownloadableDocument
+
+        titles = list(cls.OFFICIAL_FORM_TITLES.values())
+        by_title = {
+            d.title: d
+            for d in DownloadableDocument.objects.filter(title__in=titles, is_active=True)
+        }
+        return {
+            key: by_title[title]
+            for key, title in cls.OFFICIAL_FORM_TITLES.items()
+            if title in by_title
+        }
+
+    @property
+    def official_form(self):
+        return self.official_forms_map().get(self.request_type)
     STATUS_CHOICES = [
         ('pending', 'در انتظار'),
         ('approved', 'تایید شده'),

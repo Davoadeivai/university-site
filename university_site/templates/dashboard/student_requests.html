@@ -16,6 +16,22 @@
                     <label class="form-label" for="id_request_type">نوع</label>
                     {{ form.request_type }}
                 </div>
+
+                {% if official_forms %}
+                {# فرم رسمی هر نوع درخواست — با انتخاب نوع، فقط همان یکی می‌ماند #}
+                <div class="alert alert-warning py-2 px-3 mb-3" id="officialFormBox" hidden
+                     style="font-size:13px;border-radius:10px;">
+                    <i class="fas fa-file-pdf ms-1"></i>
+                    برای این درخواست، فرم رسمی زیر را دانلود، تکمیل و امضا کنید و
+                    اسکن آن را در بخش «پیوست» بارگذاری نمایید:
+                    {% for item in official_forms %}
+                    <a class="d-block fw-bold mt-1 official-form-link" data-key="{{ item.key }}"
+                       href="{{ item.doc.download_url }}" target="_blank" rel="noopener" hidden>
+                        {{ item.doc.title }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <div class="mb-3">
                     <label class="form-label" for="id_title">عنوان</label>
                     {{ form.title }}
@@ -62,4 +78,29 @@
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    'use strict';
+    var select = document.getElementById('id_request_type');
+    var box = document.getElementById('officialFormBox');
+    if (!select || !box) return;
+
+    var links = box.querySelectorAll('.official-form-link');
+
+    function sync() {
+        var picked = select.value;
+        var any = false;
+        links.forEach(function (a) {
+            var match = a.getAttribute('data-key') === picked;
+            a.hidden = !match;
+            if (match) any = true;
+        });
+        box.hidden = !any;
+    }
+
+    select.addEventListener('change', sync);
+    sync();
+})();
+</script>
 {% endblock %}

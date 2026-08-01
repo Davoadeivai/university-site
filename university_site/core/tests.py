@@ -194,6 +194,32 @@ class HomeSectionTests(TestCase):
                    if not os.path.isfile(os.path.join(SEED_DIR, name))]
         self.assertEqual(missing, [], 'فایل این فرم‌ها در مخزن نیست: %s' % missing)
 
+    def test_live_search_covers_documents_and_persian_variants(self):
+        """جستجو باید فرم‌ها را پیدا کند و «ي» عربی را هم بفهمد."""
+        import io, json
+        from django.core.management import call_command
+
+        call_command('seed_academic_forms', verbosity=0, stdout=io.StringIO())
+
+        res = self.client.get('/api/live-search/', {'q': 'معافیت'})
+        titles = [r['title'] for r in json.loads(res.content)['results']]
+        self.assertTrue(any('معافیت' in t for t in titles), titles)
+
+        # همان عبارت با «ي» عربی و بدون نیم‌فاصله باید همان را بیاورد
+        res = self.client.get('/api/live-search/', {'q': 'پايان'})
+        titles = [r['title'] for r in json.loads(res.content)['results']]
+        self.assertTrue(titles, 'شکل عربی حروف نتیجه‌ای نداد')
+
+    def test_live_search_is_rate_limited(self):
+        """اندپوینت عمومی بدون سقف، راه ساده‌ای برای فشار به دیتابیس است."""
+        from django.core.cache import cache
+        cache.clear()
+        last = None
+        for _ in range(95):
+            last = self.client.get('/api/live-search/', {'q': 'الف'})
+        self.assertEqual(last.status_code, 429)
+        cache.clear()
+
     def test_documents_page_filters_by_section(self):
         """فیلتر «آموزش / پژوهش» باید واقعاً فهرست را جدا کند."""
         import io

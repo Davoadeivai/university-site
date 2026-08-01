@@ -504,3 +504,46 @@ function appendMsg(text, type) {
         btn.classList.toggle('is-on', !e[0].isIntersecting);
     }).observe(probe);
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   کلید حالت روشن / تیره
+   ───────────────────────────────────────────────────────────────────
+   انتخاب اولیه در <head> اعمال می‌شود تا صفحه با رنگ درست رسم شود؛
+   اینجا فقط کلیک و همگام‌سازی با تنظیم سیستم‌عامل مدیریت می‌شود.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+    var btn = document.getElementById('themeToggle');
+    if (!btn) return;
+
+    var root = document.documentElement;
+
+    function current() {
+        return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    }
+
+    function apply(mode, remember) {
+        root.setAttribute('data-theme', mode);
+        btn.setAttribute('aria-pressed', String(mode === 'dark'));
+        btn.title = mode === 'dark' ? 'رفتن به حالت روشن' : 'رفتن به حالت تیره';
+        if (remember) {
+            try { localStorage.setItem('site-theme', mode); } catch (e) {}
+        }
+    }
+
+    apply(current(), false);
+
+    btn.addEventListener('click', function () {
+        apply(current() === 'dark' ? 'light' : 'dark', true);
+    });
+
+    // اگر کاربر خودش انتخابی نکرده، تنظیم سیستم‌عامل را دنبال کن
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function follow(e) {
+        var chosen = null;
+        try { chosen = localStorage.getItem('site-theme'); } catch (err) {}
+        if (!chosen) apply(e.matches ? 'dark' : 'light', false);
+    }
+    if (mq.addEventListener) mq.addEventListener('change', follow);
+    else if (mq.addListener) mq.addListener(follow);
+})();

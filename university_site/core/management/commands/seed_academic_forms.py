@@ -22,6 +22,7 @@ from django.db import transaction
 # همهٔ این‌ها زیر بخش «آموزش» ثبت می‌شوند.
 ACADEMIC_SECTION = 'academic'
 RESEARCH_SECTION = 'research'
+WELFARE_SECTION = 'welfare'
 
 FORMS = [
     ('add-drop-form.pdf',
@@ -129,6 +130,25 @@ RESEARCH_FORMS = [
      'تعهد به اصالت اثر و رعایت حقوق مالکیت معنوی، با امضای دانشجو و معاونت‌های پژوهش و تحصیلات تکمیلی.'),
 ]
 
+# فرم‌های امور دانشجویی — نظام وظیفه و وام. بخش «فرهنگی دانشجویی».
+WELFARE_FORMS = [
+    ('military-exemption-request.pdf',
+     'برگ درخواست معافیت تحصیلی دانشجویان مشمول',
+     'form', 'general', 10,
+     'درخواست صدور معافیت تحصیلی از وظیفه عمومی، هنگام ثبت‌نام قطعی دانشجوی مشمول.'),
+
+    ('military-status-report.pdf',
+     'برگ اعلام وضعیت تحصیلی به نظام وظیفه',
+     'form', 'general', 20,
+     'اعلام آخرین وضعیت (اشتغال به تحصیل، فراغت، انصراف یا اخراج) به وظیفه عمومی. '
+     'مشمول باید حداکثر یک سال پس از فراغت یا انصراف وضعیتش را روشن کند.'),
+
+    ('student-loan-undertaking.pdf',
+     'سند تعهدنامه وام دانشجویی',
+     'form', 'general', 30,
+     'تعهدنامه صندوق رفاه دانشجویان وزارت علوم، با مشخصات متعهد و دو ضامن، برای دریافت وام و خدمات رفاهی.'),
+]
+
 SEED_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     'seed_files', 'forms',
@@ -158,6 +178,7 @@ class Command(BaseCommand):
         groups = (
             ('آموزش', ACADEMIC_SECTION, FORMS),
             ('پژوهش', RESEARCH_SECTION, RESEARCH_FORMS),
+            ('فرهنگی دانشجویی', WELFARE_SECTION, WELFARE_FORMS),
         )
 
         for label, section, entries in groups:
