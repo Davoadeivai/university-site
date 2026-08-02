@@ -194,6 +194,33 @@ class HomeSectionTests(TestCase):
                    if not os.path.isfile(os.path.join(SEED_DIR, name))]
         self.assertEqual(missing, [], 'فایل این فرم‌ها در مخزن نیست: %s' % missing)
 
+    def test_no_mobile_display_errors(self):
+        """بازرسی موبایل نباید خطای جدی پیدا کند.
+
+        ایرادهای نمایش موبایل بی‌صدا هستند — نه لاگی می‌افتد نه تستی
+        می‌شکند — تا وقتی کسی سایت را با گوشی باز کند. این تست همان
+        بازرسی را بخشی از تست‌ها می‌کند.
+        """
+        import io
+        from django.core.management import call_command
+
+        buf = io.StringIO()
+        call_command('check_responsive', stdout=buf)
+        report = buf.getvalue()
+        self.assertIn('0 خطا', report, report)
+
+    def test_floating_buttons_do_not_overlap_on_mobile(self):
+        """دکمهٔ «برو بالا» و دکمهٔ گفت‌وگو نباید روی هم بیفتند."""
+        from pathlib import Path
+        from django.conf import settings as dj
+
+        css = (Path(dj.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(encoding='utf-8')
+        mobile = css.split('@media (max-width: 576px)')[-1].split('}\n\n')[0]
+        self.assertIn('.to-top', mobile, 'برای موبایل جای دکمهٔ بالا تعیین نشده')
+        self.assertIn('.chatbot-btn', mobile)
+        # هر دو گوشهٔ پایین‌اند؛ فاصلهٔ عمودی‌شان باید بیش از قطر دکمه باشد
+        self.assertIn('inset-block-end: 84px', mobile)
+
     def test_live_search_covers_documents_and_persian_variants(self):
         """جستجو باید فرم‌ها را پیدا کند و «ي» عربی را هم بفهمد."""
         import io, json

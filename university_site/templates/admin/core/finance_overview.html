@@ -50,40 +50,42 @@
   </form>
 
   <div class="fin-table-wrap">
-    <table class="fin-table">
-      <thead>
-        <tr>
-          <th>منبع</th>
-          <th>شخص</th>
-          <th>شناسه</th>
-          <th>بابت</th>
-          <th>مبلغ</th>
-          <th>روش</th>
-          <th>سررسید</th>
-          <th>تاریخ پرداخت</th>
-          <th>وضعیت</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in rows %}
-          <tr class="st-{{ r.status_key }}">
-            <td><span class="fin-src {{ r.source }}">{{ r.source }}</span></td>
-            <td>
-              {% if r.url %}<a href="{{ r.url }}">{{ r.person }}</a>{% else %}{{ r.person }}{% endif %}
-            </td>
-            <td class="mono">{{ r.national_id }}</td>
-            <td>{{ r.title }}</td>
-            <td class="mono num">{{ r.amount|intcomma }}</td>
-            <td>{{ r.method }}</td>
-            <td>{{ r.due }}</td>
-            <td>{{ r.paid }}</td>
-            <td><span class="fin-badge b-{{ r.status_key }}">{{ r.status }}</span></td>
+    <div class="table-responsive">
+      <table class="fin-table">
+        <thead>
+          <tr>
+            <th>منبع</th>
+            <th>شخص</th>
+            <th>شناسه</th>
+            <th>بابت</th>
+            <th>مبلغ</th>
+            <th>روش</th>
+            <th>سررسید</th>
+            <th>تاریخ پرداخت</th>
+            <th>وضعیت</th>
           </tr>
-        {% empty %}
-          <tr><td colspan="9" class="fin-empty">هیچ پرداختی با این فیلتر پیدا نشد.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr class="st-{{ r.status_key }}">
+              <td><span class="fin-src {{ r.source }}">{{ r.source }}</span></td>
+              <td>
+                {% if r.url %}<a href="{{ r.url }}">{{ r.person }}</a>{% else %}{{ r.person }}{% endif %}
+              </td>
+              <td class="mono">{{ r.national_id }}</td>
+              <td>{{ r.title }}</td>
+              <td class="mono num">{{ r.amount|intcomma }}</td>
+              <td>{{ r.method }}</td>
+              <td>{{ r.due }}</td>
+              <td>{{ r.paid }}</td>
+              <td><span class="fin-badge b-{{ r.status_key }}">{{ r.status }}</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="9" class="fin-empty">هیچ پرداختی با این فیلتر پیدا نشد.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <p class="fin-note">

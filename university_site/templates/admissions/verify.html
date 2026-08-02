@@ -48,14 +48,16 @@
                 </p>
               </div>
             </div>
-            <table class="table table-sm mb-0" style="font-size:14px;">
-              <tbody>
-                <tr><th style="width:40%;" class="text-muted fw-normal">مقطع</th><td class="fw-bold">{{ result.degree }}</td></tr>
-                <tr><th class="text-muted fw-normal">رشته</th><td class="fw-bold">{{ result.major }}</td></tr>
-                <tr><th class="text-muted fw-normal">تاریخ ثبت پرونده</th><td class="fw-bold">{{ result.year }}</td></tr>
-                <tr><th class="text-muted fw-normal">حروف اول نام</th><td class="fw-bold">{{ result.initials }}</td></tr>
-              </tbody>
-            </table>
+            <div class="table-responsive">
+              <table class="table table-sm mb-0" style="font-size:14px;">
+                <tbody>
+                  <tr><th style="width:40%;" class="text-muted fw-normal">مقطع</th><td class="fw-bold">{{ result.degree }}</td></tr>
+                  <tr><th class="text-muted fw-normal">رشته</th><td class="fw-bold">{{ result.major }}</td></tr>
+                  <tr><th class="text-muted fw-normal">تاریخ ثبت پرونده</th><td class="fw-bold">{{ result.year }}</td></tr>
+                  <tr><th class="text-muted fw-normal">حروف اول نام</th><td class="fw-bold">{{ result.initials }}</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         {% else %}

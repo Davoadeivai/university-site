@@ -37,24 +37,26 @@
         <div class="col-md-6"><span class="text-muted">رشته:</span> <strong>{% if profile.major %}{{ profile.major.name }}{% else %}—{% endif %}</strong></div>
     </div>
 
-    <table class="table table-bordered" style="font-size:13px;">
-        <thead>
-            <tr><th>درس</th><th>نوع</th><th>تاریخ</th><th>ساعت</th><th>محل</th></tr>
-        </thead>
-        <tbody>
-            {% for exam in exams %}
-            <tr>
-                <td>{{ exam.course.name }}</td>
-                <td>{{ exam.get_exam_type_display }}</td>
-                <td>{{ exam.date|jalali_date:"short" }}</td>
-                <td>{{ exam.start_time }} — {{ exam.end_time }}</td>
-                <td>{{ exam.location }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="text-muted">برنامه امتحان هنوز اعلام نشده؛ کارت شناسایی ترم صادر شده است.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-bordered" style="font-size:13px;">
+          <thead>
+              <tr><th>درس</th><th>نوع</th><th>تاریخ</th><th>ساعت</th><th>محل</th></tr>
+          </thead>
+          <tbody>
+              {% for exam in exams %}
+              <tr>
+                  <td>{{ exam.course.name }}</td>
+                  <td>{{ exam.get_exam_type_display }}</td>
+                  <td>{{ exam.date|jalali_date:"short" }}</td>
+                  <td>{{ exam.start_time }} — {{ exam.end_time }}</td>
+                  <td>{{ exam.location }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-muted">برنامه امتحان هنوز اعلام نشده؛ کارت شناسایی ترم صادر شده است.</td></tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    </div>
 
     {% if barcode_svg %}
     <div class="text-center mt-4 pt-3 border-top">

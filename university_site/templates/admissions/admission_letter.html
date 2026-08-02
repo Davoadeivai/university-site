@@ -31,36 +31,38 @@
 
     <h1 class="letter-title">کارنامهٔ پذیرش تحصیلی</h1>
 
-    <table class="letter-table">
-      <tbody>
-        <tr>
-          <th>نام و نام خانوادگی</th><td>{{ app.first_name }} {{ app.last_name }}</td>
-          <th>نام پدر</th><td>{{ app.father_name|default:'—' }}</td>
-        </tr>
-        <tr>
-          <th>کد ملی</th><td class="ltr">{{ app.national_id }}</td>
-          <th>شماره شناسنامه</th><td class="ltr">{{ app.birth_cert_no|default:'—' }}</td>
-        </tr>
-        <tr>
-          <th>مقطع</th><td>{{ app.get_degree_display }}</td>
-          <th>سهمیه</th><td>{{ app.get_quota_display|default:'—' }}</td>
-        </tr>
-        <tr>
-          <th>رشتهٔ پذیرفته‌شده</th>
-          <td colspan="3"><strong>{% if app.desired_major %}{{ app.desired_major.name }}{% else %}—{% endif %}</strong>
-            {% if app.desired_major.department %}<span class="muted"> — {{ app.desired_major.department.name }}</span>{% endif %}
-          </td>
-        </tr>
-        <tr>
-          <th>شیفت</th><td>{{ app.get_shift_display }}</td>
-          <th>وضعیت</th><td><span class="badge-ok">{{ app.get_status_display }}</span></td>
-        </tr>
-        <tr>
-          <th>کد رهگیری</th><td class="ltr mono">{{ app.tracking_code }}</td>
-          <th>تاریخ ثبت</th><td>{{ app.created_at|date:"Y/m/d" }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="letter-table">
+        <tbody>
+          <tr>
+            <th>نام و نام خانوادگی</th><td>{{ app.first_name }} {{ app.last_name }}</td>
+            <th>نام پدر</th><td>{{ app.father_name|default:'—' }}</td>
+          </tr>
+          <tr>
+            <th>کد ملی</th><td class="ltr">{{ app.national_id }}</td>
+            <th>شماره شناسنامه</th><td class="ltr">{{ app.birth_cert_no|default:'—' }}</td>
+          </tr>
+          <tr>
+            <th>مقطع</th><td>{{ app.get_degree_display }}</td>
+            <th>سهمیه</th><td>{{ app.get_quota_display|default:'—' }}</td>
+          </tr>
+          <tr>
+            <th>رشتهٔ پذیرفته‌شده</th>
+            <td colspan="3"><strong>{% if app.desired_major %}{{ app.desired_major.name }}{% else %}—{% endif %}</strong>
+              {% if app.desired_major.department %}<span class="muted"> — {{ app.desired_major.department.name }}</span>{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th>شیفت</th><td>{{ app.get_shift_display }}</td>
+            <th>وضعیت</th><td><span class="badge-ok">{{ app.get_status_display }}</span></td>
+          </tr>
+          <tr>
+            <th>کد رهگیری</th><td class="ltr mono">{{ app.tracking_code }}</td>
+            <th>تاریخ ثبت</th><td>{{ app.created_at|date:"Y/m/d" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="letter-verify">
       <div class="lv-code">

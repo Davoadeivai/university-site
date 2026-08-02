@@ -51,7 +51,24 @@ body {
     color: var(--text-dark);
     line-height: 1.8;
     font-size: 15px;
+    /* تور ایمنی موبایل: اگر عنصری چند پیکسل از عرض بیرون بزند، کل صفحه
+       افقی اسکرول می‌شد و متن از لبه بیرون می‌رفت. clip برخلاف hidden
+       چسبندگی (sticky) سربرگ را خراب نمی‌کند. */
+    overflow-x: clip;
 }
+@supports not (overflow: clip) {
+    body { overflow-x: hidden; }
+}
+
+/* هیچ تصویر یا ویدیویی نباید از ظرفش پهن‌تر شود */
+img, svg, video, canvas, iframe { max-width: 100%; }
+img, video { height: auto; }
+
+/* محتوای پهن (جدول، کد، نمودار) داخل خودش اسکرول شود، نه کل صفحه */
+.table-responsive, .overflow-auto-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* شکستن آدرس‌ها و رشته‌های بلند لاتین که روی موبایل صفحه را می‌کشند */
+p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 
 /* ---- Topbar ---- */
 .topbar {
@@ -337,10 +354,27 @@ body {
 }
 
 @media (max-width: 767px) {
-    .topbar-search-box { width: 132px; padding: .22rem .45rem .22rem .55rem; }
+    /* نوار بالا روی موبایل جا ندارد: کلید تم + ورود + جستجو کافی است.
+       سوییچ زبان غیرفعال است و فقط جا می‌گیرد. */
+    .topbar { padding: 6px 0; }
+    .topbar .lang-switch { display: none; }
+    .topbar .btn { font-size: .74rem; padding: .22rem .5rem; white-space: nowrap; }
+
+    .topbar-search-box { width: 40px; padding: .22rem .4rem; justify-content: center; }
+    .topbar-search-box .topbar-search-input { width: 0; padding: 0; }
     .topbar-search.is-open .topbar-search-box,
-    .topbar-search-box:focus-within { width: min(220px, 62vw); }
+    .topbar-search-box:focus-within { width: min(215px, 58vw); justify-content: flex-start; }
+    .topbar-search.is-open .topbar-search-input,
+    .topbar-search-box:focus-within .topbar-search-input { width: auto; padding: .15rem 0; }
     .topbar-search-input { font-size: .78rem; }
+
+    /* فهرست نتایج تمام‌عرض شود، نه چسبیده به یک لبه */
+    .topbar-search-results {
+        position: fixed;
+        inset-inline: 10px;
+        width: auto;
+        max-height: 60vh;
+    }
 }
 
 /* لینک‌های navbar — متن gradient سفید‌مایل */
@@ -481,6 +515,35 @@ body {
         border-radius: 0 !important;
         margin-inline-start: 1rem;
     }
+
+    /* ── منوی موبایل: کشوی اسکرول‌شونده به‌جای فهرست بلند ────────────
+       منو نُه آیتم با زیرمنو دارد؛ باز که می‌شد، بلندتر از صفحه می‌رفت
+       و کاربر باید کل صفحه را اسکرول می‌کرد تا به آخرش برسد — در این
+       حالت بنر و نوار بالا هم بالا می‌رفتند و جهت‌یابی گم می‌شد.
+       حالا خودِ کشو اسکرول می‌شود و صفحه سر جایش می‌ماند. */
+    .main-navbar .navbar-collapse.show,
+    .main-navbar .navbar-collapse.collapsing {
+        max-height: calc(100dvh - 210px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    /* مرورگرهای قدیمی که dvh ندارند */
+    @supports not (height: 100dvh) {
+        .main-navbar .navbar-collapse.show { max-height: 70vh; }
+    }
+
+    /* ناحیهٔ لمسی هر آیتم دست‌کم ۴۴ پیکسل — استاندارد انگشت */
+    .nav-link-flat,
+    .nav-dd-item { min-block-size: 44px; display: flex !important; align-items: center; }
+
+    /* عنوان زیرمنوها روی موبایل چسبان می‌ماند تا معلوم باشد کجاییم */
+    .nav-dd-section {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #0d2137 !important;
+    }
 }
 
 /* dropdown-toggle arrow */
@@ -589,6 +652,7 @@ body {
 }
 .hero-badge {
     background: rgba(255,255,255,0.15);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.25);
     display: inline-block;
@@ -1065,25 +1129,6 @@ body {
 }
 .payment-link:hover { color: #fcd34d; border-color: #fcd34d; }
 
-/* ---- Scroll to Top ---- */
-.scroll-top {
-    position: fixed;
-    bottom: 100px; inset-inline-start: 24px;
-    width: 44px; height: 44px;
-    background: var(--gradient-primary);
-    border: none;
-    border-radius: 50%;
-    color: white;
-    font-size: 16px;
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: var(--transition);
-    display: none;
-    z-index: 999;
-}
-.scroll-top.visible { display: flex; align-items: center; justify-content: center; }
-.scroll-top:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-
 /* ---- Chatbot ---- */
 .chatbot-btn {
     position: fixed;
@@ -1107,7 +1152,7 @@ body {
     top: -4px; inset-inline-start: -4px;
     background: var(--secondary);
     color: white;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     padding: 2px 5px;
     border-radius: 10px;
@@ -1350,6 +1395,7 @@ body {
     width: 46px !important;
     height: 46px !important;
     border-radius: 50%;
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
 }
 .swiper-button-prev::after, .swiper-button-next::after { font-size: 18px !important; }
@@ -1527,15 +1573,15 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
     }
-    .uni-card:hover, .quick-link-card:hover, .dept-card:hover, .prof-card:hover, .alumni-card:hover, .dash-stat-card:hover, .hero-btn:hover, .btn-primary-uni:hover, .scroll-top:hover, .social-btn:hover { transform: none; }
+    .uni-card:hover, .quick-link-card:hover, .dept-card:hover, .prof-card:hover, .alumni-card:hover, .dash-stat-card:hover, .hero-btn:hover, .btn-primary-uni:hover, .social-btn:hover { transform: none; }
 }
 @media (hover: none) {
     .uni-card:hover, .quick-link-card:hover, .dept-card:hover, .prof-card:hover, .alumni-card:hover, .dash-stat-card:hover { transform: none; }
 }
 @media (max-width: 576px) {
-    .scroll-top { inset-inline-start: 16px; bottom: 92px; }
-    .chatbot-btn { inset-inline-start: 16px; bottom: 24px; }
+    .chatbot-btn { inset-inline-start: 16px; bottom: 20px; }
     .chatbot-widget { inset-inline-start: 16px; inset-inline-end: 16px; width: auto; bottom: 92px; }
+    .to-top { inset-inline-start: 16px; inset-block-end: 84px; width: 40px; height: 40px; }
     .ui-state { padding: var(--space-4); min-block-size: 150px; }
 }
 

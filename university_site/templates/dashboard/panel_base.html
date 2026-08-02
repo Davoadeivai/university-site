@@ -26,17 +26,17 @@
     gap: 0.65rem;
     padding: 0.65rem 0.85rem;
     border-radius: 10px;
-    color: var(--text);
+    color: var(--text-dark);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
     transition: background .15s, color .15s;
 }
 .panel-nav a i { width: 18px; text-align: center; color: var(--text-muted); }
-.panel-nav a:hover { background: rgba(59,130,212,.08); color: var(--primary); }
+.panel-nav a:hover { background: rgba(43,108,168,.09); color: var(--primary); }
 .panel-nav a:hover i { color: var(--primary); }
 .panel-nav a.active {
-    background: rgba(59,130,212,.12);
+    background: rgba(43,108,168,.13);
     color: var(--primary);
     font-weight: 700;
 }
@@ -77,6 +77,15 @@
 }
 @media (max-width: 900px) {
     .panel-shell { grid-template-columns: 1fr; }
+    /* جدول را بلوک می‌کنیم تا خودش اسکرول افقی بگیرد؛ بدون این، کل
+       صفحه روی موبایل به پهنا کشیده می‌شد. */
+    .panel-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+    .panel-table th, .panel-table td { padding: .6rem .7rem; }
     .panel-nav { position: static; display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0.65rem; }
     .panel-nav-title { display: none; }
     .panel-nav a { padding: 0.5rem 0.7rem; font-size: 13px; }
@@ -91,15 +100,15 @@
             <h1 class="page-header-title mb-0">{{ page_title }}</h1>
             <div class="d-flex align-items-center gap-2">
                 {% if role == 'professor' %}
-                <span class="badge" style="background:#7c5cd8;font-size:13px;padding:6px 14px;border-radius:20px;">
+                <span class="badge" style="background:var(--violet,#6b5cc4);font-size:13px;padding:6px 14px;border-radius:20px;">
                     <i class="fas fa-chalkboard-teacher me-1"></i> استاد
                 </span>
                 {% elif role == 'staff' %}
-                <span class="badge" style="background:#f97316;font-size:13px;padding:6px 14px;border-radius:20px;">
+                <span class="badge" style="background:var(--amber,#c07326);font-size:13px;padding:6px 14px;border-radius:20px;">
                     <i class="fas fa-building me-1"></i> مدیر
                 </span>
                 {% else %}
-                <span class="badge" style="background:#3b82d4;font-size:13px;padding:6px 14px;border-radius:20px;">
+                <span class="badge" style="background:var(--primary-light);font-size:13px;padding:6px 14px;border-radius:20px;">
                     <i class="fas fa-user-graduate me-1"></i> دانشجو
                 </span>
                 {% endif %}
