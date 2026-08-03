@@ -209,6 +209,33 @@ class HomeSectionTests(TestCase):
         report = buf.getvalue()
         self.assertIn('0 خطا', report, report)
 
+    def test_dark_banner_variables_win_over_light(self):
+        """متغیرهای بنر در حالت تیره باید بر تعریف روشن غلبه کنند.
+
+        تعریف روشن پایین‌تر در فایل است؛ اگر سلکتور تیره ویژگی برابر
+        داشته باشد، ترتیب فایل برنده می‌شود و بنر در حالت تیره روشن
+        می‌ماند — دقیقاً همان اشتباهی که یک بار رخ داد.
+        """
+        from pathlib import Path
+        from django.conf import settings as dj
+
+        css = (Path(dj.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(encoding='utf-8')
+        dark = css.find(':root[data-theme="dark"] {')
+        light = css.find('    --bnr-cream-050: #fffdf8;')
+        self.assertGreater(dark, -1, 'بلوک تیرهٔ بنر با ویژگی کافی پیدا نشد')
+        self.assertGreater(light, dark,
+                           'تعریف روشن باید بعد از تیره باشد تا ویژگی معنا پیدا کند')
+
+    def test_banner_content_is_unchanged(self):
+        """بازطراحی بنر فقط ظاهری است؛ متن‌ها نباید عوض شده باشند."""
+        body = self.client.get(reverse('core:home')).content.decode()
+        for text in ('موسسه آموزش عالی علامه امینی',
+                     'دانش · مهارت · آینده',
+                     'وزارت علوم، تحقیقات و فناوری',
+                     'Allameh Amini'):
+            self.assertIn(text, body, 'از بنر افتاده: %s' % text)
+        self.assertNotIn('علامه امینی بهنمیر', body)
+
     def test_floating_buttons_do_not_overlap_on_mobile(self):
         """دکمهٔ «برو بالا» و دکمهٔ گفت‌وگو نباید روی هم بیفتند."""
         from pathlib import Path

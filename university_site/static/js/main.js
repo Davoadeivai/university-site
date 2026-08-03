@@ -547,3 +547,55 @@ function appendMsg(text, type) {
     if (mq.addEventListener) mq.addEventListener('change', follow);
     else if (mq.addListener) mq.addListener(follow);
 })();
+
+/* ═══════════════════════════════════════════════════════════════════
+   بنر «زرنگار» — نورِ دنبال‌کنندهٔ نشانگر و عمقِ سه‌لایه
+   ───────────────────────────────────────────────────────────────────
+   دو متغیر CSS را به‌روز می‌کند و بس؛ هیچ استایلی مستقیم نوشته
+   نمی‌شود، پس همهٔ ظاهر همچنان در main.css می‌ماند:
+
+     --halo-x   محل هالهٔ نور روی زمینه و گرهِ روشنِ خط کف
+     --px/--py  جابه‌جایی نرمال‌شدهٔ لایه‌ها (بین ۱- و ۱+)
+
+   روی دستگاه لمسی یا وقتی کاربر حرکت کم خواسته، هیچ‌کدام اجرا
+   نمی‌شود و بنر ثابت و کامل می‌ماند.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+    'use strict';
+    var banner = document.querySelector('.site-banner');
+    if (!banner) return;
+
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!fine.matches || still.matches) return;
+
+    var frame = null;
+    var pending = null;
+
+    function paint() {
+        frame = null;
+        if (!pending) return;
+        banner.style.setProperty('--halo-x', (pending.x * 100).toFixed(1) + '%');
+        banner.style.setProperty('--px', (pending.x * 2 - 1).toFixed(3));
+        banner.style.setProperty('--py', (pending.y * 2 - 1).toFixed(3));
+    }
+
+    banner.addEventListener('pointermove', function (e) {
+        var box = banner.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        pending = {
+            x: Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)),
+            y: Math.min(1, Math.max(0, (e.clientY - box.top) / box.height))
+        };
+        // یک بار در هر فریم؛ بدون این، هر حرکت ماوس یک بازچینش می‌سازد
+        if (frame === null) frame = requestAnimationFrame(paint);
+    });
+
+    banner.addEventListener('pointerleave', function () {
+        pending = null;
+        if (frame !== null) { cancelAnimationFrame(frame); frame = null; }
+        banner.style.removeProperty('--halo-x');
+        banner.style.setProperty('--px', '0');
+        banner.style.setProperty('--py', '0');
+    });
+})();

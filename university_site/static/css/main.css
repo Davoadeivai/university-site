@@ -1530,8 +1530,11 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 [data-theme="dark"] .msg-bubble { background: var(--bg-white); }
 
 /* بنر و تایم‌لاین در حالت تیره — بدون این، شامپاین روشن مثل یک تختهٔ
-   نورانی وسط صفحهٔ تیره می‌ماند و چشم را می‌زند. */
-[data-theme="dark"] {
+   نورانی وسط صفحهٔ تیره می‌ماند و چشم را می‌زند.
+
+   سلکتور عمداً `:root[...]` است نه `[...]`: تعریف روشنِ همین متغیرها
+   پایین‌تر در فایل می‌آید و با ویژگی برابر، آخری برنده می‌شد. */
+:root[data-theme="dark"] {
     --bnr-cream-050: #16283c;
     --bnr-cream-200: #10202f;
     --bnr-cream-400: #0a1826;
@@ -1633,32 +1636,50 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   بنر موسسه — متن زنده به‌جای تصویر
+   بنر موسسه — «زرنگار»
    ───────────────────────────────────────────────────────────────────────
-   نسخهٔ قبلی یک PNG با ابعاد ۷۸۶×۸۶ بود که با width:100% کشیده می‌شد؛
-   روی مانیتور ۱۹۲۰ حدود ۲.۴ برابر بزرگ‌نمایی و محو می‌شد و روی موبایل
-   به ۴۳ پیکسل می‌رسید که نام موسسه ناخوانا بود. نام هم داخل پیکسل‌ها
-   پخته بود و تغییرش به طراح نیاز داشت.
+   ایدهٔ طراحی: تذهیبِ نسخه‌های خطی ایرانی، ولی زنده و با CSS خالص —
+   نه یک تصویر. سه لایه روی هم می‌نشیند:
 
-   حالا: ارتفاع ثابت، متن واقعی (سئو + screen reader)، طلای گرادیانی با
-   عمق کنده‌کاری‌شده، و فشرده‌شدن هنگام اسکرول.
+     ۱. زمینهٔ کاغذِ زر با شبکهٔ گره‌چینیِ هشت‌پر که با گرادیان ساخته شده
+     ۲. نورِ موضعی که دنبال نشانگر می‌آید (روی لمس، یک گذر آرام خودکار)
+     ۳. حروف با گرادیان برنزی و یک باندِ درخشش که مثل فلز نور را می‌گیرد
+
+   چیزی که این را از یک بنر معمولی جدا می‌کند، `@property` است: بدون آن
+   نمی‌شود موقعیت گرادیان را نرم انیمیت کرد و درخشش پرش می‌زند.
+
+   هیچ فایل تصویری، هیچ کتابخانهٔ بیرونی. همه‌چیز با احترام به
+   prefers-reduced-motion خاموش می‌شود.
    ═══════════════════════════════════════════════════════════════════════ */
+
+@property --glint {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 120%;
+}
+@property --halo-x {
+    syntax: '<percentage>';
+    inherits: true;
+    initial-value: 78%;
+}
+
 :root {
-    /* زمینهٔ شامپاینی — روشن به تیره، از راست به چپ */
+    /* کاغذِ زر — از روشن‌ترین گوشه تا گرم‌ترین */
     --bnr-cream-050: #fffdf8;
     --bnr-cream-200: #f9f0d9;
     --bnr-cream-400: #efdfba;
-    /* طلا — برای خط‌ها و جزئیات تزئینی */
+    /* طلا — خط‌ها و تذهیب */
     --bnr-gold-300: #e3ba58;
     --bnr-gold-500: #c9922b;
     --bnr-gold-700: #8a6118;
-    /* مرکبِ کنده‌کاری — نوشته‌ها روی زمینهٔ روشن با این خوانده می‌شوند */
+    /* مرکبِ کنده‌کاری — نوشته‌ها روی زمینهٔ روشن */
     --bnr-ink-300: #a87f2a;
     --bnr-ink-500: #6b4d14;
     --bnr-ink-700: #3b2a09;
-    --bnr-h: 92px;
-    --bnr-h-md: 76px;
-    --bnr-h-sm: 62px;
+
+    --bnr-h: 96px;
+    --bnr-h-md: 78px;
+    --bnr-h-sm: 64px;
     --bnr-h-cond: 56px;
 }
 
@@ -1667,33 +1688,49 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     width: 100%;
     line-height: normal;
     overflow: hidden;
+    isolation: isolate;
     background:
-        radial-gradient(120% 180% at 82% 12%, rgba(255, 255, 255, .85) 0%, transparent 55%),
-        radial-gradient(90% 150% at 10% 100%, rgba(201, 146, 43, .18) 0%, transparent 62%),
-        linear-gradient(105deg, var(--bnr-cream-050) 0%, var(--bnr-cream-200) 52%, var(--bnr-cream-400) 100%);
+        /* هالهٔ نور — مرکزش با نشانگر جابه‌جا می‌شود */
+        radial-gradient(65% 180% at var(--halo-x) 8%,
+            rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, 0) 55%),
+        radial-gradient(90% 150% at 8% 105%,
+            rgba(201, 146, 43, .20) 0%, transparent 62%),
+        linear-gradient(104deg,
+            var(--bnr-cream-050) 0%, var(--bnr-cream-200) 52%, var(--bnr-cream-400) 100%);
+    transition: --halo-x .45s cubic-bezier(.22, 1, .36, 1);
 }
 
-/* بافت گره‌چینی — با CSS ساخته می‌شود، بدون هیچ فایل تصویری */
+/* ── لایهٔ ۱: شبکهٔ گره‌چینی هشت‌پر ──────────────────────────────────
+   چهار گرادیان تکرارشونده با زاویه‌های ۰/۴۵/۹۰/۱۳۵ درجه، ستارهٔ هشت‌پرِ
+   آشنای تذهیب را می‌سازند. مقیاسش با عرض صفحه تغییر می‌کند. */
 .site-banner::before {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: -1;
     pointer-events: none;
-    opacity: .07;
+    opacity: .085;
     background-image:
-        repeating-linear-gradient(45deg, var(--bnr-gold-700) 0 1px, transparent 1px 14px),
-        repeating-linear-gradient(-45deg, var(--bnr-gold-700) 0 1px, transparent 1px 14px);
+        repeating-linear-gradient(45deg,  var(--bnr-gold-700) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(-45deg, var(--bnr-gold-700) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(0deg,   var(--bnr-gold-500) 0 1px, transparent 1px 44px),
+        repeating-linear-gradient(90deg,  var(--bnr-gold-500) 0 1px, transparent 1px 44px);
+    mask-image: radial-gradient(120% 140% at 50% 40%, #000 30%, transparent 88%);
+    -webkit-mask-image: radial-gradient(120% 140% at 50% 40%, #000 30%, transparent 88%);
 }
 
-/* خط طلایی موییِ پایین — یک پیکسل، با محوشدگی در دو سر */
+/* ── خط زرِ کف بنر — با گرهِ نورانی زیر نشانگر ── */
 .site-banner::after {
     content: "";
     position: absolute;
     inset: auto 0 0 0;
     height: 2px;
-    background: linear-gradient(90deg,
-        transparent 0%, var(--bnr-gold-700) 12%, var(--bnr-gold-500) 50%,
-        var(--bnr-gold-700) 88%, transparent 100%);
+    background:
+        radial-gradient(28% 320% at var(--halo-x) 50%,
+            #fff6dd 0%, rgba(255, 246, 221, 0) 70%),
+        linear-gradient(90deg,
+            transparent 0%, rgba(201, 146, 43, .35) 12%, var(--bnr-gold-500) 50%,
+            rgba(201, 146, 43, .35) 88%, transparent 100%);
 }
 
 .site-banner > a {
@@ -1709,49 +1746,67 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     transition: height var(--duration-base) var(--easing-standard);
 }
 
+/* ── لایهٔ ۳: عمقِ سه‌لایه ──────────────────────────────────────────
+   هر لایه با ضریب متفاوتی جابه‌جا می‌شود؛ چشم این اختلاف را به‌صورت
+   فاصلهٔ فیزیکی می‌خواند، بدون هیچ ترفند سه‌بعدی. */
+.bnr-mark, .bnr-state { transform: translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 3px), 0); }
+.bnr-name             { transform: translate3d(calc(var(--px, 0) * -3px), calc(var(--py, 0) * -2px), 0); }
+.bnr-mark, .bnr-state, .bnr-name {
+    transition: transform .5s cubic-bezier(.22, 1, .36, 1);
+    will-change: transform;
+}
+
 .bnr-mark { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .bnr-mark img {
     display: block;
     height: calc(var(--bnr-h) - 26px);
     width: auto;
-    transition: height var(--duration-base) var(--easing-standard);
+    transition: height var(--duration-base) var(--easing-standard),
+                filter .4s var(--easing-standard);
     filter: drop-shadow(0 2px 5px rgba(59, 42, 9, .22));
 }
+.site-banner > a:hover .bnr-mark img {
+    filter: drop-shadow(0 3px 10px rgba(201, 146, 43, .5));
+}
 
-/* ── نام موسسه: مرکب کنده‌کاری‌شده روی زمینهٔ روشن ── */
+/* ── نام موسسه: مرکبِ برنزی با درخششِ فلزی ── */
 .bnr-name { display: flex; flex-direction: column; align-items: center; min-width: 0; }
 .bnr-fa {
+    position: relative;
     font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
     font-weight: 800;
-    font-size: clamp(1.05rem, 2.5vw, 1.85rem);
+    font-size: clamp(1.05rem, 2.5vw, 1.9rem);
     letter-spacing: .012em;
     line-height: 1.25;
     white-space: nowrap;
-    /* گرادیان مرکبِ برنزی داخل خود حروف — نه رنگ تخت.
-       روی زمینهٔ شامپاینی، طلای روشن خوانده نمی‌شد؛ این طیف از همان
-       خانوادهٔ طلاست ولی به‌قدر کافی تیره که کنتراست متن حفظ شود. */
-    background: linear-gradient(178deg,
-        var(--bnr-ink-300) 0%, var(--bnr-ink-500) 34%, var(--bnr-ink-700) 68%,
-        var(--bnr-ink-500) 100%);
-    background-size: 100% 100%;
+    /* گرادیان مرکب + باندِ درخشش که با --glint حرکت می‌کند.
+       دو لایه‌اند: لایهٔ بالا نورِ عبوری، لایهٔ پایین رنگ پایه. */
+    background-image:
+        linear-gradient(100deg,
+            transparent calc(var(--glint) - 22%),
+            rgba(255, 252, 240, .92) var(--glint),
+            transparent calc(var(--glint) + 22%)),
+        linear-gradient(178deg,
+            var(--bnr-ink-300) 0%, var(--bnr-ink-500) 34%,
+            var(--bnr-ink-700) 68%, var(--bnr-ink-500) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
-    /* برجستگی: تاباندن سفید از پایین، سایهٔ گرم به بالا */
     filter:
-        drop-shadow(0 1px 0 rgba(255, 255, 255, .7))
+        drop-shadow(0 1px 0 rgba(255, 255, 255, .75))
         drop-shadow(0 1px 2px rgba(59, 42, 9, .18));
 }
+
 .bnr-sub {
     margin-top: 5px;
     font-size: clamp(.58rem, .82vw, .72rem);
     letter-spacing: .32em;
     color: rgba(107, 77, 20, .78);
     white-space: nowrap;
-    text-transform: none;
 }
-/* خط تزئینی زیر نام — لوزی وسط، دو بازوی محوشونده */
+
+/* ── خط تزئینی: لوزیِ تذهیب با دو بازوی محوشونده ── */
 .bnr-rule {
     display: flex;
     align-items: center;
@@ -1763,13 +1818,22 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     flex: 1;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--bnr-gold-700));
+    transform-origin: left center;
 }
-.bnr-rule i:last-child { background: linear-gradient(90deg, var(--bnr-gold-700), transparent); }
+.bnr-rule i:last-child {
+    background: linear-gradient(90deg, var(--bnr-gold-700), transparent);
+    transform-origin: right center;
+}
 .bnr-rule b {
-    width: 5px; height: 5px;
+    position: relative;
+    width: 6px; height: 6px;
     background: var(--bnr-gold-500);
     transform: rotate(45deg);
     flex: none;
+    transition: box-shadow .35s var(--easing-standard);
+}
+.site-banner > a:hover .bnr-rule b {
+    box-shadow: 0 0 10px 2px rgba(201, 146, 43, .55);
 }
 
 .bnr-state { display: flex; align-items: center; gap: 11px; min-width: 0; }
@@ -1778,9 +1842,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     height: calc(var(--bnr-h) - 34px);
     width: auto;
     transition: height var(--duration-base) var(--easing-standard);
-    /* این نشان خط‌نگارهٔ سفید است و روی زمینهٔ روشن ناپدید می‌شد.
-       brightness(0) آن را یکدست تیره می‌کند و sepia رنگش را به برنز
-       می‌برد تا با بقیهٔ بنر یکی باشد. */
+    /* این نشان خط‌نگارهٔ سفید است و روی زمینهٔ روشن ناپدید می‌شد؛
+       فیلتر آن را به برنزِ هم‌خانواده می‌برد. */
     filter:
         brightness(0) saturate(100%) invert(19%) sepia(38%)
         saturate(1100%) hue-rotate(3deg) opacity(.85)
@@ -1803,16 +1866,50 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     white-space: nowrap;
 }
 
-/* ── درخشش طلا: یک‌بار هنگام بارگذاری ── */
+/* ── ورودِ صحنه و درخشش ─────────────────────────────────────────────
+   یک‌بار هنگام بارگذاری: خط تذهیب از مرکز باز می‌شود، نام بالا می‌آید،
+   و یک گذرِ نور روی حروف می‌رود. بعد از آن، درخشش فقط با هاور. */
 @media (prefers-reduced-motion: no-preference) {
     .bnr-fa {
-        background-size: 220% 100%;
-        animation: bnrSheen 1500ms var(--easing-standard) 1 both;
+        animation: bnrRise 700ms var(--easing-standard) both,
+                   bnrGlint 2400ms cubic-bezier(.4, 0, .2, 1) 500ms 1 both;
     }
-    @keyframes bnrSheen {
-        from { background-position: 100% 0; }
-        to   { background-position: 42% 0; }
+    .bnr-rule i  { animation: bnrRule 800ms var(--easing-standard) 320ms both; }
+    .bnr-rule b  { animation: bnrDiamond 600ms cubic-bezier(.34, 1.56, .64, 1) 260ms both; }
+    .bnr-sub     { animation: bnrFade 700ms var(--easing-standard) 560ms both; }
+    .bnr-mark,
+    .bnr-state   { animation: bnrFade 700ms var(--easing-standard) 140ms both; }
+
+    .site-banner > a:hover .bnr-fa {
+        animation: bnrGlint 1400ms cubic-bezier(.4, 0, .2, 1) 1;
     }
+
+    @keyframes bnrRise {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: none; }
+    }
+    @keyframes bnrGlint {
+        from { --glint: 125%; }
+        to   { --glint: -25%; }
+    }
+    @keyframes bnrRule {
+        from { transform: scaleX(0); opacity: 0; }
+        to   { transform: scaleX(1); opacity: 1; }
+    }
+    @keyframes bnrDiamond {
+        from { transform: rotate(45deg) scale(0); }
+        to   { transform: rotate(45deg) scale(1); }
+    }
+    @keyframes bnrFade {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+}
+
+/* حرکت کم: همه‌چیز ثابت، ولی هیچ‌چیز از دست نمی‌رود */
+@media (prefers-reduced-motion: reduce) {
+    .bnr-mark, .bnr-state, .bnr-name { transform: none !important; }
+    .site-banner { transition: none; }
 }
 
 /* ── حالت فشرده هنگام اسکرول ── */
@@ -1842,6 +1939,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     .bnr-state img { height: calc(var(--bnr-h-sm) - 22px); }
     .bnr-sub, .bnr-rule { display: none; }
     .bnr-fa { font-size: .95rem; letter-spacing: 0; }
+    /* روی موبایل پارالاکس معنا ندارد و فقط باتری می‌برد */
+    .bnr-mark, .bnr-state, .bnr-name { transform: none; }
 }
 @media (max-width: 380px) {
     .bnr-fa { font-size: .82rem; }
