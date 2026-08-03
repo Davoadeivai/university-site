@@ -282,7 +282,7 @@ def public_live_search(request):
         {'title': 'صفحه اصلی', 'url': '/', 'type': 'page', 'filter': 'pages', 'hint': 'خانه سایت'},
         {'title': 'درباره موسسه', 'url': reverse('core:about'), 'type': 'page', 'filter': 'pages', 'hint': 'معرفی و تاریخچه'},
         {'title': 'اهداف موسسه', 'url': reverse('core:institution_goals'), 'type': 'page', 'filter': 'pages', 'hint': 'چشم‌انداز'},
-        {'title': 'شهر بهنمیر', 'url': reverse('core:city_behnammir'), 'type': 'page', 'filter': 'pages', 'hint': 'آشنایی با شهر'},
+        {'title': 'شهر بابلسر', 'url': reverse('core:city_behnammir'), 'type': 'page', 'filter': 'pages', 'hint': 'آشنایی با شهر'},
         {'title': 'ریاست موسسه', 'url': reverse('core:presidency'), 'type': 'page', 'filter': 'pages', 'hint': 'حوزه ریاست'},
         {'title': 'دفتر ریاست', 'url': reverse('core:presidency_office'), 'type': 'page', 'filter': 'pages', 'hint': 'واحدهای دفتر'},
         {'title': 'تحصیلات تکمیلی', 'url': reverse('core:graduate_studies'), 'type': 'page', 'filter': 'pages', 'hint': 'کارشناسی ارشد'},

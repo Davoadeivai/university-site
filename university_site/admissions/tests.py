@@ -27,8 +27,8 @@ def make_application(**kw):
     defaults = dict(
         first_name='مریم', last_name='رضایی', father_name='حسن',
         national_id=VALID_NID, phone='09121234567', email='m@example.com',
-        gender='female', province='مازندران', city='بهنمیر',
-        address='بهنمیر، خیابان اصلی', quota='region2',
+        gender='female', province='مازندران', city='بابلسر',
+        address='بابلسر، خیابان اصلی', quota='region2',
         prev_degree='diploma', status='accepted',
         desired_major=major, degree='bachelor_cont',
     )
@@ -137,7 +137,7 @@ class RegistrationDeduplicationTests(TestCase):
         profile = UserProfile.objects.get(user=user)
         self.assertEqual(profile.phone, '09121234567')
         self.assertEqual(profile.province, 'مازندران')
-        self.assertEqual(profile.city, 'بهنمیر')
+        self.assertEqual(profile.city, 'بابلسر')
         self.assertEqual(profile.quota, 'region2')
         # این دو نباید از ورودی کاربر بیایند
         self.assertEqual(profile.student_id, '')

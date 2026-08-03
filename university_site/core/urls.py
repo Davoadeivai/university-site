@@ -17,7 +17,10 @@ urlpatterns = [
     path('خانه/', RedirectView.as_view(pattern_name='core:home', permanent=True)),
     path('landing/', RedirectView.as_view(pattern_name='core:home', permanent=True), name='landing'),
     path('درباره-ما/', views.about, name='about'),
-    path('شهر-بهنمیر/', views.city_behnammir, name='city_behnammir'),
+    path('شهر-بابلسر/', views.city_behnammir, name='city_behnammir'),
+    # نشانی قدیمی؛ لینک‌های بیرونی و نتایج گوگل نباید ۴۰۴ بگیرند
+    path('شهر-بهنمیر/', RedirectView.as_view(
+        pattern_name='core:city_behnammir', permanent=True)),
     path('اهداف-موسسه/', views.institution_goals, name='institution_goals'),
     path('هیات-موسس/', views.board_founders, name='board_founders'),
     path('هیات-امنا/', views.board_trustees, name='board_trustees'),

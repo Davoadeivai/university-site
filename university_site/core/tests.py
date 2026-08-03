@@ -12,18 +12,29 @@ from academics.models import AcademicCalendar
 from core.academic_timeline import build_timeline
 
 INSTITUTE = 'موسسه آموزش عالی علامه امینی'
-OLD_NAME = 'علامه امینی بهنمیر'
+# نام موسسه هرگز نباید پسوند شهر بگیرد — نه شکل قدیمی، نه شکل تازه
+FORBIDDEN_SUFFIXES = ('علامه امینی بهنمیر', 'علامه امینی - بهنمیر',
+                      'علامه امینی بابلسر', 'علامه امینی - بابلسر')
 
 
 class BrandNameTests(TestCase):
-    """نام موسسه دیگر «بهنمیر» ندارد و در بنر متن زنده است."""
+    """نام موسسه همه‌جا دقیقاً «موسسه آموزش عالی علامه امینی» است."""
 
     def test_home_uses_new_name_only(self):
         res = self.client.get(reverse('core:home'))
         body = res.content.decode()
         self.assertEqual(res.status_code, 200)
         self.assertIn(INSTITUTE, body)
-        self.assertNotIn(OLD_NAME, body)
+        for bad in FORBIDDEN_SUFFIXES:
+            self.assertNotIn(bad, body, 'نام موسسه پسوند شهر گرفته: %s' % bad)
+
+    def test_no_page_appends_a_city_to_the_name(self):
+        """چند صفحهٔ پرتردد: نام باید بدون دنبالهٔ شهر باشد."""
+        for name in ('core:home', 'core:about', 'contact:contact',
+                     'core:documents', 'accounts:login'):
+            body = self.client.get(reverse(name)).content.decode()
+            for bad in FORBIDDEN_SUFFIXES:
+                self.assertNotIn(bad, body, '%s → %s' % (name, bad))
 
     def test_banner_is_live_text_not_an_image(self):
         body = self.client.get(reverse('core:home')).content.decode()
@@ -37,7 +48,8 @@ class BrandNameTests(TestCase):
 
     def test_login_page_uses_new_name(self):
         body = self.client.get(reverse('accounts:login')).content.decode()
-        self.assertNotIn(OLD_NAME, body)
+        for bad in FORBIDDEN_SUFFIXES:
+            self.assertNotIn(bad, body)
 
 
 class AcademicTimelineTests(TestCase):
@@ -234,7 +246,7 @@ class HomeSectionTests(TestCase):
                      'وزارت علوم، تحقیقات و فناوری',
                      'Allameh Amini'):
             self.assertIn(text, body, 'از بنر افتاده: %s' % text)
-        self.assertNotIn('علامه امینی بهنمیر', body)
+        self.assertNotIn('علامه امینی بابلسر', body)
 
     def test_floating_buttons_do_not_overlap_on_mobile(self):
         """دکمهٔ «برو بالا» و دکمهٔ گفت‌وگو نباید روی هم بیفتند."""

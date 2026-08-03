@@ -145,7 +145,7 @@ class CityInfoAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('title', 'content', 'image', 'icon', 'order', 'is_active'),
-            'description': 'بخش‌های معرفی شهر بهنمیر که در صفحه «شهر بهنمیر» نمایش داده می‌شوند.',
+            'description': 'بخش‌های معرفی شهر بابلسر که در صفحه «شهر بابلسر» نمایش داده می‌شوند.',
         }),
     )
 

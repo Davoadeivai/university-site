@@ -34,7 +34,7 @@ STAFF_MODEL_PERMS = [
     ('accounts', 'userprofile'),
     # همکاری صنعتی (صفحه ارتباط با صنعت)
     ('research', 'industrypartnership'),
-    # شهر بهنمیر
+    # شهر بابلسر
     ('core', 'cityinfo'),
     ('core', 'cityattraction'),
 ]

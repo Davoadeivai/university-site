@@ -122,7 +122,7 @@ def city_behnammir(request):
         .distinct()
     )
     context = {
-        'page_title': 'آشنایی با شهر بهنمیر',
+        'page_title': 'آشنایی با شهر بابلسر',
         'city_info': city_info,
         'attractions': attractions,
         'categories': categories,

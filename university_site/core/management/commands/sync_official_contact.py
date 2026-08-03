@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from core.models import BankAccount, SiteSettings
 
 OFFICIAL_ADDRESS = (
-    'مازندران - بابلسر - بهنمیر - بلوار امام خمینی (ره) - '
+    'مازندران - بابلسر - بلوار امام خمینی (ره) - '
     'گلستان ۱۵ - موسسه آموزش عالی علامه امینی'
 )
 OFFICIAL_PHONE = '011-35750810 (الی 15)'
