@@ -10,7 +10,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('مسیر-دانشجو/', student_path_views.student_path, name='student_path'),
     path(
-        'مسیر-دانشجو/رشته/<slug:slug>/',
+        'مسیر-دانشجو/رشته/<path:slug>/',
         student_path_views.student_path_select_major,
         name='student_path_major',
     ),
@@ -55,7 +55,7 @@ urlpatterns = [
     # حوزه ریاست
     path('ریاست/', views.presidency, name='presidency'),
     path('دفتر-ریاست/', views.presidency_office, name='presidency_office'),
-    path('دفتر-ریاست/<slug:slug>/', views.presidency_office_unit, name='presidency_office_unit'),
+    path('دفتر-ریاست/<path:slug>/', views.presidency_office_unit, name='presidency_office_unit'),
     path('معاونین/', views.deputies, name='deputies'),
     path('دفتر-بین-الملل/', views.international_office, name='international_office'),
     path('روابط-عمومی/', views.public_relations, name='public_relations'),

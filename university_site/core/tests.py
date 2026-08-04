@@ -540,3 +540,63 @@ class PresidencyUnitTests(TestCase):
 
         unit = PresidencyOfficeUnit(duties='- اول\n\n• دوم\n   \nسوم')
         self.assertEqual(unit.duty_list, ['اول', 'دوم', 'سوم'])
+
+
+class NoFabricatedContentTests(TestCase):
+    """صفحهٔ اصلی نباید داده‌ای بسازد که وجود ندارد."""
+
+    FABRICATED = ('دکتر محمد احمدی', 'دانشکده مهندسی')
+
+    def test_home_shows_no_invented_people_or_faculties(self):
+        """پیش از این، نبودِ داده با کارت‌های ساختگی پر می‌شد.
+
+        روی سایت یک موسسهٔ واقعی این از خالی بودن بدتر است: چهار استاد
+        هم‌نام و شش دانشکدهٔ یکسان، برای بازدیدکننده واقعی به نظر می‌رسند.
+        """
+        from faculty.models import Professor
+        from academics.models import Department
+
+        Professor.objects.all().delete()
+        Department.objects.all().delete()
+
+        body = self.client.get(reverse('core:home')).content.decode()
+        for text in self.FABRICATED:
+            self.assertNotIn(text, body, 'محتوای ساختگی روی صفحه: %s' % text)
+
+    def test_empty_state_is_only_visible_to_staff(self):
+        from django.contrib.auth.models import User
+        from faculty.models import Professor
+
+        Professor.objects.all().delete()
+
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn('افزودن از پنل ادمین', body)
+
+        User.objects.create_user('kar', password='Str0ng!Pass2026', is_staff=True)
+        self.client.login(username='kar', password='Str0ng!Pass2026')
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('افزودن از پنل ادمین', body)
+
+    def test_featured_flag_controls_the_home_section(self):
+        from faculty.models import Professor
+
+        Professor.objects.all().delete()
+        Professor.objects.create(first_name='الف', last_name='یکم',
+                                 rank='assistant', is_active=True, order=1)
+        starred = Professor.objects.create(
+            first_name='ب', last_name='دوم', rank='assistant',
+            is_active=True, is_featured=True, order=9)
+
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn(starred.get_full_name(), body)
+        # وقتی کسی علامت خورده، ترتیب دیگر تعیین‌کننده نیست
+        self.assertNotIn('الف یکم', body)
+
+    def test_falls_back_to_order_when_nobody_is_featured(self):
+        from faculty.models import Professor
+
+        Professor.objects.all().delete()
+        prof = Professor.objects.create(first_name='ج', last_name='سوم',
+                                        rank='assistant', is_active=True)
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn(prof.get_full_name(), body)

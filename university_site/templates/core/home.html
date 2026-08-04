@@ -795,16 +795,7 @@
             </div>
             {% endfor %}
             {% else %}
-            {% for i in "123456"|make_list %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                <div class="dept-card">
-                    <div class="dept-icon"><i class="fas fa-building"></i></div>
-                    <h3 class="dept-title">دانشکده مهندسی</h3>
-                    <p class="text-muted" style="font-size:14px; margin-top:8px;">آموزش و پژوهش در زمینه علوم مهندسی</p>
-                    <span class="uni-card-link mt-3 d-inline-flex">بیشتر بدانید <i class="fas fa-arrow-left"></i></span>
-                </div>
-            </div>
-            {% endfor %}
+            {% include 'core/_empty_state.html' with label='دانشکده‌ای' add_url='/admin/academics/department/add/' hint='هر دانشکده که ثبت شود، همین‌جا و در صفحهٔ دانشکده‌ها نمایش داده می‌شود.' %}
             {% endif %}
         </div>
         <div class="text-center mt-4" data-aos="fade-up">
@@ -852,16 +843,7 @@
             </div>
             {% endfor %}
             {% else %}
-            {% for i in "1234"|make_list %}
-            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up">
-                <div class="prof-card">
-                    <div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>
-                    <div class="prof-name">دکتر محمد احمدی</div>
-                    <div class="prof-rank">استادیار</div>
-                    <div class="prof-dept">دانشکده مهندسی</div>
-                </div>
-            </div>
-            {% endfor %}
+            {% include 'core/_empty_state.html' with label='استادی' add_url='/admin/faculty/professor/add/' hint='اساتیدی که «نمایش در صفحهٔ اصلی» بخورند، اینجا معرفی می‌شوند.' %}
             {% endif %}
         </div>
         <div class="text-center mt-4" data-aos="fade-up">

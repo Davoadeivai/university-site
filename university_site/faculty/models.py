@@ -37,8 +37,12 @@ class Professor(models.Model):
     google_scholar = models.URLField(blank=True)
     linkedin = models.URLField(blank=True)
     researchgate = models.URLField(blank=True)
-    is_active = models.BooleanField(default=True)
-    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+    is_featured = models.BooleanField(
+        _('نمایش در صفحه اصلی'), default=False,
+        help_text=_('چهار استاد نخست از میان همین‌ها در بخش «هیئت علمی برگزیده» می‌آیند.'),
+    )
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

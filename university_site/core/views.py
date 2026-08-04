@@ -74,7 +74,17 @@ def home(request):
     calendar_items = AcademicCalendar.objects.filter(
         start_date__gte=timezone.now().date()
     ).order_by('start_date')[:5]
-    featured_professors = Professor.objects.filter(is_active=True).order_by('order')[:4]
+    # اساتیدی که صریحاً برای صفحهٔ اصلی علامت خورده‌اند؛ اگر هیچ‌کدام
+    # علامت نخورده باشد، به ترتیب نمایش برمی‌گردیم تا بخش خالی نماند
+    featured_professors = list(
+        Professor.objects.filter(is_active=True, is_featured=True)
+        .select_related('department').order_by('order')[:4]
+    )
+    if not featured_professors:
+        featured_professors = list(
+            Professor.objects.filter(is_active=True)
+            .select_related('department').order_by('order')[:4]
+        )
     faqs = FAQ.objects.filter(is_active=True)[:6]
     gallery_images = Gallery.objects.filter(is_active=True, media_type='image')[:8]
     alumni = Alumni.objects.filter(is_featured=True)[:4]
