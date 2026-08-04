@@ -12,7 +12,7 @@
 <div class="fw-bold">{{ item.title }}</div>
 <div class="text-muted" style="font-size:13px;">{{ item.start_date|jalali_date:"short" }} تا {{ item.end_date|jalali_date:"short" }}</div>
 {% if item.description %}<div class="text-muted" style="font-size:12px; margin-top:4px;">{{ item.description }}</div>{% endif %}
-<div style="font-size:12px;"><span class="uni-card-badge">{{ item.get_semester_display }} - {{ item.academic_year }}</span></div>
+<div style="font-size:12px;"><span class="uni-card-badge">{{ item.get_semester_display }} - {{ item.academic_year|jalali_years }}</span></div>
 </div>
 {% if item.is_important %}<span class="badge bg-danger">مهم</span>{% endif %}
 </div>

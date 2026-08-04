@@ -743,7 +743,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <div class="fw-600 text-sm" style="font-size:13px; font-weight:600;">{{ cal.title }}</div>
-                            <div class="text-muted" style="font-size:11px;">{{ cal.academic_year }}</div>
+                            <div class="text-muted" style="font-size:11px;">{{ cal.academic_year|jalali_years }}</div>
                         </div>
                         {% if cal.is_important %}
                         <span class="badge bg-danger">مهم</span>

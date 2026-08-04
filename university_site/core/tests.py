@@ -600,3 +600,49 @@ class NoFabricatedContentTests(TestCase):
                                         rank='assistant', is_active=True)
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertIn(prof.get_full_name(), body)
+
+
+class JalaliYearDisplayTests(TestCase):
+    """سال تحصیلی میلادی ذخیره می‌شود ولی باید شمسی دیده شود."""
+
+    def test_tuition_display_converts_the_year(self):
+        from academics.models import Department, Major
+        from admissions.models import TuitionStructure
+
+        dep = Department.objects.create(name='آزمایشی', slug='azmayeshi')
+        major = Major.objects.create(name='رشتهٔ آزمایشی', slug='reshte-x',
+                                     department=dep, degree='bachelor_continuous')
+        TuitionStructure.objects.create(
+            major=major, academic_year='2026-2027',
+            fixed_fee=5000000, is_active=True)
+
+        shown = major.tuition_display
+        self.assertIn('۱۴۰۵-۱۴۰۶', shown, shown)
+        self.assertNotIn('2026', shown)
+        self.assertNotIn('5,000,000', shown)   # رقم هم فارسی شود
+        self.assertIn('۵٬۰۰۰٬۰۰۰'.replace('٬', ','), shown)
+
+    def test_year_range_helper_leaves_jalali_untouched(self):
+        from core.jalali import jalali_year_range
+
+        self.assertEqual(jalali_year_range('1405-1406'), '۱۴۰۵-۱۴۰۶')
+        self.assertEqual(jalali_year_range('2026-2027'), '۱۴۰۵-۱۴۰۶')
+        self.assertEqual(jalali_year_range(''), '')
+
+    def test_no_template_prints_a_raw_academic_year(self):
+        """هر جای قالب که academic_year چاپ می‌شود باید فیلتر شمسی بخورد."""
+        import re
+        from pathlib import Path
+        from django.conf import settings as dj
+
+        offenders = []
+        for base in dj.TEMPLATES[0]['DIRS']:
+            for path in Path(base).rglob('*.html'):
+                for no, line in enumerate(
+                        path.read_text(encoding='utf-8').splitlines(), 1):
+                    for m in re.finditer(r'\{\{[^}]*academic_year[^}]*\}\}', line):
+                        chunk = m.group(0)
+                        if 'jalali' not in chunk and 'semester_jalali' not in chunk:
+                            offenders.append('%s:%d' % (path.name, no))
+        self.assertEqual(offenders, [],
+                         'سال تحصیلی بدون تبدیل شمسی: %s' % offenders)

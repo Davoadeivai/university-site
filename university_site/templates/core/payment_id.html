@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 {% block content %}
 <div class="page-header">
     <div class="container">
@@ -48,7 +49,7 @@
                         <div class="alert alert-success mt-3 mb-0">
                             <div class="fw-bold mb-2">{{ result.full_name }}</div>
                             <div>شناسه واریز: <strong class="font-monospace" dir="ltr" style="font-size:1.15rem;">{{ result.payment_id }}</strong></div>
-                            {% if result.academic_year %}<div class="text-muted mt-1" style="font-size:13px;">سال تحصیلی: {{ result.academic_year }}</div>{% endif %}
+                            {% if result.academic_year %}<div class="text-muted mt-1" style="font-size:13px;">سال تحصیلی: {{ result.academic_year|jalali_years }}</div>{% endif %}
                             {% if result.note %}<div class="text-muted mt-1" style="font-size:13px;">{{ result.note }}</div>{% endif %}
                         </div>
                         {% else %}

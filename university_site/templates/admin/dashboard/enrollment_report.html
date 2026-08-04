@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
+{% load i18n custom_filters %}
 
 {% block content_title %}گزارش انتخاب‌واحد به تفکیک رشته{% endblock %}
 
@@ -15,7 +15,7 @@
     <div>
         {% if active_semester %}
         <span class="badge bg-success" style="font-size:14px;">
-            ترم فعال: {{ active_semester.name }} — {{ active_semester.academic_year }}
+            ترم فعال: {{ active_semester.name }} — {{ active_semester.academic_year|jalali_years }}
         </span>
         {% if active_semester.registration_open %}
         <span class="badge bg-primary ms-1">بازه انتخاب‌واحد باز است</span>
@@ -32,7 +32,7 @@
             <option value="">— ترم فعال —</option>
             {% for s in all_semesters %}
             <option value="{{ s.id }}" {% if selected_semester_id == s.id|stringformat:"s" %}selected{% endif %}>
-                {{ s.name }} — {{ s.academic_year }}
+                {{ s.name }} — {{ s.academic_year|jalali_years }}
             </option>
             {% endfor %}
         </select>

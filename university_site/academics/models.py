@@ -119,9 +119,19 @@ class Major(models.Model):
 
     @property
     def tuition_display(self):
+        """شهریه با سال تحصیلی شمسی و رقم فارسی.
+
+        سال در پایگاه داده میلادی ذخیره شده («۲۰۲۶-۲۰۲۷») ولی سایت فارسی
+        است و کاربر ایرانی «۱۴۰۵-۱۴۰۶» را می‌شناسد. تبدیل اینجا انجام
+        می‌شود تا هرجای سایت که این ویژگی را نشان می‌دهد، یکسان باشد.
+        """
+        from core.jalali import jalali_year_range, to_persian_digits
+
         ts = self.current_tuition
         if ts:
-            return f"{ts.fixed_fee:,} تومان (ثابت) — سال {ts.academic_year}"
+            amount = to_persian_digits(f'{ts.fixed_fee:,}')
+            year = jalali_year_range(ts.academic_year)
+            return f'{amount} تومان (ثابت) — سال {year}'
         return self.tuition_fee or '—'
 
 
