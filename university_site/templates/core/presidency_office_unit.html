@@ -19,14 +19,73 @@
         <div class="row g-4">
             <div class="col-lg-8">
                 <div class="dept-card" data-aos="fade-up">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="dept-icon flex-shrink-0"><i class="fas {{ unit.icon|default:'fa-building' }}"></i></span>
+                        <h5 class="dept-title mb-0">{{ unit.title }}</h5>
+                    </div>
                     {% if unit.content %}
                     <div class="text-muted" style="font-size:15px;line-height:2.3;">{{ unit.content|linebreaksbr }}</div>
                     {% else %}
                     <p class="text-muted mb-0">محتوای این بخش به‌زودی تکمیل می‌شود.</p>
                     {% endif %}
                 </div>
+
+                {% if unit.duty_list %}
+                <div class="dept-card mt-4" data-aos="fade-up">
+                    <h6 class="dept-title mb-3"><i class="fas fa-tasks ms-2"></i>شرح وظایف</h6>
+                    <ul class="list-unstyled mb-0">
+                        {% for duty in unit.duty_list %}
+                        <li class="d-flex gap-2 mb-2" style="font-size:14px;line-height:2;">
+                            <i class="fas fa-check text-success mt-1 flex-shrink-0" style="font-size:12px;"></i>
+                            <span class="text-muted">{{ duty }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
             </div>
             <div class="col-lg-4">
+                {% if unit.manager_name or unit.contact_line or unit.location %}
+                {# کارت تماس — چیزی که مراجعه‌کننده واقعاً دنبالش آمده #}
+                <div class="dept-card mb-4" data-aos="fade-up">
+                    {% if unit.manager_name %}
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        {% if unit.manager_photo %}
+                        <img src="{{ unit.manager_photo.url }}" alt="{{ unit.manager_name }}"
+                             class="rounded-circle border border-2 border-warning flex-shrink-0"
+                             style="width:56px;height:56px;object-fit:cover;">
+                        {% else %}
+                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                              style="width:56px;height:56px;background:var(--gradient-primary);">
+                            <i class="fas fa-user text-white"></i>
+                        </span>
+                        {% endif %}
+                        <div class="min-w-0">
+                            <div class="fw-bold" style="font-size:14px;">{{ unit.manager_name }}</div>
+                            {% if unit.manager_title %}
+                            <small class="text-muted">{{ unit.manager_title }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <ul class="list-unstyled mb-0" style="font-size:13.5px;line-height:2.2;">
+                        {% if unit.contact_line %}
+                        <li><i class="fas fa-phone-alt text-primary ms-2"></i>{{ unit.contact_line }}</li>
+                        {% endif %}
+                        {% if unit.email %}
+                        <li><i class="fas fa-envelope text-primary ms-2"></i><a href="mailto:{{ unit.email }}" style="direction:ltr;display:inline-block;">{{ unit.email }}</a></li>
+                        {% endif %}
+                        {% if unit.location %}
+                        <li><i class="fas fa-map-marker-alt text-primary ms-2"></i>{{ unit.location }}</li>
+                        {% endif %}
+                        {% if unit.office_hours %}
+                        <li><i class="fas fa-clock text-primary ms-2"></i>{{ unit.office_hours }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+
                 <div class="dept-card" data-aos="fade-up">
                     <h5 class="dept-title mb-3">واحدهای دفتر ریاست</h5>
                     <ul class="list-unstyled mb-0">

@@ -217,12 +217,38 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(PresidencyOfficeUnit)
-class PresidencyOfficeUnitAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'order', 'is_active']
+class PresidencyOfficeUnitAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'manager_name', 'contact_line', 'order',
+                    'is_active', 'completeness']
     list_editable = ['order', 'is_active']
     list_filter = ['is_active']
     prepopulated_fields = {'slug': ('title',)}
-    search_fields = ['title', 'content']
+    search_fields = ['title', 'content', 'manager_name', 'duties']
+    fieldsets = (
+        ('واحد', {
+            'fields': ('title', 'slug', 'icon', 'order', 'is_active'),
+            'description': (
+                'هر واحد یک صفحهٔ جدا در بخش «دفتر ریاست» دارد. '
+                'برای افزودن واحد تازه کافی است اینجا یک رکورد بسازید؛ '
+                'خودش در منوی صفحهٔ دفتر ریاست ظاهر می‌شود.'
+            ),
+        }),
+        ('مسئول واحد', {
+            'fields': ('manager_name', 'manager_title', 'manager_photo'),
+        }),
+        ('تماس و مراجعه', {
+            'fields': ('phone', 'extension', 'email', 'location', 'office_hours'),
+            'description': 'مراجعه‌کننده بیش از هر چیز دنبال همین‌هاست.',
+        }),
+        ('محتوا', {
+            'fields': ('content', 'duties'),
+            'description': 'شرح وظایف را خط‌به‌خط بنویسید؛ فهرست‌وار نمایش داده می‌شود.',
+        }),
+    )
+
+    @admin.display(description='تماس')
+    def contact_line(self, obj):
+        return obj.contact_line or '—'
 
 
 @admin.register(GraduateStudiesInfo)

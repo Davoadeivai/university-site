@@ -346,10 +346,39 @@ class PresidencyOffice(models.Model):
 
 
 class PresidencyOfficeUnit(models.Model):
-    """زیرصفحه‌های دفتر ریاست مطابق سایت رسمی"""
+    """زیرصفحه‌های دفتر ریاست مطابق سایت رسمی.
+
+    مدل قبلی فقط عنوان و یک متن داشت، پس صفحهٔ هر واحد یک پاراگراف
+    تنها بود. چیزی که مراجعه‌کننده واقعاً دنبالش است — مسئول واحد،
+    شمارهٔ داخلی و شرح وظایف — اصلاً جایی برای ذخیره نداشت.
+    """
     slug = models.SlugField(_('اسلاگ'), max_length=80, unique=True, allow_unicode=True)
     title = models.CharField(_('عنوان'), max_length=200)
+    icon = models.CharField(
+        _('آیکون'), max_length=60, default='fa-building',
+        help_text=_('کلاس Font Awesome، مثلاً fa-user-tie'),
+    )
     content = models.TextField(_('محتوا'), blank=True)
+
+    # ── مسئول واحد ──
+    manager_name = models.CharField(_('نام مسئول'), max_length=200, blank=True)
+    manager_title = models.CharField(_('سمت مسئول'), max_length=200, blank=True)
+    manager_photo = models.ImageField(
+        _('تصویر مسئول'), upload_to='presidency/units/', blank=True, null=True)
+
+    # ── تماس ──
+    phone = models.CharField(_('تلفن'), max_length=50, blank=True)
+    extension = models.CharField(_('شماره داخلی'), max_length=20, blank=True)
+    email = models.EmailField(_('ایمیل'), blank=True)
+    location = models.CharField(
+        _('محل استقرار'), max_length=200, blank=True,
+        help_text=_('مثلاً: ساختمان مرکزی، طبقه دوم، اتاق ۲۰۴'))
+    office_hours = models.CharField(_('ساعات مراجعه'), max_length=200, blank=True)
+
+    duties = models.TextField(
+        _('شرح وظایف'), blank=True,
+        help_text=_('هر وظیفه در یک خط جدا بنویسید؛ فهرست‌وار نمایش داده می‌شود.'))
+
     order = models.PositiveIntegerField(_('ترتیب'), default=0)
     is_active = models.BooleanField(_('فعال'), default=True)
 
@@ -360,6 +389,19 @@ class PresidencyOfficeUnit(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def duty_list(self) -> list:
+        """هر خط یک وظیفه — خط‌های خالی نادیده گرفته می‌شوند."""
+        return [line.strip(' -•\t') for line in (self.duties or '').splitlines()
+                if line.strip(' -•\t')]
+
+    @property
+    def contact_line(self) -> str:
+        """تلفن + داخلی در یک رشته، برای نمایش فشرده."""
+        if self.phone and self.extension:
+            return '%s داخلی %s' % (self.phone, self.extension)
+        return self.phone or (('داخلی %s' % self.extension) if self.extension else '')
 
 
 class GraduateStudiesInfo(models.Model):

@@ -491,3 +491,52 @@ class LeadershipSectionTests(TestCase):
                      if hasattr(f, 'attname')}
             unknown = [row[0] for row in spec if row[0] not in names]
             self.assertEqual(unknown, [], '%s → %s' % (label, unknown))
+
+
+class PresidencyUnitTests(TestCase):
+    """واحدهای دفتر ریاست — مسئول، تماس و شرح وظایف."""
+
+    def setUp(self):
+        import io
+        from django.core.management import call_command
+        call_command('seed_presidency', verbosity=0, stdout=io.StringIO())
+
+    def test_units_carry_contact_details(self):
+        from core.models import PresidencyOfficeUnit
+
+        unit = PresidencyOfficeUnit.objects.get(slug='modir-daftar')
+        self.assertTrue(unit.duty_list, 'شرح وظایف خالی است')
+        self.assertGreaterEqual(len(unit.duty_list), 3)
+        self.assertIn('داخلی', unit.contact_line)
+        self.assertTrue(unit.location)
+
+    def test_unit_page_shows_duties_and_contact(self):
+        res = self.client.get(
+            reverse('core:presidency_office_unit', args=['modir-daftar']))
+        body = res.content.decode()
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('شرح وظایف', body)
+        self.assertIn('ساختمان مرکزی', body)
+
+    def test_president_message_reaches_the_page(self):
+        body = self.client.get(reverse('core:presidency')).content.decode()
+        self.assertIn('خانهٔ اندیشه', body)
+
+    def test_seed_does_not_overwrite_admin_edits(self):
+        import io
+        from django.core.management import call_command
+        from core.models import PresidencyOfficeUnit
+
+        unit = PresidencyOfficeUnit.objects.get(slug='modir-daftar')
+        unit.manager_name = 'دکتر واقعی'
+        unit.save()
+
+        call_command('seed_presidency', verbosity=0, stdout=io.StringIO())
+        unit.refresh_from_db()
+        self.assertEqual(unit.manager_name, 'دکتر واقعی')
+
+    def test_duty_list_ignores_blank_and_bullet_prefixes(self):
+        from core.models import PresidencyOfficeUnit
+
+        unit = PresidencyOfficeUnit(duties='- اول\n\n• دوم\n   \nسوم')
+        self.assertEqual(unit.duty_list, ['اول', 'دوم', 'سوم'])
