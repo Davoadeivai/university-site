@@ -428,3 +428,66 @@ class HomeSectionTests(TestCase):
         HomeFeature.objects.create(title='غیرفعال', icon='fa-star', is_active=False)
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertNotIn('غیرفعال', body)
+
+
+class LeadershipSectionTests(TestCase):
+    """درباره موسسه / حوزه ریاست / معاونت‌ها — ساختار و کامل بودن."""
+
+    def test_deputies_page_redirects_instead_of_showing_nothing(self):
+        """«معاونین» و «معاونت‌ها» یک مفهوم بودند و اولی همیشه خالی بود."""
+        res = self.client.get(reverse('core:deputies'))
+        self.assertEqual(res.status_code, 301)
+        self.assertIn(reverse('core:vices_list'), res['Location'])
+
+    def test_presidency_lists_vices_from_the_model_that_has_data(self):
+        from core.models import VicePresidency
+
+        VicePresidency.objects.update_or_create(
+            vice_type='education',
+            defaults={'full_name': 'دکتر آزمایشی', 'is_active': True},
+        )
+        body = self.client.get(reverse('core:presidency')).content.decode()
+        self.assertIn('دکتر آزمایشی', body)
+
+    def test_presidency_office_is_a_real_singleton(self):
+        """رکورد دوم روی سایت دیده نمی‌شود، پس ساختنش باید بسته باشد."""
+        from django.contrib.admin.sites import site
+        from core.models import PresidencyOffice
+
+        PresidencyOffice.objects.get_or_create(pk=1)
+        model_admin = site._registry[PresidencyOffice]
+
+        class _Req:
+            pass
+
+        self.assertFalse(model_admin.has_add_permission(_Req()))
+        self.assertFalse(model_admin.has_delete_permission(_Req()))
+
+    def test_completeness_flags_missing_critical_fields(self):
+        from core.completeness import evaluate
+        from core.models import VicePresidency
+
+        vice = VicePresidency(vice_type='research', full_name='')
+        data = evaluate(vice)
+        self.assertLess(data['percent'], 30)
+        self.assertIn('نام معاون', data['critical'])
+
+        vice.full_name = 'دکتر نمونه'
+        vice.description = 'معرفی'
+        vice.duties = 'وظایف'
+        better = evaluate(vice)
+        self.assertGreater(better['percent'], data['percent'])
+        self.assertNotIn('نام معاون', better['critical'])
+
+    def test_completeness_profiles_reference_real_fields(self):
+        """اگر فیلدی در مدل تغییر نام دهد، سنجه باید بشکند نه اینکه
+        بی‌صدا آن را «خالی» بشمارد و درصد را غلط بدهد."""
+        from django.apps import apps
+        from core.completeness import PROFILES
+
+        for label, spec in PROFILES.items():
+            model = apps.get_model(label)
+            names = {f.name for f in model._meta.get_fields()
+                     if hasattr(f, 'attname')}
+            unknown = [row[0] for row in spec if row[0] not in names]
+            self.assertEqual(unknown, [], '%s → %s' % (label, unknown))

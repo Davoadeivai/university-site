@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from core.admin_jalali import JalaliAdminMixin
+from core.admin_completeness import CompletenessAdminMixin
 from core.jalali import format_jalali_date, format_jalali_datetime
 
 # ثبت لاگ فعالیت ادمین (LogEntry) — فقط‌خواندنی، مخصوص superuser
@@ -23,8 +24,8 @@ from .models import (
 
 
 @admin.register(SiteSettings)
-class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['university_name_fa', 'phone', 'email']
+class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display = ['university_name_fa', 'phone', 'email', 'completeness']
     
     fieldsets = (
         ('اطلاعات اصلی', {
@@ -121,16 +122,16 @@ class PageViewAdmin(admin.ModelAdmin):
 
 
 @admin.register(InstitutionGoal)
-class InstitutionGoalAdmin(admin.ModelAdmin):
-    list_display = ['title', 'goal_type', 'order', 'is_active']
+class InstitutionGoalAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display = ['title', 'goal_type', 'order', 'is_active', 'completeness']
     list_editable = ['order', 'is_active']
     list_filter = ['goal_type', 'is_active']
     search_fields = ['title', 'description']
 
 
 @admin.register(BoardMember)
-class BoardMemberAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'board_type', 'title', 'order', 'is_active']
+class BoardMemberAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display = ['full_name', 'board_type', 'title', 'order', 'is_active', 'completeness']
     list_editable = ['order', 'is_active']
     list_filter = ['board_type', 'is_active']
     search_fields = ['full_name', 'title', 'bio']
@@ -169,9 +170,22 @@ class CityAttractionAdmin(admin.ModelAdmin):
 # ─── حوزه ریاست ───────────────────────────────────────────────
 
 @admin.register(PresidencyOffice)
-class PresidencyOfficeAdmin(admin.ModelAdmin):
-    list_display = ['president_name', 'office_manager_name', 'president_phone', 'office_email']
+class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display = ['president_name', 'office_manager_name', 'president_phone', 'completeness']
     search_fields = ['president_name', 'president_bio', 'office_manager_name']
+
+    def has_add_permission(self, request):
+        """فقط یک «دفتر ریاست» می‌تواند وجود داشته باشد.
+
+        سایت این رکورد را با `.first()` می‌خواند؛ رکورد دوم هرگز دیده
+        نمی‌شود ولی ادمین فکر می‌کند ذخیره شده. یک بار همین اتفاق افتاد
+        و بیوگرافی رئیس در رکورد نامرئی ماند.
+        """
+        return not PresidencyOffice.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # حذف تنها رکورد، کل صفحهٔ ریاست را خالی می‌کند
+        return False
     fieldsets = (
         ('ریاست موسسه', {
             'fields': (
@@ -347,8 +361,8 @@ class ViceAchievementInline(admin.TabularInline):
 
 
 @admin.register(VicePresidency)
-class VicePresidencyAdmin(admin.ModelAdmin):
-    list_display  = ['get_vice_type_display', 'full_name', 'academic_rank', 'phone', 'is_active']
+class VicePresidencyAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display  = ['get_vice_type_display', 'full_name', 'academic_rank', 'phone', 'is_active', 'completeness']
     list_editable = ['is_active']
     list_filter   = ['vice_type', 'is_active']
     search_fields = ['full_name', 'bio', 'resume', 'description', 'achievements']
@@ -408,8 +422,8 @@ class OrganizationalChartInline(admin.TabularInline):
 
 
 @admin.register(OrganizationalChart)
-class OrganizationalChartAdmin(admin.ModelAdmin):
-    list_display = ['name', 'node_type', 'parent', 'person_name', 'order', 'is_active']
+class OrganizationalChartAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    list_display = ['name', 'node_type', 'parent', 'person_name', 'order', 'is_active', 'completeness']
     list_editable = ['order', 'is_active']
     list_filter = ['node_type', 'is_active']
     search_fields = ['name', 'person_name', 'title', 'person_email', 'person_phone']

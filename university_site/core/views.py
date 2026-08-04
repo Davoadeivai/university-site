@@ -422,11 +422,16 @@ def gallery_view(request):
 # ─── حوزه ریاست ───────────────────────────────────────────────
 
 def presidency(request):
+    """ریاست موسسه — رئیس، دفتر، و هیئت رئیسه.
+
+    معاونان از VicePresidency خوانده می‌شوند نه DeputyVice: مدل دوم
+    صفر رکورد دارد و همهٔ داده‌های واقعی در اولی است، پس این بخش
+    همیشه خالی رندر می‌شد.
+    """
     office = PresidencyOffice.objects.first()
-    deputies = DeputyVice.objects.filter(is_active=True)
     context = {
         'office': office,
-        'deputies': deputies,
+        'deputies': VicePresidency.objects.filter(is_active=True),
         'page_title': 'ریاست موسسه',
     }
     return render(request, 'core/presidency.html', context)
@@ -457,12 +462,14 @@ def presidency_office_unit(request, slug):
 
 
 def deputies(request):
-    all_deputies = DeputyVice.objects.filter(is_active=True)
-    context = {
-        'deputies': all_deputies,
-        'page_title': 'معاونین دانشگاه',
-    }
-    return render(request, 'core/deputies.html', context)
+    """«معاونین دانشگاه» و «معاونت‌ها» یک چیز بودند با دو صفحه.
+
+    این یکی از DeputyVice می‌خواند که صفر رکورد دارد، پس همیشه صفحهٔ
+    خالی نشان می‌داد؛ آن یکی از VicePresidency می‌خواند و داده دارد.
+    به‌جای نگه‌داشتن دو صفحه برای یک مفهوم، این نشانی به آن یکی
+    هدایت می‌شود تا لینک‌های قدیمی هم نشکنند.
+    """
+    return redirect('core:vices_list', permanent=True)
 
 
 def international_office(request):
