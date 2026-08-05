@@ -407,6 +407,13 @@ PASSWORD_RESET_TIMEOUT = 3600
 # SMS / OTP (Kavenegar)
 # -----------------------------------------------------------------------------
 SMS_ENABLED = config('SMS_ENABLED', default=False, cast=bool)
+
+# صف پیامک — ارسال را از مسیر درخواست کاربر بیرون می‌برد.
+# با True، پیام‌ها در جدول ثبت می‌شوند و یک cron می‌فرستدشان:
+#     cd ~/apps/university_site && python manage.py send_sms_queue
+# بدون آن cron، پیام‌ها فقط در صف می‌مانند — پس یا cron بسازید یا این
+# را False بگذارید.
+SMS_QUEUE = config('SMS_QUEUE', default=False, cast=bool)
 KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
 SMS_SENDER_NUMBER = config('SMS_SENDER_NUMBER', default='')
 # پیشوند متن پیامک‌های اطلاع‌رسانی
@@ -455,11 +462,41 @@ ZARINPAL_MERCHANT_ID = config('ZARINPAL_MERCHANT_ID', default='')
 ZARINPAL_SANDBOX = config('ZARINPAL_SANDBOX', default=True, cast=bool)
 
 # -----------------------------------------------------------------------------
-# Cache (OTP rate limits)
+# Cache — محدودیت نرخ OTP، سقف جستجو، و context سراسری
 # -----------------------------------------------------------------------------
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'university-otp',
+# چرا این تنظیم اهمیت دارد: روی Passenger چند worker جدا اجرا می‌شوند.
+# با LocMemCache هر worker کش خودش را دارد و هیچ‌کدام دیگری را نمی‌بیند،
+# پس «هر شماره هر ۲ دقیقه یک پیامک» عملاً می‌شود «هر ۲ دقیقه × تعداد
+# worker» — هزینهٔ واقعی روی قبض پیامک. سقف جستجو هم به همان نسبت
+# بی‌اثر می‌شود.
+#
+# CACHE_BACKEND در .env تعیین می‌کند کدام استفاده شود:
+#   redis    → اگر Redis روی سرور هست (بهترین)
+#   database → جدول در همان دیتابیس؛ کندتر ولی مشترک و درست
+#   locmem   → فقط برای توسعهٔ محلی
+CACHE_BACKEND = config('CACHE_BACKEND', default='locmem')
+
+if CACHE_BACKEND == 'redis':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+            'KEY_PREFIX': 'aab',
+        }
     }
-}
+elif CACHE_BACKEND == 'database':
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': config('CACHE_TABLE', default='site_cache'),
+            'KEY_PREFIX': 'aab',
+            'OPTIONS': {'MAX_ENTRIES': 5000, 'CULL_FREQUENCY': 3},
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'university-otp',
+        }
+    }

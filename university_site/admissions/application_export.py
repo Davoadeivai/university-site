@@ -117,13 +117,20 @@ def excel_response(applications, filename: str, title: str = 'لیست درخو�
         ws2.append([key, count])
     ws2.sheet_view.rightToLeft = True
 
-    for col in ws.columns:
+    # عرض ستون‌ها بر اساس بلندترین مقدار.
+    # نکته: دو ردیف نخست merge شده‌اند، پس اولین سلول هر ستون ممکن است
+    # MergedCell باشد که `column_letter` ندارد و اینجا AttributeError
+    # می‌داد — یعنی دکمهٔ «اکسل» همیشه ۵۰۰ می‌گرفت. حرف ستون را از
+    # شمارهٔ ستون می‌گیریم و سلول‌های merge را در محاسبهٔ طول رد می‌کنیم.
+    from openpyxl.utils import get_column_letter
+
+    for index, col in enumerate(ws.columns, start=1):
         max_len = 0
-        col_letter = col[0].column_letter
         for cell in col:
-            val = '' if cell.value is None else str(cell.value)
-            max_len = max(max_len, len(val))
-        ws.column_dimensions[col_letter].width = min(max_len + 2, 36)
+            if cell.value is None:
+                continue
+            max_len = max(max_len, len(str(cell.value)))
+        ws.column_dimensions[get_column_letter(index)].width = min(max_len + 2, 36)
     ws.sheet_view.rightToLeft = True
 
     buffer = BytesIO()

@@ -970,3 +970,8 @@ class HomeSection(models.Model):
         کلاس `sec-on-dark` را اضافه می‌کند تا رنگ متن روشن شود.
         """
         return bool(self.image) and self.overlay in ('dark', 'navy')
+
+
+# صف پیامک — مدل در ماژول جدا نگه داشته شده تا منطق صف کنار خودش
+# بماند؛ این ایمپورت لازم است تا اپ آن را ثبت کند.
+from core.sms_queue import QueuedSMS  # noqa: E402,F401

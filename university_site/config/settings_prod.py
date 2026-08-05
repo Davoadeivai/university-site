@@ -59,6 +59,10 @@ elif DB_ENGINE == 'mysql':
             'PASSWORD': config('DB_PASSWORD'),
             'HOST': config('DB_HOST', default='localhost'),
             'PORT': config('DB_PORT', default='3306'),
+            # بدون این، هر درخواست یک اتصال تازه به MySQL باز و بسته
+            # می‌کند. روی هاست اشتراکی که max_connections معمولاً ۲۵ تا
+            # ۵۰ است، زیر بار به «Too many connections» می‌خورد.
+            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                 'charset': 'utf8mb4',

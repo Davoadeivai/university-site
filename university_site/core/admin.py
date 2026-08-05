@@ -21,6 +21,7 @@ from .models import (
     GraduateStudiesInfo,
     HomeFeature, HomeSection,
 )
+from core.sms_queue import QueuedSMS
 
 
 @admin.register(SiteSettings)
@@ -622,3 +623,40 @@ class HomeSectionAdmin(admin.ModelAdmin):
     @admin.display(description='تصویر', boolean=True)
     def has_image(self, obj):
         return bool(obj.image)
+
+
+# ─── صف پیامک ────────────────────────────────────────────────────
+
+@admin.register(QueuedSMS)
+class QueuedSMSAdmin(admin.ModelAdmin):
+    """فقط برای دیدن و پیگیری؛ پیام از اینجا ساخته نمی‌شود."""
+
+    list_display = ['phone', 'preview', 'status', 'attempts',
+                    'created_jalali', 'sent_jalali']
+    list_filter = ['status', 'created_at']
+    search_fields = ['phone', 'message', 'last_error']
+    readonly_fields = ['phone', 'message', 'attempts', 'last_error',
+                       'created_at', 'sent_at']
+    actions = ['requeue']
+
+    def has_add_permission(self, request):
+        # پیام‌ها را کد تولید می‌کند، نه ادمین
+        return False
+
+    @admin.display(description='زمان ثبت', ordering='created_at')
+    def created_jalali(self, obj):
+        return format_jalali_datetime(obj.created_at, 'short')
+
+    @admin.display(description='زمان ارسال', ordering='sent_at')
+    def sent_jalali(self, obj):
+        return format_jalali_datetime(obj.sent_at, 'short') if obj.sent_at else '—'
+
+    @admin.action(description='بازگرداندن به صف')
+    def requeue(self, request, queryset):
+        """پیام ناموفق را دوباره در صف می‌گذارد.
+
+        شمارندهٔ تلاش صفر می‌شود، وگرنه بلافاصله دوباره «ناموفق» می‌شد.
+        """
+        n = queryset.filter(status='failed').update(
+            status='pending', attempts=0, last_error='')
+        self.message_user(request, '%d پیام به صف بازگشت.' % n)

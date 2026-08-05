@@ -163,6 +163,12 @@ def main() -> int:
     # migrate پیش از collectstatic — اگر ساختار دیتابیس عقب باشد،
     # دستورهای بعدی هم می‌شکنند.
     ok = run('migrate', '--noinput')
+
+    # جدول کش — فقط وقتی CACHE_BACKEND=database است معنا دارد. اگر از
+    # قبل ساخته شده باشد پیام می‌دهد و رد می‌شود، پس هر بار بی‌خطر است.
+    if ok:
+        run('createcachetable')
+
     if ok:
         ok = run('collectstatic', '--noinput')
 

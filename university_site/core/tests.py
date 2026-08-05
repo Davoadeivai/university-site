@@ -727,3 +727,120 @@ class CompletenessPlaceholderTests(TestCase):
         self.assertTrue(_is_placeholder('[نام]'))
         self.assertFalse(_is_placeholder('دکتر [الف] احمدی'))
         self.assertFalse(_is_placeholder('دانشیار'))
+
+
+class SMSQueueTests(TestCase):
+    """پیامک نباید داخل مسیر درخواست کاربر فرستاده شود."""
+
+    def test_queue_off_sends_immediately(self):
+        from django.test import override_settings
+        from core.sms_queue import QueuedSMS, queue_enabled
+
+        with override_settings(SMS_QUEUE=False):
+            self.assertFalse(queue_enabled())
+        self.assertEqual(QueuedSMS.objects.count(), 0)
+
+    def test_queue_on_stores_instead_of_sending(self):
+        from django.test import override_settings
+        from core.notify import notify_phone
+        from core.sms_queue import QueuedSMS
+
+        with override_settings(SMS_QUEUE=True, SMS_ENABLED=False):
+            ok = notify_phone('09121234567', 'پیام آزمایشی')
+
+        self.assertTrue(ok)
+        row = QueuedSMS.objects.get()
+        self.assertEqual(row.status, 'pending')
+        self.assertIn('آزمایشی', row.message)
+
+    def test_flush_marks_failed_after_max_attempts(self):
+        """پیامی که مدام شکست بخورد باید بعد از چند تلاش رها شود.
+
+        با SMS_ENABLED=False ارسال «موفق» شمرده می‌شود (حالت توسعه)،
+        پس برای دیدن مسیر شکست باید خود فرستنده را ناموفق کرد.
+        """
+        from unittest.mock import patch
+        from core.sms_queue import MAX_ATTEMPTS, QueuedSMS, flush
+
+        QueuedSMS.objects.create(phone='09121234567', message='x')
+        with patch('core.sms.send_sms', return_value=False):
+            for _ in range(MAX_ATTEMPTS):
+                flush()
+
+        row = QueuedSMS.objects.get()
+        self.assertEqual(row.status, 'failed')
+        self.assertEqual(row.attempts, MAX_ATTEMPTS)
+
+    def test_successful_send_marks_the_row(self):
+        from unittest.mock import patch
+        from core.sms_queue import QueuedSMS, flush
+
+        QueuedSMS.objects.create(phone='09121234567', message='x')
+        with patch('core.sms.send_sms', return_value=True):
+            result = flush()
+
+        row = QueuedSMS.objects.get()
+        self.assertEqual(row.status, 'sent')
+        self.assertIsNotNone(row.sent_at)
+        self.assertEqual(result['sent'], 1)
+
+    def test_invalid_phone_is_not_queued(self):
+        from django.test import override_settings
+        from core.notify import notify_phone
+        from core.sms_queue import QueuedSMS
+
+        with override_settings(SMS_QUEUE=True):
+            self.assertFalse(notify_phone('123', 'کوتاه'))
+        self.assertEqual(QueuedSMS.objects.count(), 0)
+
+
+class TrackingCodeTests(TestCase):
+    """کد رهگیری باید زیر فشار هم‌زمان هم یکتا بماند."""
+
+    @classmethod
+    def setUpTestData(cls):
+        from academics.models import Department, Major
+
+        dep = Department.objects.create(name='آزمون', slug='azmoon-tc')
+        cls.major = Major.objects.create(
+            name='رشتهٔ آزمون', slug='reshte-tc',
+            department=dep, degree='bachelor_continuous')
+
+    def _make(self, index):
+        from admissions.models import Application
+
+        return Application.objects.create(
+            first_name='الف', last_name='ب%d' % index,
+            national_id='', phone='0912000%04d' % index,
+            degree='bachelor_continuous', desired_major=self.major,
+        )
+
+    def test_codes_are_unique_across_many_saves(self):
+        codes = {self._make(i).tracking_code for i in range(30)}
+        self.assertEqual(len(codes), 30)
+        self.assertTrue(all(len(c) == 12 for c in codes))
+
+    def test_a_taken_code_is_retried_not_raised(self):
+        """اگر کد تصادفی تکراری دربیاید، باید دوباره تولید شود نه ۵۰۰."""
+        from unittest.mock import patch
+        from admissions.models import Application
+
+        first = self._make(100)
+        taken = first.tracking_code
+        fresh = '%012d' % 123456789012
+
+        # اولین تلاش کد گرفته‌شده را برمی‌گرداند، دومی کد آزاد
+        with patch.object(Application, '_gen_tracking',
+                          side_effect=[taken, fresh]):
+            second = self._make(101)
+
+        self.assertEqual(second.tracking_code, fresh)
+        self.assertEqual(Application.objects.filter(tracking_code=taken).count(), 1)
+
+    def test_existing_code_is_not_regenerated(self):
+        app = self._make(200)
+        original = app.tracking_code
+        app.first_name = 'تغییر'
+        app.save()
+        app.refresh_from_db()
+        self.assertEqual(app.tracking_code, original)

@@ -234,16 +234,36 @@ class Application(models.Model):
         return f"{self.first_name} {self.last_name} — {self.get_degree_display()} ({self.tracking_code})"
 
     def save(self, *args, **kwargs):
-        if not self.tracking_code:
+        """ذخیره با تولید کد رهگیری یکتا.
+
+        روش قبلی اول SELECT می‌زد و بعد INSERT — بین این دو، درخواست
+        هم‌زمان دیگری می‌توانست همان کد را بگیرد و آن‌وقت قید یکتایی
+        IntegrityError می‌داد که به کاربر ۵۰۰ نشان داده می‌شد. حالا
+        درج انجام می‌شود و فقط اگر برخورد رخ داد دوباره تلاش می‌کنیم؛
+        این روش با هر تعداد worker هم‌زمان درست کار می‌کند.
+        """
+        from django.db import IntegrityError, transaction
+
+        if self.tracking_code:
+            return super().save(*args, **kwargs)
+
+        for _attempt in range(6):
             self.tracking_code = self._gen_tracking()
-        super().save(*args, **kwargs)
+            try:
+                with transaction.atomic():
+                    return super().save(*args, **kwargs)
+            except IntegrityError:
+                # فقط برخورد کد رهگیری را دوباره تلاش کن؛ اگر قید
+                # دیگری شکسته باشد، در تلاش بعد هم می‌شکند و بالا می‌رود
+                if _attempt == 5:
+                    raise
+                self.tracking_code = ''
+                continue
 
     @staticmethod
     def _gen_tracking():
-        while True:
-            code = f'{secrets.randbelow(900000000000) + 100000000000:012d}'
-            if not Application.objects.filter(tracking_code=code).exists():
-                return code
+        """۱۲ رقم تصادفی — بدون بررسی پیشین؛ یکتایی را دیتابیس تضمین می‌کند."""
+        return f'{secrets.randbelow(900000000000) + 100000000000:012d}'
 
 
 # ─────────────────────────────────────────────

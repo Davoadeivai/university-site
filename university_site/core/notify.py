@@ -32,11 +32,23 @@ def _clip(text: str, max_len: int = _SMS_MAX_LEN) -> str:
 
 
 def notify_phone(phone: str, message: str) -> bool:
-    """ارسال یک پیامک اطلاع‌رسانی به یک شماره."""
+    """ارسال یک پیامک اطلاع‌رسانی به یک شماره.
+
+    اگر SMS_QUEUE روشن باشد، پیام در صف ثبت و بلافاصله برگردانده
+    می‌شود؛ ارسال واقعی را cron انجام می‌دهد. بدون آن، کاربر تا پاسخ
+    سرور پیامک منتظر می‌ماند و worker تا همان لحظه اشغال است.
+    """
     phone = normalize_phone(phone)
     if not phone or len(phone) < 10:
         return False
-    return send_sms(phone, _clip(message))
+
+    text = _clip(message)
+
+    from core.sms_queue import enqueue
+    if enqueue(phone, text):
+        return True
+
+    return send_sms(phone, text)
 
 
 def phone_from_user(user) -> str:
