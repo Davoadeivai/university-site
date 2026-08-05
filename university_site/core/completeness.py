@@ -93,6 +93,18 @@ PROFILES = {
 }
 
 
+# متنی که seed به‌عنوان جای‌نگهدار می‌گذارد؛ «پر» به حساب نمی‌آید.
+# بدون این، دفتر ریاست ۱۰۰٪ گزارش می‌شد در حالی که نام رئیس هنوز
+# «[نام را از پنل ادمین وارد کنید]» بود — یعنی سنجه دقیقاً همان چیزی
+# را که باید پیدا کند، پنهان می‌کرد.
+PLACEHOLDER_MARKS = ('[', ']', '…')
+
+
+def _is_placeholder(text: str) -> bool:
+    stripped = text.strip()
+    return stripped.startswith('[') and stripped.endswith(']')
+
+
 def _has_value(obj, name) -> bool:
     value = getattr(obj, name, None)
     if value is None:
@@ -101,7 +113,7 @@ def _has_value(obj, name) -> bool:
     if hasattr(value, 'name'):
         return bool(value.name)
     if isinstance(value, str):
-        return bool(value.strip())
+        return bool(value.strip()) and not _is_placeholder(value)
     return bool(value)
 
 

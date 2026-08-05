@@ -700,3 +700,30 @@ class VicesNavigationTests(TestCase):
         body = self.client.get(reverse('core:vices_list')).content.decode()
         self.assertIn('هنوز رکوردی ندارند', body)
         self.assertIn('معاونت پژوهشی و فناوری', body)
+
+
+class CompletenessPlaceholderTests(TestCase):
+    """جای‌نگهدار نباید «پر» شمرده شود."""
+
+    def test_placeholder_counts_as_missing(self):
+        from core.completeness import evaluate
+        from core.models import PresidencyOffice
+
+        office = PresidencyOffice(
+            president_name='[نام را از پنل ادمین وارد کنید]',
+            president_title='دانشیار',
+            president_message='پیام',
+        )
+        data = evaluate(office)
+        self.assertIn('نام رئیس', data['critical'],
+                      'جای‌نگهدار به‌عنوان مقدار واقعی شمرده شد')
+
+        office.president_name = 'دکتر واقعی'
+        self.assertNotIn('نام رئیس', evaluate(office)['critical'])
+
+    def test_ordinary_brackets_inside_text_are_not_placeholders(self):
+        from core.completeness import _is_placeholder
+
+        self.assertTrue(_is_placeholder('[نام]'))
+        self.assertFalse(_is_placeholder('دکتر [الف] احمدی'))
+        self.assertFalse(_is_placeholder('دانشیار'))
