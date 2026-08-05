@@ -5,10 +5,11 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
-                <li class="breadcrumb-item active">معاونت‌ها</li>
+                <li class="breadcrumb-item"><a href="{% url 'core:presidency' %}">حوزه ریاست</a></li>
+                <li class="breadcrumb-item active">معاونین و معاونت‌ها</li>
             </ol>
         </nav>
-        <h1 class="page-header-title">معاونت‌های دانشگاه</h1>
+        <h1 class="page-header-title">معاونین و معاونت‌ها</h1>
     </div>
 </div>
 
@@ -20,96 +21,88 @@
                 <div class="dept-icon mx-auto mb-3" style="width:70px;height:70px;font-size:2rem;">
                     <i class="fas fa-sitemap text-primary"></i>
                 </div>
-                <h2 class="section-title">معاونت‌های دانشگاه</h2>
+                <h2 class="section-title">ساختار معاونت‌های موسسه</h2>
                 <p class="text-muted" style="font-size:15px;line-height:2;">
-                    دانشگاه دارای پنج معاونت اصلی است که هر کدام حوزه مشخصی از فعالیت‌های دانشگاه را پوشش می‌دهند.
+                    هر معاونت حوزهٔ مشخصی از فعالیت‌های موسسه را بر عهده دارد.
+                    روی هر کارت بزنید تا معرفی، شرح وظایف، واحدهای زیرمجموعه و
+                    راه تماس آن معاونت را ببینید.
                 </p>
             </div>
         </div>
 
-        <!-- کارت‌های معاونت‌ها — چه data در DB باشد چه نباشد -->
-        {% with vice_meta="education,student,admin_finance,construction,research" %}
+        {% comment %}
+          کارت‌ها از پایگاه داده می‌آیند. نسخهٔ قبلی پنج کارت ثابت در قالب
+          داشت: معاونتی که در پنل غیرفعال می‌شد باز هم نمایش داده می‌شد، و
+          نام معاون هیچ‌جا دیده نمی‌شد چون قالب اصلاً به رکورد وصل نبود.
+        {% endcomment %}
         <div class="row g-4">
-            {% for vt in vice_meta.split|first %}
+            {% for vice in vices %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <a href="{% url 'core:vice_detail' vice.vice_type %}" class="text-decoration-none">
+                    <div class="dept-card h-100 d-flex flex-column">
+
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            {% if vice.photo %}
+                            <img src="{{ vice.photo.url }}" alt="{{ vice.full_name }}"
+                                 class="rounded-circle border border-2 border-warning flex-shrink-0"
+                                 style="width:62px;height:62px;object-fit:cover;">
+                            {% else %}
+                            <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                  style="width:62px;height:62px;background:var(--gradient-primary);">
+                                <i class="fas fa-user-tie text-white" style="font-size:1.4rem;"></i>
+                            </span>
+                            {% endif %}
+                            <div class="min-w-0">
+                                <h5 class="dept-title mb-1" style="font-size:15px;">{{ vice.get_vice_type_display }}</h5>
+                                {% if vice.full_name %}
+                                <div class="text-muted" style="font-size:13px;">{{ vice.full_name }}</div>
+                                {% if vice.academic_rank %}
+                                <small class="text-muted">{{ vice.academic_rank }}</small>
+                                {% endif %}
+                                {% else %}
+                                <small class="text-muted">معاون هنوز معرفی نشده</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if vice.description %}
+                        <p class="text-muted flex-grow-1" style="font-size:13px;line-height:1.9;">
+                            {{ vice.description|truncatewords:22 }}
+                        </p>
+                        {% else %}
+                        <div class="flex-grow-1"></div>
+                        {% endif %}
+
+                        <div class="d-flex flex-wrap gap-2 align-items-center pt-2 border-top"
+                             style="font-size:12px;">
+                            {% if vice.phone %}
+                            <span class="text-muted"><i class="fas fa-phone-alt ms-1"></i>{{ vice.phone }}</span>
+                            {% endif %}
+                            {% if vice.office %}
+                            <span class="text-muted"><i class="fas fa-map-marker-alt ms-1"></i>{{ vice.office }}</span>
+                            {% endif %}
+                            <span class="text-primary ms-auto">
+                                بیشتر بدانید <i class="fas fa-arrow-left"></i>
+                            </span>
+                        </div>
+
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            {% include 'core/_empty_state.html' with label='معاونتی' add_url='/admin/core/vicepresidency/add/' hint='هر معاونت که ثبت شود، همین‌جا و در منوی «حوزه ریاست» ظاهر می‌شود.' %}
             {% endfor %}
-
-            <!-- معاونت آموزشی -->
-            {% url 'core:vice_detail' 'education' as url_edu %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                <a href="{{ url_edu }}" class="text-decoration-none">
-                    <div class="dept-card h-100 text-center hover-card">
-                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#3b82d4,#1d4ed8);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
-                            <i class="fas fa-graduation-cap text-white" style="font-size:1.4rem;"></i>
-                        </div>
-                        <h5 class="dept-title">معاونت آموزشی</h5>
-                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و تحصیلات تکمیلی</p>
-                        <span class="btn btn-sm btn-outline-primary mt-2">بیشتر بدانید</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- معاونت دانشجویی -->
-            {% url 'core:vice_detail' 'student' as url_stu %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
-                <a href="{{ url_stu }}" class="text-decoration-none">
-                    <div class="dept-card h-100 text-center hover-card">
-                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#22c55e,#16a34a);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
-                            <i class="fas fa-users text-white" style="font-size:1.4rem;"></i>
-                        </div>
-                        <h5 class="dept-title">معاونت دانشجویی</h5>
-                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و فرهنگی</p>
-                        <span class="btn btn-sm btn-outline-success mt-2">بیشتر بدانید</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- معاونت اداری -->
-            {% url 'core:vice_detail' 'admin_finance' as url_adm %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                <a href="{{ url_adm }}" class="text-decoration-none">
-                    <div class="dept-card h-100 text-center hover-card">
-                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#f59e0b,#d97706);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
-                            <i class="fas fa-briefcase text-white" style="font-size:1.4rem;"></i>
-                        </div>
-                        <h5 class="dept-title">معاونت اداری</h5>
-                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و مالی</p>
-                        <span class="btn btn-sm btn-outline-warning mt-2">بیشتر بدانید</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- معاونت فنی -->
-            {% url 'core:vice_detail' 'construction' as url_con %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
-                <a href="{{ url_con }}" class="text-decoration-none">
-                    <div class="dept-card h-100 text-center hover-card">
-                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#ef4444,#dc2626);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
-                            <i class="fas fa-hard-hat text-white" style="font-size:1.4rem;"></i>
-                        </div>
-                        <h5 class="dept-title">معاونت فنی</h5>
-                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و عمرانی</p>
-                        <span class="btn btn-sm btn-outline-danger mt-2">بیشتر بدانید</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- معاونت پژوهشی -->
-            {% url 'core:vice_detail' 'research' as url_res %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="400">
-                <a href="{{ url_res }}" class="text-decoration-none">
-                    <div class="dept-card h-100 text-center hover-card">
-                        <div class="dept-icon mx-auto" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;">
-                            <i class="fas fa-flask text-white" style="font-size:1.4rem;"></i>
-                        </div>
-                        <h5 class="dept-title">معاونت پژوهشی</h5>
-                        <p class="text-muted" style="font-size:13px;line-height:1.8;">و فناوری</p>
-                        <span class="btn btn-sm btn-outline-secondary mt-2">بیشتر بدانید</span>
-                    </div>
-                </a>
-            </div>
-
         </div>
-        {% endwith %}
+
+        {% if unregistered and user.is_staff %}
+        <div class="alert alert-warning mt-4" style="font-size:13px;border-radius:12px;">
+            <i class="fas fa-info-circle ms-1"></i>
+            این معاونت‌ها هنوز رکوردی ندارند و در سایت دیده نمی‌شوند:
+            <strong>{{ unregistered|join:'، ' }}</strong>
+            <a href="/admin/core/vicepresidency/add/" class="fw-bold">افزودن</a>
+            <br><small>این پیام فقط برای همکاران موسسه دیده می‌شود.</small>
+        </div>
+        {% endif %}
 
     </div>
 </section>

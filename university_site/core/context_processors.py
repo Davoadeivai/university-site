@@ -37,6 +37,15 @@ def global_context(request):
             .prefetch_related('groups').order_by('order')
         )
 
+        # معاونت‌ها برای منو — از پایگاه داده، نه فهرست ثابت در قالب.
+        # قبلاً پنج لینک در base.html هاردکد بود: معاونتی که در پنل
+        # غیرفعال می‌شد همچنان در منو می‌ماند، و معاونت تازه هرگز
+        # ظاهر نمی‌شد مگر کسی قالب را دست بزند.
+        from core.models import VicePresidency
+        nav_vices = list(
+            VicePresidency.objects.filter(is_active=True).order_by('vice_type')
+        )
+
         cached = {
             'site_settings': settings,
             'global_quick_links': quick_links,
@@ -45,6 +54,7 @@ def global_context(request):
             'urgent_announcements': urgent_announcements,
             'nav_groups': nav_groups,
             'nav_departments': nav_departments,
+            'nav_vices': nav_vices,
         }
         cache.set(CACHE_KEY, cached, _CACHE_TTL)
 

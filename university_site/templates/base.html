@@ -179,30 +179,25 @@
                         <i class="fas fa-user-tie" style="font-size:13px;margin-left:3px;"></i> حوزه ریاست
                     </a>
                     <ul class="dropdown-menu nav-dd">
+                        <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">ریاست</span></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency' %}">ریاست موسسه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office' %}">دفتر ریاست</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'modir-daftar' %}">مدیر دفتر ریاست</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-raise' %}">دبیرخانه هیأت رئیسه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-jazb' %}">دبیرخانه هیأت اجرایی جذب هیأت علمی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vices_list' %}">معاونین و معاونت‌ها</a></li>
+
+                        <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">معاونت‌ها</span></li>
+                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'core:vices_list' %}">همهٔ معاونین و معاونت‌ها</a></li>
+                        {# فهرست از پایگاه داده می‌آید تا با پنل ادمین یکی بماند #}
+                        {% for v in nav_vices %}
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' v.vice_type %}">{{ v.get_vice_type_display }}</a></li>
+                        {% endfor %}
+
+                        <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">واحدهای وابسته</span></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:international_office' %}">دفتر همکاریهای علمی و بین المللی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:public_relations' %}">مدیریت روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:security_office' %}">حراست</a></li>
-                    </ul>
-                </li>
-
-                <!-- معاونت‌ها -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="fas fa-sitemap" style="font-size:13px;margin-left:3px;"></i> معاونت ها
-                    </a>
-                    <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'education' %}">معاونت آموزشی و تحصیلات تکمیلی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'student' %}">معاونت دانشجویی و فرهنگی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'admin_finance' %}">معاونت اداری و مالی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'construction' %}">معاونت فنی و عمرانی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'research' %}">معاونت پژوهشی و فناوری</a></li>
                     </ul>
                 </li>
 

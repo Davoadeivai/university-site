@@ -526,11 +526,18 @@ def security_office(request):
 # ─── معاونت‌ها ────────────────────────────────────────────────
 
 def vices_list(request):
-    """صفحه معرفی همه معاونت‌ها"""
-    vices = VicePresidency.objects.filter(is_active=True)
+    """معاونین و معاونت‌های موسسه — یک صفحه برای هر دو مفهوم."""
+    vices = list(
+        VicePresidency.objects.filter(is_active=True).order_by('vice_type')
+    )
     context = {
         'vices': vices,
-        'page_title': 'معاونت‌های دانشگاه',
+        # معاونت‌هایی که هنوز رکوردی ندارند، تا ادمین بداند چه مانده
+        'unregistered': [
+            label for key, label in VicePresidency.VICE_TYPE_CHOICES
+            if key not in {v.vice_type for v in vices}
+        ],
+        'page_title': 'معاونین و معاونت‌ها',
     }
     return render(request, 'core/vices_list.html', context)
 

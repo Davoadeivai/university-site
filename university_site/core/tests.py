@@ -646,3 +646,57 @@ class JalaliYearDisplayTests(TestCase):
                             offenders.append('%s:%d' % (path.name, no))
         self.assertEqual(offenders, [],
                          'سال تحصیلی بدون تبدیل شمسی: %s' % offenders)
+
+
+class VicesNavigationTests(TestCase):
+    """«معاونت ها» از نوار بالا حذف و با «حوزه ریاست» ادغام شد."""
+
+    def setUp(self):
+        from core.models import VicePresidency
+        from django.core.cache import cache
+
+        cache.clear()
+        VicePresidency.objects.all().delete()
+        self.vice = VicePresidency.objects.create(
+            vice_type='education', full_name='دکتر نمونه',
+            academic_rank='دانشیار', description='معرفی معاونت آموزشی',
+            is_active=True)
+
+    def test_navbar_has_no_separate_vices_menu(self):
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn('fa-sitemap" style="font-size:13px;margin-left:3px;"></i> معاونت ها', body)
+
+    def test_vices_appear_inside_the_presidency_menu(self):
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('حوزه ریاست', body)
+        self.assertIn('همهٔ معاونین و معاونت‌ها', body)
+        self.assertIn(self.vice.get_vice_type_display(), body)
+
+    def test_menu_follows_the_database(self):
+        """معاونت غیرفعال باید از منو برود، بدون دست‌زدن به قالب."""
+        from django.core.cache import cache
+
+        self.vice.is_active = False
+        self.vice.save()
+        cache.clear()
+
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn(
+            reverse('core:vice_detail', args=[self.vice.vice_type]), body)
+
+    def test_list_page_shows_the_person_not_a_fixed_card(self):
+        body = self.client.get(reverse('core:vices_list')).content.decode()
+        self.assertIn('دکتر نمونه', body)
+        self.assertIn('دانشیار', body)
+
+    def test_unregistered_vices_are_reported_to_staff_only(self):
+        from django.contrib.auth.models import User
+
+        body = self.client.get(reverse('core:vices_list')).content.decode()
+        self.assertNotIn('هنوز رکوردی ندارند', body)
+
+        User.objects.create_user('kar2', password='Str0ng!Pass2026', is_staff=True)
+        self.client.login(username='kar2', password='Str0ng!Pass2026')
+        body = self.client.get(reverse('core:vices_list')).content.decode()
+        self.assertIn('هنوز رکوردی ندارند', body)
+        self.assertIn('معاونت پژوهشی و فناوری', body)
