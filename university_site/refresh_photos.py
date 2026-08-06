@@ -61,11 +61,22 @@ def main() -> int:
         log('!! شکست خورد: %s' % exc)
         return 1
 
+    # گزارش وضعیت، چون بدون ترمینال راه دیگری برای دیدنش نیست
+    log('')
+    log('=' * 60)
+    log('وضعیت تصویرهای سایت')
+    log('=' * 60)
+    try:
+        call_command('photo_audit')
+    except Exception as exc:              # noqa: BLE001
+        log('(گزارش گرفته نشد: %s)' % exc)
+
     log('')
     log('=' * 60)
     log('پایان: موفق')
     log('=' * 60)
     log('حالا این صفحه‌ها را باز کنید:')
+    log('  https://portal.aab.ac.ir/ریاست/')
     log('  https://portal.aab.ac.ir/دفترچه-تلفن/')
     log('  https://portal.aab.ac.ir/اعضای-موسسه/')
     return 0
