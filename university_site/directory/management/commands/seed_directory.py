@@ -58,6 +58,12 @@ class Command(BaseCommand):
             '--prune', action='store_true',
             help='ردیف‌هایی که در سند نیستند را غیرفعال کن',
         )
+        parser.add_argument(
+            '--refresh-photos', action='store_true',
+            help='عکس‌ها را حتی اگر از قبل وجود دارند دوباره از سند بگذار. '
+                 'هر عکسی که خودتان در ادمین آپلود کرده‌اید هم بازنویسی '
+                 'می‌شود، پس فقط وقتی بزنید که سند عکس‌های بهتری دارد.',
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -97,7 +103,8 @@ class Command(BaseCommand):
                 )
                 created += was_created
                 updated += not was_created
-                photos += self._attach_photo(obj, row.get('photo'))
+                photos += self._attach_photo(
+                    obj, row.get('photo'), refresh=options['refresh_photos'])
 
             if options['prune']:
                 stale = DirectoryPerson.objects.filter(
@@ -122,19 +129,39 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             'منابع بیرونی: %d ساخته، %d به‌روز شد.' % (res_created, res_updated)))
 
-    def _attach_photo(self, person, filename) -> int:
-        """تصویر سند را فقط وقتی ضمیمه می‌کند که فرد تصویری نداشته باشد.
+    def _attach_photo(self, person, filename, refresh: bool = False) -> int:
+        """تصویر سند را ضمیمه می‌کند.
 
-        دو دلیل: (۱) اگر ادمین عکس بهتری آپلود کرده، اجرای دوبارهٔ seed
-        نباید رویش بنویسد؛ (۲) FileField در هر ذخیره نام تکراری را با
-        پسوند عددی ذخیره می‌کند، پس بدون این شرط هر اجرا یک کپی تازه
-        روی دیسک می‌ساخت.
+        به‌صورت پیش‌فرض فقط وقتی که فرد تصویری ندارد. دو دلیل: (۱) اگر
+        ادمین عکس بهتری آپلود کرده، اجرای دوبارهٔ seed نباید رویش
+        بنویسد؛ (۲) FileField در هر ذخیره نام تکراری را با پسوند عددی
+        ذخیره می‌کند، پس بدون این شرط هر اجرا یک کپی تازه می‌ساخت.
+
+        با `--refresh-photos` عکس قبلی از دیسک پاک و نسخهٔ سند
+        جایگزین می‌شود — برای وقتی که سند تازه‌ای با کیفیت بهتر رسیده.
         """
-        if not filename or person.photo:
+        if not filename:
+            return 0
+        if person.photo and not refresh:
             return 0
         source = PHOTO_DIR / filename
         if not source.exists():
             return 0
+        if person.photo:
+            # بدون حذف، فایل قدیمی یتیم روی دیسک می‌ماند و سهمیهٔ
+            # هاست را بی‌دلیل پر می‌کند. ولی نشدنِ حذف نباید کل کار را
+            # بخواباند: یک فایل قفل‌شده فقط چند کیلوبایت هدر است،
+            # درحالی‌که استثنا اینجا بارگذاری بقیهٔ افراد را قطع می‌کند.
+            try:
+                person.photo.close()
+            except (OSError, ValueError):
+                pass
+            try:
+                person.photo.delete(save=False)
+            except OSError as exc:
+                self.stderr.write(
+                    '  عکس قبلی %s پاک نشد (%s) — نسخهٔ تازه جایگزین می‌شود.'
+                    % (person.full_name, exc.__class__.__name__))
         person.photo.save(filename, ContentFile(source.read_bytes()), save=True)
         return 1
 

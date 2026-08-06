@@ -6,49 +6,56 @@
       "first_name": "حسن",
       "last_name": "فارسیجانی",
       "position": "رئیس موسسه",
-      "extension": "115"
+      "extension": "115",
+      "photo": "staff-01.jpeg"
     },
     {
       "honorific": "دکتر",
       "first_name": "محمدعلی",
       "last_name": "جعفری",
       "position": "معاون آموزشی و تحصیلات تکمیلی",
-      "extension": "120"
+      "extension": "120",
+      "photo": "staff-02.jpeg"
     },
     {
       "honorific": "دکتر",
       "first_name": "شیرزاد",
       "last_name": "کوپایی حاجی",
       "position": "معاون دانشجویی و فرهنگی",
-      "extension": "110"
+      "extension": "110",
+      "photo": "staff-03.jpeg"
     },
     {
       "honorific": "دکتر",
       "first_name": "علی اکبر",
       "last_name": "جعفری",
       "position": "معاون اداری و مالی",
-      "extension": "108"
+      "extension": "108",
+      "photo": "staff-04.jpeg"
     },
     {
       "honorific": "مهندس",
       "first_name": "حسن",
       "last_name": "عمرانی",
       "position": "معاون پژوهش و فناوری",
-      "extension": "111"
+      "extension": "111",
+      "photo": "staff-05.jpeg"
     },
     {
       "honorific": "دکتر",
       "first_name": "سیدمحمد",
       "last_name": "سیدحسینی",
       "position": "معاون فنی و عمرانی",
-      "extension": ""
+      "extension": "",
+      "photo": "staff-21.jpeg"
     },
     {
       "honorific": "",
       "first_name": "آرمان",
       "last_name": "امیدوار",
       "position": "مدیر امور مالی و خزانه‌داری",
-      "extension": "108"
+      "extension": "108",
+      "photo": "staff-06.jpeg"
     },
     {
       "honorific": "",
@@ -62,56 +69,64 @@
       "first_name": "ماریا",
       "last_name": "چاری",
       "position": "دفتر ریاست و روابط عمومی",
-      "extension": "102"
+      "extension": "102",
+      "photo": "staff-07.jpeg"
     },
     {
       "honorific": "دکتر",
       "first_name": "حمزه",
       "last_name": "کرمی نقیبی",
       "position": "مدیر اداری و پشتیبانی",
-      "extension": "114"
+      "extension": "114",
+      "photo": "staff-08.jpeg"
     },
     {
       "honorific": "",
       "first_name": "سید مجتبی",
       "last_name": "اسماعیل نژاد",
       "position": "مدیر آموزش",
-      "extension": "116"
+      "extension": "116",
+      "photo": "staff-13.jpeg"
     },
     {
       "honorific": "",
       "first_name": "فاطمه",
       "last_name": "نمازی",
       "position": "مدیر پژوهشی",
-      "extension": "109"
+      "extension": "109",
+      "photo": "staff-16.jpeg"
     },
     {
       "honorific": "",
       "first_name": "علیرضا",
       "last_name": "فرهاد پور",
       "position": "مدیر دانشجویی",
-      "extension": "105"
+      "extension": "105",
+      "photo": "staff-20.jpeg"
     },
     {
       "honorific": "",
       "first_name": "جواد",
       "last_name": "قلی تبار بهنمیری",
       "position": "مدیر فناوری — کارشناس آموزشی",
-      "extension": "113"
+      "extension": "113",
+      "photo": "staff-19.jpeg"
     },
     {
       "honorific": "",
       "first_name": "فاطمه",
       "last_name": "جعفری",
       "position": "مدیر دفتر نظارت و ارزیابی، امور فارغ‌التحصیلان",
-      "extension": "117"
+      "extension": "117",
+      "photo": "staff-11.jpeg"
     },
     {
       "honorific": "",
       "first_name": "احسان",
       "last_name": "غلامی بهنمیری",
       "position": "رئیس حسابداری",
-      "extension": "108"
+      "extension": "108",
+      "photo": "staff-10.jpeg"
     },
     {
       "honorific": "",
@@ -125,35 +140,40 @@
       "first_name": "عباس",
       "last_name": "اسدی امیری",
       "position": "مسئول حراست",
-      "extension": "106"
+      "extension": "106",
+      "photo": "staff-18.jpeg"
     },
     {
       "honorific": "",
       "first_name": "حمید",
       "last_name": "اسمعیلیان",
       "position": "کارشناس آموزشی",
-      "extension": "103"
+      "extension": "103",
+      "photo": "staff-09.jpeg"
     },
     {
       "honorific": "",
       "first_name": "علی",
       "last_name": "یونس پور",
       "position": "کارشناس آموزش — کارگزینی و دبیرخانه",
-      "extension": "101"
+      "extension": "101",
+      "photo": "staff-12.jpeg"
     },
     {
       "honorific": "",
       "first_name": "هادی",
       "last_name": "شهسوارمیستانی",
       "position": "کارشناس امور اداری و پشتیبانی — کارپرداز — جمع‌دار اموال",
-      "extension": "118"
+      "extension": "118",
+      "photo": "staff-14.jpeg"
     },
     {
       "honorific": "",
       "first_name": "حسن",
       "last_name": "غلامی بهنمیری",
       "position": "اداره تغذیه و وام دانشجویی — اداره خوابگاه‌ها و نظام وظیفه",
-      "extension": "105"
+      "extension": "105",
+      "photo": "staff-15.jpeg"
     },
     {
       "honorific": "",
@@ -168,7 +188,8 @@
       "last_name": "ثمره پودینه",
       "position": "انتظامات",
       "extension": "",
-      "phone": "۰۱۱-۳۵۷۵۰۰۸۰"
+      "phone": "۰۱۱-۳۵۷۵۰۰۸۰",
+      "photo": "staff-17.jpeg"
     }
   ],
   "founder": [
@@ -251,84 +272,84 @@
       "full_name": "شیرزاد کوپائی حاجی",
       "field_of_study": "علوم تربیتی گرایش برنامه‌ریزی آموزشی",
       "degree": "phd",
-      "photo": "image011.jpg"
+      "photo": "faculty-01.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "جلال قنبری جلودار",
       "field_of_study": "مدیریت آموزشی",
       "degree": "phd",
-      "photo": "image012.jpg"
+      "photo": "faculty-02.jpeg"
     },
     {
       "honorific": "",
       "full_name": "سجاد سالاری",
       "field_of_study": "حسابداری",
       "degree": "",
-      "photo": "image013.jpg"
+      "photo": "faculty-03.jpeg"
     },
     {
       "honorific": "",
       "full_name": "فاطمه نمازی",
       "field_of_study": "مهندسی برق — الکترونیک",
       "degree": "",
-      "photo": "image003.jpg"
+      "photo": "faculty-04.jpeg"
     },
     {
       "honorific": "",
       "full_name": "حسن عمرانی",
       "field_of_study": "مهندسی مکانیک — تبدیل انرژی",
       "degree": "",
-      "photo": "image014.jpg"
+      "photo": "faculty-05.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "علی فرنگی",
       "field_of_study": "مدیریت اجرایی",
       "degree": "phd",
-      "photo": "image015.jpg"
+      "photo": "faculty-06.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "کامبیز یزدانی",
       "field_of_study": "روانشناسی تربیتی",
       "degree": "phd",
-      "photo": "image016.jpg"
+      "photo": "faculty-07.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "مسعود باباخانی",
       "field_of_study": "حسابداری",
       "degree": "phd",
-      "photo": "image017.jpg"
+      "photo": "faculty-08.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "هانیه دلیران چمن‌زمین",
       "field_of_study": "مدیریت بازرگانی گرایش بازاریابی",
       "degree": "phd",
-      "photo": "image018.jpg"
+      "photo": "faculty-09.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "حسینعلی قربانی",
       "field_of_study": "مشاوره",
       "degree": "phd",
-      "photo": "image019.jpg"
+      "photo": "faculty-10.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "علی اکبر جعفری",
       "field_of_study": "مدیریت منابع انسانی",
       "degree": "phd",
-      "photo": "image020.jpg"
+      "photo": "faculty-11.jpeg"
     },
     {
       "honorific": "دکتر",
       "full_name": "محمدرضا خسروی مقدم",
       "field_of_study": "مدیریت صنعتی — مقطع کاردانی و کارشناسی",
       "degree": "phd",
-      "photo": "image021.jpg"
+      "photo": "faculty-12.jpeg"
     }
   ],
   "group_head": [
@@ -336,61 +357,61 @@
       "full_name": "جلال قنبری جلودار",
       "field_of_study": "مدیریت آموزشی",
       "position": "مدیر گروه مدیریت آموزشی",
-      "photo": "image001.jpg"
+      "photo": "group-01.jpeg"
     },
     {
       "full_name": "سجاد سالاری",
       "field_of_study": "حسابداری",
       "position": "مدیر گروه حسابداری",
-      "photo": "image002.jpg"
+      "photo": "group-02.jpeg"
     },
     {
       "full_name": "فاطمه نمازی",
       "field_of_study": "برق — کامپیوتر",
       "position": "مدیر گروه برق و کامپیوتر",
-      "photo": "image003.jpg"
+      "photo": "group-03.jpeg"
     },
     {
       "full_name": "حسن عمرانی",
       "field_of_study": "مکانیک — معماری",
       "position": "مدیر گروه مکانیک و معماری",
-      "photo": "image004.jpg"
+      "photo": "group-04.jpeg"
     },
     {
       "full_name": "علی فرنگی",
       "field_of_study": "مدیریت (کاردانی — کارشناسی)",
       "position": "مدیر گروه مدیریت",
-      "photo": "image005.jpg"
+      "photo": "group-05.jpeg"
     },
     {
       "full_name": "مسعود باباخانی",
       "field_of_study": "حسابداری",
       "position": "مدیر گروه حسابداری",
-      "photo": "image006.jpg"
+      "photo": "group-06.jpeg"
     },
     {
       "full_name": "هانیه دلیران چمن‌زمین",
       "field_of_study": "مدیریت بازرگانی",
       "position": "مدیر گروه مدیریت بازرگانی",
-      "photo": "image007.jpg"
+      "photo": "group-07.jpeg"
     },
     {
       "full_name": "حسینعلی قربانی",
       "field_of_study": "روانشناسی",
       "position": "مدیر گروه روانشناسی",
-      "photo": "image008.jpg"
+      "photo": "group-08.jpeg"
     },
     {
       "full_name": "حسن فارسیجانی",
       "field_of_study": "مدیریت صنعتی — مقطع کارشناسی ارشد",
       "position": "مدیر گروه مدیریت صنعتی (ارشد)",
-      "photo": "image009.jpg"
+      "photo": "group-09.jpeg"
     },
     {
       "full_name": "محمدرضا خسروی مقدم",
       "field_of_study": "مدیریت صنعتی — مقطع کاردانی و کارشناسی",
       "position": "مدیر گروه مدیریت صنعتی",
-      "photo": "image010.jpg"
+      "photo": "group-10.jpeg"
     }
   ],
   "lecturer": [

@@ -123,6 +123,30 @@ class SeedDirectoryTests(MediaIsolatedTestCase):
             DirectoryPerson.objects.exclude(photo='').exclude(photo=None))
         self.assertEqual(names, after, 'اجرای دوم عکس‌ها را دوباره ذخیره کرد')
 
+    def test_refresh_photos_replaces_an_existing_image(self):
+        """سند تازه با عکس بهتر باید بتواند نسخهٔ قبلی را جایگزین کند."""
+        call_command('seed_directory', stdout=StringIO())
+        person = DirectoryPerson.objects.filter(category='staff').exclude(
+            photo='').first()
+        self.assertIsNotNone(person, 'هیچ کارمندی عکس نگرفت')
+        person.photo.save('stale.jpg', ContentFile(b'old'), save=True)
+        self.assertEqual(person.photo.read(), b'old')
+        person.photo.close()
+
+        call_command('seed_directory', '--refresh-photos', stdout=StringIO())
+        person.refresh_from_db()
+        person.photo.open('rb')
+        self.assertNotEqual(person.photo.read(), b'old',
+                            'refresh عکس قدیمی را جایگزین نکرد')
+        person.photo.close()
+
+    def test_staff_now_carry_photos_from_the_document(self):
+        call_command('seed_directory', stdout=StringIO())
+        with_photo = DirectoryPerson.objects.filter(
+            category='staff').exclude(photo='').count()
+        self.assertGreaterEqual(with_photo, 20,
+                                'عکس کارکنان از سند وصل نشد')
+
     def test_an_admin_uploaded_photo_survives_a_reseed(self):
         call_command('seed_directory', stdout=StringIO())
         person = DirectoryPerson.objects.filter(category='faculty').first()
