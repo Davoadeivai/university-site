@@ -17,6 +17,7 @@ from django.utils import timezone
 from academics.models import AcademicCalendar
 from core.academic_timeline import build_timeline
 from core.models import PresidencyOffice, SecurityOffice
+from core.storage import ASCIINameStorage, ascii_filename
 
 INSTITUTE = 'موسسه آموزش عالی علامه امینی'
 # نام موسسه هرگز نباید پسوند شهر بگیرد — نه شکل قدیمی، نه شکل تازه
@@ -937,3 +938,88 @@ class AdminImageUploadTests(TestCase):
         res = self.client.get(
             reverse('admin:core_presidencyoffice_change', args=[office.pk]))
         self.assertEqual(res.status_code, 200)
+
+
+class PersianFilenameUploadTests(TestCase):
+    """آپلود فایل با نام فارسی — علت واقعی خطای ۵۰۰ روی سرور.
+
+    روی سرور، پروسهٔ Passenger هیچ locale ندارد، پس
+    sys.getfilesystemencoding() برابر ascii می‌شود و os.open با
+    UnicodeEncodeError می‌افتد. اینجا نمی‌شود آن محیط را بازسازی کرد،
+    ولی می‌شود قرارداد را تثبیت کرد: هر نامی که به دیسک می‌رسد باید
+    ASCII باشد. تا وقتی این تست سبز است، آن خطا برنمی‌گردد.
+    """
+
+    def test_a_fully_persian_name_becomes_ascii(self):
+        name = ascii_filename('عکس رئیس موسسه.JPG')
+        self.assertEqual(name.encode('ascii'), name.encode())
+        self.assertTrue(name.endswith('.jpg'), name)
+
+    def test_latin_parts_of_a_name_survive(self):
+        self.assertEqual(ascii_filename('president-2026 عکس.png'),
+                         'president-2026.png')
+
+    def test_accented_latin_folds_rather_than_disappearing(self):
+        self.assertEqual(ascii_filename('café.png'), 'cafe.png')
+
+    def test_extension_is_normalised(self):
+        self.assertTrue(ascii_filename('x.PNG').endswith('.png'))
+
+    def test_a_name_with_nothing_left_gets_an_identifier(self):
+        name = ascii_filename('سند.pdf')
+        self.assertTrue(name.startswith('file-'), name)
+        self.assertTrue(name.endswith('.pdf'), name)
+
+    def test_two_unnamable_files_do_not_collide(self):
+        self.assertNotEqual(ascii_filename('عکس.jpg'), ascii_filename('عکس.jpg'))
+
+    def test_a_persian_upload_to_directory_is_also_cleaned(self):
+        storage = ASCIINameStorage()
+        generated = storage.generate_filename('تصاویر/عکس.jpg')
+        # هر بایت مسیر باید ASCII باشد — همان چیزی که os.open می‌خواهد
+        generated.encode('ascii')
+
+    def test_uploading_a_persian_named_photo_through_the_admin(self):
+        """کل مسیر: فرم ادمین → ذخیره → نام روی دیسک باید ASCII باشد."""
+        media = tempfile.mkdtemp(prefix='persian-upload-')
+        try:
+            with override_settings(MEDIA_ROOT=media):
+                user = User.objects.create_superuser(
+                    'persian-uploader', 'p@example.com', 'pw-for-test-only')
+                self.client.force_login(user)
+
+                office = PresidencyOffice.objects.create(president_name='رئیس')
+                png = base64.b64decode(
+                    b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8'
+                    b'z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+                upload = SimpleUploadedFile(
+                    'عکس رئیس موسسه.png', png, content_type='image/png')
+
+                res = self.client.post(
+                    reverse('admin:core_presidencyoffice_change',
+                            args=[office.pk]),
+                    {
+                        'president_name': 'دکتر حسن فارسیجانی',
+                        'president_title': '', 'president_bio': '',
+                        'president_education': '', 'president_resume': '',
+                        'president_email': '', 'president_phone': '',
+                        'president_message': '', 'office_manager_name': '',
+                        'office_duties': '', 'office_address': '',
+                        'office_phone': '', 'office_fax': '',
+                        'office_email': '', 'office_hours': '',
+                        'president_photo': upload,
+                    },
+                    follow=True,
+                )
+                self.assertEqual(res.status_code, 200)
+                office.refresh_from_db()
+                self.assertTrue(office.president_photo, 'عکس ذخیره نشد')
+
+                stored = office.president_photo.name
+                # همان چیزی که روی سرور می‌شکست
+                stored.encode('ascii')
+                self.assertTrue(
+                    os.path.exists(os.path.join(media, stored)),
+                    'فایل روی دیسک نیست: %s' % stored)
+        finally:
+            shutil.rmtree(media, ignore_errors=True)

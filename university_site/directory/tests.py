@@ -70,6 +70,37 @@ class SeedDirectoryTests(MediaIsolatedTestCase):
         self.assertTrue(BoardMember.objects.filter(board_type='founder').exists())
         self.assertTrue(BoardMember.objects.filter(board_type='trustee').exists())
 
+    def test_board_rows_are_matched_ignoring_the_honorific(self):
+        """ردیف قدیمیِ بدون پیشوند نباید ردیف تازه بسازد.
+
+        نسخهٔ اول روی نام کامل کلید می‌زد، پس «حجت‌الاسلام محمد حیدری
+        قاسمی» با «محمد حیدری قاسمی» یکی شمرده نمی‌شد و روی سرور
+        ۲۸ ردیف به‌جای ۱۴ ساخته شد.
+        """
+        BoardMember.objects.create(
+            board_type='founder', full_name='محمد حیدری قاسمی', is_active=True)
+        call_command('seed_directory', stdout=StringIO())
+        self.assertEqual(
+            BoardMember.objects.filter(
+                board_type='founder',
+                full_name__endswith='محمد حیدری قاسمی').count(), 1)
+
+    def test_existing_duplicate_board_rows_are_merged_away(self):
+        for name in ('محمود اسدی', 'دکتر محمود اسدی'):
+            BoardMember.objects.create(
+                board_type='trustee', full_name=name, is_active=True)
+        call_command('seed_directory', stdout=StringIO())
+        self.assertEqual(
+            BoardMember.objects.filter(
+                board_type='trustee',
+                full_name__endswith='محمود اسدی').count(), 1)
+
+    def test_board_totals_stay_stable_across_runs(self):
+        call_command('seed_directory', stdout=StringIO())
+        first = BoardMember.objects.count()
+        call_command('seed_directory', stdout=StringIO())
+        self.assertEqual(BoardMember.objects.count(), first)
+
     def test_seed_loads_external_resources(self):
         call_command('seed_directory', stdout=StringIO())
         self.assertTrue(ExternalResource.objects.filter(

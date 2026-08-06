@@ -32,6 +32,23 @@ PERSON_CATEGORIES = ('staff', 'founder', 'trustee', 'faculty', 'group_head', 'le
 # صفحه‌های «هیات موسس» و «هیات امنا» از آن می‌خوانند.
 BOARD_TYPE_MAP = {'founder': 'founder', 'trustee': 'trustee'}
 
+# عنوان‌هایی که ممکن است جلوی نام آمده باشند و نباید بخشی از کلید
+# تطبیق باشند — وگرنه «دکتر احمدی» و «احمدی» دو نفر شمرده می‌شوند.
+HONORIFICS = ('حجت‌الاسلام', 'حجت الاسلام', 'دکتر', 'مهندس', 'استاد', 'آقای', 'خانم')
+
+
+def _bare_name(name: str) -> str:
+    """نام بدون پیشوند افتخاری، برای تطبیق دو نوشتار از یک نفر."""
+    cleaned = (name or '').strip()
+    changed = True
+    while changed:
+        changed = False
+        for title in HONORIFICS:
+            if cleaned.startswith(title + ' '):
+                cleaned = cleaned[len(title) + 1:].strip()
+                changed = True
+    return cleaned
+
 
 class Command(BaseCommand):
     help = 'بارگذاری افراد، هیات‌ها و منابع بیرونی از سند رسمی موسسه'
@@ -90,7 +107,7 @@ class Command(BaseCommand):
                 if count:
                     self.stdout.write('  %s: %d ردیف قدیمی غیرفعال شد' % (category, count))
 
-        board_created = self._sync_board_members(data)
+        board_synced, board_merged = self._sync_board_members(data)
         res_created, res_updated = self._sync_resources(data.get('resources', []))
 
         self.stdout.write(self.style.SUCCESS(
@@ -98,7 +115,10 @@ class Command(BaseCommand):
         if photos:
             self.stdout.write(self.style.SUCCESS('تصویر: %d مورد ضمیمه شد.' % photos))
         self.stdout.write(self.style.SUCCESS(
-            'اعضای هیات (صفحهٔ عمومی): %d ردیف همگام شد.' % board_created))
+            'اعضای هیات (صفحهٔ عمومی): %d ردیف همگام شد.' % board_synced))
+        if board_merged:
+            self.stdout.write(self.style.WARNING(
+                '  %d ردیف تکراری هیات ادغام و حذف شد.' % board_merged))
         self.stdout.write(self.style.SUCCESS(
             'منابع بیرونی: %d ساخته، %d به‌روز شد.' % (res_created, res_updated)))
 
@@ -118,31 +138,51 @@ class Command(BaseCommand):
         person.photo.save(filename, ContentFile(source.read_bytes()), save=True)
         return 1
 
-    def _sync_board_members(self, data) -> int:
+    def _sync_board_members(self, data) -> tuple[int, int]:
         """`core.BoardMember` را هم پر می‌کند.
 
         صفحه‌های «هیات موسس» و «هیات امنا» از آن مدل می‌خوانند. اگر
         فقط این اپ پر شود، آن دو صفحه خالی می‌مانند و کاربر سایت
         تفاوتی نمی‌بیند.
+
+        تطبیق روی نامِ بدون پیشوند انجام می‌شود. نسخهٔ اول این دستور
+        روی `full_name` کامل کلید می‌زد و چون «حجت‌الاسلام محمد حیدری
+        قاسمی» با ردیف قبلیِ «محمد حیدری قاسمی» یکی شمرده نمی‌شد، هر
+        اجرا یک ردیف تازه می‌ساخت — روی سرور ۲۸ ردیف به‌جای ۱۴. اینجا
+        ردیف‌های هم‌نام پیدا و ادغام می‌شوند تا خودش را ترمیم کند.
         """
-        count = 0
+        synced = merged = 0
         for category, board_type in BOARD_TYPE_MAP.items():
             for index, row in enumerate(data.get(category, []), start=1):
-                full_name = row.get('full_name', '').strip()
-                if not full_name:
+                bare = row.get('full_name', '').strip()
+                if not bare:
                     continue
-                display = ('%s %s' % (row.get('honorific', ''), full_name)).strip()
-                _, _ = BoardMember.objects.update_or_create(
-                    board_type=board_type,
-                    full_name=display,
-                    defaults={
-                        'title': row.get('position', ''),
-                        'order': index,
-                        'is_active': True,
-                    },
-                )
-                count += 1
-        return count
+                honorific = row.get('honorific', '').strip()
+                display = ('%s %s' % (honorific, bare)).strip()
+
+                matches = [
+                    obj for obj in BoardMember.objects.filter(board_type=board_type)
+                    if _bare_name(obj.full_name) == bare
+                ]
+
+                if matches:
+                    keep = matches[0]
+                    for extra in matches[1:]:
+                        extra.delete()
+                        merged += 1
+                    keep.full_name = display
+                    keep.title = row.get('position', '')
+                    keep.order = index
+                    keep.is_active = True
+                    keep.save()
+                else:
+                    BoardMember.objects.create(
+                        board_type=board_type, full_name=display,
+                        title=row.get('position', ''), order=index,
+                        is_active=True,
+                    )
+                synced += 1
+        return synced, merged
 
     def _sync_resources(self, rows) -> tuple[int, int]:
         created = updated = 0

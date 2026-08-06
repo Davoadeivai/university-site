@@ -151,6 +151,18 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# نام فایل‌های آپلودی به ASCII تبدیل می‌شود. روی سرور، پروسهٔ Passenger
+# locale ندارد و `os.open` نام فارسی را با UnicodeEncodeError رد می‌کرد،
+# یعنی هیچ عکسی از پنل ادمین آپلود نمی‌شد. توضیح کامل در core/storage.py
+STORAGES = {
+    'default': {
+        'BACKEND': 'core.storage.ASCIINameStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # -----------------------------------------------------------------------------
