@@ -17,7 +17,7 @@ import os
 import sys
 import traceback
 
-APP = '/home/cp29524/apps/university_site'
+APP = os.environ.get('DIAGNOSE_APP', '/home/cp29524/apps/university_site')
 REPO = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -168,12 +168,56 @@ def main() -> int:
                  'directory:curricula', 'directory:resources'):
         safe(name, lambda n=name: reverse(n))
 
-    head('۶) فایل‌های ثابت')
+    head('۶) بازکردن صفحه‌های ادمینِ مشکل‌دار')
+    log('  همان صفحه‌ها با کاربر ادمین باز می‌شوند تا اگر ۵۰۰ بدهند،')
+    log('  متن کامل خطا همین‌جا چاپ شود. فقط خواندن است — GET، نه ذخیره.')
+    log('')
+    try:
+        from django.contrib.auth import get_user_model
+        from django.test import Client
+
+        admin_user = get_user_model().objects.filter(
+            is_superuser=True, is_active=True).first()
+        if admin_user is None:
+            log('  !! هیچ کاربر superuser فعالی نیست — این بررسی رد شد.')
+        else:
+            # تست‌کلاینت با نام میزبان testserver کار می‌کند
+            if 'testserver' not in settings.ALLOWED_HOSTS:
+                settings.ALLOWED_HOSTS = list(settings.ALLOWED_HOSTS) + ['testserver']
+            client = Client()
+            client.force_login(admin_user)
+            log('  کاربر: %s' % admin_user.get_username())
+
+            from core.models import PresidencyOffice, SecurityOffice
+            targets = [
+                ('core_presidencyoffice', PresidencyOffice),
+                ('core_securityoffice', SecurityOffice),
+            ]
+            for route, model in targets:
+                obj = model.objects.first()
+                if obj is None:
+                    log('  %-24s (رکوردی وجود ندارد)' % route)
+                    continue
+                url = '/admin/core/%s/%d/change/' % (route.split('_')[1], obj.pk)
+                try:
+                    res = client.get(url)
+                    log('  %-46s → %s' % (url, res.status_code))
+                except Exception:                  # noqa: BLE001
+                    log('  %-46s → ۵۰۰' % url)
+                    log('  ── متن کامل خطا ' + '─' * 42)
+                    for line in traceback.format_exc().splitlines():
+                        log('  ' + line)
+                    log('  ' + '─' * 58)
+    except Exception:                              # noqa: BLE001
+        log('  !! خود این بررسی خطا داد:')
+        log(traceback.format_exc())
+
+    head('۷) فایل‌های ثابت')
     static = str(settings.STATIC_ROOT)
     safe('پوشه هست', lambda: os.path.isdir(static))
     safe('main.css', lambda: newest(static, ['css/main.css']))
 
-    head('۷) آخرین خطاها  ← مهم‌ترین بخش')
+    head('۸) آخرین خطاها  ← مهم‌ترین بخش')
     log_file = os.path.join(APP, 'logs', 'django.log')
     if not os.path.isfile(log_file):
         log('  فایل لاگ وجود ندارد: %s' % log_file)
