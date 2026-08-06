@@ -86,6 +86,20 @@ STATIC_ROOT = config('STATIC_ROOT', default=str(BASE_DIR / 'public' / 'static'))
 MEDIA_URL = '/media/'
 MEDIA_ROOT = config('MEDIA_ROOT', default=str(BASE_DIR / 'public' / 'media'))
 
+# STATIC_ROOT را collectstatic می‌سازد، ولی MEDIA_ROOT را هیچ‌کس
+# نمی‌ساخت: نه این فایل، نه deploy.py که پوشهٔ public را دست‌نخورده
+# رد می‌کند. نتیجه‌اش این بود که اولین آپلود عکس در پنل ادمین به
+# خطای ۵۰۰ می‌خورد، چون FileSystemStorage نمی‌توانست پوشهٔ مقصد را
+# زیر یک والدِ ناموجود بسازد.
+#
+# شکستش عمداً بی‌صداست: این کد در زمان import تنظیمات اجرا می‌شود و
+# یک استثنا اینجا یعنی کل سایت بالا نمی‌آید — که از خطای یک صفحه
+# بدتر است. اگر مجوز نبود، diagnose.py دلیلش را می‌گوید.
+try:
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+except OSError:
+    pass
+
 _static_dir = BASE_DIR / 'static'
 STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 

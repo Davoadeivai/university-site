@@ -187,6 +187,7 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # حذف تنها رکورد، کل صفحهٔ ریاست را خالی می‌کند
         return False
+
     fieldsets = (
         ('ریاست موسسه', {
             'fields': (
@@ -203,9 +204,6 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
             ),
         }),
     )
-
-    def has_add_permission(self, request):
-        return not PresidencyOffice.objects.exists()
 
     def changelist_view(self, request, extra_context=None):
         from django.shortcuts import redirect

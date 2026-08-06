@@ -2,14 +2,21 @@
 
 اجرا:  python manage.py test core
 """
+import base64
+import os
+import shutil
+import tempfile
 from datetime import timedelta
 
-from django.test import TestCase
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
 from academics.models import AcademicCalendar
 from core.academic_timeline import build_timeline
+from core.models import PresidencyOffice, SecurityOffice
 
 INSTITUTE = 'موسسه آموزش عالی علامه امینی'
 # نام موسسه هرگز نباید پسوند شهر بگیرد — نه شکل قدیمی، نه شکل تازه
@@ -844,3 +851,89 @@ class TrackingCodeTests(TestCase):
         app.save()
         app.refresh_from_db()
         self.assertEqual(app.tracking_code, original)
+
+
+class AdminImageUploadTests(TestCase):
+    """آپلود عکس در پنل ادمین — مسیری که تا حالا هیچ تستی نداشت.
+
+    این تست‌ها خطای ۵۰۰ سرور را بازتولید *نمی‌کنند*: با MEDIA_ROOT
+    ناموجود هم پاس می‌شوند، چون FileSystemStorage خودش پوشه‌های
+    میانی را می‌سازد. پس علت واقعی روی سرور نبودِ پوشه نیست، بلکه
+    نداشتن مجوز نوشتن در آن است — چیزی که فقط از logs/django.log
+    یا خروجی diagnose.py معلوم می‌شود.
+
+    ارزش این تست‌ها جای دیگری است: مسیر «فرم را با یک فایل تصویری
+    بفرست و مطمئن شو ذخیره شد» تا امروز اصلاً پوشش نداشت، و صفحهٔ
+    ویرایشی که رکوردش به فایل گم‌شده اشاره می‌کند هم همین‌طور.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls._media = os.path.join(
+            tempfile.mkdtemp(prefix='upload-test-'), 'never', 'created')
+        cls._override = override_settings(MEDIA_ROOT=cls._media)
+        cls._override.enable()
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls._override.disable()
+        shutil.rmtree(os.path.dirname(os.path.dirname(cls._media)),
+                      ignore_errors=True)
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser(
+            'uploader', 'u@example.com', 'pw-for-test-only')
+        self.client.force_login(self.staff)
+
+    def _png(self, name='photo.png'):
+        """کوچک‌ترین PNG معتبر — Pillow باید بتواند بازش کند."""
+        data = base64.b64decode(
+            b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8'
+            b'z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+        return SimpleUploadedFile(name, data, content_type='image/png')
+
+    def test_presidency_photo_upload_saves(self):
+        office = PresidencyOffice.objects.create(president_name='رئیس')
+        res = self.client.post(
+            reverse('admin:core_presidencyoffice_change', args=[office.pk]),
+            {
+                'president_name': 'دکتر حسن فارسیجانی',
+                'president_title': '', 'president_bio': '',
+                'president_education': '', 'president_resume': '',
+                'president_email': '', 'president_phone': '',
+                'president_message': '', 'office_manager_name': '',
+                'office_duties': '', 'office_address': '',
+                'office_phone': '', 'office_fax': '', 'office_email': '',
+                'office_hours': '',
+                'president_photo': self._png(),
+            },
+            follow=True,
+        )
+        self.assertEqual(res.status_code, 200)
+        office.refresh_from_db()
+        self.assertTrue(office.president_photo, 'عکس ذخیره نشد')
+
+    def test_security_office_photo_upload_saves(self):
+        office = SecurityOffice.objects.create(manager_name='مسئول')
+        form = {f: '' for f in (
+            'manager_name', 'manager_title', 'description', 'duties',
+            'phone', 'emergency_phone', 'email', 'location', 'office_hours',
+        ) if hasattr(office, f)}
+        form['manager_name'] = 'عباس اسدی امیری'
+        if hasattr(office, 'manager_photo'):
+            form['manager_photo'] = self._png('sec.png')
+
+        res = self.client.post(
+            reverse('admin:core_securityoffice_change', args=[office.pk]),
+            form, follow=True)
+        self.assertEqual(res.status_code, 200)
+
+    def test_change_pages_with_an_image_field_open(self):
+        """صفحهٔ ویرایش نباید ۵۰۰ بدهد، حتی وقتی فایل عکس گم شده باشد."""
+        office = PresidencyOffice.objects.create(
+            president_name='رئیس', president_photo='presidency/gone.jpg')
+        res = self.client.get(
+            reverse('admin:core_presidencyoffice_change', args=[office.pk]))
+        self.assertEqual(res.status_code, 200)

@@ -136,6 +136,37 @@ def run(*args: str) -> bool:
     return True
 
 
+def check_media() -> None:
+    """پوشهٔ آپلود را می‌سازد و واقعاً در آن می‌نویسد.
+
+    `public/media` را هیچ‌کس نمی‌ساخت: این اسکریپت پوشهٔ public را
+    در KEEP دارد و دست نمی‌زند، و collectstatic فقط STATIC_ROOT را
+    می‌سازد. نتیجه‌اش خطای ۵۰۰ هنگام آپلود عکس در پنل ادمین بود، که
+    هیچ ربطی به آن صفحه نداشت.
+
+    os.access روی بعضی هاست‌ها دروغ می‌گوید، پس واقعاً یک فایل
+    نوشته و پاک می‌شود.
+    """
+    media = os.path.join(TARGET, 'public', 'media')
+    log('\nپوشهٔ آپلود: %s' % media)
+    try:
+        os.makedirs(media, exist_ok=True)
+    except OSError as exc:
+        log('!! ساخته نشد: %s' % exc)
+        log('   آپلود عکس در پنل ادمین خطای ۵۰۰ می‌دهد.')
+        return
+
+    probe = os.path.join(media, '.write-probe')
+    try:
+        with open(probe, 'w') as fh:
+            fh.write('ok')
+        os.remove(probe)
+        log('  نوشتن آزمایشی موفق بود.')
+    except OSError as exc:
+        log('!! نوشتن ممکن نیست: %s' % exc)
+        log('   در File Manager مجوز این پوشه را روی 755 بگذارید.')
+
+
 def main() -> int:
     log('=' * 60)
     log('مبدأ : %s' % SOURCE)
@@ -171,6 +202,8 @@ def main() -> int:
 
     if ok:
         ok = run('collectstatic', '--noinput')
+
+    check_media()
 
     # ری‌استارت: Passenger این فایل را می‌بیند و worker را تازه می‌کند
     tmp_dir = os.path.join(TARGET, 'tmp')
