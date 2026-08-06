@@ -4,8 +4,11 @@
 seed، درست شکستن نام فایل سرفصل‌ها، و اینکه صفحه‌های عمومی با
 دادهٔ خالی هم ۲۰۰ برگردانند.
 """
+import json
+import os
 import shutil
 import tempfile
+import zipfile
 from io import StringIO
 
 from django.core.files.base import ContentFile
@@ -243,6 +246,52 @@ class CurriculumDownloadTests(MediaIsolatedTestCase):
     def test_file_size_is_recorded_on_save(self):
         self.assertGreater(self.doc.file_size, 0)
         self.assertIn('کیلوبایت', self.doc.size_display)
+
+    def test_import_reads_straight_out_of_a_zip(self):
+        """مسیر ‎--zip‎ چیزی است که روی سرور اجرا می‌شود.
+
+        manifest از داخل آرشیو خوانده می‌شود و هر PDF جدا بیرون کشیده
+        می‌شود، پس نیازی به استخراج کامل و فضای دو برابر نیست.
+        """
+        archive = os.path.join(self._media, 'pack.zip')
+        manifest = [
+            {'file': 'master/001.pdf', 'title': 'حسابرسی',
+             'level': 'master', 'approved_on': '۱۳۹۵/۰۲/۰۵'},
+            {'file': 'other/001.pdf', 'title': 'الکترونیک عمومی',
+             'level': 'other', 'approved_on': ''},
+        ]
+        with zipfile.ZipFile(archive, 'w') as zf:
+            zf.writestr('manifest.json', json.dumps(manifest, ensure_ascii=False))
+            zf.writestr('master/001.pdf', b'%PDF-1.4 one')
+            zf.writestr('other/001.pdf', b'%PDF-1.4 two')
+
+        call_command('import_curricula', '--zip', archive, stdout=StringIO())
+
+        doc = CurriculumDocument.objects.get(title='حسابرسی')
+        self.assertEqual(doc.level, 'master')
+        self.assertEqual(doc.approved_on, '۱۳۹۵/۰۲/۰۵')
+        self.assertEqual(doc.file.read(), b'%PDF-1.4 one')
+        self.assertTrue(
+            CurriculumDocument.objects.filter(title='الکترونیک عمومی').exists())
+
+    def test_importing_the_same_zip_twice_updates_rather_than_duplicates(self):
+        archive = os.path.join(self._media, 'pack2.zip')
+        with zipfile.ZipFile(archive, 'w') as zf:
+            zf.writestr('manifest.json', json.dumps(
+                [{'file': 'master/001.pdf', 'title': 'مدیریت صنعتی',
+                  'level': 'master', 'approved_on': ''}], ensure_ascii=False))
+            zf.writestr('master/001.pdf', b'%PDF-1.4')
+
+        call_command('import_curricula', '--zip', archive, stdout=StringIO())
+        call_command('import_curricula', '--zip', archive, stdout=StringIO())
+        self.assertEqual(
+            CurriculumDocument.objects.filter(title='مدیریت صنعتی').count(), 1)
+
+    def test_a_missing_zip_reports_instead_of_crashing(self):
+        out, err = StringIO(), StringIO()
+        call_command('import_curricula', '--zip', '/nope/none.zip',
+                     stdout=out, stderr=err)
+        self.assertIn('پیدا نشد', err.getvalue())
 
     def test_level_filter_only_offers_levels_that_have_documents(self):
         """دکمهٔ فیلتری که به صفحهٔ خالی برسد نباید ساخته شود.

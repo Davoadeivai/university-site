@@ -21,9 +21,10 @@ from __future__ import annotations
 import json
 import re
 import shutil
+import zipfile
 from pathlib import Path
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
 from directory.models import CurriculumDocument
@@ -108,13 +109,19 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--source', required=True,
+            '--source', default='',
             help='مسیر پوشه‌ای که PDFها در آن هستند (زیرپوشه‌ها هم خوانده می‌شوند)',
         )
         parser.add_argument(
             '--manifest', default='',
             help='فایل JSON همراه بسته؛ عنوان و مقطع را از آن بخوان به‌جای '
                  'حدس زدن از نام فایل. برای وقتی که نام‌ها ASCII شده‌اند.',
+        )
+        parser.add_argument(
+            '--zip', dest='zip_path', default='',
+            help='خواندن مستقیم از یک فایل zip بدون استخراج کامل. هر PDF '
+                 'جدا بیرون کشیده و سر جایش گذاشته می‌شود، پس فضای اضافی '
+                 'لازم نیست. manifest.json اگر داخل zip باشد خودکار خوانده می‌شود.',
         )
         parser.add_argument(
             '--dry-run', action='store_true',
@@ -126,43 +133,106 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        source = Path(options['source'])
-        if not source.is_dir():
-            self.stderr.write('پوشهٔ مبدأ پیدا نشد: %s' % source)
+        zip_path = options['zip_path']
+        if zip_path:
+            archive = Path(zip_path)
+            if not archive.is_file():
+                self.stderr.write('فایل zip پیدا نشد: %s' % archive)
+                return
+            with zipfile.ZipFile(archive) as zf:
+                self._run(options, *self._from_zip(zf, options))
+            return
+
+        source = Path(options['source']) if options['source'] else None
+        if not source or not source.is_dir():
+            self.stderr.write(
+                'پوشهٔ مبدأ پیدا نشد: %s — یا --source بدهید یا --zip.' % source)
+            return
+        self._run(options, *self._from_folder(source, options))
+
+    # ── دو منبع، یک مسیر پردازش ───────────────────────────────────────
+    # هر کدام (manifest، فهرست کار) برمی‌گردانند. هر «کار» یک تاپل است:
+    # (کلید نسبی، نام فایل، تابعی که فایل را سر جایش می‌نویسد).
+
+    def _load_manifest(self, raw: str) -> dict:
+        entries = json.loads(raw)
+        return {e['file'].replace('\\', '/'): e for e in entries}
+
+    def _from_folder(self, source: Path, options):
+        manifest = {}
+        if options['manifest']:
+            manifest_path = Path(options['manifest'])
+            if not manifest_path.is_file():
+                raise CommandError('manifest پیدا نشد: %s' % manifest_path)
+            manifest = self._load_manifest(manifest_path.read_text(encoding='utf-8'))
+            self.stdout.write('manifest با %d رکورد خوانده شد.' % len(manifest))
+
+        jobs = []
+        for path in sorted(source.rglob('*.pdf')):
+            key = path.relative_to(source).as_posix()
+
+            def write(target, _p=path, _move=options['move']):
+                if _move:
+                    shutil.move(str(_p), str(target))
+                else:
+                    shutil.copy2(str(_p), str(target))
+
+            jobs.append((key, path.name, path.parent.name, path.stem, write))
+        return manifest, jobs
+
+    def _from_zip(self, zf: zipfile.ZipFile, options):
+        """خواندن مستقیم از آرشیو — هر PDF جدا بیرون کشیده می‌شود.
+
+        دلیلش فضای دیسک است: استخراج کامل ۳۰۰ مگابایت یعنی یک لحظه
+        دو نسخه از همان فایل‌ها روی هاست اشتراکی. اینجا فقط یک فایل
+        در هر لحظه در حافظه است.
+        """
+        manifest = {}
+        names = zf.namelist()
+
+        # manifest داخل آرشیو مقدم است؛ اگر نبود، از --manifest
+        inner = next((n for n in names if n.endswith('manifest.json')), '')
+        if inner:
+            manifest = self._load_manifest(zf.read(inner).decode('utf-8'))
+            self.stdout.write(
+                'manifest از داخل zip خوانده شد (%d رکورد).' % len(manifest))
+        elif options['manifest']:
+            manifest_path = Path(options['manifest'])
+            if not manifest_path.is_file():
+                raise CommandError('manifest پیدا نشد: %s' % manifest_path)
+            manifest = self._load_manifest(manifest_path.read_text(encoding='utf-8'))
+
+        jobs = []
+        for name in sorted(n for n in names if n.lower().endswith('.pdf')):
+            posix = name.replace('\\', '/')
+            base = posix.rsplit('/', 1)[-1]
+            folder = posix.rsplit('/', 2)[-2] if '/' in posix else ''
+
+            def write(target, _n=name):
+                with zf.open(_n) as src, open(target, 'wb') as dst:
+                    shutil.copyfileobj(src, dst, length=1024 * 1024)
+
+            jobs.append((posix, base, folder, base[:-4], write))
+        return manifest, jobs
+
+    def _run(self, options, manifest: dict, jobs: list):
+        if not jobs:
+            self.stderr.write('هیچ فایل PDF پیدا نشد.')
             return
 
         dry = options['dry_run']
         dest_root = Path(settings.MEDIA_ROOT) / 'curricula'
         created = updated = skipped = 0
 
-        # manifest اختیاری: نام فایل روی دیسک ASCII است و عنوان فارسی
-        # و مقطع از این نگاشت می‌آید. این کار حدس زدن از روی نام را
-        # کنار می‌گذارد و به رفتار unzip سرور با نام‌های فارسی وابسته نیست.
-        manifest: dict[str, dict] = {}
-        if options['manifest']:
-            manifest_path = Path(options['manifest'])
-            if not manifest_path.is_file():
-                self.stderr.write('manifest پیدا نشد: %s' % manifest_path)
-                return
-            entries = json.loads(manifest_path.read_text(encoding='utf-8'))
-            manifest = {e['file'].replace('\\', '/'): e for e in entries}
-            self.stdout.write('manifest با %d رکورد خوانده شد.' % len(manifest))
-
-        pdfs = sorted(source.rglob('*.pdf'))
-        if not pdfs:
-            self.stderr.write('هیچ فایل PDF در %s پیدا نشد.' % source)
-            return
-
-        self.stdout.write('%d فایل PDF پیدا شد.\n' % len(pdfs))
+        self.stdout.write('%d فایل PDF پیدا شد.\n' % len(jobs))
 
         # دو فایل با یک کلید یعنی یکی روی دیگری نوشته می‌شود؛ باید
         # دیده شود، نه اینکه بی‌صدا یک سند گم شود.
         seen_keys: dict[tuple, str] = {}
         collisions: list[str] = []
 
-        for index, path in enumerate(pdfs, start=1):
-            key = path.relative_to(source).as_posix()
-            entry = manifest.get(key)
+        for index, (rel_key, filename, folder, stem, write) in enumerate(jobs, start=1):
+            entry = manifest.get(rel_key)
             if entry:
                 title = entry['title']
                 level = entry.get('level', 'other')
@@ -170,9 +240,9 @@ class Command(BaseCommand):
             else:
                 if manifest:
                     self.stdout.write(self.style.WARNING(
-                        '  ! در manifest نبود، از نام فایل حدس زده شد: %s' % key))
-                title, approved = parse_name(path.stem)
-                level = guess_level(path.parent.name, path.stem)
+                        '  ! در manifest نبود، از نام فایل حدس زده شد: %s' % rel_key))
+                title, approved = parse_name(stem)
+                level = guess_level(folder, stem)
 
             if not title:
                 skipped += 1
@@ -180,19 +250,16 @@ class Command(BaseCommand):
 
             key = (level, title, approved)
             if key in seen_keys:
-                collisions.append('%s  ↔  %s' % (seen_keys[key], path.name))
-            seen_keys[key] = path.name
+                collisions.append('%s  ↔  %s' % (seen_keys[key], filename))
+            seen_keys[key] = filename
 
-            rel = 'curricula/%s/%s' % (level, path.name)
+            rel = 'curricula/%s/%s' % (level, filename)
             if not dry:
-                target = dest_root / level / path.name
+                target = dest_root / level / filename
                 target.parent.mkdir(parents=True, exist_ok=True)
-                if options['move']:
-                    shutil.move(str(path), str(target))
-                else:
-                    shutil.copy2(str(path), str(target))
+                write(target)
 
-                obj, was_created = CurriculumDocument.objects.update_or_create(
+                _, was_created = CurriculumDocument.objects.update_or_create(
                     level=level,
                     title=title,
                     approved_on=approved,
