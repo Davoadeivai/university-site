@@ -16,7 +16,9 @@ from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from core.models import BoardMember
+from core.models import (
+    BoardMember, PresidencyOffice, SecurityOffice, VicePresidency,
+)
 from directory.management.commands.import_curricula import (
     guess_level, parse_name,
 )
@@ -100,6 +102,45 @@ class SeedDirectoryTests(MediaIsolatedTestCase):
         first = BoardMember.objects.count()
         call_command('seed_directory', stdout=StringIO())
         self.assertEqual(BoardMember.objects.count(), first)
+
+    def test_the_president_gets_a_name_and_a_photo(self):
+        """صفحهٔ /ریاست/ از PresidencyOffice می‌خواند، نه از این اپ.
+
+        بدون همگام‌سازی، عکس رئیس در سند بود ولی صفحهٔ ریاست همچنان
+        عکس قدیمی را نشان می‌داد.
+        """
+        PresidencyOffice.objects.create(
+            president_name='[نام را از پنل ادمین وارد کنید]')
+        call_command('seed_directory', stdout=StringIO())
+        office = PresidencyOffice.objects.first()
+        self.assertIn('فارسیجانی', office.president_name)
+        self.assertTrue(office.president_photo, 'عکس رئیس ضمیمه نشد')
+
+    def test_all_five_vice_presidencies_are_created(self):
+        call_command('seed_directory', stdout=StringIO())
+        for vice_type in ('education', 'student', 'admin_finance',
+                          'research', 'construction'):
+            with self.subTest(vice=vice_type):
+                vice = VicePresidency.objects.filter(vice_type=vice_type).first()
+                self.assertIsNotNone(vice, 'معاونت %s ساخته نشد' % vice_type)
+                self.assertTrue(vice.full_name)
+                self.assertTrue(vice.photo, 'عکس معاون ضمیمه نشد')
+
+    def test_a_name_someone_typed_is_reported_not_overwritten(self):
+        """اگر نام ثبت‌شده با سند فرق کند، تصمیم با آدم است نه اسکریپت."""
+        VicePresidency.objects.create(
+            vice_type='education', full_name='دکتر کس دیگری', is_active=True)
+        out = StringIO()
+        call_command('seed_directory', stdout=out)
+
+        vice = VicePresidency.objects.get(vice_type='education')
+        self.assertEqual(vice.full_name, 'دکتر کس دیگری', 'نام بازنویسی شد')
+        self.assertIn('نمی‌خواند', out.getvalue())
+
+    def test_the_security_office_photo_is_attached(self):
+        SecurityOffice.objects.create(manager_name='عباس اسدی امیری')
+        call_command('seed_directory', stdout=StringIO())
+        self.assertTrue(SecurityOffice.objects.first().manager_photo)
 
     def test_seed_loads_external_resources(self):
         call_command('seed_directory', stdout=StringIO())

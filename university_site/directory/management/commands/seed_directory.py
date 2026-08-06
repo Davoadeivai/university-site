@@ -18,7 +18,9 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from core.models import BoardMember
+from core.models import (
+    BoardMember, PresidencyOffice, SecurityOffice, VicePresidency,
+)
 from directory.models import DirectoryPerson, ExternalResource
 
 SEED_DIR = Path(__file__).resolve().parents[2] / 'seed_data'
@@ -35,6 +37,30 @@ BOARD_TYPE_MAP = {'founder': 'founder', 'trustee': 'trustee'}
 # عنوان‌هایی که ممکن است جلوی نام آمده باشند و نباید بخشی از کلید
 # تطبیق باشند — وگرنه «دکتر احمدی» و «احمدی» دو نفر شمرده می‌شوند.
 HONORIFICS = ('حجت‌الاسلام', 'حجت الاسلام', 'دکتر', 'مهندس', 'استاد', 'آقای', 'خانم')
+
+
+# سمت کارمند در سند → نوع معاونت در core.VicePresidency.
+# صفحهٔ «ریاست» و «معاونت‌ها» از آن مدل می‌خوانند، نه از این اپ، پس
+# بدون این نگاشت عکس و نام معاونان هیچ‌وقت روی سایت دیده نمی‌شود.
+VICE_BY_POSITION = {
+    'معاون آموزشی و تحصیلات تکمیلی': 'education',
+    'معاون دانشجویی و فرهنگی': 'student',
+    'معاون اداری و مالی': 'admin_finance',
+    'معاون پژوهش و فناوری': 'research',
+    'معاون فنی و عمرانی': 'construction',
+}
+
+PRESIDENT_POSITION = 'رئیس موسسه'
+SECURITY_POSITION = 'مسئول حراست'
+
+
+def _is_placeholder(value: str) -> bool:
+    """متن راهنمای جای‌خالی مثل «[نام را از پنل ادمین وارد کنید]».
+
+    این‌ها را می‌شود بازنویسی کرد؛ متنی که آدم واقعاً نوشته نه.
+    """
+    text = (value or '').strip()
+    return not text or (text.startswith('[') and text.endswith(']'))
 
 
 def _bare_name(name: str) -> str:
@@ -115,6 +141,8 @@ class Command(BaseCommand):
                     self.stdout.write('  %s: %d ردیف قدیمی غیرفعال شد' % (category, count))
 
         board_synced, board_merged = self._sync_board_members(data)
+        lead_changed, conflicts = self._sync_leadership(
+            data, refresh=options['refresh_photos'])
         res_created, res_updated = self._sync_resources(data.get('resources', []))
 
         self.stdout.write(self.style.SUCCESS(
@@ -127,12 +155,28 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 '  %d ردیف تکراری هیات ادغام و حذف شد.' % board_merged))
         self.stdout.write(self.style.SUCCESS(
+            'ریاست و معاونت‌ها: %d مورد پر شد.' % lead_changed))
+        self.stdout.write(self.style.SUCCESS(
             'منابع بیرونی: %d ساخته، %d به‌روز شد.' % (res_created, res_updated)))
 
-    def _attach_photo(self, person, filename, refresh: bool = False) -> int:
+        if conflicts:
+            self.stdout.write(self.style.WARNING(
+                '\n%d مورد با سند نمی‌خواند — دست نخورد، خودتان تصمیم بگیرید:'
+                % len(conflicts)))
+            for line in conflicts:
+                self.stdout.write('  - %s' % line)
+            self.stdout.write(
+                'اگر سند درست است، نام را در پنل ادمین اصلاح کنید.')
+
+    def _attach_photo(self, person, filename, refresh: bool = False,
+                      field: str = 'photo') -> int:
         """تصویر سند را ضمیمه می‌کند.
 
-        به‌صورت پیش‌فرض فقط وقتی که فرد تصویری ندارد. دو دلیل: (۱) اگر
+        `field` وجود دارد چون این تابع روی چهار مدل با نام فیلد متفاوت
+        کار می‌کند: `DirectoryPerson.photo`، `VicePresidency.photo`،
+        `PresidencyOffice.president_photo` و `SecurityOffice.manager_photo`.
+
+        به‌صورت پیش‌فرض فقط وقتی که تصویری وجود ندارد. دو دلیل: (۱) اگر
         ادمین عکس بهتری آپلود کرده، اجرای دوبارهٔ seed نباید رویش
         بنویسد؛ (۲) FileField در هر ذخیره نام تکراری را با پسوند عددی
         ذخیره می‌کند، پس بدون این شرط هر اجرا یک کپی تازه می‌ساخت.
@@ -142,28 +186,109 @@ class Command(BaseCommand):
         """
         if not filename:
             return 0
-        if person.photo and not refresh:
+        current = getattr(person, field, None)
+        if current and not refresh:
             return 0
         source = PHOTO_DIR / filename
         if not source.exists():
             return 0
-        if person.photo:
+        if current:
             # بدون حذف، فایل قدیمی یتیم روی دیسک می‌ماند و سهمیهٔ
             # هاست را بی‌دلیل پر می‌کند. ولی نشدنِ حذف نباید کل کار را
             # بخواباند: یک فایل قفل‌شده فقط چند کیلوبایت هدر است،
             # درحالی‌که استثنا اینجا بارگذاری بقیهٔ افراد را قطع می‌کند.
             try:
-                person.photo.close()
+                current.close()
             except (OSError, ValueError):
                 pass
             try:
-                person.photo.delete(save=False)
+                current.delete(save=False)
             except OSError as exc:
                 self.stderr.write(
                     '  عکس قبلی %s پاک نشد (%s) — نسخهٔ تازه جایگزین می‌شود.'
-                    % (person.full_name, exc.__class__.__name__))
-        person.photo.save(filename, ContentFile(source.read_bytes()), save=True)
+                    % (person, exc.__class__.__name__))
+        getattr(person, field).save(
+            filename, ContentFile(source.read_bytes()), save=True)
         return 1
+
+    # ── ریاست و معاونت‌ها ────────────────────────────────────────────
+    def _sync_leadership(self, data, refresh: bool) -> tuple[int, list]:
+        """نام و عکس رئیس، معاونان و مسئول حراست را سر جایشان می‌گذارد.
+
+        صفحه‌های «ریاست»، «معاونت‌ها» و «حراست» از `PresidencyOffice`،
+        `VicePresidency` و `SecurityOffice` می‌خوانند — نه از این اپ.
+        بدون این بخش، عکس رئیس موسسه در سند بود ولی صفحهٔ ریاست
+        همچنان عکس قدیمی را نشان می‌داد.
+
+        متنی که کسی واقعاً نوشته بازنویسی نمی‌شود. اگر نام ثبت‌شده با
+        سند فرق داشت، تغییرش نمی‌دهیم ولی در خروجی گزارش می‌شود تا
+        تصمیمش با آدم باشد، نه با اسکریپت.
+        """
+        staff = {}
+        for row in data.get('staff', []):
+            position = (row.get('position') or '').strip()
+            if position:
+                staff[position] = row
+
+        changed = 0
+        conflicts: list[str] = []
+
+        # ── رئیس موسسه ──
+        row = staff.get(PRESIDENT_POSITION)
+        if row:
+            office = PresidencyOffice.objects.first() or PresidencyOffice()
+            name = self._person_name(row)
+            if _is_placeholder(office.president_name):
+                office.president_name = name
+                changed += 1
+            elif _bare_name(office.president_name) != _bare_name(name):
+                conflicts.append(
+                    'رئیس موسسه: در سایت «%s» ولی در سند «%s»'
+                    % (office.president_name, name))
+            if not office.president_phone and row.get('extension'):
+                office.president_phone = 'داخلی %s' % row['extension']
+            office.save()
+            changed += self._attach_photo(
+                office, row.get('photo'), refresh=refresh, field='president_photo')
+
+        # ── معاونان ──
+        for position, vice_type in VICE_BY_POSITION.items():
+            row = staff.get(position)
+            if not row:
+                continue
+            vice, _created = VicePresidency.objects.get_or_create(
+                vice_type=vice_type, defaults={'is_active': True})
+            name = self._person_name(row)
+            if _is_placeholder(vice.full_name):
+                vice.full_name = name
+                changed += 1
+            elif _bare_name(vice.full_name) != _bare_name(name):
+                conflicts.append(
+                    '%s: در سایت «%s» ولی در سند «%s»'
+                    % (position, vice.full_name, name))
+            if not vice.phone and row.get('extension'):
+                vice.phone = 'داخلی %s' % row['extension']
+            vice.save()
+            changed += self._attach_photo(
+                vice, row.get('photo'), refresh=refresh, field='photo')
+
+        # ── حراست ──
+        row = staff.get(SECURITY_POSITION)
+        if row:
+            security = SecurityOffice.objects.first()
+            if security is not None:
+                changed += self._attach_photo(
+                    security, row.get('photo'), refresh=refresh,
+                    field='manager_photo')
+
+        return changed, conflicts
+
+    @staticmethod
+    def _person_name(row) -> str:
+        bare = row.get('full_name') or (
+            '%s %s' % (row.get('first_name', ''), row.get('last_name', ''))
+        ).strip()
+        return ('%s %s' % (row.get('honorific', ''), bare)).strip()
 
     def _sync_board_members(self, data) -> tuple[int, int]:
         """`core.BoardMember` را هم پر می‌کند.
