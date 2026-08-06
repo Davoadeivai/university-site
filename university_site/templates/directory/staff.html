@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}دفترچه تلفن و مسئولان | موسسه آموزش عالی علامه امینی{% endblock %}
+{% block meta_description %}شماره‌های داخلی و سمت مسئولان و کارکنان موسسه آموزش عالی علامه امینی{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">دفترچه تلفن</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">دفترچه تلفن و مسئولان</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <div class="row mb-4">
+            <div class="col-lg-7 mx-auto">
+                <form method="get" role="search" class="d-flex gap-2">
+                    <label for="dir-q" class="visually-hidden">جست‌وجو</label>
+                    <input type="search" id="dir-q" name="q" value="{{ query }}"
+                           class="form-control" autocomplete="off"
+                           placeholder="نام، سمت یا شماره داخلی…">
+                    <button class="btn btn-primary px-4" type="submit">
+                        <i class="fas fa-search"></i>
+                        <span class="visually-hidden">جست‌وجو</span>
+                    </button>
+                </form>
+                <p class="text-muted small mt-2 mb-0 text-center">
+                    {% if query %}
+                        {{ people|length }} نتیجه از {{ total }} نفر
+                        — <a href="{% url 'directory:staff' %}">نمایش همه</a>
+                    {% else %}
+                        شماره‌گیری از بیرون: پیش‌شماره موسسه، سپس شماره داخلی
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        {% if people %}
+        <div class="table-responsive uni-card p-0">
+            <table class="table table-hover align-middle mb-0 dir-table">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:52px;">#</th>
+                        <th scope="col">نام و نام خانوادگی</th>
+                        <th scope="col">سمت</th>
+                        <th scope="col" style="width:130px;">شماره تماس</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for person in people %}
+                    <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td class="fw-semibold">{{ person.display_name }}</td>
+                        <td>{{ person.position|default:'—' }}</td>
+                        <td>
+                            {% if person.phone %}
+                                <a href="tel:{{ person.phone }}" class="text-decoration-none">{{ person.phone }}</a>
+                            {% elif person.extension %}
+                                <span class="badge dir-ext">داخلی {{ person.extension }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-address-book text-muted mb-3" style="font-size:2.5rem;"></i>
+            <p class="text-muted mb-0">
+                {% if query %}نتیجه‌ای برای «{{ query }}» پیدا نشد.{% else %}هنوز اطلاعاتی ثبت نشده است.{% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<style>
+.dir-table th {
+    background: var(--bg-light, #f3f7fc);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark, #152534);
+    white-space: nowrap;
+}
+.dir-table td { font-size: 14.5px; }
+.dir-ext {
+    background: var(--bg-light, #f3f7fc);
+    color: var(--primary, #10365a);
+    border: 1px solid var(--border, #dbe4ef);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+/* روی موبایل ستون سمت طولانی‌ترین است؛ اجازه بده بشکند تا جدول
+   افقی اسکرول نکند مگر واقعاً لازم باشد. */
+@media (max-width: 575.98px) {
+    .dir-table td, .dir-table th { padding-inline: .5rem; font-size: 13.5px; }
+    .dir-table td:nth-child(3) { min-width: 150px; white-space: normal; }
+}
+</style>
+{% endblock %}

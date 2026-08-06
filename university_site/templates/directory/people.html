@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}اعضای موسسه | موسسه آموزش عالی علامه امینی{% endblock %}
+{% block meta_description %}هیات موسس، هیات امنا، اعضای هیات علمی، مدیران گروه آموزشی و مدرسین موسسه آموزش عالی علامه امینی{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:about' %}">درباره موسسه</a></li>
+                <li class="breadcrumb-item active">اعضای موسسه</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">اعضای موسسه</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        {% if groups %}
+        <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+            {% for group in groups %}
+            <a href="#{{ group.key }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="fas {{ group.icon }} ms-1"></i>
+                {{ group.label }}
+                <span class="badge bg-primary ms-1">{{ group.members|length }}</span>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% for group in groups %}
+        <div class="mb-5" id="{{ group.key }}">
+            <h2 class="section-title d-flex align-items-center gap-2 mb-4">
+                <i class="fas {{ group.icon }} text-primary"></i>
+                {{ group.label }}
+            </h2>
+
+            <div class="row g-3">
+                {% for person in group.members %}
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="uni-card p-3 h-100 d-flex gap-3 align-items-start person-card">
+                        {% if person.photo %}
+                        <img src="{{ person.photo.url }}" alt="{{ person.display_name }}"
+                             class="person-avatar" loading="lazy" width="56" height="56">
+                        {% else %}
+                        <span class="person-avatar person-avatar--empty" aria-hidden="true">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        {% endif %}
+                        <div class="min-w-0">
+                            <div class="fw-semibold">{{ person.display_name }}</div>
+                            {% if person.position %}
+                            <div class="text-muted small mt-1">{{ person.position }}</div>
+                            {% endif %}
+                            {% if person.field_of_study %}
+                            <div class="small mt-1 person-field">
+                                <i class="fas fa-graduation-cap ms-1"></i>{{ person.field_of_study }}
+                            </div>
+                            {% endif %}
+                            {% if person.degree %}
+                            <span class="badge person-degree mt-2">{{ person.get_degree_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users text-muted mb-3" style="font-size:2.5rem;"></i>
+            <p class="text-muted mb-0">هنوز اطلاعاتی ثبت نشده است.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<style>
+.person-avatar {
+    width: 56px; height: 56px; flex-shrink: 0;
+    border-radius: 14px; object-fit: cover;
+    border: 1px solid var(--border, #dbe4ef);
+}
+.person-avatar--empty {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--bg-light, #f3f7fc);
+    color: var(--text-muted, #5b6e82);
+    font-size: 20px;
+}
+.person-field { color: var(--primary-light, #2b6ca8); }
+.person-degree {
+    background: var(--bg-light, #f3f7fc);
+    color: var(--text-dark, #152534);
+    border: 1px solid var(--border, #dbe4ef);
+    font-weight: 600;
+}
+/* بدون این، نام‌های بلند از کارت بیرون می‌زنند چون فلکس‌آیتم
+   به‌صورت پیش‌فرض کوچک‌تر از محتوایش نمی‌شود. */
+.person-card .min-w-0 { min-width: 0; }
+.person-card .min-w-0 > * { overflow-wrap: anywhere; }
+</style>
+{% endblock %}

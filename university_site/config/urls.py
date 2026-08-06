@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include('contact.urls', namespace='contact')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('', include('directory.urls', namespace='directory')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

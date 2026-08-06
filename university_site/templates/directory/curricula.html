@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}سرفصل مصوب رشته‌ها | موسسه آموزش عالی علامه امینی{% endblock %}
+{% block meta_description %}دریافت سرفصل مصوب دروس رشته‌های کاردانی، کارشناسی و کارشناسی ارشد موسسه آموزش عالی علامه امینی{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active">سرفصل مصوب رشته‌ها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">سرفصل مصوب رشته‌ها</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <div class="row mb-4">
+            <div class="col-lg-7 mx-auto">
+                <form method="get" role="search" class="d-flex gap-2">
+                    <label for="cur-q" class="visually-hidden">جست‌وجوی رشته</label>
+                    <input type="search" id="cur-q" name="q" value="{{ query }}"
+                           class="form-control" autocomplete="off"
+                           placeholder="نام رشته…">
+                    {% if active_level %}<input type="hidden" name="level" value="{{ active_level }}">{% endif %}
+                    <button class="btn btn-primary px-4" type="submit">
+                        <i class="fas fa-search"></i>
+                        <span class="visually-hidden">جست‌وجو</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+            <a href="{% url 'directory:curricula' %}{% if query %}?q={{ query }}{% endif %}"
+               class="btn btn-sm rounded-pill px-3 {% if not active_level %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                همه <span class="badge bg-light text-dark ms-1">{{ total }}</span>
+            </a>
+            {% for opt in level_options %}
+            <a href="?level={{ opt.key }}{% if query %}&q={{ query }}{% endif %}"
+               class="btn btn-sm rounded-pill px-3 {% if active_level == opt.key %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ opt.label }} <span class="badge bg-light text-dark ms-1">{{ opt.count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if grouped %}
+            {% for group in grouped %}
+            <div class="mb-5">
+                <h2 class="section-title d-flex align-items-center gap-2 mb-3">
+                    <i class="fas fa-layer-group text-primary"></i>
+                    {{ group.label }}
+                    <span class="badge bg-primary rounded-pill">{{ group.items|length }}</span>
+                </h2>
+
+                <div class="row g-3">
+                    {% for doc in group.items %}
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <a href="{% url 'directory:curriculum_download' doc.pk %}"
+                           class="uni-card p-3 h-100 d-flex gap-3 align-items-center text-decoration-none cur-card">
+                            <span class="cur-icon" aria-hidden="true"><i class="fas fa-file-pdf"></i></span>
+                            <span class="min-w-0 flex-grow-1">
+                                <span class="d-block fw-semibold cur-title">{{ doc.title }}</span>
+                                <span class="d-block text-muted small mt-1">
+                                    {% if doc.approved_on %}مصوب {{ doc.approved_on }}{% endif %}
+                                    {% if doc.approved_on and doc.size_display %} · {% endif %}
+                                    {{ doc.size_display }}
+                                </span>
+                            </span>
+                            <i class="fas fa-download cur-dl" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-file-pdf text-muted mb-3" style="font-size:2.5rem;"></i>
+            <p class="text-muted mb-0">
+                {% if query %}سرفصلی برای «{{ query }}» پیدا نشد.{% else %}هنوز سرفصلی بارگذاری نشده است.{% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<style>
+.cur-card { color: inherit; transition: transform .15s ease, box-shadow .15s ease; }
+.cur-card:hover { transform: translateY(-2px); }
+.cur-card:hover .cur-title { color: var(--primary, #10365a); }
+.cur-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px;
+    background: rgba(217, 45, 32, .08); color: #d92d20; font-size: 19px;
+}
+.cur-title { line-height: 1.6; overflow-wrap: anywhere; }
+.cur-dl { color: var(--text-muted, #5b6e82); flex-shrink: 0; }
+.cur-card .min-w-0 { min-width: 0; }
+</style>
+{% endblock %}

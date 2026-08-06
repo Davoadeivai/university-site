@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}منابع و پایگاه‌های پژوهشی | موسسه آموزش عالی علامه امینی{% endblock %}
+{% block meta_description %}دسترسی به پایگاه‌های اطلاعاتی، نشریات علمی و پایان‌نامه‌های دانشگاه‌های همکار{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'library:library' %}">کتابخانه</a></li>
+                <li class="breadcrumb-item active">منابع پژوهشی</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">منابع و پایگاه‌های پژوهشی</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <p class="text-muted mb-0" style="font-size:15px;line-height:2;">
+                    این پایگاه‌ها متعلق به دانشگاه‌های همکارند و در سایت خودشان باز می‌شوند.
+                    برای دسترسی کامل به بعضی منابع لاتین، ممکن است لازم باشد از شبکهٔ همان
+                    دانشگاه وارد شوید.
+                </p>
+            </div>
+        </div>
+
+        {% if groups %}
+            {% for group in groups %}
+            <div class="mb-5">
+                <h2 class="section-title mb-3">{{ group.label }}</h2>
+                <div class="row g-3">
+                    {% for item in group.items %}
+                    <div class="col-12 col-md-6">
+                        <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer"
+                           class="uni-card p-3 h-100 d-flex gap-3 align-items-center text-decoration-none res-card">
+                            <span class="res-icon" aria-hidden="true"><i class="{{ item.icon }}"></i></span>
+                            <span class="min-w-0 flex-grow-1">
+                                <span class="d-block fw-semibold res-title">{{ item.title }}</span>
+                                {% if item.description %}
+                                <span class="d-block text-muted small mt-1">{{ item.description }}</span>
+                                {% endif %}
+                            </span>
+                            <i class="fas fa-arrow-up-right-from-square res-ext" aria-hidden="true"></i>
+                            <span class="visually-hidden">(در پنجره جدید باز می‌شود)</span>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-database text-muted mb-3" style="font-size:2.5rem;"></i>
+            <p class="text-muted mb-0">هنوز منبعی ثبت نشده است.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<style>
+.res-card { color: inherit; transition: transform .15s ease; }
+.res-card:hover { transform: translateY(-2px); }
+.res-card:hover .res-title { color: var(--primary, #10365a); }
+.res-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px;
+    background: var(--bg-light, #f3f7fc);
+    color: var(--primary, #10365a); font-size: 18px;
+}
+.res-title { line-height: 1.6; overflow-wrap: anywhere; }
+.res-ext { color: var(--text-muted, #5b6e82); flex-shrink: 0; font-size: 13px; }
+.res-card .min-w-0 { min-width: 0; }
+</style>
+{% endblock %}

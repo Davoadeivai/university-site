@@ -168,6 +168,8 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_founders' %}">هیات موسس دانشگاه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امناء دانشگاه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:people' %}">اعضای موسسه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:staff' %}">دفترچه تلفن و مسئولان</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:city_behnammir' %}">آشنایی با شهر بابلسر</a></li>
                     </ul>
@@ -214,6 +216,8 @@
                         {% else %}
                         <li><span class="dropdown-item nav-dd-item" style="opacity:.6;">گروهی ثبت نشده</span></li>
                         {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'directory:curricula' %}">سرفصل مصوب رشته‌ها</a></li>
                     </ul>
                 </li>
 
@@ -308,6 +312,7 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'library:faculty_articles' %}">مقالات اعضای هیات علمی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'library:conference_articles' %}">بانک مقالات همایش ها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'research:journals' %}">نشریات علمی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:resources' %}">منابع و پایگاه‌های پژوهشی</a></li>
                     </ul>
                 </li>
 

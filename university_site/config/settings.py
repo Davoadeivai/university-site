@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'admissions.apps.AdmissionsConfig',
     'contact.apps.ContactConfig',
     'dashboard.apps.DashboardConfig',
+    'directory.apps.DirectoryConfig',
 ]
 
 MIDDLEWARE = [
@@ -236,6 +237,11 @@ JAZZMIN_SETTINGS = {
         'core.PaymentIdentifier': 'fas fa-barcode',
         'core.DownloadableDocument': 'fas fa-file-download',
         'admin.LogEntry': 'fas fa-history',
+
+        'directory': 'fas fa-address-book',
+        'directory.DirectoryPerson': 'fas fa-id-card',
+        'directory.CurriculumDocument': 'fas fa-file-pdf',
+        'directory.ExternalResource': 'fas fa-database',
 
         'admissions': 'fas fa-user-graduate',
         'admissions.AdmissionInfo': 'fas fa-info-circle',

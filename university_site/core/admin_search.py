@@ -400,17 +400,23 @@ def public_live_search(request):
             'link', 'pages', 'دسترسی سریع', limit=4,
             only={'is_active': True}, label=lambda l: l.title,
         )
+        # نام فیلدها باید با مدل بخواند. تا پیش از این `name`/`position`
+        # و `name`/`title` صدا زده می‌شد که در هیچ‌کدام از این دو مدل
+        # وجود ندارد؛ `collect` خطا را می‌بلعید و این دو دسته هیچ‌وقت
+        # در نتایج جست‌وجو دیده نمی‌شدند.
         collect(
-            BoardMember, ['name', 'position'],
-            lambda m: reverse('core:board'),
-            'person', 'pages', 'هیأت امنا', limit=4,
-            label=lambda m: m.name,
+            BoardMember, ['full_name', 'title'],
+            lambda m: reverse('core:board_trustees') if m.board_type == 'trustee'
+            else reverse('core:board_founders'),
+            'person', 'pages', 'هیأت موسس / امنا', limit=4,
+            only={'is_active': True},
+            label=lambda m: '%s — %s' % (m.full_name, m.title) if m.title else m.full_name,
         )
         collect(
-            DeputyVice, ['name', 'title'],
+            DeputyVice, ['full_name', 'academic_rank'],
             lambda d: reverse('core:deputies'),
             'person', 'pages', 'معاونت', limit=4,
-            label=lambda d: '%s — %s' % (d.name, d.title),
+            label=lambda d: '%s — %s' % (d.full_name, d.get_vice_type_display()),
         )
         collect(
             PressRelease, ['title'],
@@ -423,6 +429,38 @@ def public_live_search(request):
             lambda a: reverse('core:city_behnammir'),
             'page', 'pages', 'جاذبهٔ شهر', limit=3,
             label=lambda a: a.name,
+        )
+    except Exception:
+        pass
+
+    # ── بانک اطلاعات موسسه ────────────────────────────────────────────
+    # جست‌وجوی «۱۱۵» یا «مدیر پژوهشی» باید مستقیم به دفترچهٔ تلفن برسد،
+    # و جست‌وجوی نام یک رشته به سرفصل مصوبش.
+    try:
+        from directory.models import (
+            CurriculumDocument, DirectoryPerson, ExternalResource,
+        )
+        collect(
+            DirectoryPerson, ['full_name', 'position', 'field_of_study', 'extension'],
+            lambda p: reverse('directory:staff') if p.category == 'staff'
+            else reverse('directory:people'),
+            'person', 'pages', 'افراد موسسه', limit=6,
+            only={'is_active': True},
+            label=lambda p: '%s — %s' % (
+                p.display_name, p.position or p.field_of_study or p.get_category_display()),
+        )
+        collect(
+            CurriculumDocument, ['title', 'note'],
+            lambda d: reverse('directory:curriculum_download', args=[d.pk]),
+            'document', 'docs', 'سرفصل مصوب', limit=6,
+            only={'is_active': True},
+            label=lambda d: '%s (%s)' % (d.title, d.get_level_display()),
+        )
+        collect(
+            ExternalResource, ['title', 'description'],
+            lambda r: reverse('directory:resources'),
+            'link', 'pages', 'پایگاه پژوهشی', limit=3,
+            only={'is_active': True}, label=lambda r: r.title,
         )
     except Exception:
         pass

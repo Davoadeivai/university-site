@@ -1,0 +1,650 @@
+{
+  "_source": "اسناد رسمی موسسه: دفترچه داخلی (xls)، «اعضای هیات امنا و موسس و هیات علمی ۱۴۰۴»، «اسامی مدرسین». حروف عربی ي/ك به ی/ک فارسی نرمال شده‌اند.",
+  "staff": [
+    {
+      "honorific": "دکتر",
+      "first_name": "حسن",
+      "last_name": "فارسیجانی",
+      "position": "رئیس موسسه",
+      "extension": "115"
+    },
+    {
+      "honorific": "دکتر",
+      "first_name": "محمدعلی",
+      "last_name": "جعفری",
+      "position": "معاون آموزشی و تحصیلات تکمیلی",
+      "extension": "120"
+    },
+    {
+      "honorific": "دکتر",
+      "first_name": "شیرزاد",
+      "last_name": "کوپایی حاجی",
+      "position": "معاون دانشجویی و فرهنگی",
+      "extension": "110"
+    },
+    {
+      "honorific": "دکتر",
+      "first_name": "علی اکبر",
+      "last_name": "جعفری",
+      "position": "معاون اداری و مالی",
+      "extension": "108"
+    },
+    {
+      "honorific": "مهندس",
+      "first_name": "حسن",
+      "last_name": "عمرانی",
+      "position": "معاون پژوهش و فناوری",
+      "extension": "111"
+    },
+    {
+      "honorific": "دکتر",
+      "first_name": "سیدمحمد",
+      "last_name": "سیدحسینی",
+      "position": "معاون فنی و عمرانی",
+      "extension": ""
+    },
+    {
+      "honorific": "",
+      "first_name": "آرمان",
+      "last_name": "امیدوار",
+      "position": "مدیر امور مالی و خزانه‌داری",
+      "extension": "108"
+    },
+    {
+      "honorific": "",
+      "first_name": "مریم",
+      "last_name": "اسدی",
+      "position": "مدیر حقوقی",
+      "extension": ""
+    },
+    {
+      "honorific": "",
+      "first_name": "ماریا",
+      "last_name": "چاری",
+      "position": "دفتر ریاست و روابط عمومی",
+      "extension": "102"
+    },
+    {
+      "honorific": "دکتر",
+      "first_name": "حمزه",
+      "last_name": "کرمی نقیبی",
+      "position": "مدیر اداری و پشتیبانی",
+      "extension": "114"
+    },
+    {
+      "honorific": "",
+      "first_name": "سید مجتبی",
+      "last_name": "اسماعیل نژاد",
+      "position": "مدیر آموزش",
+      "extension": "116"
+    },
+    {
+      "honorific": "",
+      "first_name": "فاطمه",
+      "last_name": "نمازی",
+      "position": "مدیر پژوهشی",
+      "extension": "109"
+    },
+    {
+      "honorific": "",
+      "first_name": "علیرضا",
+      "last_name": "فرهاد پور",
+      "position": "مدیر دانشجویی",
+      "extension": "105"
+    },
+    {
+      "honorific": "",
+      "first_name": "جواد",
+      "last_name": "قلی تبار بهنمیری",
+      "position": "مدیر فناوری — کارشناس آموزشی",
+      "extension": "113"
+    },
+    {
+      "honorific": "",
+      "first_name": "فاطمه",
+      "last_name": "جعفری",
+      "position": "مدیر دفتر نظارت و ارزیابی، امور فارغ‌التحصیلان",
+      "extension": "117"
+    },
+    {
+      "honorific": "",
+      "first_name": "احسان",
+      "last_name": "غلامی بهنمیری",
+      "position": "رئیس حسابداری",
+      "extension": "108"
+    },
+    {
+      "honorific": "",
+      "first_name": "زهرا",
+      "last_name": "اسدی",
+      "position": "حسابدار",
+      "extension": "108"
+    },
+    {
+      "honorific": "",
+      "first_name": "عباس",
+      "last_name": "اسدی امیری",
+      "position": "مسئول حراست",
+      "extension": "106"
+    },
+    {
+      "honorific": "",
+      "first_name": "حمید",
+      "last_name": "اسمعیلیان",
+      "position": "کارشناس آموزشی",
+      "extension": "103"
+    },
+    {
+      "honorific": "",
+      "first_name": "علی",
+      "last_name": "یونس پور",
+      "position": "کارشناس آموزش — کارگزینی و دبیرخانه",
+      "extension": "101"
+    },
+    {
+      "honorific": "",
+      "first_name": "هادی",
+      "last_name": "شهسوارمیستانی",
+      "position": "کارشناس امور اداری و پشتیبانی — کارپرداز — جمع‌دار اموال",
+      "extension": "118"
+    },
+    {
+      "honorific": "",
+      "first_name": "حسن",
+      "last_name": "غلامی بهنمیری",
+      "position": "اداره تغذیه و وام دانشجویی — اداره خوابگاه‌ها و نظام وظیفه",
+      "extension": "105"
+    },
+    {
+      "honorific": "",
+      "first_name": "خدیجه",
+      "last_name": "اسدی",
+      "position": "کتابخانه",
+      "extension": "117"
+    },
+    {
+      "honorific": "",
+      "first_name": "ابراهیم",
+      "last_name": "ثمره پودینه",
+      "position": "انتظامات",
+      "extension": "",
+      "phone": "۰۱۱-۳۵۷۵۰۰۸۰"
+    }
+  ],
+  "founder": [
+    {
+      "honorific": "حجت‌الاسلام",
+      "full_name": "محمد حیدری قاسمی",
+      "position": "رئیس هیات موسس"
+    },
+    {
+      "honorific": "",
+      "full_name": "سید محمد سیدحسینی",
+      "position": "نماینده هیات موسس"
+    },
+    {
+      "honorific": "",
+      "full_name": "شمس‌الدین نیکنامی",
+      "position": "عضو هیات موسس"
+    },
+    {
+      "honorific": "",
+      "full_name": "محمود اسدی",
+      "position": "عضو هیات موسس"
+    },
+    {
+      "honorific": "",
+      "full_name": "علی اکبر جعفری",
+      "position": "عضو هیات موسس"
+    },
+    {
+      "honorific": "",
+      "full_name": "آرمان امیدوار",
+      "position": "عضو هیات موسس"
+    }
+  ],
+  "trustee": [
+    {
+      "honorific": "",
+      "full_name": "عبدالحسین طاهری",
+      "position": "رئیس هیات امنا"
+    },
+    {
+      "honorific": "حجت‌الاسلام",
+      "full_name": "محمد حیدری قاسمی",
+      "position": "عضو هیات امنا"
+    },
+    {
+      "honorific": "",
+      "full_name": "محمدعلی جعفری",
+      "position": "معاون آموزشی و عضو هیات امنا"
+    },
+    {
+      "honorific": "",
+      "full_name": "علی اکبر جعفری",
+      "position": "عضو هیات امنا و معاون اداری و مالی"
+    },
+    {
+      "honorific": "",
+      "full_name": "محمود اسدی",
+      "position": "عضو هیات امنا"
+    },
+    {
+      "honorific": "",
+      "full_name": "مسعود باباخانی",
+      "position": "عضو هیات امنا"
+    },
+    {
+      "honorific": "",
+      "full_name": "حسین احسانی",
+      "position": "عضو هیات امنا و نماینده استاندار"
+    },
+    {
+      "honorific": "",
+      "full_name": "جواد واثقی امیری",
+      "position": "عضو هیات امنا و نماینده وزیر"
+    }
+  ],
+  "faculty": [
+    {
+      "honorific": "دکتر",
+      "full_name": "شیرزاد کوپائی حاجی",
+      "field_of_study": "علوم تربیتی گرایش برنامه‌ریزی آموزشی",
+      "degree": "phd",
+      "photo": "image011.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "جلال قنبری جلودار",
+      "field_of_study": "مدیریت آموزشی",
+      "degree": "phd",
+      "photo": "image012.jpg"
+    },
+    {
+      "honorific": "",
+      "full_name": "سجاد سالاری",
+      "field_of_study": "حسابداری",
+      "degree": "",
+      "photo": "image013.jpg"
+    },
+    {
+      "honorific": "",
+      "full_name": "فاطمه نمازی",
+      "field_of_study": "مهندسی برق — الکترونیک",
+      "degree": "",
+      "photo": "image003.jpg"
+    },
+    {
+      "honorific": "",
+      "full_name": "حسن عمرانی",
+      "field_of_study": "مهندسی مکانیک — تبدیل انرژی",
+      "degree": "",
+      "photo": "image014.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "علی فرنگی",
+      "field_of_study": "مدیریت اجرایی",
+      "degree": "phd",
+      "photo": "image015.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "کامبیز یزدانی",
+      "field_of_study": "روانشناسی تربیتی",
+      "degree": "phd",
+      "photo": "image016.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "مسعود باباخانی",
+      "field_of_study": "حسابداری",
+      "degree": "phd",
+      "photo": "image017.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "هانیه دلیران چمن‌زمین",
+      "field_of_study": "مدیریت بازرگانی گرایش بازاریابی",
+      "degree": "phd",
+      "photo": "image018.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "حسینعلی قربانی",
+      "field_of_study": "مشاوره",
+      "degree": "phd",
+      "photo": "image019.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "علی اکبر جعفری",
+      "field_of_study": "مدیریت منابع انسانی",
+      "degree": "phd",
+      "photo": "image020.jpg"
+    },
+    {
+      "honorific": "دکتر",
+      "full_name": "محمدرضا خسروی مقدم",
+      "field_of_study": "مدیریت صنعتی — مقطع کاردانی و کارشناسی",
+      "degree": "phd",
+      "photo": "image021.jpg"
+    }
+  ],
+  "group_head": [
+    {
+      "full_name": "جلال قنبری جلودار",
+      "field_of_study": "مدیریت آموزشی",
+      "position": "مدیر گروه مدیریت آموزشی",
+      "photo": "image001.jpg"
+    },
+    {
+      "full_name": "سجاد سالاری",
+      "field_of_study": "حسابداری",
+      "position": "مدیر گروه حسابداری",
+      "photo": "image002.jpg"
+    },
+    {
+      "full_name": "فاطمه نمازی",
+      "field_of_study": "برق — کامپیوتر",
+      "position": "مدیر گروه برق و کامپیوتر",
+      "photo": "image003.jpg"
+    },
+    {
+      "full_name": "حسن عمرانی",
+      "field_of_study": "مکانیک — معماری",
+      "position": "مدیر گروه مکانیک و معماری",
+      "photo": "image004.jpg"
+    },
+    {
+      "full_name": "علی فرنگی",
+      "field_of_study": "مدیریت (کاردانی — کارشناسی)",
+      "position": "مدیر گروه مدیریت",
+      "photo": "image005.jpg"
+    },
+    {
+      "full_name": "مسعود باباخانی",
+      "field_of_study": "حسابداری",
+      "position": "مدیر گروه حسابداری",
+      "photo": "image006.jpg"
+    },
+    {
+      "full_name": "هانیه دلیران چمن‌زمین",
+      "field_of_study": "مدیریت بازرگانی",
+      "position": "مدیر گروه مدیریت بازرگانی",
+      "photo": "image007.jpg"
+    },
+    {
+      "full_name": "حسینعلی قربانی",
+      "field_of_study": "روانشناسی",
+      "position": "مدیر گروه روانشناسی",
+      "photo": "image008.jpg"
+    },
+    {
+      "full_name": "حسن فارسیجانی",
+      "field_of_study": "مدیریت صنعتی — مقطع کارشناسی ارشد",
+      "position": "مدیر گروه مدیریت صنعتی (ارشد)",
+      "photo": "image009.jpg"
+    },
+    {
+      "full_name": "محمدرضا خسروی مقدم",
+      "field_of_study": "مدیریت صنعتی — مقطع کاردانی و کارشناسی",
+      "position": "مدیر گروه مدیریت صنعتی",
+      "photo": "image010.jpg"
+    }
+  ],
+  "lecturer": [
+    {
+      "full_name": "حسن فارسیجانی",
+      "degree": "phd",
+      "field_of_study": "مدیریت صنعتی"
+    },
+    {
+      "full_name": "حسنعلی آقاجانی",
+      "degree": "phd",
+      "field_of_study": "مدیریت منابع انسانی"
+    },
+    {
+      "full_name": "سیدمحمود حسینی امیری",
+      "degree": "phd",
+      "field_of_study": "مدیریت بازرگانی"
+    },
+    {
+      "full_name": "رضا رستگار روشن",
+      "degree": "phd",
+      "field_of_study": "علوم تربیتی — برنامه‌ریزی آموزشی"
+    },
+    {
+      "full_name": "مهدی روح‌الامینی",
+      "degree": "phd",
+      "field_of_study": "مدیریت"
+    },
+    {
+      "full_name": "حسین ضابط پورکردی",
+      "degree": "phd",
+      "field_of_study": "مدیریت آموزشی"
+    },
+    {
+      "full_name": "حمیدرضا غلام نیاروشن",
+      "degree": "phd",
+      "field_of_study": "حسابداری"
+    },
+    {
+      "full_name": "شهاب‌الدین قره ویسی",
+      "degree": "phd",
+      "field_of_study": "مدیریت"
+    },
+    {
+      "full_name": "کاوه آذین فر",
+      "degree": "phd",
+      "field_of_study": "حسابداری"
+    },
+    {
+      "full_name": "محمدعلی جعفری",
+      "degree": "phd",
+      "field_of_study": "تغذیه"
+    },
+    {
+      "full_name": "ندا افضلی",
+      "degree": "phd",
+      "field_of_study": "معماری"
+    },
+    {
+      "full_name": "نیکی امیری",
+      "degree": "phd",
+      "field_of_study": "مهندسی معماری"
+    },
+    {
+      "full_name": "محبوبه نادری دوست",
+      "degree": "phd",
+      "field_of_study": "مدیریت مالی"
+    },
+    {
+      "full_name": "سیده مریم بابانژاد باقری",
+      "degree": "phd",
+      "field_of_study": "حسابداری"
+    },
+    {
+      "full_name": "فرشته سادات برهانی",
+      "degree": "phd",
+      "field_of_study": "مهندسی معماری"
+    },
+    {
+      "full_name": "سیده طاهره جلالی",
+      "degree": "phd",
+      "field_of_study": "ریاضی محض"
+    },
+    {
+      "full_name": "مهدی میانسری",
+      "degree": "phd",
+      "field_of_study": "مهندسی مکانیک"
+    },
+    {
+      "full_name": "سیدمحمد نوروزیان امیری",
+      "degree": "phd",
+      "field_of_study": "مدیریت"
+    },
+    {
+      "full_name": "سیدسجاد شفیعی",
+      "degree": "phd",
+      "field_of_study": "مهندسی برق"
+    },
+    {
+      "full_name": "شرمین ایزدشناس",
+      "degree": "ms",
+      "field_of_study": "مرمت و احیای بناها و بافت‌های تاریخی"
+    },
+    {
+      "full_name": "عباس اسدی امیری",
+      "degree": "ms",
+      "field_of_study": "علوم حدیث"
+    },
+    {
+      "full_name": "میلاد اکبری",
+      "degree": "ms",
+      "field_of_study": "مکانیک ساخت و تولید"
+    },
+    {
+      "full_name": "زهرا بیرامی",
+      "degree": "ms",
+      "field_of_study": "کامپیوتر"
+    },
+    {
+      "full_name": "فاطمه جهانی",
+      "degree": "ms",
+      "field_of_study": "زبان و ادبیات فارسی"
+    },
+    {
+      "full_name": "آتنا حبیبی نژاد",
+      "degree": "ms",
+      "field_of_study": "زبان و ادبیات فارسی"
+    },
+    {
+      "full_name": "سیدمحمود حسینی",
+      "degree": "ms",
+      "field_of_study": "فیزیک"
+    },
+    {
+      "full_name": "فاطمه حسینیان",
+      "degree": "ms",
+      "field_of_study": "اقتصاد انرژی"
+    },
+    {
+      "full_name": "سیده مریم حسینی",
+      "degree": "ms",
+      "field_of_study": "حقوق خصوصی"
+    },
+    {
+      "full_name": "نسرین درزی نیا",
+      "degree": "ms",
+      "field_of_study": "روانشناسی عمومی"
+    },
+    {
+      "full_name": "گلسا درویشی نیا",
+      "degree": "ms",
+      "field_of_study": "معماری منظر"
+    },
+    {
+      "full_name": "سمیه رضا قلی پور",
+      "degree": "ms",
+      "field_of_study": "مشاوره و راهنمایی"
+    },
+    {
+      "full_name": "محمد رضائی عالی زمینی",
+      "degree": "ms",
+      "field_of_study": "معماری"
+    },
+    {
+      "full_name": "معصومه صفری",
+      "degree": "ms",
+      "field_of_study": "مهندسی معماری"
+    },
+    {
+      "full_name": "ام‌البنین قاسمی",
+      "degree": "ms",
+      "field_of_study": "زبان عربی"
+    },
+    {
+      "full_name": "زهرا قربانیان بهنمیری",
+      "degree": "ms",
+      "field_of_study": "مهندسی برق — الکترونیک"
+    },
+    {
+      "full_name": "اعظم قلی پور",
+      "degree": "ms",
+      "field_of_study": "ریاضی محض"
+    },
+    {
+      "full_name": "محبوبه قلی نژادبهنمیری",
+      "degree": "ms",
+      "field_of_study": "مشاوره گرایش مشاوره خانواده"
+    },
+    {
+      "full_name": "سیده مریم محمدیان",
+      "degree": "ms",
+      "field_of_study": "آموزش زبان"
+    },
+    {
+      "full_name": "حسین محمدی",
+      "degree": "ms",
+      "field_of_study": "مهندسی عمران — راه و ترابری"
+    },
+    {
+      "full_name": "مسعود واحدی",
+      "degree": "ms",
+      "field_of_study": "مدیریت ورزشی"
+    },
+    {
+      "full_name": "زینب واسو جویباری",
+      "degree": "ms",
+      "field_of_study": "مهندسی برق — سیستم‌های الکترونیک دیجیتال"
+    },
+    {
+      "full_name": "فاطمه ولی‌اله نتاج بهنمیری",
+      "degree": "ms",
+      "field_of_study": "مدیریت ورزشی"
+    },
+    {
+      "full_name": "عاطفه یزدانی ورزی",
+      "degree": "ms",
+      "field_of_study": "مالی — مهندسی مالی"
+    }
+  ],
+  "resources": [
+    {
+      "title": "کتابخانه مرکزی و مرکز اسناد دانشگاه تهران",
+      "url": "https://library.ut.ac.ir/fa/page/8729",
+      "category": "database",
+      "icon": "fas fa-book-open",
+      "description": "پایگاه‌های اطلاعاتی و منابع الکترونیکی دانشگاه تهران"
+    },
+    {
+      "title": "نشریات علمی دانشگاه تهران",
+      "url": "https://journals.ut.ac.ir/",
+      "category": "journal",
+      "icon": "fas fa-newspaper",
+      "description": "دسترسی به مجلات علمی-پژوهشی دانشگاه تهران"
+    },
+    {
+      "title": "پایگاه‌های اطلاعاتی لاتین دانشگاه شهید بهشتی",
+      "url": "https://lib.sbu.ac.ir/fa/latin-databases",
+      "category": "database",
+      "icon": "fas fa-globe",
+      "description": "منابع و پایگاه‌های لاتین کتابخانه دانشگاه شهید بهشتی"
+    },
+    {
+      "title": "پایان‌نامه‌های دانشگاه شهید بهشتی",
+      "url": "https://lib.sbu.ac.ir/fa/thesis",
+      "category": "thesis",
+      "icon": "fas fa-file-alt",
+      "description": "جست‌وجو در پایان‌نامه‌ها و رساله‌ها"
+    },
+    {
+      "title": "بخش پایگاه‌های اطلاعاتی دانشگاه شهید بهشتی",
+      "url": "https://lib.sbu.ac.ir/fa/databases-section",
+      "category": "database",
+      "icon": "fas fa-database",
+      "description": "فهرست کامل پایگاه‌های اطلاعاتی در دسترس"
+    }
+  ]
+}
