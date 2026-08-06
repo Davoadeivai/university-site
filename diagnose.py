@@ -137,7 +137,84 @@ def main() -> int:
         os.path.dirname(media), os.access(os.path.dirname(media), os.W_OK)))
     safe('Pillow', lambda: __import__('PIL').__version__)
 
-    head('۴) جدول‌ها و داده')
+    head('۴) آیا کد تازه واقعاً روی اپ نشسته؟')
+    log('  «Update from Remote» فقط مخزن را به‌روز می‌کند. تا deploy.py')
+    log('  اجرا نشود، پوشهٔ اپ هنوز کد قدیمی را دارد و اسکریپت‌ها بدون')
+    log('  خطا اجرا می‌شوند ولی کار تازه را انجام نمی‌دهند.')
+    log('')
+
+    # امضای هر تغییر: اگر این رشته در فایلِ اپ نباشد، آن تغییر نرسیده
+    MARKERS = [
+        ('همگام‌سازی ریاست و معاونت‌ها',
+         'directory/management/commands/seed_directory.py', '_sync_leadership'),
+        ('جایگزینی عکس‌ها (--refresh-photos)',
+         'directory/management/commands/seed_directory.py', 'refresh_photos'),
+        ('ادغام ردیف تکراری هیات',
+         'directory/management/commands/seed_directory.py', '_bare_name'),
+        ('رفع باگ نام فارسی فایل',
+         'core/storage.py', 'ASCIINameStorage'),
+        ('اسکریپت refresh_photos', 'refresh_photos.py', 'seed_directory'),
+        ('گزارش تصویرها',
+         'core/management/commands/photo_audit.py', 'WATCHED'),
+    ]
+    stale = 0
+    for label, rel, marker in MARKERS:
+        target = os.path.join(APP, rel)
+        if not os.path.isfile(target):
+            log('  %-34s !! فایل نیست: %s' % (label, rel))
+            stale += 1
+            continue
+        try:
+            with open(target, encoding='utf-8', errors='replace') as fh:
+                ok = marker in fh.read()
+        except OSError as exc:
+            log('  %-34s !! خوانده نشد: %s' % (label, exc))
+            stale += 1
+            continue
+        log('  %-34s %s' % (label, 'رسیده' if ok else '!! کد قدیمی'))
+        stale += not ok
+
+    if stale:
+        log('')
+        log('  ⇒ %d مورد نرسیده. deploy.py را اجرا کنید:' % stale)
+        log('    /home/cp29524/repositories/university-site/deploy.py')
+
+    head('۵) عکس‌ها — همان چیزی که روی صفحه دیده می‌شود')
+
+    def photo_state():
+        from core.models import PresidencyOffice, SecurityOffice, VicePresidency
+        from directory.models import DirectoryPerson
+        lines = []
+        office = PresidencyOffice.objects.first()
+        lines.append('رئیس: نام=%r  عکس=%r' % (
+            (office.president_name, str(office.president_photo))
+            if office else (None, None)))
+        vices = VicePresidency.objects.all()
+        lines.append('معاونت‌ها: %d ردیف' % vices.count())
+        for vice in vices:
+            lines.append('   %-30s %-24s عکس=%s' % (
+                vice.get_vice_type_display(), vice.full_name,
+                str(vice.photo) or '—'))
+        security = SecurityOffice.objects.first()
+        lines.append('حراست: عکس=%r' % (
+            str(security.manager_photo) if security else None))
+        lines.append('افراد موسسه با عکس: %d از %d' % (
+            DirectoryPerson.objects.exclude(photo='').count(),
+            DirectoryPerson.objects.count()))
+        return lines
+
+    try:
+        for line in photo_state():
+            log('  ' + line)
+    except Exception:                              # noqa: BLE001
+        log('  !! خوانده نشد:')
+        log(traceback.format_exc())
+
+    log('')
+    log('  اگر نام فایل عکس رئیس با staff- شروع نشود، مرحلهٔ')
+    log('  refresh_photos.py اجرا نشده یا کد قدیمی است.')
+
+    head('۶) جدول‌ها و داده')
     from django.db import connection
     safe('جدول‌های directory', lambda: [
         t for t in connection.introspection.table_names()
@@ -162,13 +239,13 @@ def main() -> int:
 
     safe('رکوردهای core', core_counts)
 
-    head('۵) نشانی‌های جدید')
+    head('۷) نشانی‌های جدید')
     from django.urls import reverse
     for name in ('directory:staff', 'directory:people',
                  'directory:curricula', 'directory:resources'):
         safe(name, lambda n=name: reverse(n))
 
-    head('۶) بازکردن صفحه‌های ادمینِ مشکل‌دار')
+    head('۸) بازکردن صفحه‌های ادمینِ مشکل‌دار')
     log('  همان صفحه‌ها با کاربر ادمین باز می‌شوند تا اگر ۵۰۰ بدهند،')
     log('  متن کامل خطا همین‌جا چاپ شود. فقط خواندن است — GET، نه ذخیره.')
     log('')
@@ -212,12 +289,12 @@ def main() -> int:
         log('  !! خود این بررسی خطا داد:')
         log(traceback.format_exc())
 
-    head('۷) فایل‌های ثابت')
+    head('۹) فایل‌های ثابت')
     static = str(settings.STATIC_ROOT)
     safe('پوشه هست', lambda: os.path.isdir(static))
     safe('main.css', lambda: newest(static, ['css/main.css']))
 
-    head('۸) آخرین خطاها  ← مهم‌ترین بخش')
+    head('۱۰) آخرین خطاها')
     log_file = os.path.join(APP, 'logs', 'django.log')
     if not os.path.isfile(log_file):
         log('  فایل لاگ وجود ندارد: %s' % log_file)

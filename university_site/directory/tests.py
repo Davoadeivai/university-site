@@ -136,6 +136,8 @@ class SeedDirectoryTests(MediaIsolatedTestCase):
         vice = VicePresidency.objects.get(vice_type='education')
         self.assertEqual(vice.full_name, 'دکتر کس دیگری', 'نام بازنویسی شد')
         self.assertIn('نمی‌خواند', out.getvalue())
+        # نام یک نفر با چهرهٔ نفر دیگر، از نبودِ عکس بدتر است
+        self.assertFalse(vice.photo, 'عکس سند کنار نام متفاوت نشست')
 
     def test_the_security_office_photo_is_attached(self):
         SecurityOffice.objects.create(manager_name='عباس اسدی امیری')

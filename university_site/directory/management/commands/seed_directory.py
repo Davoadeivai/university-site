@@ -223,6 +223,10 @@ class Command(BaseCommand):
         متنی که کسی واقعاً نوشته بازنویسی نمی‌شود. اگر نام ثبت‌شده با
         سند فرق داشت، تغییرش نمی‌دهیم ولی در خروجی گزارش می‌شود تا
         تصمیمش با آدم باشد، نه با اسکریپت.
+
+        وقتی نام تناقض دارد، عکس هم گذاشته نمی‌شود. عکسِ سند متعلق به
+        آدمِ سند است؛ نشاندنش کنار نامی که با آن نمی‌خواند، بدتر از
+        نبودِ عکس است — نام یک نفر با چهرهٔ نفر دیگر.
         """
         staff = {}
         for row in data.get('staff', []):
@@ -238,18 +242,22 @@ class Command(BaseCommand):
         if row:
             office = PresidencyOffice.objects.first() or PresidencyOffice()
             name = self._person_name(row)
+            mismatch = False
             if _is_placeholder(office.president_name):
                 office.president_name = name
                 changed += 1
             elif _bare_name(office.president_name) != _bare_name(name):
+                mismatch = True
                 conflicts.append(
                     'رئیس موسسه: در سایت «%s» ولی در سند «%s»'
                     % (office.president_name, name))
             if not office.president_phone and row.get('extension'):
                 office.president_phone = 'داخلی %s' % row['extension']
             office.save()
-            changed += self._attach_photo(
-                office, row.get('photo'), refresh=refresh, field='president_photo')
+            if not mismatch:
+                changed += self._attach_photo(
+                    office, row.get('photo'), refresh=refresh,
+                    field='president_photo')
 
         # ── معاونان ──
         for position, vice_type in VICE_BY_POSITION.items():
@@ -259,18 +267,21 @@ class Command(BaseCommand):
             vice, _created = VicePresidency.objects.get_or_create(
                 vice_type=vice_type, defaults={'is_active': True})
             name = self._person_name(row)
+            mismatch = False
             if _is_placeholder(vice.full_name):
                 vice.full_name = name
                 changed += 1
             elif _bare_name(vice.full_name) != _bare_name(name):
+                mismatch = True
                 conflicts.append(
                     '%s: در سایت «%s» ولی در سند «%s»'
                     % (position, vice.full_name, name))
             if not vice.phone and row.get('extension'):
                 vice.phone = 'داخلی %s' % row['extension']
             vice.save()
-            changed += self._attach_photo(
-                vice, row.get('photo'), refresh=refresh, field='photo')
+            if not mismatch:
+                changed += self._attach_photo(
+                    vice, row.get('photo'), refresh=refresh, field='photo')
 
         # ── حراست ──
         row = staff.get(SECURITY_POSITION)
