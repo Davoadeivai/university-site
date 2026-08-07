@@ -99,6 +99,82 @@ class Command(BaseCommand):
         parser.add_argument(
             '--overwrite', action='store_true',
             help='مقادیر موجود را هم بازنویسی کن (پیش‌فرض: فقط جای خالی)')
+        parser.add_argument(
+            '--create', default='',
+            help='کد رشته‌هایی که باید ساخته شوند، با کاما — مثلاً '
+                 '8381,7129,7180. غیرفعال ساخته می‌شوند تا در پنل '
+                 'بررسی و فعال شوند.')
+
+    # کلیدواژه → بخشی از نام گروه آموزشی
+    GROUP_HINTS = [
+        ('جامعه', 'علوم اجتماعی'),
+        ('روانشناس', 'روانشناسی'),
+        ('کامپیوتر', 'کامپیوتر'),
+        ('نرم افزار', 'کامپیوتر'),
+        ('برق', 'برق'),
+        ('الکترو', 'برق'),
+        ('مخابرات', 'برق'),
+        ('مکانیک', 'مکانیک'),
+        ('خودرو', 'مکانیک'),
+        ('معماری', 'معماری'),
+        ('نقشه', 'معماری'),
+        ('حسابدار', 'حسابداری'),
+        ('حسابرس', 'حسابداری'),
+        ('بازرگانی', 'مدیریت بازرگانی'),
+        ('صنعتی', 'مدیریت صنعتی'),
+        ('مالی', 'مدیریت صنعتی'),
+        ('تربیتی', 'علوم تربیتی'),
+        ('آموزشی', 'علوم تربیتی'),
+    ]
+
+    def _create(self, record, degree):
+        """ساخت رشته‌ای که در سند وزارت هست ولی در سایت نبود.
+
+        غیرفعال ساخته می‌شود: دانشکده و گروهش حدس است و باید یک آدم
+        تأییدشان کند، و تا آن موقع نباید روی سایت به داوطلب نشان داده
+        شود. سرفصل، شهریه و ظرفیتش هم خالی است.
+        """
+        from django.utils.text import slugify
+        from academics.models import AcademicGroup, Department
+
+        name = record['name'].strip()
+        if Major.objects.filter(name=name, degree=degree).exists():
+            return None
+
+        group = None
+        for keyword, group_part in self.GROUP_HINTS:
+            if keyword in name:
+                group = AcademicGroup.objects.filter(
+                    name__icontains=group_part).first()
+                if group:
+                    break
+
+        # دانشکده در دیتابیس NOT NULL است. هم‌گروهی‌ها بهترین راهنمایند؛
+        # اگر گروهی پیدا نشد، اولین دانشکده تا وقتی ادمین اصلاحش کند.
+        department = None
+        if group:
+            sibling = Major.objects.filter(group=group).first()
+            department = sibling.department if sibling else None
+        if department is None:
+            department = Department.objects.first()
+        if department is None:
+            self.stderr.write('  هیچ دانشکده‌ای نیست — %s ساخته نشد.' % name)
+            return None
+
+        base = slugify(name, allow_unicode=True) or 'reshte'
+        slug, index = base, 2
+        while Major.objects.filter(slug=slug).exists():
+            slug = '%s-%d' % (base, index)
+            index += 1
+
+        return Major.objects.create(
+            name=name, slug=slug, degree=degree,
+            department=department, group=group,
+            code=record['code'],
+            total_credits=record['credits'],
+            internship_hours=record['internship'],
+            is_active=False,
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -109,8 +185,10 @@ class Command(BaseCommand):
         records = json.loads(DATA_FILE.read_text(encoding='utf-8'))
         dry, overwrite = options['dry_run'], options['overwrite']
 
+        wanted = {c.strip() for c in options['create'].split(',') if c.strip()}
         filled = skipped = 0
         unmatched: list[str] = []
+        born: list[str] = []
         used: set = set()
 
         for record in records:
@@ -136,6 +214,11 @@ class Command(BaseCommand):
                     if major is not None:
                         score = alt_score
                         break
+            if major is None and record['code'] in wanted and not dry:
+                major = self._create(record, degree)
+                if major is not None:
+                    born.append('%s (%s)' % (major.name, record['level']))
+
             if major is None:
                 unmatched.append('%s (%s) — نزدیک‌ترین شباهت %.0f%%'
                                  % (record['name'], record['level'], score * 100))
@@ -171,6 +254,15 @@ class Command(BaseCommand):
         self.stdout.write('')
         self.stdout.write(self.style.SUCCESS(
             '%d رشته %s، %d از قبل کامل بود.' % (filled, verb, skipped)))
+
+        if born:
+            self.stdout.write(self.style.WARNING(
+                '\n%d رشتهٔ تازه ساخته شد — همه غیرفعال:' % len(born)))
+            for line in born:
+                self.stdout.write('  + %s' % line)
+            self.stdout.write(
+                'دانشکده و گروهشان حدس است. در پنل ادمین ← رشته‌ها '
+                'بررسی و فعالشان کنید تا روی سایت دیده شوند.')
 
         if unmatched:
             self.stdout.write(self.style.WARNING(

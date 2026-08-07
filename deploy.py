@@ -198,7 +198,8 @@ def seed_content() -> None:
 
     run('seed_directory')
     run('import_from_directory')
-    run('import_major_codes')
+    # سه رشته‌ای که در سند وزارت هستند و موسسه تأیید کرد دایرند
+    run('import_major_codes', '--create', '8381,7129,7180')
     run('import_term_plans')
 
     incoming = os.path.join(TARGET, 'media', '_incoming')

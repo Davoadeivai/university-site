@@ -92,3 +92,50 @@ class ImportMajorCodesTests(TestCase):
         second = StringIO()
         call_command('import_major_codes', stdout=second)
         self.assertIn('0 رشته پر شد', second.getvalue())
+
+
+class CreateMissingMajorTests(TestCase):
+    """ساخت رشته فقط با کد صریح، نه با «هرچه تطبیق نخورد».
+
+    نسخهٔ اول هر ردیف بی‌تطبیق را می‌ساخت و ۹ رشته درست کرد که ۶ تای
+    آن‌ها صرفاً نوشتار دیگری از رشته‌های موجود بودند — یعنی ۶ رکورد
+    تکراری. کد وزارت کلید بدون ابهامی است و تصمیم را دست آدم می‌گذارد.
+    """
+
+    def setUp(self):
+        _department()
+
+    def test_nothing_is_created_without_the_flag(self):
+        before = Major.objects.count()
+        call_command('import_major_codes', stdout=StringIO())
+        self.assertEqual(Major.objects.count(), before)
+
+    def test_only_the_named_code_is_created(self):
+        call_command('import_major_codes', '--create', '8381',
+                     stdout=StringIO())
+        self.assertTrue(Major.objects.filter(code='8381').exists())
+        self.assertFalse(Major.objects.filter(code='9353').exists())
+
+    def test_a_created_major_is_inactive(self):
+        call_command('import_major_codes', '--create', '8381',
+                     stdout=StringIO())
+        self.assertFalse(Major.objects.get(code='8381').is_active)
+
+    def test_a_created_major_carries_its_credits(self):
+        call_command('import_major_codes', '--create', '8381',
+                     stdout=StringIO())
+        self.assertEqual(Major.objects.get(code='8381').total_credits, 147)
+
+    def test_running_twice_creates_one_record(self):
+        for _ in range(2):
+            call_command('import_major_codes', '--create', '8381',
+                         stdout=StringIO())
+        self.assertEqual(Major.objects.filter(code='8381').count(), 1)
+
+    def test_the_group_is_inferred_from_the_name(self):
+        from academics.models import AcademicGroup
+        group = AcademicGroup.objects.create(
+            name='گروه علوم اجتماعی', slug='social', department=_department())
+        call_command('import_major_codes', '--create', '8381',
+                     stdout=StringIO())
+        self.assertEqual(Major.objects.get(code='8381').group, group)
