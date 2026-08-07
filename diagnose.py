@@ -90,7 +90,57 @@ def main() -> int:
     sys.path.insert(0, APP)
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings_prod')
 
-    head('۲) تنظیمات')
+    head('۲) منابع — دیسک و حافظه')
+
+    def disk():
+        import shutil
+        total, used, free = shutil.disk_usage(APP)
+        return '%.1f GB آزاد از %.1f GB  (%.0f%% پر)' % (
+            free / 2**30, total / 2**30, 100 * used / total)
+
+    safe('دیسک', disk)
+
+    def memory():
+        """حافظهٔ همین پروسه — تخمینی از مصرف هر worker جنگو."""
+        try:
+            with open('/proc/self/status') as fh:
+                for line in fh:
+                    if line.startswith('VmRSS:'):
+                        return line.split(':', 1)[1].strip()
+        except OSError:
+            pass
+        return '(روی این سیستم قابل خواندن نیست)'
+
+    safe('حافظهٔ این پروسه', memory)
+
+    def biggest():
+        """سنگین‌ترین پوشه‌های خانه — قبل از خرید فضا، اول اینجا را ببینید."""
+        import os as _os
+        home = _os.path.dirname(_os.path.dirname(APP))
+        rows = []
+        try:
+            for name in _os.listdir(home):
+                path = _os.path.join(home, name)
+                size = 0
+                if _os.path.isfile(path):
+                    size = _os.path.getsize(path)
+                elif _os.path.isdir(path):
+                    for root, _dirs, files in _os.walk(path):
+                        for f in files:
+                            try:
+                                size += _os.path.getsize(_os.path.join(root, f))
+                            except OSError:
+                                pass
+                rows.append((size, name))
+        except OSError as exc:
+            return '!! %s' % exc
+        rows.sort(reverse=True)
+        return '\n' + '\n'.join(
+            '      %8.1f MB  %s' % (s / 2**20, n) for s, n in rows[:8] if s)
+
+    safe('بزرگ‌ترین‌ها در خانه', biggest)
+
+    head('۳) تنظیمات')
     try:
         import django
         django.setup()
@@ -111,7 +161,7 @@ def main() -> int:
     safe('directory نصب شده', lambda: any(
         'directory' in a for a in settings.INSTALLED_APPS))
 
-    head('۳) پوشهٔ media — جای آپلود عکس')
+    head('۴) پوشهٔ media — جای آپلود عکس')
     media = str(settings.MEDIA_ROOT)
     safe('وجود دارد', lambda: os.path.isdir(media))
     safe('اجازهٔ نوشتن', lambda: os.access(media, os.W_OK)
@@ -137,7 +187,7 @@ def main() -> int:
         os.path.dirname(media), os.access(os.path.dirname(media), os.W_OK)))
     safe('Pillow', lambda: __import__('PIL').__version__)
 
-    head('۴) آیا کد تازه واقعاً روی اپ نشسته؟')
+    head('۵) آیا کد تازه واقعاً روی اپ نشسته؟')
     log('  «Update from Remote» فقط مخزن را به‌روز می‌کند. تا deploy.py')
     log('  اجرا نشود، پوشهٔ اپ هنوز کد قدیمی را دارد و اسکریپت‌ها بدون')
     log('  خطا اجرا می‌شوند ولی کار تازه را انجام نمی‌دهند.')
@@ -179,7 +229,7 @@ def main() -> int:
         log('  ⇒ %d مورد نرسیده. deploy.py را اجرا کنید:' % stale)
         log('    /home/cp29524/repositories/university-site/deploy.py')
 
-    head('۵) عکس‌ها — همان چیزی که روی صفحه دیده می‌شود')
+    head('۶) عکس‌ها — همان چیزی که روی صفحه دیده می‌شود')
 
     def photo_state():
         from core.models import PresidencyOffice, SecurityOffice, VicePresidency
@@ -214,7 +264,7 @@ def main() -> int:
     log('  اگر نام فایل عکس رئیس با staff- شروع نشود، مرحلهٔ')
     log('  refresh_photos.py اجرا نشده یا کد قدیمی است.')
 
-    head('۶) جدول‌ها و داده')
+    head('۷) جدول‌ها و داده')
     from django.db import connection
     safe('جدول‌های directory', lambda: [
         t for t in connection.introspection.table_names()
@@ -239,13 +289,13 @@ def main() -> int:
 
     safe('رکوردهای core', core_counts)
 
-    head('۷) نشانی‌های جدید')
+    head('۸) نشانی‌های جدید')
     from django.urls import reverse
     for name in ('directory:staff', 'directory:people',
                  'directory:curricula', 'directory:resources'):
         safe(name, lambda n=name: reverse(n))
 
-    head('۸) بازکردن صفحه‌های ادمینِ مشکل‌دار')
+    head('۹) بازکردن صفحه‌های ادمینِ مشکل‌دار')
     log('  همان صفحه‌ها با کاربر ادمین باز می‌شوند تا اگر ۵۰۰ بدهند،')
     log('  متن کامل خطا همین‌جا چاپ شود. فقط خواندن است — GET، نه ذخیره.')
     log('')
@@ -289,12 +339,12 @@ def main() -> int:
         log('  !! خود این بررسی خطا داد:')
         log(traceback.format_exc())
 
-    head('۹) فایل‌های ثابت')
+    head('۱۰) فایل‌های ثابت')
     static = str(settings.STATIC_ROOT)
     safe('پوشه هست', lambda: os.path.isdir(static))
     safe('main.css', lambda: newest(static, ['css/main.css']))
 
-    head('۱۰) آخرین خطاها')
+    head('۱۱) آخرین خطاها')
     log_file = os.path.join(APP, 'logs', 'django.log')
     if not os.path.isfile(log_file):
         log('  فایل لاگ وجود ندارد: %s' % log_file)
