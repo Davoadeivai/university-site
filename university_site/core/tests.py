@@ -286,11 +286,12 @@ class HomeSectionTests(TestCase):
         titles = [r['title'] for r in json.loads(res.content)['results']]
         self.assertTrue(titles, 'شکل عربی حروف نتیجه‌ای نداد')
 
-    def test_live_search_is_rate_limited(self):
-        """اندپوینت عمومی بدون سقف، راه ساده‌ای برای فشار به دیتابیس است.
+    @override_settings(RATE_LIMIT_ENABLED=True)
+    def test_live_search_is_rate_limited_when_the_cap_is_on(self):
+        """سقف پیش‌فرض خاموش است، ولی وقتی روشن شود باید کار کند.
 
-        سقف عمداً ۶۰۰ در دقیقه است نه ۹۰: پشت یک IP اپراتور موبایل
-        ده‌ها دانشجو می‌نشینند و ۹۰ تا کل آن اپراتور را قفل می‌کرد.
+        سقف اینجا عمداً ۶۰۰ در دقیقه است نه ۹۰: پشت یک IP اپراتور
+        موبایل ده‌ها دانشجو می‌نشینند و ۹۰ کل آن اپراتور را قفل می‌کرد.
         شمارنده مستقیم پر می‌شود تا لازم نباشد ۶۰۰ درخواست واقعی زد.
         """
         from django.core.cache import cache
@@ -301,6 +302,15 @@ class HomeSectionTests(TestCase):
         cache.set('rl:live_search:ip:127.0.0.1', 600, timeout=60)
         self.assertEqual(
             self.client.get('/api/live-search/', {'q': 'الف'}).status_code, 429)
+        cache.clear()
+
+    def test_by_default_nothing_is_throttled(self):
+        """پیش‌فرض پروژه: هیچ کاربری با هیچ اینترنتی پشت سقف نماند."""
+        from django.core.cache import cache
+        cache.clear()
+        cache.set('rl:live_search:ip:127.0.0.1', 10_000, timeout=60)
+        self.assertEqual(
+            self.client.get('/api/live-search/', {'q': 'الف'}).status_code, 200)
         cache.clear()
 
     def test_documents_page_filters_by_section(self):
@@ -1034,13 +1044,16 @@ class PersianFilenameUploadTests(TestCase):
             shutil.rmtree(media, ignore_errors=True)
 
 
+@override_settings(RATE_LIMIT_ENABLED=True)
 class RateLimitSharedIPTests(TestCase):
     """محدودیت نرخ نباید کاربران پشت یک IP را قربانی هم کند.
 
     اپراتورهای موبایل ایران صدها مشترک را پشت یک IP عمومی می‌گذارند.
-    نسخهٔ قبلی فقط IP را می‌شمرد، پس یک نفر بقیه را قفل می‌کرد — و
-    چون VPN آی‌پی را عوض می‌کند، بیرون این‌طور دیده می‌شد که سایت
-    بدون VPN بالا نمی‌آید.
+    نسخهٔ قبلی فقط IP را می‌شمرد، پس یک نفر بقیه را قفل می‌کرد.
+
+    مکانیزم اکنون به‌صورت پیش‌فرض خاموش است (خواستهٔ صریح موسسه)، ولی
+    باید درست بماند تا هر وقت با RATE_LIMIT_ENABLED=True روشن شد،
+    همان رفتار درست را داشته باشد. پس این کلاس عمداً روشنش می‌کند.
     """
 
     def setUp(self):

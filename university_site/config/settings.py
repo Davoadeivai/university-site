@@ -480,7 +480,14 @@ ALLOW_FINAL_TERM_UNDERLOAD = config('ALLOW_FINAL_TERM_UNDERLOAD', default=True, 
 #
 # حالا شمارش روی هویت (کد ملی / شمارهٔ موبایل / کد رهگیری) است و IP
 # فقط سقف بازِ پشتیبان دارد؛ ضریبش همین است.
-RATE_LIMIT_ENABLED = config('RATE_LIMIT_ENABLED', default=True, cast=bool)
+# پیش‌فرض خاموش است، به درخواست صریح موسسه: هیچ کاربری با هیچ اینترنتی
+# و هیچ دستگاهی نباید پشت سقف بماند.
+#
+# هزینه‌اش را بدانید: با False هیچ سقفی روی فرم‌های عمومی نیست. کسی
+# می‌تواند کد ملی‌ها را یکی‌یکی امتحان کند تا پروندهٔ پذیرش پیدا کند،
+# یا وقتی پیامک روشن شد، هزارها پیامک OTP روی قبض شما بفرستد.
+# برای برگرداندن، در .env بنویسید:  RATE_LIMIT_ENABLED=True
+RATE_LIMIT_ENABLED = config('RATE_LIMIT_ENABLED', default=False, cast=bool)
 RATE_LIMIT_IP_MULTIPLIER = config('RATE_LIMIT_IP_MULTIPLIER', default=20, cast=int)
 
 # ثبت‌نام دانشجو — اگر True باشد فقط کسی که پروندهٔ پذیرش «پذیرفته‌شده» دارد
