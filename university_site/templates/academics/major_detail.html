@@ -6,7 +6,13 @@
 <div class="col-lg-8">
 <div class="uni-card p-4 mb-4">
 <span class="uni-card-badge">{{ major.get_degree_display }}</span>
-{% if major.department %}<span class="uni-card-badge ms-2">{{ major.department.name }}</span>{% endif %}
+{% comment %}
+  گروه آموزشی نشان داده می‌شود نه دانشکده. موسسه دانشکده‌بندی واقعی
+  ندارد و هر ۵۸ رشته زیر یک دانشکده ثبت شده بودند — یعنی داوطلبِ
+  کاردانی گرافیک روی صفحه‌اش «دانشکدهٔ تحصیلات تکمیلی» می‌دید.
+{% endcomment %}
+{% if major.group %}<a href="{{ major.group.get_absolute_url }}" class="uni-card-badge ms-2 text-decoration-none">{{ major.group.name }}</a>{% endif %}
+{% if major.code %}<span class="uni-card-badge ms-2">کد رشته: {{ major.code }}</span>{% endif %}
 <div class="row g-3 mt-2 mb-3">
 <div class="col-4 text-center"><div class="dept-stat"><strong class="d-block" style="font-size:24px; color:var(--primary);">{{ major.total_credits }}</strong>کل واحد</div></div>
 <div class="col-4 text-center"><div class="dept-stat"><strong class="d-block" style="font-size:24px; color:var(--primary);">{{ major.capacity }}</strong>ظرفیت</div></div>

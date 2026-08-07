@@ -204,6 +204,7 @@ def seed_content() -> None:
     run('import_major_codes', '--create', '8381,7129,7180',
         '--activate', '8381,7129,7180')
     run('import_term_plans')
+    run('tidy_academic_structure')
 
     incoming = os.path.join(TARGET, 'media', '_incoming')
     if os.path.isdir(incoming):

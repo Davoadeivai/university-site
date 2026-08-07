@@ -16,7 +16,7 @@
 <div class="dept-icon"><i class="fas fa-graduation-cap"></i></div>
 <h3 class="dept-title">{{ major.name }}</h3>
 <span class="uni-card-badge">{{ major.get_degree_display }}</span>
-{% if major.department %}<div class="text-muted mt-1" style="font-size:13px;">{{ major.department.name }}</div>{% endif %}
+{% if major.group %}<div class="text-muted mt-1" style="font-size:13px;">{{ major.group.name }}</div>{% endif %}
 <div class="dept-stats mt-3">
 <div class="dept-stat"><strong>{{ major.total_credits }}</strong>واحد</div>
 <div class="dept-stat"><strong>{{ major.capacity }}</strong>ظرفیت</div>
