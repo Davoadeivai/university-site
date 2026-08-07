@@ -7,10 +7,13 @@ import os
 import shutil
 import tempfile
 from datetime import date, timedelta
+from io import StringIO
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.core.cache import cache
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
@@ -18,7 +21,9 @@ from django.utils import timezone
 
 from academics.models import AcademicCalendar
 from core.academic_timeline import build_timeline
-from core.models import PresidencyOffice, SecurityOffice
+from core.models import (
+    DownloadableDocument, PresidencyOffice, SecurityOffice,
+)
 from core.storage import ASCIINameStorage, ascii_filename
 from core.sms import check_rate_limit
 from core.jalali_forms import (
@@ -1214,3 +1219,54 @@ class JalaliDateInputTests(TestCase):
         for name in ('start_date', 'end_date'):
             with self.subTest(field=name):
                 self.assertIsInstance(form.fields[name], JalaliDateField)
+
+
+class TermPlanImportTests(TestCase):
+    """ترم‌بندی: کدام درس در کدام ترم — جدا از سرفصل مصوب وزارت.
+
+    فایل‌هایش ۱۱ مگابایت است و در مخزن می‌ماند، پس برخلاف سرفصل‌های
+    ۳۰۰ مگابایتی با هر دیپلوی خودکار سر جایش می‌رود.
+    """
+
+    def test_every_row_of_the_manifest_becomes_a_document(self):
+        import json
+        from core.management.commands.import_term_plans import MANIFEST
+        expected = len(json.loads(MANIFEST.read_text(encoding='utf-8')))
+        call_command('import_term_plans', stdout=StringIO())
+        self.assertEqual(
+            DownloadableDocument.objects.filter(category='guide').count(),
+            expected)
+
+    def test_running_twice_does_not_duplicate(self):
+        call_command('import_term_plans', stdout=StringIO())
+        first = DownloadableDocument.objects.count()
+        call_command('import_term_plans', stdout=StringIO())
+        self.assertEqual(DownloadableDocument.objects.count(), first)
+
+    def test_the_pdf_is_attached(self):
+        call_command('import_term_plans', stdout=StringIO())
+        doc = DownloadableDocument.objects.filter(category='guide').first()
+        self.assertTrue(doc.file, 'فایل PDF ضمیمه نشد')
+
+    def test_every_degree_level_is_represented(self):
+        call_command('import_term_plans', stdout=StringIO())
+        levels = set(DownloadableDocument.objects
+                     .filter(category='guide')
+                     .values_list('degree_level', flat=True))
+        for expected in ('master', 'bachelor_continuous',
+                         'bachelor_discontinuous', 'associate_tech'):
+            self.assertIn(expected, levels)
+
+    def test_dry_run_writes_nothing(self):
+        call_command('import_term_plans', '--dry-run', stdout=StringIO())
+        self.assertEqual(DownloadableDocument.objects.count(), 0)
+
+    def test_a_file_uploaded_in_the_admin_is_kept(self):
+        call_command('import_term_plans', stdout=StringIO())
+        doc = DownloadableDocument.objects.filter(category='guide').first()
+        doc.file.save('mine.pdf', ContentFile(b'%PDF admin'), save=True)
+        chosen = doc.file.name
+
+        call_command('import_term_plans', stdout=StringIO())
+        doc.refresh_from_db()
+        self.assertEqual(doc.file.name, chosen)

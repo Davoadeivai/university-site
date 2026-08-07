@@ -199,6 +199,7 @@ def seed_content() -> None:
     run('seed_directory')
     run('import_from_directory')
     run('import_major_codes')
+    run('import_term_plans')
 
     incoming = os.path.join(TARGET, 'media', '_incoming')
     if os.path.isdir(incoming):

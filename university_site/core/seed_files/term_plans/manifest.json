@@ -1,0 +1,241 @@
+[
+  {
+    "file": "master-01.pdf",
+    "title": "آموزش و پرورش ابتدایی",
+    "degree_level": "master",
+    "word": "master-01.docx"
+  },
+  {
+    "file": "master-02.pdf",
+    "title": "حسابداری ورودی 1400 به بعد",
+    "degree_level": "master",
+    "word": "master-02.docx"
+  },
+  {
+    "file": "master-03.pdf",
+    "title": "حسابرسی جدید",
+    "degree_level": "master",
+    "word": "master-03.docx"
+  },
+  {
+    "file": "master-04.pdf",
+    "title": "مدیریت آموزشی جدید",
+    "degree_level": "master",
+    "word": "master-04.docx"
+  },
+  {
+    "file": "master-05.pdf",
+    "title": "مدیریت بازرگانی گرایش بازاریابی جدید",
+    "degree_level": "master",
+    "word": "master-05.docx"
+  },
+  {
+    "file": "master-06.pdf",
+    "title": "مدیریت بازرگانی گرایش بازرگانی بین المللی",
+    "degree_level": "master",
+    "word": "master-06.docx"
+  },
+  {
+    "file": "master-07.pdf",
+    "title": "مدیریت صنعتی گرایش تولید و عملیات",
+    "degree_level": "master",
+    "word": "master-07.docx"
+  },
+  {
+    "file": "master-08.pdf",
+    "title": "مدیریت صنعتی گرایش مدیریت کیفیت و بهره و ری",
+    "degree_level": "master",
+    "word": "master-08.docx"
+  },
+  {
+    "file": "bachelor_continuous-01.pdf",
+    "title": "مهندسی برق جدید",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-01.docx"
+  },
+  {
+    "file": "bachelor_continuous-02.pdf",
+    "title": "مهندسی معماری ورودی 1401 به بعد",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-02.docx"
+  },
+  {
+    "file": "bachelor_continuous-03.pdf",
+    "title": "مهندسی کامپیوتر",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-03.docx"
+  },
+  {
+    "file": "bachelor_continuous-04.pdf",
+    "title": "کارشناسی روانشناسی جدید",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-04.docx"
+  },
+  {
+    "file": "bachelor_continuous-05.pdf",
+    "title": "کارشناسی روانشناسی",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-05.docx"
+  },
+  {
+    "file": "bachelor_continuous-06.pdf",
+    "title": "کارشناسی پیوسته جامعه شناسی",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-06.docx"
+  },
+  {
+    "file": "bachelor_continuous-07.pdf",
+    "title": "کارشناسی پیوسته حسابداری ورودی 1404 به بعد",
+    "degree_level": "bachelor_continuous"
+  },
+  {
+    "file": "bachelor_continuous-08.pdf",
+    "title": "کارشناسی پیوسته حسابداری ورودی 96 به بعد",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-08.docx"
+  },
+  {
+    "file": "bachelor_continuous-09.pdf",
+    "title": "کارشناسی پیوسته مدیریت بازرگانی",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-09.docx"
+  },
+  {
+    "file": "bachelor_continuous-10.pdf",
+    "title": "کارشناسی پیوسته مدیریت دولتی",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-10.docx"
+  },
+  {
+    "file": "bachelor_continuous-11.pdf",
+    "title": "کارشناسی پیوسته مدیریت مالی",
+    "degree_level": "bachelor_continuous",
+    "word": "bachelor_continuous-11.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-01.pdf",
+    "title": "کارشناسی ناپیوسته  معماری جدید",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-01.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-02.pdf",
+    "title": "کارشناسی ناپیوسته  کامپیوتر ورودی 1401 به بعد",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-02.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-03.pdf",
+    "title": "کارشناسی ناپیوسته برق",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-03.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-04.pdf",
+    "title": "کارشناسی ناپیوسته تکنولوژی مخابرات - گرایش انتقال",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-04.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-05.pdf",
+    "title": "کارشناسی ناپیوسته حسابداری ورودی 1400 به بعد",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-05.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-06.pdf",
+    "title": "کارشناسی ناپیوسته مدیریت بازرگانی",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-06.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-07.pdf",
+    "title": "کارشناسی ناپیوسته مدیریت بیمه",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-07.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-08.pdf",
+    "title": "کارشناسی ناپیوسته مدیریت صنعتی",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-08.docx"
+  },
+  {
+    "file": "bachelor_discontinuous-09.pdf",
+    "title": "کارشناسی ناپیوسته مکانیک خودرو",
+    "degree_level": "bachelor_discontinuous",
+    "word": "bachelor_discontinuous-09.doc"
+  },
+  {
+    "file": "associate-01.pdf",
+    "title": "کاردانی مدیریت بازرگانی",
+    "degree_level": "associate",
+    "word": "associate-01.docx"
+  },
+  {
+    "file": "associate-02.pdf",
+    "title": "کاردانی مدیریت صنعتی",
+    "degree_level": "associate",
+    "word": "associate-02.docx"
+  },
+  {
+    "file": "associate-03.pdf",
+    "title": "کاردانی ناپیوسته حسابداری",
+    "degree_level": "associate",
+    "word": "associate-03.docx"
+  },
+  {
+    "file": "associate_tech-01.pdf",
+    "title": "الکتروتکنیک- برق صنعتی",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-01.docx"
+  },
+  {
+    "file": "associate_tech-02.pdf",
+    "title": "الکترونیک – الکترونیک عمومی",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-02.docx"
+  },
+  {
+    "file": "associate_tech-03.pdf",
+    "title": "حسابداری و بازرگانی ورودی 1401 به بعد",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-03.docx"
+  },
+  {
+    "file": "associate_tech-04.pdf",
+    "title": "مکانیک خودرو جدید ورودی 1401",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-04.docx"
+  },
+  {
+    "file": "associate_tech-05.pdf",
+    "title": "نقشه برداری",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-05.docx"
+  },
+  {
+    "file": "associate_tech-06.pdf",
+    "title": "نقشه کشی عمومی – نقشه کشی و طراحی صنعتی",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-06.docx"
+  },
+  {
+    "file": "associate_tech-07.pdf",
+    "title": "نقشه کشی معماری جدید ورودی 1401",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-07.docx"
+  },
+  {
+    "file": "associate_tech-08.pdf",
+    "title": "کامپیوتر نرم افزار",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-08.docx"
+  },
+  {
+    "file": "associate_tech-09.pdf",
+    "title": "گرافیک جدید ورودی 1401",
+    "degree_level": "associate_tech",
+    "word": "associate_tech-09.docx"
+  }
+]
