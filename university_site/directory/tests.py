@@ -437,3 +437,40 @@ class NameMatchKeyTests(TestCase):
         out = StringIO()
         call_command('seed_directory', stdout=out)
         self.assertNotIn('معاون فنی و عمرانی', out.getvalue())
+
+
+class TrustDocumentTests(TestCase):
+    """جایگزینی نام با سند — عمداً پیش‌فرض نیست.
+
+    نام معاون یک ادعای عمومی دربارهٔ فرد نام‌برده است؛ اسکریپت نباید
+    خودسرانه عوضش کند، ولی وقتی موسسه تأیید کرد باید راه صریحی باشد.
+    """
+
+    def setUp(self):
+        VicePresidency.objects.create(
+            vice_type='education', full_name='دکتر کس دیگری', is_active=True)
+
+    def test_without_the_flag_the_name_survives(self):
+        call_command('seed_directory', stdout=StringIO())
+        self.assertEqual(
+            VicePresidency.objects.get(vice_type='education').full_name,
+            'دکتر کس دیگری')
+
+    def test_with_the_flag_the_document_wins(self):
+        call_command('seed_directory', '--trust-document', stdout=StringIO())
+        self.assertIn(
+            'جعفری',
+            VicePresidency.objects.get(vice_type='education').full_name)
+
+    def test_the_photo_follows_once_the_name_agrees(self):
+        call_command('seed_directory', '--trust-document', stdout=StringIO())
+        call_command('seed_directory', stdout=StringIO())
+        self.assertTrue(
+            VicePresidency.objects.get(vice_type='education').photo,
+            'بعد از حل تعارض، عکس هم باید بنشیند')
+
+    def test_the_report_says_replaced_not_untouched(self):
+        out = StringIO()
+        call_command('seed_directory', '--trust-document', stdout=out)
+        self.assertIn('عوض شد', out.getvalue())
+        self.assertNotIn('دست نخورد', out.getvalue())

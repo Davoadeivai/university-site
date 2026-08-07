@@ -100,6 +100,10 @@ class Command(BaseCommand):
             '--overwrite', action='store_true',
             help='مقادیر موجود را هم بازنویسی کن (پیش‌فرض: فقط جای خالی)')
         parser.add_argument(
+            '--activate', default='',
+            help='کد رشته‌هایی که باید فعال شوند، با کاما. یعنی موسسه '
+                 'دانشکده و گروهشان را بررسی و تأیید کرده.')
+        parser.add_argument(
             '--create', default='',
             help='کد رشته‌هایی که باید ساخته شوند، با کاما — مثلاً '
                  '8381,7129,7180. غیرفعال ساخته می‌شوند تا در پنل '
@@ -186,6 +190,8 @@ class Command(BaseCommand):
         dry, overwrite = options['dry_run'], options['overwrite']
 
         wanted = {c.strip() for c in options['create'].split(',') if c.strip()}
+        to_activate = {c.strip() for c in options['activate'].split(',')
+                       if c.strip()}
         filled = skipped = 0
         unmatched: list[str] = []
         born: list[str] = []
@@ -249,6 +255,33 @@ class Command(BaseCommand):
                     major.name[:43], '، '.join(changes)))
             else:
                 skipped += 1
+
+        if to_activate and not dry:
+            turned_on = Major.objects.filter(
+                code__in=to_activate, is_active=False).update(is_active=True)
+            if turned_on:
+                self.stdout.write('')
+                self.stdout.write(self.style.SUCCESS(
+                    '%d رشته فعال شد و حالا روی سایت دیده می‌شود.'
+                    % turned_on))
+            for code in sorted(to_activate):
+                major = Major.objects.filter(code=code).first()
+                if major is None:
+                    self.stdout.write(self.style.WARNING(
+                        '  کد %s پیدا نشد.' % code))
+                    continue
+                if not major.group:
+                    self.stdout.write(self.style.WARNING(
+                        '  %s گروه آموزشی ندارد — در پنل انتخابش کنید.'
+                        % major.name))
+                # دانشکده حدس بود؛ اگر «تحصیلات تکمیلی» شده ولی رشته
+                # کارشناسی است، آدم باید اصلاحش کند.
+                dept = getattr(major.department, 'name', '')
+                if 'تکمیلی' in dept and major.degree != 'master':
+                    self.stdout.write(self.style.WARNING(
+                        '  %s زیر دانشکدهٔ «%s» نشسته ولی %s است — '
+                        'در پنل دانشکده‌اش را درست کنید.'
+                        % (major.name, dept, major.get_degree_display())))
 
         verb = 'می‌شد پر کرد' if dry else 'پر شد'
         self.stdout.write('')

@@ -99,6 +99,12 @@ class Command(BaseCommand):
             help='ردیف‌هایی که در سند نیستند را غیرفعال کن',
         )
         parser.add_argument(
+            '--trust-document', action='store_true',
+            help='وقتی نام ثبت‌شده با سند فرق دارد، سند را درست بگیر و '
+                 'نام سایت را بازنویسی کن. این یک ادعای عمومی دربارهٔ '
+                 'افراد نام‌برده است، پس عمداً پیش‌فرض نیست.',
+        )
+        parser.add_argument(
             '--refresh-photos', action='store_true',
             help='عکس‌ها را حتی اگر از قبل وجود دارند دوباره از سند بگذار. '
                  'هر عکسی که خودتان در ادمین آپلود کرده‌اید هم بازنویسی '
@@ -156,7 +162,8 @@ class Command(BaseCommand):
 
         board_synced, board_merged = self._sync_board_members(data)
         lead_changed, conflicts = self._sync_leadership(
-            data, refresh=options['refresh_photos'])
+            data, refresh=options['refresh_photos'],
+            trust_document=options['trust_document'])
         res_created, res_updated = self._sync_resources(data.get('resources', []))
 
         self.stdout.write(self.style.SUCCESS(
@@ -174,13 +181,17 @@ class Command(BaseCommand):
             'منابع بیرونی: %d ساخته، %d به‌روز شد.' % (res_created, res_updated)))
 
         if conflicts:
-            self.stdout.write(self.style.WARNING(
-                '\n%d مورد با سند نمی‌خواند — دست نخورد، خودتان تصمیم بگیرید:'
-                % len(conflicts)))
+            if options['trust_document']:
+                head = '\n%d نام با سند یکی نبود و به نفع سند عوض شد:'
+                tail = ('اگر سند قدیمی است، نام درست را در پنل ادمین بگذارید '
+                        'و دیگر --trust-document نزنید.')
+            else:
+                head = '\n%d مورد با سند نمی‌خواند — دست نخورد، خودتان تصمیم بگیرید:'
+                tail = 'اگر سند درست است، نام را در پنل ادمین اصلاح کنید.'
+            self.stdout.write(self.style.WARNING(head % len(conflicts)))
             for line in conflicts:
                 self.stdout.write('  - %s' % line)
-            self.stdout.write(
-                'اگر سند درست است، نام را در پنل ادمین اصلاح کنید.')
+            self.stdout.write(tail)
 
     def _attach_photo(self, person, filename, refresh: bool = False,
                       field: str = 'photo') -> int:
@@ -226,7 +237,8 @@ class Command(BaseCommand):
         return 1
 
     # ── ریاست و معاونت‌ها ────────────────────────────────────────────
-    def _sync_leadership(self, data, refresh: bool) -> tuple[int, list]:
+    def _sync_leadership(self, data, refresh: bool,
+                         trust_document: bool = False) -> tuple[int, list]:
         """نام و عکس رئیس، معاونان و مسئول حراست را سر جایشان می‌گذارد.
 
         صفحه‌های «ریاست»، «معاونت‌ها» و «حراست» از `PresidencyOffice`،
@@ -261,10 +273,17 @@ class Command(BaseCommand):
                 office.president_name = name
                 changed += 1
             elif _match_key(office.president_name) != _match_key(name):
-                mismatch = True
-                conflicts.append(
-                    'رئیس موسسه: در سایت «%s» ولی در سند «%s»'
-                    % (office.president_name, name))
+                if trust_document:
+                    conflicts.append(
+                        'رئیس موسسه: «%s» با «%s» جایگزین شد'
+                        % (office.president_name, name))
+                    office.president_name = name
+                    changed += 1
+                else:
+                    mismatch = True
+                    conflicts.append(
+                        'رئیس موسسه: در سایت «%s» ولی در سند «%s»'
+                        % (office.president_name, name))
             if not office.president_phone and row.get('extension'):
                 office.president_phone = 'داخلی %s' % row['extension']
             office.save()
@@ -286,10 +305,17 @@ class Command(BaseCommand):
                 vice.full_name = name
                 changed += 1
             elif _match_key(vice.full_name) != _match_key(name):
-                mismatch = True
-                conflicts.append(
-                    '%s: در سایت «%s» ولی در سند «%s»'
-                    % (position, vice.full_name, name))
+                if trust_document:
+                    conflicts.append(
+                        '%s: «%s» با «%s» جایگزین شد'
+                        % (position, vice.full_name, name))
+                    vice.full_name = name
+                    changed += 1
+                else:
+                    mismatch = True
+                    conflicts.append(
+                        '%s: در سایت «%s» ولی در سند «%s»'
+                        % (position, vice.full_name, name))
             if not vice.phone and row.get('extension'):
                 vice.phone = 'داخلی %s' % row['extension']
             vice.save()

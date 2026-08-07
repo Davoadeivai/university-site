@@ -197,10 +197,12 @@ def seed_content() -> None:
     log('=' * 60)
 
     run('fix_academic_years')
-    run('seed_directory')
+    # --trust-document: موسسه تأیید کرد که سند ۱۴۰۴ مرجع نام معاونان است
+    run('seed_directory', '--trust-document')
     run('import_from_directory')
     # سه رشته‌ای که در سند وزارت هستند و موسسه تأیید کرد دایرند
-    run('import_major_codes', '--create', '8381,7129,7180')
+    run('import_major_codes', '--create', '8381,7129,7180',
+        '--activate', '8381,7129,7180')
     run('import_term_plans')
 
     incoming = os.path.join(TARGET, 'media', '_incoming')
