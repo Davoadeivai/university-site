@@ -6,9 +6,10 @@ import base64
 import os
 import shutil
 import tempfile
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 from django.test import RequestFactory, TestCase, override_settings
@@ -20,6 +21,9 @@ from core.academic_timeline import build_timeline
 from core.models import PresidencyOffice, SecurityOffice
 from core.storage import ASCIINameStorage, ascii_filename
 from core.sms import check_rate_limit
+from core.jalali_forms import (
+    JalaliDateField, JalaliDateWidget, parse_jalali,
+)
 
 INSTITUTE = 'موسسه آموزش عالی علامه امینی'
 # نام موسسه هرگز نباید پسوند شهر بگیرد — نه شکل قدیمی، نه شکل تازه
@@ -1146,3 +1150,67 @@ class RateLimitSharedIPTests(TestCase):
             allowed, _msg = check_rate_limit(
                 request, scope='off', limit=1, window=300, identity='x')
             self.assertTrue(allowed)
+
+
+class JalaliDateInputTests(TestCase):
+    """ورودی تاریخ در پنل ادمین باید شمسی باشد، نه میلادی.
+
+    فهرست‌ها از قبل شمسی نشان می‌دادند ولی فرم ویرایش `DateField` خام
+    بود: کارمند آموزش باید «۳۱ شهریور ۱۴۰۵» را در ذهنش به 2026-09-22
+    تبدیل می‌کرد و هر خطای تبدیل مستقیم روی تقویم سایت می‌نشست.
+    """
+
+    def test_a_plain_jalali_date_parses(self):
+        self.assertEqual(parse_jalali('1405/06/31'), date(2026, 9, 22))
+
+    def test_persian_digits_parse(self):
+        self.assertEqual(parse_jalali('۱۴۰۵/۰۶/۳۱'), date(2026, 9, 22))
+
+    def test_arabic_digits_parse(self):
+        self.assertEqual(parse_jalali('١٤٠٥/٠٦/٣١'), date(2026, 9, 22))
+
+    def test_separators_and_padding_are_flexible(self):
+        expected = date(2026, 9, 22)
+        for text in ('1405-06-31', '1405.06.31', '1405/6/31', ' ۱۴۰۵ / ۶ / ۳۱ '):
+            with self.subTest(text=text):
+                self.assertEqual(parse_jalali(text), expected)
+
+    def test_a_gregorian_year_is_rejected(self):
+        """۲۰۲۶ سال شمسی نیست — پذیرفتنش یعنی ثبت تاریخی ۶۰۰ سال بعد."""
+        self.assertIsNone(parse_jalali('2026/09/22'))
+
+    def test_an_impossible_day_is_rejected(self):
+        self.assertIsNone(parse_jalali('1405/12/31'))   # اسفند ۳۰ روز است
+        self.assertIsNone(parse_jalali('1405/13/01'))
+
+    def test_junk_is_rejected_rather_than_guessed(self):
+        for text in ('', 'فردا', '1405', '1405/06', 'abc'):
+            with self.subTest(text=text):
+                self.assertIsNone(parse_jalali(text))
+
+    def test_the_form_field_raises_a_readable_error(self):
+        field = JalaliDateField()
+        with self.assertRaises(ValidationError) as ctx:
+            field.clean('2026-09-22')
+        self.assertIn('شمسی', ctx.exception.messages[0])
+
+    def test_the_widget_shows_a_stored_date_in_jalali(self):
+        rendered = JalaliDateWidget().format_value(date(2026, 9, 22))
+        self.assertEqual(rendered, '۱۴۰۵/۰۶/۳۱')
+
+    def test_the_widget_keeps_bad_input_so_it_can_be_corrected(self):
+        self.assertEqual(JalaliDateWidget().format_value('چرند'), 'چرند')
+
+    def test_a_round_trip_through_the_field_keeps_the_day(self):
+        field = JalaliDateField()
+        stored = field.clean('۱۴۰۵/۰۱/۰۱')
+        self.assertEqual(JalaliDateWidget().format_value(stored), '۱۴۰۵/۰۱/۰۱')
+
+    def test_the_calendar_admin_form_uses_the_jalali_field(self):
+        from django.contrib import admin as dj_admin
+        from academics.models import AcademicCalendar
+        model_admin = dj_admin.site._registry[AcademicCalendar]
+        form = model_admin.get_form(None)()
+        for name in ('start_date', 'end_date'):
+            with self.subTest(field=name):
+                self.assertIsInstance(form.fields[name], JalaliDateField)

@@ -2158,14 +2158,35 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 /* ── وضعیت مراحل ── */
 .acal-node.is-past .acal-card {
-    /* نشان «انجام شد» برداشته شد؛ خاکستری‌شدن و تیکِ روی نیم‌دایره
-       همان معنی را بدون تکرار متن می‌رسانند. */
-    background: linear-gradient(170deg, #f7f9fc 0%, #ffffff 62%);
-    border-color: #e3e9f1;
+    /* نشان «انجام شد» برداشته شد؛ کم‌رنگ‌شدن و تیکِ روی نیم‌دایره
+       همان معنی را بدون تکرار متن می‌رسانند.
+
+       رنگ انتخابی ادمین اینجا حذف نمی‌شود، فقط کم‌جان می‌شود. نسخهٔ
+       قبلی خاکستریِ ثابت می‌گذاشت و چون معمولاً همهٔ مراحل تقویم
+       گذشته‌اند، عوض‌کردن رنگ در پنل هیچ اثری روی صفحه نداشت و
+       این‌طور به‌نظر می‌رسید که فیلد رنگ کار نمی‌کند. */
+    background:
+        linear-gradient(170deg,
+            color-mix(in srgb, var(--tone-wash) 45%, #f7f9fc) 0%,
+            #ffffff 62%);
+    border-color: color-mix(in srgb, var(--tone-line) 55%, #e3e9f1);
     box-shadow: 0 4px 14px -14px rgba(16, 54, 90, .35);
 }
 .acal-node.is-past .acal-cap {
-    background: #b9c6d6; border-color: #ffffff; box-shadow: none;
+    /* نیم‌دایره ته‌رنگ خودش را نگه می‌دارد تا مرحله همچنان قابل
+       تشخیص باشد، ولی روشن‌تر از مرحلهٔ فعال. */
+    background: color-mix(in srgb, var(--tone) 38%, #b9c6d6);
+    border-color: #ffffff; box-shadow: none;
+}
+
+/* color-mix در مرورگرهای قدیمی‌تر پشتیبانی نمی‌شود؛ آنجا همان
+   خاکستری قبلی می‌ماند که خوانا و بی‌عیب است. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+    .acal-node.is-past .acal-card {
+        background: linear-gradient(170deg, #f7f9fc 0%, #ffffff 62%);
+        border-color: #e3e9f1;
+    }
+    .acal-node.is-past .acal-cap { background: #b9c6d6; }
 }
 /* تیک کوچک روی نیم‌دایرهٔ مرحلهٔ انجام‌شده */
 .acal-node.is-past .acal-cap i::before { content: "\f00c"; }

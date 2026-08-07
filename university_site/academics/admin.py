@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from core.admin_jalali import JalaliAdminMixin
+from core.jalali_forms import JalaliAdminFormMixin
 from core.jalali import format_jalali_date
 
 from .models import Department, Major, Course, AcademicCalendar, Laboratory, AcademicGroup
@@ -194,7 +195,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 
 @admin.register(AcademicCalendar)
-class AcademicCalendarAdmin(JalaliAdminMixin, admin.ModelAdmin):
+class AcademicCalendarAdmin(JalaliAdminFormMixin, JalaliAdminMixin, admin.ModelAdmin):
     list_display = [
         'title', 'step_preview', 'semester', 'academic_year_jalali',
         'start_date_jalali', 'end_date_jalali',
@@ -213,12 +214,13 @@ class AcademicCalendarAdmin(JalaliAdminMixin, admin.ModelAdmin):
         }),
         ('زمان‌بندی', {
             'fields': (
-                ('start_date', 'start_date_jalali_ro'),
-                ('end_date', 'end_date_jalali_ro'),
+                'start_date',
+                'end_date',
                 ('semester', 'academic_year'),
             ),
             'description': (
-                'تاریخ‌ها را میلادی وارد کنید؛ معادل شمسی کنارشان نمایش داده می‌شود. '
+                'تاریخ‌ها را <strong>شمسی</strong> بنویسید — مثلاً '
+                '<code>۱۴۰۵/۰۶/۳۱</code>. ارقام فارسی یا انگلیسی، هر دو قبول است. '
                 'برای مرحلهٔ یک‌روزه، تاریخ پایان را برابر تاریخ شروع بگذارید.'
             ),
         }),
@@ -240,20 +242,8 @@ class AcademicCalendarAdmin(JalaliAdminMixin, admin.ModelAdmin):
         ('نمایش', {'fields': ('is_important', 'is_active')}),
     )
 
-    def get_readonly_fields(self, request, obj=None):
-        ro = list(super().get_readonly_fields(request, obj))
-        for f in ('start_date_jalali_ro', 'end_date_jalali_ro'):
-            if f not in ro:
-                ro.append(f)
-        return ro
-
-    @admin.display(description='شروع (شمسی)')
-    def start_date_jalali_ro(self, obj):
-        return format_jalali_date(obj.start_date, 'full') if obj and obj.start_date else '—'
-
-    @admin.display(description='پایان (شمسی)')
-    def end_date_jalali_ro(self, obj):
-        return format_jalali_date(obj.end_date, 'full') if obj and obj.end_date else '—'
+    # آینه‌های فقط‌خواندنیِ شمسی حذف شدند: حالا خودِ فیلد ورودی شمسی
+    # است، پس نمایش دوبارهٔ همان تاریخ کنارش فقط فرم را شلوغ می‌کرد.
 
     @admin.display(description='نما')
     def step_preview(self, obj):
