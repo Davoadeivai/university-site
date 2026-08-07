@@ -201,7 +201,12 @@ def public_live_search(request):
     # اندپوینت عمومی و بدون احراز هویت است و هر بار چند کوئری icontains
     # می‌زند؛ بدون سقف، یک اسکریپت ساده می‌تواند دیتابیس را مشغول کند.
     # دیبونس سمت کلاینت محافظت نیست.
-    allowed, _msg = check_rate_limit(request, 'live_search', limit=90, window=60)
+    # سقف صریح و بالا، چون اینجا IP تنها کلید ممکن است و پشت یک IP
+    # اپراتور موبایل ده‌ها دانشجو می‌نشینند. ۹۰ در دقیقه برای یک نفر
+    # زیاد است ولی برای یک اپراتور کم؛ ۶۰۰ هر دو را می‌پوشاند و
+    # همچنان جلوی اسکریپت را می‌گیرد.
+    allowed, _msg = check_rate_limit(
+        request, 'live_search', limit=90, window=60, ip_limit=600)
     if not allowed:
         return JsonResponse({'results': [], 'query': q, 'throttled': True}, status=429)
 

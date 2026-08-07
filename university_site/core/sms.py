@@ -67,18 +67,63 @@ def get_client_ip(request) -> str:
     return request.META.get('REMOTE_ADDR', '') or 'unknown'
 
 
-def check_rate_limit(request, scope: str, limit: int = 10, window: int = 300) -> tuple[bool, str]:
+def check_rate_limit(request, scope: str, limit: int = 10, window: int = 300,
+                     identity: str = '', ip_limit: int | None = None
+                     ) -> tuple[bool, str]:
+    """محدودیت نرخ برای مسیرهای عمومی (بدون احراز هویت).
+
+    چرا فقط IP کافی نیست
+    ────────────────────
+    نسخهٔ قبلی تنها روی IP می‌شمرد. اپراتورهای موبایل ایران صدها تا
+    هزاران مشترک را پشت یک IP عمومی می‌گذارند (CGNAT)، پس سقف «۵ در
+    ۵ دقیقه» یعنی نفر ششمِ همان اپراتور قفل می‌شد — بدون آنکه کاری
+    کرده باشد. کاربر VPN روشن می‌کرد، IP عوض می‌شد و ناگهان کار
+    می‌کرد؛ از بیرون به‌نظر می‌رسید سایت بدون VPN بالا نمی‌آید.
+
+    راه درست: شمردن روی همان چیزی که باید محافظت شود — شمارهٔ موبایل
+    یا کد ملی. کسی که یک شماره را بمباران می‌کند با `identity` گرفته
+    می‌شود، و همسایه‌اش روی همان IP آزاد می‌ماند.
+
+    IP همچنان شمرده می‌شود ولی وقتی هویت داریم، سقفش چند برابر است —
+    فقط برای جلوی سیل‌آسا گرفتن، نه محدود کردن کاربر عادی. ضریب با
+    RATE_LIMIT_IP_MULTIPLIER تنظیم می‌شود.
+
+    برای اندپوینت‌هایی که اصلاً هویتی ندارند (مثل جست‌وجوی زنده)،
+    سقف IP همان `limit` است مگر `ip_limit` صریح داده شود. ضریب
+    خودکار برایشان اعمال نمی‌شود، چون آنجا IP تنها کلید موجود است و
+    بازکردن بی‌دلیلش یعنی برداشتن تنها سپر.
+
+    با RATE_LIMIT_ENABLED=False کل مکانیزم خاموش می‌شود.
     """
-    محدودیت نرخ ساده مبتنی بر IP برای استعلام‌های عمومی (بدون احراز هویت).
-    برمی‌گرداند (مجاز؟, پیام‌خطا).
-    """
+    if not getattr(settings, 'RATE_LIMIT_ENABLED', True):
+        return True, ''
+
+    minutes = max(1, window // 60)
+    too_many = (
+        'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً %d دقیقه دیگر '
+        'تلاش کنید.' % minutes
+    )
+
+    # ۱) سقف دقیق روی هویت — این همان چیزی است که واقعاً باید محدود شود
+    if identity:
+        key = 'rl:%s:id:%s' % (scope, identity)
+        count = cache.get(key, 0)
+        if count >= limit:
+            return False, too_many
+        cache.set(key, count + 1, timeout=window)
+
+    # ۲) سقف IP — سپر در برابر سیل
+    if ip_limit is None:
+        multiplier = getattr(settings, 'RATE_LIMIT_IP_MULTIPLIER', 20)
+        ip_limit = limit * multiplier if identity else limit
+
     ip = get_client_ip(request)
-    key = f'rl:{scope}:{ip}'
-    count = cache.get(key, 0)
-    if count >= limit:
-        minutes = max(1, window // 60)
-        return False, f'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً {minutes} دقیقه دیگر تلاش کنید.'
-    cache.set(key, count + 1, timeout=window)
+    ip_key = 'rl:%s:ip:%s' % (scope, ip)
+    ip_count = cache.get(ip_key, 0)
+    if ip_count >= ip_limit:
+        return False, too_many
+    cache.set(ip_key, ip_count + 1, timeout=window)
+
     return True, ''
 
 

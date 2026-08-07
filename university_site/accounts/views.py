@@ -647,7 +647,10 @@ def magic_login_request(request):
     nid = nid.translate(trans)
     nid = ''.join(ch for ch in nid if ch.isdigit())
 
-    allowed, rl_msg = check_rate_limit(request, scope='magic_login', limit=5, window=300)
+    # کلید روی کد ملی است نه IP: چند دانشجو پشت یک IP اپراتور
+    # نباید همدیگر را قفل کنند.
+    allowed, rl_msg = check_rate_limit(
+        request, scope='magic_login', limit=5, window=300, identity=nid)
     if not allowed:
         messages.error(request, rl_msg)
         return redirect(f"{reverse('admissions:track')}?q={nid}")

@@ -244,7 +244,8 @@ def payment_id(request):
         searched = True
         query = (request.POST.get('query') or '').strip()
         from core.sms import check_rate_limit
-        allowed, rl_msg = check_rate_limit(request, scope='payment_id', limit=10, window=300)
+        allowed, rl_msg = check_rate_limit(
+            request, scope='payment_id', limit=10, window=300, identity=query)
         if not allowed:
             messages.error(request, rl_msg)
         elif query:

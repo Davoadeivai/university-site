@@ -629,7 +629,8 @@ def track_application(request):
     query = _normalize_track_query(request.GET.get('q', ''))
     if query:
         # جلوگیری از پیمایش کد ملی‌ها
-        allowed, rl_msg = check_rate_limit(request, scope='track', limit=12, window=300)
+        allowed, rl_msg = check_rate_limit(
+            request, scope='track', limit=12, window=300, identity=query)
         if not allowed:
             messages.error(request, rl_msg)
             return render(request, 'admissions/track.html', {
@@ -786,7 +787,8 @@ def verify_certificate(request):
     checked = False
 
     if raw:
-        allowed, rl_msg = check_rate_limit(request, scope='verify', limit=15, window=300)
+        allowed, rl_msg = check_rate_limit(
+            request, scope='verify', limit=15, window=300, identity=raw)
         if not allowed:
             messages.error(request, rl_msg)
         else:

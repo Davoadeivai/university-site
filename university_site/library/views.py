@@ -159,8 +159,11 @@ def membership(request):
 
     if request.method == 'POST':
         from core.sms import check_rate_limit
-        allowed, rl_msg = check_rate_limit(request, scope='library_membership', limit=10, window=300)
         action = request.POST.get('action', 'register')
+        # شمارهٔ دانشجویی کلید دقیق‌تری از IP است
+        allowed, rl_msg = check_rate_limit(
+            request, scope='library_membership', limit=10, window=300,
+            identity=(request.POST.get('student_id') or '').strip())
         if not allowed:
             messages.error(request, rl_msg)
         elif action == 'check':

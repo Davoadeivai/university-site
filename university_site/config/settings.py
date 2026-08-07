@@ -39,6 +39,11 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'core.middleware.ClearHttp3AltSvcMiddleware',
+    # فشرده‌سازی پاسخ‌ها. صفحه‌های این سایت با فارسی و کلاس‌های بوت‌استرپ
+    # حدود ۱۰۰ کیلوبایت HTML خام‌اند و روی خط کند ایران همان چند ثانیه
+    # است؛ با gzip حدود یک‌پنجم می‌شود. جنگو توکن CSRF را در هر پاسخ
+    # ماسک می‌کند، پس فشرده‌سازی اینجا در برابر BREACH بی‌خطر است.
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -464,6 +469,19 @@ PROBATION_GPA = config('PROBATION_GPA', default=12, cast=float)
 PROBATION_MAX_UNITS = config('PROBATION_MAX_UNITS', default=14, cast=int)
 # ترم آخر: اگر واحد باقیمانده کم باشد، حداقل واحد اعمال نمی‌شود
 ALLOW_FINAL_TERM_UNDERLOAD = config('ALLOW_FINAL_TERM_UNDERLOAD', default=True, cast=bool)
+
+# -----------------------------------------------------------------------------
+# محدودیت نرخ
+# -----------------------------------------------------------------------------
+# اپراتورهای موبایل ایران صدها مشترک را پشت یک IP عمومی می‌گذارند
+# (CGNAT). محدودیت نرخِ صرفاً IP-محور یعنی یک کاربر، بقیهٔ کاربران همان
+# اپراتور را قفل می‌کند — و چون VPN آی‌پی را عوض می‌کند، از بیرون
+# این‌طور دیده می‌شد که «سایت بدون VPN کار نمی‌کند».
+#
+# حالا شمارش روی هویت (کد ملی / شمارهٔ موبایل / کد رهگیری) است و IP
+# فقط سقف بازِ پشتیبان دارد؛ ضریبش همین است.
+RATE_LIMIT_ENABLED = config('RATE_LIMIT_ENABLED', default=True, cast=bool)
+RATE_LIMIT_IP_MULTIPLIER = config('RATE_LIMIT_IP_MULTIPLIER', default=20, cast=int)
 
 # ثبت‌نام دانشجو — اگر True باشد فقط کسی که پروندهٔ پذیرش «پذیرفته‌شده» دارد
 # می‌تواند حساب بسازد. با False فرم برای همه باز است و هویت از خود فرم گرفته

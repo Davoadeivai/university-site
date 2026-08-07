@@ -10,7 +10,8 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.core.cache import cache
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -18,6 +19,7 @@ from academics.models import AcademicCalendar
 from core.academic_timeline import build_timeline
 from core.models import PresidencyOffice, SecurityOffice
 from core.storage import ASCIINameStorage, ascii_filename
+from core.sms import check_rate_limit
 
 INSTITUTE = 'موسسه آموزش عالی علامه امینی'
 # نام موسسه هرگز نباید پسوند شهر بگیرد — نه شکل قدیمی، نه شکل تازه
@@ -285,13 +287,20 @@ class HomeSectionTests(TestCase):
         self.assertTrue(titles, 'شکل عربی حروف نتیجه‌ای نداد')
 
     def test_live_search_is_rate_limited(self):
-        """اندپوینت عمومی بدون سقف، راه ساده‌ای برای فشار به دیتابیس است."""
+        """اندپوینت عمومی بدون سقف، راه ساده‌ای برای فشار به دیتابیس است.
+
+        سقف عمداً ۶۰۰ در دقیقه است نه ۹۰: پشت یک IP اپراتور موبایل
+        ده‌ها دانشجو می‌نشینند و ۹۰ تا کل آن اپراتور را قفل می‌کرد.
+        شمارنده مستقیم پر می‌شود تا لازم نباشد ۶۰۰ درخواست واقعی زد.
+        """
         from django.core.cache import cache
         cache.clear()
-        last = None
-        for _ in range(95):
-            last = self.client.get('/api/live-search/', {'q': 'الف'})
-        self.assertEqual(last.status_code, 429)
+        self.assertEqual(
+            self.client.get('/api/live-search/', {'q': 'الف'}).status_code, 200)
+
+        cache.set('rl:live_search:ip:127.0.0.1', 600, timeout=60)
+        self.assertEqual(
+            self.client.get('/api/live-search/', {'q': 'الف'}).status_code, 429)
         cache.clear()
 
     def test_documents_page_filters_by_section(self):
@@ -1023,3 +1032,104 @@ class PersianFilenameUploadTests(TestCase):
                     'فایل روی دیسک نیست: %s' % stored)
         finally:
             shutil.rmtree(media, ignore_errors=True)
+
+
+class RateLimitSharedIPTests(TestCase):
+    """محدودیت نرخ نباید کاربران پشت یک IP را قربانی هم کند.
+
+    اپراتورهای موبایل ایران صدها مشترک را پشت یک IP عمومی می‌گذارند.
+    نسخهٔ قبلی فقط IP را می‌شمرد، پس یک نفر بقیه را قفل می‌کرد — و
+    چون VPN آی‌پی را عوض می‌کند، بیرون این‌طور دیده می‌شد که سایت
+    بدون VPN بالا نمی‌آید.
+    """
+
+    def setUp(self):
+        cache.clear()
+        self.factory = RequestFactory()
+
+    def _request(self, ip='5.5.5.5'):
+        request = self.factory.post('/')
+        request.META['REMOTE_ADDR'] = ip
+        return request
+
+    def test_two_people_on_one_ip_do_not_block_each_other(self):
+        request = self._request()
+        for _ in range(5):
+            allowed, _msg = check_rate_limit(
+                request, scope='t', limit=5, window=300, identity='0011223344')
+            self.assertTrue(allowed)
+
+        # نفر اول به سقف خودش خورده
+        allowed, _msg = check_rate_limit(
+            request, scope='t', limit=5, window=300, identity='0011223344')
+        self.assertFalse(allowed)
+
+        # نفر دوم روی همان IP باید آزاد باشد
+        allowed, _msg = check_rate_limit(
+            request, scope='t', limit=5, window=300, identity='9988776655')
+        self.assertTrue(allowed, 'کاربر دوم روی همان IP قفل شد')
+
+    def test_one_identity_is_still_capped(self):
+        request = self._request()
+        for _ in range(5):
+            check_rate_limit(request, scope='t', limit=5, window=300,
+                             identity='0011223344')
+        allowed, msg = check_rate_limit(
+            request, scope='t', limit=5, window=300, identity='0011223344')
+        self.assertFalse(allowed)
+        self.assertIn('بیش از حد', msg)
+
+    def test_the_same_identity_is_capped_across_different_ips(self):
+        """عوض کردن IP نباید سقفِ یک هویت را دور بزند."""
+        for index in range(5):
+            check_rate_limit(self._request('10.0.0.%d' % index), scope='t',
+                             limit=5, window=300, identity='0011223344')
+        allowed, _msg = check_rate_limit(
+            self._request('10.0.0.99'), scope='t', limit=5, window=300,
+            identity='0011223344')
+        self.assertFalse(allowed)
+
+    def test_an_ip_flood_is_still_stopped(self):
+        """سقف IP باز است ولی بی‌نهایت نیست."""
+        request = self._request()
+        blocked = False
+        for index in range(5 * 20 + 5):
+            allowed, _msg = check_rate_limit(
+                request, scope='flood', limit=5, window=300,
+                identity='id-%d' % index)
+            if not allowed:
+                blocked = True
+                break
+        self.assertTrue(blocked, 'سیل درخواست از یک IP متوقف نشد')
+
+    def test_without_an_identity_the_cap_stays_on_the_ip(self):
+        """اندپوینت بی‌هویت سپر دیگری ندارد، پس سقفش خودکار باز نمی‌شود.
+
+        ضریب فقط وقتی اعمال می‌شود که هویت هم شمرده شده باشد. اینجا IP
+        تنها کلید است و بازکردن بی‌دلیلش یعنی برداشتن تنها سپر.
+        """
+        request = self._request()
+        for _ in range(5):
+            ok, _msg = check_rate_limit(request, scope='anon', limit=5, window=300)
+            self.assertTrue(ok)
+        ok, _msg = check_rate_limit(request, scope='anon', limit=5, window=300)
+        self.assertFalse(ok)
+
+    def test_an_explicit_ip_limit_overrides_the_default(self):
+        """راه صریح بازکردن سقف برای اندپوینت پرترافیکِ بی‌هویت."""
+        request = self._request()
+        for _ in range(20):
+            ok, _msg = check_rate_limit(request, scope='wide', limit=5,
+                                        window=300, ip_limit=20)
+            self.assertTrue(ok)
+        ok, _msg = check_rate_limit(request, scope='wide', limit=5,
+                                    window=300, ip_limit=20)
+        self.assertFalse(ok)
+
+    @override_settings(RATE_LIMIT_ENABLED=False)
+    def test_the_whole_mechanism_can_be_switched_off(self):
+        request = self._request()
+        for _ in range(50):
+            allowed, _msg = check_rate_limit(
+                request, scope='off', limit=1, window=300, identity='x')
+            self.assertTrue(allowed)
