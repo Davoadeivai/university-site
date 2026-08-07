@@ -204,6 +204,10 @@ def main() -> int:
         ('رفع باگ نام فارسی فایل',
          'core/storage.py', 'ASCIINameStorage'),
         ('اسکریپت refresh_photos', 'refresh_photos.py', 'seed_directory'),
+        ('دستور ساخت اساتید',
+         'faculty/management/commands/import_from_directory.py', 'split_name'),
+        ('اجرای اساتید در setup_directory',
+         'setup_directory.py', 'import_from_directory'),
         ('گزارش تصویرها',
          'core/management/commands/photo_audit.py', 'WATCHED'),
     ]
@@ -288,6 +292,22 @@ def main() -> int:
             SecurityOffice.objects.count())
 
     safe('رکوردهای core', core_counts)
+
+    def professors():
+        """صفحهٔ /اساتید/ فقط همین‌ها را نشان می‌دهد — با is_active=True."""
+        from faculty.models import Professor
+        total = Professor.objects.count()
+        active = Professor.objects.filter(is_active=True).count()
+        if total == 0:
+            return ('!! صفر — setup_directory.py اجرا نشده یا کد قدیمی است. '
+                    'صفحهٔ اساتید خالی می‌ماند.')
+        if active == 0:
+            return ('%d رکورد ولی هیچ‌کدام فعال نیست — با --draft ساخته '
+                    'شده‌اند. در پنل ادمین فعالشان کنید.' % total)
+        return '%d نفر، %d فعال، %d با عکس' % (
+            total, active, Professor.objects.exclude(photo='').count())
+
+    safe('اساتید', professors)
 
     head('۸) نشانی‌های جدید')
     from django.urls import reverse
