@@ -74,7 +74,14 @@ class Major(models.Model):
         null=True,
         help_text=_('نسخه Word سرفصل در صورت وجود'),
     )
+    code = models.CharField(
+        _('کد رشته'), max_length=20, blank=True, db_index=True,
+        help_text=_('کد رسمی وزارت علوم — داوطلب در دفترچهٔ سنجش با همین '
+                    'کد رشته را پیدا می‌کند.'))
     total_credits = models.PositiveIntegerField(_('تعداد کل واحد'), default=0)
+    internship_hours = models.PositiveIntegerField(
+        _('ساعت کارآموزی'), default=0,
+        help_text=_('صفر یعنی این رشته کارآموزی ندارد.'))
     capacity = models.PositiveIntegerField(_('ظرفیت'), default=0)
     admission_requirements = models.TextField(_('شرایط پذیرش'), blank=True)
     tuition_fee = models.CharField(_('شهریه'), max_length=200, blank=True)
