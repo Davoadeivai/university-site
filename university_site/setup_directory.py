@@ -70,7 +70,19 @@ def main() -> int:
 
     log('')
     log('=' * 60)
-    log('۲) وارد کردن سرفصل‌های مصوب')
+    log('۲) ساخت پروندهٔ اساتید از همان فهرست')
+    log('=' * 60)
+    log('صفحهٔ عمومی «اساتید» از جدول دیگری می‌خواند، پس بدون این مرحله')
+    log('۵۵ عضو علمی در سیستم هست ولی آن صفحه خالی می‌ماند.')
+    log('')
+    try:
+        call_command('import_from_directory')
+    except Exception as exc:            # noqa: BLE001
+        log('!! ساخت اساتید شکست خورد: %s' % exc)
+
+    log('')
+    log('=' * 60)
+    log('۳) وارد کردن سرفصل‌های مصوب')
     log('=' * 60)
 
     if not os.path.isdir(INCOMING):
