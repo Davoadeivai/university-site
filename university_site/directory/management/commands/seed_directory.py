@@ -76,6 +76,20 @@ def _bare_name(name: str) -> str:
     return cleaned
 
 
+def _match_key(name: str) -> str:
+    """کلید مقایسه — فاصله و نیم‌فاصله و شکل حروف را نادیده می‌گیرد.
+
+    «سید محمد سیدحسینی» و «سیدمحمد سیدحسینی» یک نفرند، ولی مقایسهٔ
+    رشته‌ای آن‌ها را دو نفر می‌دید و دستور یک تعارض ساختگی گزارش
+    می‌کرد: «در سایت … ولی در سند …» برای نامی که فقط یک فاصله فرق
+    داشت. آن هشدار توجه را از دو تعارض واقعی برمی‌داشت.
+    """
+    cleaned = _bare_name(name)
+    cleaned = cleaned.replace('ي', 'ی').replace('ك', 'ک')
+    cleaned = cleaned.replace('‌', '').replace('‏', '')
+    return ''.join(cleaned.split())
+
+
 class Command(BaseCommand):
     help = 'بارگذاری افراد، هیات‌ها و منابع بیرونی از سند رسمی موسسه'
 
@@ -246,7 +260,7 @@ class Command(BaseCommand):
             if _is_placeholder(office.president_name):
                 office.president_name = name
                 changed += 1
-            elif _bare_name(office.president_name) != _bare_name(name):
+            elif _match_key(office.president_name) != _match_key(name):
                 mismatch = True
                 conflicts.append(
                     'رئیس موسسه: در سایت «%s» ولی در سند «%s»'
@@ -271,7 +285,7 @@ class Command(BaseCommand):
             if _is_placeholder(vice.full_name):
                 vice.full_name = name
                 changed += 1
-            elif _bare_name(vice.full_name) != _bare_name(name):
+            elif _match_key(vice.full_name) != _match_key(name):
                 mismatch = True
                 conflicts.append(
                     '%s: در سایت «%s» ولی در سند «%s»'
@@ -325,7 +339,7 @@ class Command(BaseCommand):
 
                 matches = [
                     obj for obj in BoardMember.objects.filter(board_type=board_type)
-                    if _bare_name(obj.full_name) == bare
+                    if _match_key(obj.full_name) == _match_key(bare)
                 ]
 
                 if matches:

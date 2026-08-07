@@ -401,3 +401,39 @@ class CurriculumDownloadTests(MediaIsolatedTestCase):
         options = res.context['level_options']
         self.assertEqual([o['key'] for o in options], ['master'])
         self.assertEqual(options[0]['count'], 1)
+
+
+class NameMatchKeyTests(TestCase):
+    """«سید محمد» و «سیدمحمد» یک نفرند.
+
+    بدون این، دستور یک تعارض ساختگی گزارش می‌کرد و آن هشدار توجه را
+    از تعارض‌های واقعی برمی‌داشت.
+    """
+
+    def test_a_missing_space_is_not_a_different_person(self):
+        from directory.management.commands.seed_directory import _match_key
+        self.assertEqual(_match_key('سید محمد سیدحسینی'),
+                         _match_key('سیدمحمد سیدحسینی'))
+
+    def test_honorifics_are_still_ignored(self):
+        from directory.management.commands.seed_directory import _match_key
+        self.assertEqual(_match_key('دکتر سیدمحمد سیدحسینی'),
+                         _match_key('سید محمد سیدحسینی'))
+
+    def test_arabic_letters_are_normalised(self):
+        from directory.management.commands.seed_directory import _match_key
+        self.assertEqual(_match_key('محمدعلي جعفري'),
+                         _match_key('محمدعلی جعفری'))
+
+    def test_genuinely_different_names_stay_different(self):
+        from directory.management.commands.seed_directory import _match_key
+        self.assertNotEqual(_match_key('دکتر علی فرنگی'),
+                            _match_key('دکتر محمدعلی جعفری'))
+
+    def test_a_spacing_variant_no_longer_reports_a_conflict(self):
+        VicePresidency.objects.create(
+            vice_type='construction', full_name='دکتر سید محمد سیدحسینی',
+            is_active=True)
+        out = StringIO()
+        call_command('seed_directory', stdout=out)
+        self.assertNotIn('معاون فنی و عمرانی', out.getvalue())
