@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.admin_guards import require_model_view_permission
 from core.admin_jalali import JalaliAdminMixin
+from core.jalali import jalali_year_range
 
 from .application_export import excel_response, print_html_response, word_response
 from .models import (
@@ -331,7 +332,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     @admin.display(description='تاریخ ثبت', ordering='created_at')
     def created_jalali(self, obj):
-        from core.jalali import format_jalali_datetime
+        from core.jalali import format_jalali_datetime, jalali_year_range
         return format_jalali_datetime(obj.created_at)
 
     @admin.display(description='تاریخ ثبت (شمسی)')
@@ -534,7 +535,7 @@ class ApplicationAdmin(admin.ModelAdmin):
 @admin.register(TuitionStructure)
 class TuitionStructureAdmin(admin.ModelAdmin):
     list_display = [
-        'major', 'degree_display', 'academic_year', 'fixed_fee_fmt',
+        'major', 'degree_display', 'academic_year_jalali', 'fixed_fee_fmt',
         'theory_fee_fmt', 'practical_fee_fmt', 'is_active',
     ]
     list_filter = ['major__degree', 'academic_year', 'is_active', 'major__group']
@@ -542,6 +543,16 @@ class TuitionStructureAdmin(admin.ModelAdmin):
     search_fields = ['major__name', 'academic_year']
     autocomplete_fields = ['major']
     list_select_related = ('major', 'major__group')
+
+    @admin.display(description='سال تحصیلی', ordering='academic_year')
+    def academic_year_jalali(self, obj):
+        """سال را شمسی نشان می‌دهد حتی اگر میلادی ذخیره شده باشد.
+
+        `fix_academic_years` خودِ داده را اصلاح می‌کند، ولی کسی ممکن
+        است بعداً «2027-2028» تایپ کند و آن‌وقت فهرست نباید میلادی
+        نشان بدهد.
+        """
+        return jalali_year_range(obj.academic_year)
     fieldsets = (
         ('اطلاعات پایه', {
             'fields': ('major', 'academic_year', 'is_active')

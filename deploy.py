@@ -196,6 +196,7 @@ def seed_content() -> None:
     log('بارگذاری محتوا')
     log('=' * 60)
 
+    run('fix_academic_years')
     run('seed_directory')
     run('import_from_directory')
     # سه رشته‌ای که در سند وزارت هستند و موسسه تأیید کرد دایرند

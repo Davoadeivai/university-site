@@ -1270,3 +1270,51 @@ class TermPlanImportTests(TestCase):
         call_command('import_term_plans', stdout=StringIO())
         doc.refresh_from_db()
         self.assertEqual(doc.file.name, chosen)
+
+
+class AcademicYearJalaliTests(TestCase):
+    """سال تحصیلی باید در دیتابیس شمسی باشد، نه فقط در نمایش.
+
+    `academic_year` یک متن ساده است که فیلتر، جست‌وجو و مرتب‌سازی
+    مستقیم رویش کار می‌کنند. اگر نیمی «۱۴۰۴-۱۴۰۵» باشد و نیمی
+    «2026-2027»، فیلتر دو گزینه برای یک سال نشان می‌دهد.
+    """
+
+    def test_a_gregorian_range_becomes_jalali(self):
+        from core.management.commands.fix_academic_years import to_jalali
+        self.assertEqual(to_jalali('2026-2027'), '1405-1406')
+
+    def test_a_jalali_range_is_left_alone(self):
+        from core.management.commands.fix_academic_years import to_jalali
+        self.assertEqual(to_jalali('1404-1405'), '1404-1405')
+
+    def test_digits_stay_latin_in_the_database(self):
+        """رقم فارسی در ستون، مرتب‌سازی و unique_together را می‌شکند."""
+        from core.management.commands.fix_academic_years import to_jalali
+        self.assertEqual(to_jalali('۱۴۰۴-۱۴۰۵'), '1404-1405')
+
+    def test_an_empty_value_is_untouched(self):
+        from core.management.commands.fix_academic_years import to_jalali
+        self.assertEqual(to_jalali(''), '')
+
+    def test_the_command_converts_a_stored_calendar_year(self):
+        AcademicCalendar.objects.create(
+            title='آزمون', academic_year='2026-2027', semester='fall',
+            start_date=timezone.localdate(), end_date=timezone.localdate())
+        call_command('fix_academic_years', stdout=StringIO())
+        self.assertEqual(
+            AcademicCalendar.objects.get(title='آزمون').academic_year,
+            '1405-1406')
+
+    def test_dry_run_writes_nothing(self):
+        AcademicCalendar.objects.create(
+            title='آزمون۲', academic_year='2026-2027', semester='fall',
+            start_date=timezone.localdate(), end_date=timezone.localdate())
+        call_command('fix_academic_years', '--dry-run', stdout=StringIO())
+        self.assertEqual(
+            AcademicCalendar.objects.get(title='آزمون۲').academic_year,
+            '2026-2027')
+
+    def test_the_admin_column_shows_jalali_even_for_gregorian_data(self):
+        from core.jalali import jalali_year_range
+        self.assertEqual(jalali_year_range('2026-2027'), '۱۴۰۵-۱۴۰۶')
