@@ -16,6 +16,13 @@ cPanel ← Setup Python App ← اپ ← بخش «Execute python script»:
 پیش از آن یک بار «Update from Remote» را در صفحهٔ گیت بزنید تا آخرین
 کد روی سرور بیاید. این اسکریپت فقط همان کد را سر جایش می‌گذارد.
 
+چه کاری انجام می‌دهد
+────────────────────
+کد را سر جایش می‌گذارد، migrate و collectstatic می‌زند، محتوای سند
+رسمی را بارگذاری می‌کند (افراد، هیات‌ها، اساتید، سرفصل‌ها) و اپ را
+ری‌استارت می‌کند. یک اجرا، همه‌چیز — دیگر لازم نیست اسکریپت دومی
+پشت سرش زده شود.
+
 چه چیزهایی دست‌نخورده می‌مانند
 ──────────────────────────────
 .env، media/، logs/، دیتابیس، و خروجی collectstatic. یعنی هیچ دادهٔ
@@ -167,6 +174,42 @@ def check_media() -> None:
         log('   در File Manager مجوز این پوشه را روی 755 بگذارید.')
 
 
+def seed_content() -> None:
+    """بارگذاری محتوای سند رسمی — همان کاری که setup_directory.py می‌کرد.
+
+    چرا اینجا و نه در یک اسکریپت جدا
+    ────────────────────────────────
+    ترتیب «Update from Remote ← deploy.py ← setup_directory.py» چهار
+    بار پشت سر هم نصفه اجرا شد و هر بار نتیجه یکی بود: اسکریپت دوم
+    روی کدِ کپی‌نشده اجرا می‌شد، بی‌خطا تمام می‌شد، و صفحه خالی
+    می‌ماند. یک مرحلهٔ کمتر یعنی یک جای کمتر برای اشتباه.
+
+    هر سه دستور عمداً بی‌خطرند اگر بارها اجرا شوند: ردیف تکراری
+    نمی‌سازند، و متن یا عکسی را که ادمین وارد کرده بازنویسی نمی‌کنند —
+    فقط جاهای خالی را پر می‌کنند. پس اجرای‌شان در هر دیپلوی مشکلی
+    نمی‌سازد.
+
+    شکست هرکدام گزارش می‌شود ولی جلوی بقیه را نمی‌گیرد؛ نرسیدن
+    سرفصل‌ها نباید مانع ساخته‌شدن اساتید شود.
+    """
+    log('\n' + '=' * 60)
+    log('بارگذاری محتوا')
+    log('=' * 60)
+
+    run('seed_directory')
+    run('import_from_directory')
+
+    incoming = os.path.join(TARGET, 'media', '_incoming')
+    if os.path.isdir(incoming):
+        manifest = os.path.join(incoming, 'manifest.json')
+        args = ['import_curricula', '--source', incoming, '--move']
+        if os.path.isfile(manifest):
+            args += ['--manifest', manifest]
+        run(*args)
+    else:
+        log('\nپوشهٔ media/_incoming نیست — وارد کردن سرفصل‌ها رد شد.')
+
+
 def main() -> int:
     log('=' * 60)
     log('مبدأ : %s' % SOURCE)
@@ -204,6 +247,9 @@ def main() -> int:
         ok = run('collectstatic', '--noinput')
 
     check_media()
+
+    if ok:
+        seed_content()
 
     # ری‌استارت: Passenger این فایل را می‌بیند و worker را تازه می‌کند
     tmp_dir = os.path.join(TARGET, 'tmp')
