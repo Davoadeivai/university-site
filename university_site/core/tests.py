@@ -1414,3 +1414,35 @@ class ContactEmailTests(TestCase):
                      stdout=StringIO())
         body = self.client.get(reverse('contact:contact')).content.decode()
         self.assertIn('support@portal.aab.ac.ir', body)
+
+
+class TestEmailCommandTests(TestCase):
+    """دستور آزمایش ایمیل باید خطای SMTP را ترجمه کند، نه فقط پرتاب."""
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend')
+    def test_console_mode_is_reported_not_treated_as_success(self):
+        out = StringIO()
+        call_command('test_email', '--to', 'x@example.com', stdout=out)
+        self.assertIn('حالت کنسول', out.getvalue())
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend',
+        EMAIL_USE_TLS=True, EMAIL_USE_SSL=True)
+    def test_tls_and_ssl_together_is_caught_before_connecting(self):
+        out = StringIO()
+        call_command('test_email', '--to', 'x@example.com', stdout=out)
+        self.assertIn('هر دو True', out.getvalue())
+
+    @override_settings(
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_a_working_backend_reports_success(self):
+        out = StringIO()
+        call_command('test_email', '--to', 'x@example.com', stdout=out)
+        self.assertIn('ارسال شد', out.getvalue())
+
+    def test_a_known_smtp_failure_gets_a_plain_explanation(self):
+        from core.management.commands.test_email import HINTS
+        text = "(535, b'5.7.8 Username and Password not accepted')".lower()
+        matched = [reason for needle, reason, _fix in HINTS if needle in text]
+        self.assertTrue(matched, 'خطای رایج جیمیل ترجمه نشد')
