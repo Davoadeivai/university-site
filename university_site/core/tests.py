@@ -1368,3 +1368,49 @@ class OrgChartTests(TestCase):
         call_command('set_org_chart', stdout=StringIO())
         body = self.client.get(reverse('core:about')).content.decode()
         self.assertIn('org-chart', body)
+
+
+class ContactEmailTests(TestCase):
+    """یک فیلد، سه جا: نوار بالا، فوتر، صفحهٔ تماس."""
+
+    def setUp(self):
+        from core.models import SiteSettings
+        SiteSettings.objects.create(university_name_fa='موسسه آزمون')
+
+    def test_the_address_is_stored(self):
+        from core.models import SiteSettings
+        call_command('set_contact_email', '--email', 'support@portal.aab.ac.ir',
+                     stdout=StringIO())
+        self.assertEqual(SiteSettings.objects.first().email,
+                         'support@portal.aab.ac.ir')
+
+    def test_a_misspelling_is_flagged_but_still_applied(self):
+        from core.models import SiteSettings
+        out = StringIO()
+        call_command('set_contact_email', '--email', 'suppurt@portal.aab.ac.ir',
+                     stdout=out)
+        self.assertIn('مشکوک', out.getvalue())
+        self.assertEqual(SiteSettings.objects.first().email,
+                         'suppurt@portal.aab.ac.ir')
+
+    def test_an_existing_address_is_kept_without_replace(self):
+        from core.models import SiteSettings
+        row = SiteSettings.objects.first()
+        row.email = 'mine@aab.ac.ir'
+        row.save()
+        call_command('set_contact_email', '--email', 'other@aab.ac.ir',
+                     stdout=StringIO())
+        row.refresh_from_db()
+        self.assertEqual(row.email, 'mine@aab.ac.ir')
+
+    def test_it_appears_in_the_footer_as_a_link(self):
+        call_command('set_contact_email', '--email', 'support@portal.aab.ac.ir',
+                     stdout=StringIO())
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('mailto:support@portal.aab.ac.ir', body)
+
+    def test_it_appears_on_the_contact_page(self):
+        call_command('set_contact_email', '--email', 'support@portal.aab.ac.ir',
+                     stdout=StringIO())
+        body = self.client.get(reverse('contact:contact')).content.decode()
+        self.assertIn('support@portal.aab.ac.ir', body)

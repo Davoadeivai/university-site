@@ -54,7 +54,7 @@
                 </button>
                 <span class="topbar-info d-none d-md-inline"><i class="fas fa-phone-alt"></i> {% if site_settings and site_settings.phone %}{{ site_settings.phone }}{% else %}۰۱۱-۳۵۷۵۰۸۱۰ (الی ۱۵){% endif %}</span>
                 {% if site_settings and site_settings.email %}
-                <span class="topbar-info d-none d-md-inline"><i class="fas fa-envelope"></i> {{ site_settings.email }}</span>
+                <a class="topbar-info d-none d-md-inline text-decoration-none" href="mailto:{{ site_settings.email }}"><i class="fas fa-envelope"></i> {{ site_settings.email }}</a>
                 {% endif %}
             </div>
             <div class="col-6 col-md-6 d-flex justify-content-end align-items-center gap-2 gap-md-3">
@@ -453,7 +453,8 @@
                             {% if site_settings and site_settings.email %}
                             <li>
                                 <i class="fas fa-envelope"></i>
-                                <span>{{ site_settings.email }}</span>
+                                {# قابل کلیک: روی موبایل نشانی را دستی تایپ‌کردن یعنی غلط تایپی #}
+                                <a href="mailto:{{ site_settings.email }}" class="footer-mail">{{ site_settings.email }}</a>
                             </li>
                             {% endif %}
                             {% if site_settings and site_settings.working_hours %}

@@ -424,6 +424,10 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'موسسه آموزش عالی علامه امینی <noreply@localhost>'
 
+# ایمیل تماسی که پای هر صفحه و در صفحهٔ تماس دیده می‌شود. از .env
+# می‌آید تا عوض‌کردنش یک ویرایش روی سرور باشد، نه یک دیپلوی تازه.
+SITE_CONTACT_EMAIL = config('SITE_CONTACT_EMAIL', default='')
+
 PASSWORD_RESET_TIMEOUT = 3600
 
 # -----------------------------------------------------------------------------
