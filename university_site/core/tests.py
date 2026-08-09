@@ -1318,3 +1318,53 @@ class AcademicYearJalaliTests(TestCase):
     def test_the_admin_column_shows_jalali_even_for_gregorian_data(self):
         from core.jalali import jalali_year_range
         self.assertEqual(jalali_year_range('2026-2027'), '۱۴۰۵-۱۴۰۶')
+
+
+class OrgChartTests(TestCase):
+    """چارت سازمانی یک تصویر است؛ گره‌های درختی نباید پاک شوند."""
+
+    def setUp(self):
+        from core.models import SiteSettings
+        SiteSettings.objects.create(university_name_fa='موسسه آزمون')
+
+    def test_the_image_is_attached(self):
+        from core.models import SiteSettings
+        call_command('set_org_chart', stdout=StringIO())
+        self.assertTrue(SiteSettings.objects.first().org_chart_file)
+
+    def test_existing_nodes_survive_by_default(self):
+        from core.models import OrganizationalChart
+        OrganizationalChart.objects.create(
+            name='ریاست موسسه', node_type='president')
+        call_command('set_org_chart', stdout=StringIO())
+        self.assertEqual(OrganizationalChart.objects.count(), 1)
+
+    def test_nodes_go_only_when_asked(self):
+        from core.models import OrganizationalChart
+        OrganizationalChart.objects.create(
+            name='ریاست موسسه', node_type='president')
+        call_command('set_org_chart', '--drop-nodes', stdout=StringIO())
+        self.assertEqual(OrganizationalChart.objects.count(), 0)
+
+    def test_an_existing_file_is_not_replaced_silently(self):
+        from core.models import SiteSettings
+        row = SiteSettings.objects.first()
+        row.org_chart_file.save('mine.jpg', ContentFile(b'admin upload'),
+                                save=True)
+        chosen = row.org_chart_file.name
+        call_command('set_org_chart', stdout=StringIO())
+        row.refresh_from_db()
+        self.assertEqual(row.org_chart_file.name, chosen)
+
+    def test_replace_overwrites_it(self):
+        from core.models import SiteSettings
+        row = SiteSettings.objects.first()
+        row.org_chart_file.save('mine.jpg', ContentFile(b'old'), save=True)
+        call_command('set_org_chart', '--replace', stdout=StringIO())
+        row.refresh_from_db()
+        self.assertIn('org-chart', row.org_chart_file.name)
+
+    def test_the_about_page_shows_the_chart(self):
+        call_command('set_org_chart', stdout=StringIO())
+        body = self.client.get(reverse('core:about')).content.decode()
+        self.assertIn('org-chart', body)

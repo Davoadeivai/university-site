@@ -205,6 +205,7 @@ def seed_content() -> None:
         '--activate', '8381,7129,7180')
     run('import_term_plans')
     run('tidy_academic_structure')
+    run('set_org_chart')
 
     incoming = os.path.join(TARGET, 'media', '_incoming')
     if os.path.isdir(incoming):
