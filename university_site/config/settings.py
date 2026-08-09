@@ -426,7 +426,11 @@ else:
 
 # ایمیل تماسی که پای هر صفحه و در صفحهٔ تماس دیده می‌شود. از .env
 # می‌آید تا عوض‌کردنش یک ویرایش روی سرور باشد، نه یک دیپلوی تازه.
-SITE_CONTACT_EMAIL = config('SITE_CONTACT_EMAIL', default='')
+# پیش‌فرض همان آدرس رسمی است تا نصب تازه بدون ویرایش .env هم درست
+# کار کند؛ راز نیست و در فوتر هر صفحه دیده می‌شود. برای عوض‌کردن،
+# SITE_CONTACT_EMAIL را در .env بنویسید — همان‌جا برنده است.
+SITE_CONTACT_EMAIL = config(
+    'SITE_CONTACT_EMAIL', default='support@portal.aab.ac.ir')
 
 PASSWORD_RESET_TIMEOUT = 3600
 
