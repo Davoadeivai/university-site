@@ -90,7 +90,7 @@
                 <a href="{% url 'library:book_detail' book.pk %}" class="uni-card p-3 mb-3 d-block text-decoration-none catalog-item" data-aos="fade-up">
                     <div class="d-flex gap-3">
                         {% if book.cover %}
-                        <img src="{{ book.cover.url }}" class="catalog-cover" alt="{{ book.title }}">
+                        <img loading="lazy" decoding="async" src="{{ book.cover.url }}" class="catalog-cover" alt="{{ book.title }}">
                         {% else %}
                         <div class="catalog-cover catalog-cover-ph"><i class="fas fa-book"></i></div>
                         {% endif %}
@@ -180,7 +180,7 @@
                     {% for b in recent_books %}
                     <a href="{% url 'library:book_detail' b.pk %}" class="d-flex gap-2 text-decoration-none mb-2 align-items-center">
                         {% if b.cover %}
-                        <img src="{{ b.cover.url }}" alt="" style="width:36px;height:48px;object-fit:cover;border-radius:4px;">
+                        <img loading="lazy" decoding="async" src="{{ b.cover.url }}" alt="" style="width:36px;height:48px;object-fit:cover;border-radius:4px;">
                         {% else %}
                         <div style="width:36px;height:48px;background:var(--gradient-primary);border-radius:4px;"></div>
                         {% endif %}

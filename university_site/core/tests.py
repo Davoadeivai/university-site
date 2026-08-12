@@ -1446,3 +1446,43 @@ class TestEmailCommandTests(TestCase):
         text = "(535, b'5.7.8 Username and Password not accepted')".lower()
         matched = [reason for needle, reason, _fix in HINTS if needle in text]
         self.assertTrue(matched, 'خطای رایج جیمیل ترجمه نشد')
+
+
+class SeoBasicsTests(TestCase):
+    """چیزهایی که تا امروز نبودند و هر صفحه به آن‌ها نیاز دارد."""
+
+    def test_robots_is_served_as_plain_text(self):
+        res = self.client.get('/robots.txt')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('text/plain', res['Content-Type'])
+
+    def test_robots_keeps_crawlers_out_of_the_panels(self):
+        body = self.client.get('/robots.txt').content.decode()
+        for path in ('/admin/', '/dashboard/', '/accounts/'):
+            with self.subTest(path=path):
+                self.assertIn('Disallow: %s' % path, body)
+
+    def test_open_graph_tags_are_present(self):
+        body = self.client.get(reverse('core:home')).content.decode()
+        for prop in ('og:title', 'og:description', 'og:image', 'og:url'):
+            with self.subTest(prop=prop):
+                self.assertIn(prop, body)
+
+    def test_the_og_image_is_an_absolute_url(self):
+        """تلگرام و واتساپ نشانی نسبی را نمی‌گیرند."""
+        import re
+        body = self.client.get(reverse('core:home')).content.decode()
+        match = re.search(r'property="og:image" content="([^"]+)"', body)
+        self.assertIsNotNone(match, 'تگ og:image پیدا نشد')
+        self.assertTrue(match.group(1).startswith('http'), match.group(1))
+
+    def test_structured_data_is_valid_json(self):
+        import json
+        import re
+        body = self.client.get(reverse('core:home')).content.decode()
+        match = re.search(
+            r'<script type="application/ld\+json">(.*?)</script>', body, re.S)
+        self.assertIsNotNone(match, 'داده ساختاریافته پیدا نشد')
+        data = json.loads(match.group(1))
+        self.assertEqual(data['@type'], 'CollegeOrUniversity')
+        self.assertTrue(data['url'].startswith('http'))

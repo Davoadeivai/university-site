@@ -74,7 +74,7 @@
             <div class="org-chart-file mt-4 bg-white rounded-xl shadow-sm overflow-hidden">
                 {% if settings.org_chart_file_kind == 'image' %}
                 <div class="p-3 p-md-4 text-center">
-                    <img src="{{ settings.org_chart_file.url }}"
+                    <img loading="lazy" decoding="async" src="{{ settings.org_chart_file.url }}"
                          alt="چارت سازمانی"
                          class="img-fluid"
                          style="max-width:100%;height:auto;border-radius:8px;">
@@ -113,7 +113,7 @@
                 <div class="org-node-wrapper">
                     <div class="org-node">
                         {% if node.person_photo %}
-                        <img src="{{ node.person_photo.url }}" alt="{{ node.person_name }}" class="org-photo">
+                        <img loading="lazy" decoding="async" src="{{ node.person_photo.url }}" alt="{{ node.person_name }}" class="org-photo">
                         {% else %}
                         <div class="org-photo-placeholder">
                             <i class="fas fa-user"></i>
@@ -132,7 +132,7 @@
                         {% for child in node.get_children %}
                         <div class="org-node child-node">
                             {% if child.person_photo %}
-                            <img src="{{ child.person_photo.url }}" alt="{{ child.person_name }}" class="org-photo child-photo">
+                            <img loading="lazy" decoding="async" src="{{ child.person_photo.url }}" alt="{{ child.person_name }}" class="org-photo child-photo">
                             {% else %}
                             <div class="org-photo-placeholder child-photo">
                                 <i class="fas fa-user"></i>

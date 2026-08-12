@@ -20,7 +20,7 @@
         <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
             <div class="col-lg-4 text-center">
                 {% if office.president_photo %}
-                <img src="{{ office.president_photo.url }}" alt="{{ office.president_name }}"
+                <img loading="lazy" decoding="async" src="{{ office.president_photo.url }}" alt="{{ office.president_name }}"
                      class="rounded-circle border border-4 border-primary shadow"
                      style="width:200px;height:200px;object-fit:cover;">
                 {% else %}
@@ -100,7 +100,7 @@
             <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
                 <div class="dept-card h-100 text-center">
                     {% if dep.photo %}
-                    <img src="{{ dep.photo.url }}" alt="{{ dep.full_name }}"
+                    <img loading="lazy" decoding="async" src="{{ dep.photo.url }}" alt="{{ dep.full_name }}"
                          class="rounded-circle border border-3 border-warning mb-3"
                          style="width:90px;height:90px;object-fit:cover;">
                     {% else %}

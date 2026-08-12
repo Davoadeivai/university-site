@@ -21,7 +21,7 @@
         <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
             <div class="col-lg-4 text-center">
                 {% if office.manager_photo %}
-                <img src="{{ office.manager_photo.url }}" alt="{{ office.manager_name }}"
+                <img loading="lazy" decoding="async" src="{{ office.manager_photo.url }}" alt="{{ office.manager_name }}"
                      class="rounded-circle border border-4 border-info shadow"
                      style="width:180px;height:180px;object-fit:cover;">
                 {% else %}

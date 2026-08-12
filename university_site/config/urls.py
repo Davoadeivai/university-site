@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
@@ -8,6 +9,10 @@ from core.admin_finance import finance_overview
 from core.admin_search import admin_live_counters, admin_nav_search_index, public_live_search
 
 urlpatterns = [
+    # بدون این، خزنده‌ها /admin/ و /dashboard/ را هم می‌بینند.
+    path('robots.txt', TemplateView.as_view(
+        template_name='robots.txt', content_type='text/plain'),
+        name='robots'),
     path('i18n/', include('django.conf.urls.i18n')),
     path('admin/nav-search.json', admin_nav_search_index, name='admin_nav_search'),
     path('admin/live-counters.json', admin_live_counters, name='admin_live_counters'),

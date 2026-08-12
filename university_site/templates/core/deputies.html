@@ -36,7 +36,7 @@
                     <!-- عکس و هدر -->
                     <div class="d-flex align-items-center gap-3 mb-3">
                         {% if dep.photo %}
-                        <img src="{{ dep.photo.url }}" alt="{{ dep.full_name }}"
+                        <img loading="lazy" decoding="async" src="{{ dep.photo.url }}" alt="{{ dep.full_name }}"
                              class="rounded-circle border border-2 border-primary"
                              style="width:70px;height:70px;object-fit:cover;flex-shrink:0;">
                         {% else %}

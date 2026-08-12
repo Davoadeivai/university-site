@@ -19,7 +19,7 @@
             <div class="carousel-inner rounded-3 overflow-hidden shadow">
                 {% for img in images %}
                 <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ img.title }}"
+                    <img loading="lazy" decoding="async" src="{{ img.image.url }}" class="d-block w-100" alt="{{ img.title }}"
                          style="max-height:520px;object-fit:cover;">
                     {% if img.title or img.description %}
                     <div class="carousel-caption d-none d-md-block" style="background:rgba(0,0,0,.35);border-radius:8px;padding:8px 14px;">

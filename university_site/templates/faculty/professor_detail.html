@@ -19,7 +19,7 @@
             <div class="col-lg-4" data-aos="fade-right">
                 <div class="uni-card p-4 text-center">
                     {% if professor.photo %}
-                    <img src="{{ professor.photo.url }}" alt="{{ professor.get_full_name }}" class="prof-avatar" style="width:140px;height:140px;">
+                    <img loading="lazy" decoding="async" src="{{ professor.photo.url }}" alt="{{ professor.get_full_name }}" class="prof-avatar" style="width:140px;height:140px;">
                     {% else %}
                     <div class="prof-avatar-placeholder" style="width:140px;height:140px;font-size:60px;margin:0 auto 16px;"><i class="fas fa-user-tie"></i></div>
                     {% endif %}

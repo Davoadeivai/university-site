@@ -823,7 +823,7 @@
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
                 <div class="prof-card">
                     {% if prof.photo %}
-                    <img src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">
+                    <img loading="lazy" decoding="async" src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">
                     {% else %}
                     <div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>
                     {% endif %}
@@ -944,7 +944,7 @@
             <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
                 <div class="alumni-card text-center">
                     {% if person.photo %}
-                    <img src="{{ person.photo.url }}" alt="{{ person.full_name }}" class="alumni-photo mb-3">
+                    <img loading="lazy" decoding="async" src="{{ person.photo.url }}" alt="{{ person.full_name }}" class="alumni-photo mb-3">
                     {% else %}
                     <div class="prof-avatar-placeholder" style="margin: 0 auto 12px;"><i class="fas fa-user-tie"></i>
                     </div>

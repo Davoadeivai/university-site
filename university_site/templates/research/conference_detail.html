@@ -17,7 +17,7 @@
     <div class="container">
         <div class="uni-card overflow-hidden">
             {% if conference.image %}
-            <img src="{{ conference.image.url }}" alt="" style="width:100%;max-height:320px;object-fit:cover;">
+            <img loading="lazy" decoding="async" src="{{ conference.image.url }}" alt="" style="width:100%;max-height:320px;object-fit:cover;">
             {% endif %}
             <div class="p-4 p-md-5">
                 <div class="mb-3">

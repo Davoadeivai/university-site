@@ -21,7 +21,7 @@
         <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
             <div class="col-lg-4 text-center">
                 {% if pr.manager_photo %}
-                <img src="{{ pr.manager_photo.url }}" alt="{{ pr.manager_name }}"
+                <img loading="lazy" decoding="async" src="{{ pr.manager_photo.url }}" alt="{{ pr.manager_name }}"
                      class="rounded-circle border border-4 border-warning shadow"
                      style="width:180px;height:180px;object-fit:cover;">
                 {% else %}
@@ -94,7 +94,7 @@
                 <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
                     <div class="dept-card h-100">
                         {% if release.image %}
-                        <img src="{{ release.image.url }}" alt="{{ release.title }}"
+                        <img loading="lazy" decoding="async" src="{{ release.image.url }}" alt="{{ release.title }}"
                              class="w-100 rounded mb-3" style="height:160px;object-fit:cover;">
                         {% else %}
                         <div class="w-100 rounded mb-3 d-flex align-items-center justify-content-center"

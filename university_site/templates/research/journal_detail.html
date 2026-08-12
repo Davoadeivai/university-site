@@ -18,7 +18,7 @@
             <div class="row g-4 align-items-start">
                 <div class="col-md-3 text-center">
                     {% if journal.cover %}
-                    <img src="{{ journal.cover.url }}" alt="" class="book-detail-cover">
+                    <img loading="lazy" decoding="async" src="{{ journal.cover.url }}" alt="" class="book-detail-cover">
                     {% else %}
                     <div class="book-detail-cover book-detail-cover-ph"><i class="fas fa-book-open fa-3x"></i></div>
                     {% endif %}

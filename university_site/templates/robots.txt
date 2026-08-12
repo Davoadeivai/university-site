@@ -1,0 +1,11 @@
+# موسسه آموزش عالی علامه امینی
+#
+# پنل‌ها و مسیرهای شخصی نباید نمایه شوند: نه ارزشی برای جست‌وجو
+# دارند و نه درست است که در نتایج گوگل دیده شوند.
+
+User-agent: *
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /accounts/
+Disallow: /api/
+Allow: /

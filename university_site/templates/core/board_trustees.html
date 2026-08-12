@@ -64,7 +64,7 @@
                     <!-- Photo -->
                     <div class="mb-3">
                         {% if member.photo %}
-                        <img src="{{ member.photo.url }}" alt="{{ member.full_name }}"
+                        <img loading="lazy" decoding="async" src="{{ member.photo.url }}" alt="{{ member.full_name }}"
                              class="rounded-circle border border-3 border-warning"
                              style="width:110px;height:110px;object-fit:cover;">
                         {% else %}

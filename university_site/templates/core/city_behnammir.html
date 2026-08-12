@@ -70,7 +70,7 @@
             <div class="col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
                 <div class="dept-card h-100">
                     {% if info.image %}
-                    <img src="{{ info.image.url }}" alt="{{ info.title }}"
+                    <img loading="lazy" decoding="async" src="{{ info.image.url }}" alt="{{ info.title }}"
                          class="w-100 rounded mb-3" style="height:200px;object-fit:cover;">
                     {% endif %}
                     <div class="dept-icon"><i class="{{ info.icon|default:'fas fa-info-circle' }} text-primary"></i></div>
@@ -151,7 +151,7 @@
                 <div class="col-md-6 col-lg-4 attraction-item" data-category="{{ attraction.category }}">
                     <div class="dept-card h-100">
                         {% if attraction.image %}
-                        <img src="{{ attraction.image.url }}" alt="{{ attraction.name }}"
+                        <img loading="lazy" decoding="async" src="{{ attraction.image.url }}" alt="{{ attraction.name }}"
                              class="w-100 rounded mb-3" style="height:180px;object-fit:cover;">
                         {% else %}
                         <div class="w-100 rounded mb-3 d-flex align-items-center justify-content-center"

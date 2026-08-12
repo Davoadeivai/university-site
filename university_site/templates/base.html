@@ -10,6 +10,44 @@
     <meta name="keywords" content="{% block meta_keywords %}موسسه آموزش عالی علامه امینی، کارشناسی، کارشناسی ارشد، کاردانی، پذیرش دانشجو{% endblock %}">
     <meta name="robots" content="index, follow">
     <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}{% endblock %}</title>
+
+    {% comment %}
+      Open Graph — بدون این، لینک سایت در تلگرام و واتساپ فقط یک نشانی
+      خشک است بدون عنوان، توضیح و تصویر. برای موسسه‌ای که جذب دانشجو
+      بخش زیادی‌اش در تلگرام می‌چرخد، همان پیش‌نمایش تفاوت بین
+      کلیک‌شدن و نشدن است.
+    {% endcomment %}
+    <meta property="og:site_name" content="{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:title" content="{% block og_title %}{% if page_title %}{{ page_title }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}موسسه آموزش عالی علامه امینی — پذیرش دانشجو در مقاطع کاردانی، کارشناسی و کارشناسی ارشد{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/hero-campus-01.jpg' %}{% endblock %}">
+    <meta property="og:image:alt" content="موسسه آموزش عالی علامه امینی">
+    <meta name="twitter:card" content="summary_large_image">
+
+    {% comment %}
+      دادهٔ ساختاریافته — به گوگل می‌گوید این یک موسسهٔ آموزشی است، نه
+      یک صفحهٔ معمولی. نتیجه در جست‌وجو کارت غنی می‌گیرد به‌جای یک لینک.
+    {% endcomment %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollegeOrUniversity",
+      "name": "{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}",
+      "alternateName": "Allameh Amini Higher Education Institute",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/",
+      "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/mark-institute.png' %}"{% if site_settings and site_settings.email %},
+      "email": "{{ site_settings.email }}"{% endif %}{% if site_settings and site_settings.phone %},
+      "telephone": "{{ site_settings.phone }}"{% endif %}{% if site_settings and site_settings.address %},
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IR",
+        "streetAddress": "{{ site_settings.address|striptags|truncatechars:120 }}"
+      }{% endif %}
+    }
+    </script>
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <!-- Local vendor assets (بدون وابستگی به Google/CDN خارجی — بدون نیاز به VPN) -->

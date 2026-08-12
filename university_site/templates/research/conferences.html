@@ -33,7 +33,7 @@
             <div class="col-md-6 col-lg-4" data-aos="fade-up">
                 <a href="{% url 'research:conference_detail' conf.pk %}" class="uni-card overflow-hidden text-decoration-none h-100 d-block">
                     {% if conf.image %}
-                    <img src="{{ conf.image.url }}" alt="" style="width:100%;height:160px;object-fit:cover;">
+                    <img loading="lazy" decoding="async" src="{{ conf.image.url }}" alt="" style="width:100%;height:160px;object-fit:cover;">
                     {% else %}
                     <div style="height:120px;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;">
                         <i class="fas fa-users fa-2x text-white opacity-75"></i>

@@ -38,7 +38,7 @@
             <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|divisibleby:3 }}00">
                 <div class="dept-card h-100">
                     {% if group.image %}
-                    <img src="{{ group.image.url }}" alt="{{ group.name }}"
+                    <img loading="lazy" decoding="async" src="{{ group.image.url }}" alt="{{ group.name }}"
                          class="w-100 rounded mb-3" style="height:170px;object-fit:cover;">
                     {% else %}
                     <div class="w-100 rounded mb-3 d-flex align-items-center justify-content-center"

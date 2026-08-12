@@ -38,7 +38,7 @@
             <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
                 <div class="dept-card h-100 text-center">
                     {% if p.logo %}
-                    <img src="{{ p.logo.url }}" alt="{{ p.company_name }}"
+                    <img loading="lazy" decoding="async" src="{{ p.logo.url }}" alt="{{ p.company_name }}"
                          class="mb-3" style="max-height:72px;max-width:100%;object-fit:contain;">
                     {% else %}
                     <div class="dept-icon mx-auto"><i class="fas fa-industry"></i></div>

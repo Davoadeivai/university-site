@@ -23,7 +23,7 @@
 {% for prof in professors %}
 <div class="col-6 col-md-4">
 <div class="prof-card">
-{% if prof.photo %}<img src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">{% else %}<div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>{% endif %}
+{% if prof.photo %}<img loading="lazy" decoding="async" src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">{% else %}<div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>{% endif %}
 <div class="prof-name" style="font-size:14px;">{{ prof.get_full_name }}</div>
 <div class="prof-rank">{{ prof.get_rank_display }}</div>
 </div></div>

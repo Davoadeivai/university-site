@@ -43,7 +43,7 @@
 
                         <div class="d-flex align-items-center gap-3 mb-3">
                             {% if vice.photo %}
-                            <img src="{{ vice.photo.url }}" alt="{{ vice.full_name }}"
+                            <img loading="lazy" decoding="async" src="{{ vice.photo.url }}" alt="{{ vice.full_name }}"
                                  class="rounded-circle border border-2 border-warning flex-shrink-0"
                                  style="width:62px;height:62px;object-fit:cover;">
                             {% else %}

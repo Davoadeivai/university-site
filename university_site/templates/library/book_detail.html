@@ -20,7 +20,7 @@
                     <div class="row g-4">
                         <div class="col-md-4 text-center">
                             {% if book.cover %}
-                            <img src="{{ book.cover.url }}" alt="{{ book.title }}" class="book-detail-cover">
+                            <img loading="lazy" decoding="async" src="{{ book.cover.url }}" alt="{{ book.title }}" class="book-detail-cover">
                             {% else %}
                             <div class="book-detail-cover book-detail-cover-ph"><i class="fas fa-book fa-3x"></i></div>
                             {% endif %}
