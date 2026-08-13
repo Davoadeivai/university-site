@@ -2334,3 +2334,35 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .to-top.is-on { opacity: 1; visibility: visible; transform: translateY(0); }
 .to-top:hover { border-color: var(--bnr-gold-300); color: #fff; }
 .to-top:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ── پیام کوتاه کپی نشانی ایمیل ─────────────────────────────
+   پایین صفحه می‌نشیند تا جلوی محتوا را نگیرد و بعد از سه ثانیه
+   می‌رود. نقش status دارد، پس صفحه‌خوان بدون بردن فوکوس می‌خواندش. */
+.mail-copy-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translate(-50%, 12px);
+    z-index: 2000;
+    max-width: min(90vw, 460px);
+    padding: 12px 20px;
+    border-radius: 10px;
+    background: #1a3a6b;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .28);
+    opacity: 0;
+    transition: opacity .25s ease, transform .25s ease;
+    pointer-events: none;
+}
+
+.mail-copy-toast.is-on {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mail-copy-toast { transition: opacity .01ms; }
+}

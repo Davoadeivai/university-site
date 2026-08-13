@@ -599,3 +599,67 @@ function appendMsg(text, type) {
         banner.style.setProperty('--py', '0');
     });
 })();
+
+
+// ============================================================
+//  لینک ایمیل — کلیک روی mailto وقتی برنامهٔ ایمیل نصب نیست
+// ============================================================
+// روی ویندوزی که Outlook ندارد، کلیک روی mailto هیچ کاری نمی‌کند:
+// نه پنجره‌ای باز می‌شود، نه خطایی می‌آید. بازدیدکننده فکر می‌کند
+// لینک خراب است. مرورگر راهی برای پرسیدن «آیا handler هست؟» نمی‌دهد،
+// پس هم‌زمان نشانی را در کلیپ‌بورد می‌گذاریم و می‌گوییم چه شد —
+// اگر برنامهٔ ایمیل باز شود، کاربر پیام را نادیده می‌گیرد و چیزی
+// خراب نشده؛ اگر باز نشود، نشانی دستش هست.
+(function () {
+    'use strict';
+
+    function toast(text) {
+        var el = document.createElement('div');
+        el.className = 'mail-copy-toast';
+        el.setAttribute('role', 'status');
+        el.textContent = text;
+        document.body.appendChild(el);
+        requestAnimationFrame(function () { el.classList.add('is-on'); });
+        setTimeout(function () {
+            el.classList.remove('is-on');
+            setTimeout(function () { el.remove(); }, 300);
+        }, 3200);
+    }
+
+    function copy(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+        }
+        // http یا مرورگر قدیمی — روش قدیمی هنوز کار می‌کند
+        return new Promise(function (resolve, reject) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            ta.remove();
+            ok ? resolve() : reject();
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        var link = e.target.closest ? e.target.closest('a[href^="mailto:"]') : null;
+        if (!link) return;
+        // کلیک وسط یا Ctrl+کلیک را دست نمی‌زنیم
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+
+        var address = link.getAttribute('href').slice(7).split('?')[0];
+        if (!address) return;
+
+        // جلوی mailto را نمی‌گیریم — اگر برنامهٔ ایمیل هست باید باز شود
+        copy(address).then(function () {
+            toast('نشانی کپی شد: ' + address);
+        }, function () {
+            toast('نشانی: ' + address);
+        });
+    });
+})();
