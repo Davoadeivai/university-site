@@ -149,6 +149,7 @@
                             </div>
                         </div>
 
+                        {% include 'core/_captcha_field.html' %}
                         <button type="submit" class="btn-primary-uni w-100" style="padding:13px;">
                             <i class="fas fa-user-plus"></i> ثبت‌نام
                         </button>
@@ -157,9 +158,8 @@
                         <span class="text-muted" style="font-size:13px;">قبلاً ثبت‌نام کرده‌اید؟</span>
                         <a href="{% url 'accounts:login' %}" style="font-size:13px;"> وارد شوید</a>
                     </div>
-                    {# سه خطای این فرم («این کد ملی قبلاً ثبت‌نام شده») یعنی
-                       کاربر حساب دارد و رمزش را فراموش کرده. بدون این لینک
-                       باید اول به صفحهٔ ورود برود تا راه بازیابی را ببیند. #}
+                    {# «این کد ملی قبلاً ثبت‌نام شده» یعنی کاربر حساب دارد و رمزش را فراموش کرده. #}
+                    {# بدون این لینک باید اول به صفحهٔ ورود برود تا راه بازیابی را ببیند. #}
                     <div class="text-center mt-2">
                         <a href="{% url 'accounts:password_reset_request' %}"
                            class="text-muted" style="font-size:13px;">رمز عبور خود را فراموش کرده‌اید؟</a>

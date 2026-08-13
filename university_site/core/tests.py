@@ -1548,3 +1548,102 @@ class InstitutionalMailboxDefaultTests(TestCase):
                 "default='smtp.gmail.com'", src,
                 '%s هنوز جیمیل را پیش‌فرض گرفته' % mod)
             self.assertIn("EMAIL_HOST', default='localhost'", src)
+
+
+class CaptchaTests(TestCase):
+    """کپچا باید جلوی ربات را بگیرد و سر راه آدم نایستد."""
+
+    def _solve(self):
+        """پاسخ درست پرسش فعلیِ نشست."""
+        from core.captcha import SESSION_KEY
+        return self.client.session[SESSION_KEY]['answer']
+
+    def _issue(self):
+        """یک پرسش تازه بگیر — همان کاری که مرورگر با <img> می‌کند."""
+        return self.client.get(reverse('core:captcha'))
+
+    def test_image_is_a_png_and_never_cached(self):
+        res = self._issue()
+        self.assertEqual(res['Content-Type'], 'image/png')
+        self.assertTrue(res.content.startswith(b'\x89PNG'))
+        self.assertIn('no-store', res['Cache-Control'])
+
+    def test_answer_never_appears_in_the_page(self):
+        self._issue()
+        answer = self._solve()
+        html = self.client.get(reverse('accounts:login')).content.decode()
+        # پاسخ فقط در نشست است؛ اگر در HTML بود، هر رباتی می‌خواندش
+        self.assertNotIn('value="%s"' % answer, html)
+
+    def test_refresh_gives_a_new_question(self):
+        self._issue()
+        first = self._solve()
+        # تصادفی است، پس چند بار تلاش تا مطمئن شویم واقعاً عوض می‌شود
+        changed = False
+        for _ in range(12):
+            self.client.get(reverse('core:captcha'), {'new': '1'})
+            if self._solve() != first:
+                changed = True
+                break
+        self.assertTrue(changed, 'تازه‌سازی پرسش تازه نداد')
+
+    def test_login_is_refused_without_a_captcha(self):
+        User.objects.create_user(username='cap1', password='Str0ng!Pass2026')
+        self._issue()
+        self.client.post(reverse('accounts:login'), {
+            'national_id': 'cap1', 'password': 'Str0ng!Pass2026',
+        })
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_login_works_with_the_right_answer(self):
+        User.objects.create_user(username='cap2', password='Str0ng!Pass2026')
+        self._issue()
+        self.client.post(reverse('accounts:login'), {
+            'national_id': 'cap2', 'password': 'Str0ng!Pass2026',
+            'captcha': self._solve(),
+        })
+        self.assertIn('_auth_user_id', self.client.session)
+
+    def test_persian_digits_are_accepted(self):
+        User.objects.create_user(username='cap3', password='Str0ng!Pass2026')
+        self._issue()
+        latin = self._solve()
+        persian = ''.join(chr(ord(d) - ord('0') + 0x06F0) for d in latin)
+        self.client.post(reverse('accounts:login'), {
+            'national_id': 'cap3', 'password': 'Str0ng!Pass2026',
+            'captcha': persian,
+        })
+        self.assertIn('_auth_user_id', self.client.session)
+
+    def test_an_answer_cannot_be_replayed(self):
+        """یک پاسخ درست فقط یک بار کار می‌کند."""
+        from core import captcha
+        self._issue()
+        answer = self._solve()
+        session = self.client.session
+        self.assertTrue(captcha.check(session, answer))
+        self.assertFalse(captcha.check(session, answer))
+
+    def test_it_expires(self):
+        from core import captcha
+        self._issue()
+        session = self.client.session
+        answer = session[captcha.SESSION_KEY]['answer']
+        session[captcha.SESSION_KEY]['born'] -= captcha.TTL_SECONDS + 1
+        self.assertFalse(captcha.check(session, answer))
+
+    def test_guessing_is_capped(self):
+        from core import captcha
+        self._issue()
+        session = self.client.session
+        answer = session[captcha.SESSION_KEY]['answer']
+        for _ in range(captcha.MAX_ATTEMPTS):
+            captcha.check(session, '999999')
+        # بعد از سقف تلاش، حتی پاسخ درست هم پذیرفته نمی‌شود
+        self.assertFalse(captcha.check(session, answer))
+
+    def test_both_forms_show_it(self):
+        for name in ('accounts:login', 'accounts:register'):
+            html = self.client.get(reverse(name)).content.decode()
+            self.assertIn('name="captcha"', html, name)
+            self.assertIn(reverse('core:captcha'), html, name)

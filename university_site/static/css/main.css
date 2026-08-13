@@ -2366,3 +2366,54 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 @media (prefers-reduced-motion: reduce) {
     .mail-copy-toast { transition: opacity .01ms; }
 }
+
+/* ── کپچا ───────────────────────────────────────────────────
+   تصویر و کادر پاسخ در یک ردیف؛ روی موبایل هم جا می‌شوند چون
+   تصویر عرض ثابت ۲۰۰ دارد و کادر بقیه را می‌گیرد. */
+.captcha-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.captcha-image {
+    border: 1px solid var(--gray-300, #dee2e6);
+    border-radius: 8px;
+    background: #f7f8fa;
+    display: block;
+    /* بلندکردن با انگشت یا ماوس فایده‌ای ندارد و فقط دردسر است */
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.captcha-refresh {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--gray-300, #dee2e6);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--primary, #1a3a6b);
+    cursor: pointer;
+    transition: background .18s ease, transform .18s ease;
+}
+
+.captcha-refresh:hover { background: #eef2f8; }
+.captcha-refresh:active { transform: scale(.94); }
+.captcha-refresh:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: 2px; }
+.captcha-refresh.is-spinning i { animation: captcha-spin .5s linear; }
+
+.captcha-input {
+    flex: 1 1 90px;
+    min-width: 90px;
+    text-align: center;
+    letter-spacing: 2px;
+    font-size: 17px;
+}
+
+@keyframes captcha-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .captcha-refresh.is-spinning i { animation: none; }
+}

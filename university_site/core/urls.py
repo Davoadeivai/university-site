@@ -27,6 +27,7 @@ urlpatterns = [
     path('معاونت‌ها/', views.vices_list, name='vices_list'),
     path('معاونت‌ها/<str:vice_type>/', views.vice_detail, name='vice_detail'),
     path('search/', views.search, name='search'),
+    path('captcha/', views.captcha_image, name='captcha'),
     path('سوالات-متداول/', views.faq_view, name='faq'),
     path('خدمات-الکترونیکی/', views.eservices, name='eservices'),
     path('گالری/', views.gallery_view, name='gallery'),

@@ -114,7 +114,9 @@ class TrackAccessTests(TestCase):
         self.assertIn(res.status_code, (302, 403))
 
 
-@override_settings(SMS_ENABLED=False)
+# کپچا اینجا خاموش است چون موضوع این تست‌ها منطق ثبت‌نام است، نه
+# انسان‌بودن فرستنده. خودِ کپچا در core/tests.py آزموده می‌شود.
+@override_settings(SMS_ENABLED=False, CAPTCHA_ENABLED=False)
 class RegistrationDeduplicationTests(TestCase):
     """ثبت‌نام باید هویت را از پروندهٔ پذیرش بخواند، نه از کاربر."""
 

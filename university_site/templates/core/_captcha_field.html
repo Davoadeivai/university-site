@@ -1,0 +1,21 @@
+{# کپچا — یک تصویر، یک عدد. در فرم ورود و ثبت‌نام گنجانده می‌شود. #}
+<div class="mb-3 captcha-field">
+    <label for="captcha" class="form-label">
+        <i class="fas fa-shield-halved text-primary"></i>
+        حاصل عبارت را وارد کنید
+    </label>
+    <div class="captcha-row">
+        <img src="{% url 'core:captcha' %}" alt="عبارت ریاضی برای بررسی انسان‌بودن"
+             class="captcha-image" id="captcha-image" width="200" height="68">
+        <button type="button" class="captcha-refresh" id="captcha-refresh"
+                title="تصویر تازه" aria-label="نمایش عبارت تازه">
+            <i class="fas fa-rotate"></i>
+        </button>
+        <input type="text" name="captcha" id="captcha" class="form-control captcha-input"
+               inputmode="numeric" autocomplete="off" required
+               placeholder="عدد" aria-describedby="captcha-help">
+    </div>
+    <div class="form-text" id="captcha-help">
+        اگر خوانا نیست، دکمهٔ تازه‌سازی را بزنید. پاسخ را با ارقام فارسی یا انگلیسی بنویسید.
+    </div>
+</div>

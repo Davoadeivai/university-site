@@ -76,7 +76,20 @@ def login_view(request):
             return redirect(_safe_redirect_target(request))
 
     if request.method == 'POST':
+        from core import captcha
         from core.iran import only_digits, normalize_digits
+
+        # پیش از هر کاری: بدون کپچای درست، رمز اصلاً بررسی نمی‌شود.
+        # اگر بعد از authenticate می‌آمد، ربات می‌توانست از تفاوت
+        # زمان پاسخ بفهمد رمز درست بوده یا نه.
+        if captcha.is_enabled() and not captcha.check(
+                request.session, request.POST.get('captcha', '')):
+            messages.error(request, 'پاسخ عبارت امنیتی درست نیست. دوباره تلاش کنید.')
+            return render(request, 'accounts/login.html', {
+                'page_title': 'ورود به سامانه',
+                'next': next_raw,
+            })
+
         raw_id = (request.POST.get('national_id') or '').strip()
         digits = only_digits(raw_id)
         # اگر فقط رقم بود → کد ملی؛ وگرنه نام کاربری را دست‌نخورده نگه دار
@@ -188,8 +201,20 @@ def register_view(request):
             pref['phone'] = accepted_app.phone or ''
 
     if request.method == 'POST':
+        from core import captcha
         from core.iran import is_valid_mobile, is_valid_national_id, only_digits
         from admissions.models import Application
+
+        # کپچا اول: ساختن حساب گران‌تر از ورود است و نباید یک ربات
+        # بتواند با کد ملی‌های تصادفی جدول کاربران را پر کند.
+        if captcha.is_enabled() and not captcha.check(
+                request.session, request.POST.get('captcha', '')):
+            messages.error(request, 'پاسخ عبارت امنیتی درست نیست. دوباره تلاش کنید.')
+            return render(request, 'accounts/register.html', {
+                'page_title': 'ثبت‌نام',
+                'pref': pref,
+                'accepted_app': accepted_app,
+            })
 
         national_id = only_digits(request.POST.get('national_id', ''))
         password1 = request.POST.get('password1')

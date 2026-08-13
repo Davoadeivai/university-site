@@ -663,3 +663,28 @@ function appendMsg(text, type) {
         });
     });
 })();
+
+
+// ============================================================
+//  کپچا — دکمهٔ تصویر تازه
+// ============================================================
+// پاسخ در نشست سرور است، نه در صفحه؛ این دکمه فقط یک پرسش تازه
+// می‌خواهد. پارامتر زمان لازم است چون بعضی مرورگرها با وجود
+// no-store هم تصویر را از کش برمی‌دارند.
+(function () {
+    'use strict';
+
+    var button = document.getElementById('captcha-refresh');
+    var image = document.getElementById('captcha-image');
+    if (!button || !image) return;
+
+    var base = image.getAttribute('src').split('?')[0];
+
+    button.addEventListener('click', function () {
+        button.classList.add('is-spinning');
+        image.src = base + '?new=1&t=' + Date.now();
+        var field = document.getElementById('captcha');
+        if (field) { field.value = ''; field.focus(); }
+        setTimeout(function () { button.classList.remove('is-spinning'); }, 520);
+    });
+})();
