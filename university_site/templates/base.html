@@ -63,15 +63,18 @@
 {% comment %}
   حالت روشن/تیره پیش از رسم صفحه اعمال می‌شود تا اگر کاربر تیره را
   انتخاب کرده باشد، یک لحظه صفحهٔ سفید نبیند (flash of wrong theme).
+
+  پیش‌فرض همیشه روشن است و عمداً به prefers-color-scheme نگاه
+  نمی‌شود: تم تیرهٔ ویندوز یعنی کاربر پنجره‌های سیستمش را تیره
+  می‌خواهد، نه اینکه سایت یک موسسهٔ آموزشی را تیره می‌خواهد. تیره
+  فقط وقتی می‌آید که خودش دکمهٔ بالای صفحه را بزند.
 {% endcomment %}
 <script>
 (function () {
     try {
         var saved = localStorage.getItem('site-theme');
-        if (!saved) {
-            saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        document.documentElement.setAttribute('data-theme', saved);
+        document.documentElement.setAttribute(
+            'data-theme', saved === 'dark' ? 'dark' : 'light');
     } catch (e) { /* حالت خصوصی مرورگر — بی‌خیال */ }
 })();
 </script>

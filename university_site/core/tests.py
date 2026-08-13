@@ -1683,3 +1683,39 @@ class AssetVersionTests(TestCase):
         html = self.client.get(reverse('accounts:login')).content.decode()
         self.assertIn('js/main.js?v=', html)
         self.assertIn('css/main.css?v=', html)
+
+
+class LightThemeByDefaultTests(TestCase):
+    """سایت باید روشن باز شود، هرچه تنظیم سیستم‌عامل باشد.
+
+    قبلاً prefers-color-scheme خوانده می‌شد، پس هر بازدیدکننده‌ای که
+    ویندوزش تم تیره داشت صفحه را تیره می‌دید و باید هر بار دستی
+    روشنش می‌کرد. تیرهٔ سیستم یعنی پنجره‌های سیستم تیره باشند، نه
+    سایت یک موسسهٔ آموزشی.
+    """
+
+    def _asset(self, name):
+        from pathlib import Path
+        from django.conf import settings
+        return (Path(settings.BASE_DIR) / 'static' / name).read_text(
+            encoding='utf-8')
+
+    def test_bootstrap_script_defaults_to_light(self):
+        from pathlib import Path
+        from django.conf import settings
+        html = (Path(settings.BASE_DIR) / 'templates' / 'base.html').read_text(
+            encoding='utf-8')
+        script = html.split('<script>')[1].split('</script>')[0]
+        self.assertIn("'light'", script)
+        self.assertNotIn('matchMedia', script,
+                         'اسکریپت راه‌انداز دوباره به تنظیم سیستم نگاه می‌کند')
+
+    def test_toggle_does_not_follow_the_os(self):
+        js = self._asset('js/main.js')
+        block = js.split('کلید حالت روشن / تیره')[1].split('═══')[2]
+        self.assertNotIn('matchMedia', block,
+                         'کلید تم دوباره تنظیم سیستم را دنبال می‌کند')
+
+    def test_an_explicit_choice_is_still_honoured(self):
+        js = self._asset('js/main.js')
+        self.assertIn("localStorage.setItem('site-theme'", js)

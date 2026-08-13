@@ -537,15 +537,11 @@ function appendMsg(text, type) {
         apply(current() === 'dark' ? 'light' : 'dark', true);
     });
 
-    // اگر کاربر خودش انتخابی نکرده، تنظیم سیستم‌عامل را دنبال کن
-    var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    function follow(e) {
-        var chosen = null;
-        try { chosen = localStorage.getItem('site-theme'); } catch (err) {}
-        if (!chosen) apply(e.matches ? 'dark' : 'light', false);
-    }
-    if (mq.addEventListener) mq.addEventListener('change', follow);
-    else if (mq.addListener) mq.addListener(follow);
+    // عمداً به prefers-color-scheme گوش نمی‌دهیم. تم تیرهٔ ویندوز
+    // یعنی کاربر پنجره‌های سیستمش را تیره می‌خواهد، نه اینکه سایت
+    // موسسه را تیره می‌خواهد؛ و نتیجه‌اش این بود که بازدیدکننده
+    // هر بار صفحه را تیره می‌دید و باید دستی روشنش می‌کرد.
+    // پیش‌فرض روشن است و تیره فقط با همین دکمه می‌آید.
 })();
 
 /* ═══════════════════════════════════════════════════════════════════
