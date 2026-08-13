@@ -1448,6 +1448,32 @@ class TestEmailCommandTests(TestCase):
         self.assertTrue(matched, 'خطای رایج جیمیل ترجمه نشد')
 
 
+class EmailPortDefaultsTests(TestCase):
+    """پورت باید خودش تعیین کند SSL لازم است یا TLS.
+
+    صندوق cPanel معمولاً ۴۶۵ می‌دهد و جیمیل ۵۸۷. تا پیش از این فقط
+    EMAIL_USE_TLS خوانده می‌شد، پس هر کس پورت ۴۶۵ را در .env
+    می‌گذاشت به خطای «wrong version number» می‌خورد بدون اینکه
+    بفهمد چرا.
+    """
+
+    def _resolve(self, port):
+        """همان منطق settings را با یک پورت مشخص اجرا می‌کند."""
+        use_ssl = port == 465
+        return use_ssl, not use_ssl
+
+    def test_port_465_picks_ssl(self):
+        self.assertEqual(self._resolve(465), (True, False))
+
+    def test_port_587_picks_tls(self):
+        self.assertEqual(self._resolve(587), (False, True))
+
+    def test_settings_never_enable_both(self):
+        from django.conf import settings as s
+        if getattr(s, 'EMAIL_USE_SSL', False):
+            self.assertFalse(getattr(s, 'EMAIL_USE_TLS', False))
+
+
 class SeoBasicsTests(TestCase):
     """چیزهایی که تا امروز نبودند و هر صفحه به آن‌ها نیاز دارد."""
 

@@ -1,4 +1,6 @@
-﻿from django.shortcuts import render, redirect
+﻿import logging
+
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -12,6 +14,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.conf import settings as django_settings
 from .models import UserProfile, OTPCode
+
+logger = logging.getLogger(__name__)
 
 
 def _safe_redirect_target(request, default='/dashboard/'):
@@ -485,7 +489,11 @@ def password_reset_request(request):
                         fail_silently=False,
                     )
                 except Exception:
-                    pass
+                    # پیام موفقیت را عوض نمی‌کنیم — وگرنه از روی تفاوت
+                    # پاسخ می‌شود فهمید کدام ایمیل در سامانه ثبت است.
+                    # ولی خطا باید جایی ثبت شود، وگرنه «ایمیل نمی‌آید»
+                    # هیچ ردی در لاگ نمی‌گذارد و قابل عیب‌یابی نیست.
+                    logger.exception('ارسال ایمیل بازیابی رمز شکست خورد')
             # user-enumeration prevention
             messages.success(request, 'اگر این ایمیل در سامانه ثبت شده باشد، لینک بازیابی ارسال شد.')
             return redirect('accounts:password_reset_request')

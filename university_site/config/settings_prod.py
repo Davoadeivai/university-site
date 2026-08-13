@@ -113,7 +113,14 @@ if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
     EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    # پورت ۴۶۵ یعنی SSL و ۵۸۷ یعنی TLS. صندوق‌های cPanel معمولاً ۴۶۵
+    # می‌دهند، پس پیش‌فرض از روی پورت حدس زده می‌شود تا کسی مجبور
+    # نباشد هر دو کلید را دستی بنویسد. جنگو اگر هر دو True باشند
+    # خطای «wrong version number» می‌دهد.
+    EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=EMAIL_PORT == 465, cast=bool)
+    EMAIL_USE_TLS = config(
+        'EMAIL_USE_TLS', default=not EMAIL_USE_SSL, cast=bool)
+    EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=20, cast=int)
     DEFAULT_FROM_EMAIL = config(
         'DEFAULT_FROM_EMAIL',
         default=f'موسسه آموزش عالی علامه امینی <{EMAIL_HOST_USER}>',
