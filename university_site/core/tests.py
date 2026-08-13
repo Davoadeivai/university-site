@@ -1529,3 +1529,22 @@ class MailHostResolutionHintTests(TestCase):
         matched = [fix for needle, _r, fix in HINTS if needle in text]
         self.assertTrue(matched, 'خطای DNS ترجمه نشد')
         self.assertIn('localhost', matched[0])
+
+
+class InstitutionalMailboxDefaultTests(TestCase):
+    """پیش‌فرض باید صندوق خود سرور باشد، نه یک ارائه‌دهندهٔ بیرونی.
+
+    تا امروز پیش‌فرض `smtp.gmail.com` بود. اگر کسی EMAIL_HOST را در
+    .env نمی‌نوشت، پروژه بی‌صدا سراغ گوگل می‌رفت — جایی که نه حسابی
+    دارد و نه باید داشته باشد. صندوق موسسه روی همین ماشین است.
+    """
+
+    def test_default_host_is_local(self):
+        from config import settings_prod  # noqa: F401  (فقط برای خواندن متن)
+        import inspect
+        for mod in ('config.settings', 'config.settings_prod'):
+            src = inspect.getsource(__import__(mod, fromlist=['x']))
+            self.assertNotIn(
+                "default='smtp.gmail.com'", src,
+                '%s هنوز جیمیل را پیش‌فرض گرفته' % mod)
+            self.assertIn("EMAIL_HOST', default='localhost'", src)

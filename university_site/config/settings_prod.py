@@ -111,15 +111,20 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-    # پورت ۴۶۵ یعنی SSL و ۵۸۷ یعنی TLS. صندوق‌های cPanel معمولاً ۴۶۵
-    # می‌دهند، پس پیش‌فرض از روی پورت حدس زده می‌شود تا کسی مجبور
-    # نباشد هر دو کلید را دستی بنویسد. جنگو اگر هر دو True باشند
-    # خطای «wrong version number» می‌دهد.
+    # پیش‌فرض localhost است، نه smtp.gmail.com: صندوق موسسه روی همین
+    # ماشین است. نامی که cPanel در Connect Devices می‌دهد
+    # (mail.portal.aab.ac.ir) روی خود سرور resolve نمی‌شود و ارسال با
+    # «Name or service not known» می‌شکند — که شبیه خطای رمز به نظر
+    # می‌رسد و نیست.
+    EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+    _local = EMAIL_HOST in ('localhost', '127.0.0.1', '::1')
+    EMAIL_PORT = config('EMAIL_PORT', default=25 if _local else 587, cast=int)
+    # پورت ۴۶۵ یعنی SSL و ۵۸۷ یعنی TLS. روی localhost هیچ‌کدام لازم
+    # نیست، چون ترافیک از ماشین بیرون نمی‌رود. جنگو اگر هر دو True
+    # باشند خطای «wrong version number» می‌دهد.
     EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=EMAIL_PORT == 465, cast=bool)
     EMAIL_USE_TLS = config(
-        'EMAIL_USE_TLS', default=not EMAIL_USE_SSL, cast=bool)
+        'EMAIL_USE_TLS', default=not EMAIL_USE_SSL and not _local, cast=bool)
     EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=20, cast=int)
     DEFAULT_FROM_EMAIL = config(
         'DEFAULT_FROM_EMAIL',
