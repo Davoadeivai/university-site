@@ -161,6 +161,63 @@ def main() -> int:
     safe('directory نصب شده', lambda: any(
         'directory' in a for a in settings.INSTALLED_APPS))
 
+    head('۳ب) فایل .env و ایمیل')
+    # چرا اینجا: `.env` با نقطه شروع می‌شود، پس File Manager به‌طور
+    # پیش‌فرض نشانش نمی‌دهد و پیدا کردنش وقت می‌برد. مسیر دقیقش را
+    # همین‌جا چاپ می‌کنیم. مقدارها هرگز چاپ نمی‌شوند — فقط اینکه
+    # کلید هست یا نیست، چون یک کلیدِ خالی با یک کلیدِ نبوده فرق دارد
+    # ولی هر دو ایمیل را از کار می‌اندازند.
+    env_path = os.path.join(APP, '.env')
+    safe('مسیر .env', lambda: env_path)
+    safe('وجود دارد', lambda: os.path.isfile(env_path))
+
+    def env_keys():
+        if not os.path.isfile(env_path):
+            return '(فایل نیست)'
+        wanted = ('EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
+                  'EMAIL_HOST_PASSWORD', 'DEFAULT_FROM_EMAIL')
+        seen = {}
+        with open(env_path, encoding='utf-8', errors='replace') as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                key, _, value = line.partition('=')
+                key = key.strip()
+                if key in wanted:
+                    # شمردن تکرار: کلید دوبار تعریف‌شده گیج‌کننده است
+                    seen[key] = seen.get(key, 0) + (1 if value.strip() else 0)
+                    seen.setdefault(key + '#n', 0)
+                    seen[key + '#n'] += 1
+        parts = []
+        for key in wanted:
+            n = seen.get(key + '#n', 0)
+            if n == 0:
+                parts.append('%s=نیست' % key)
+            elif seen.get(key, 0) == 0:
+                parts.append('%s=!!خالی' % key)
+            elif n > 1:
+                parts.append('%s=پر (!!%d بار تعریف شده)' % (key, n))
+            else:
+                parts.append('%s=پر' % key)
+        return '\n' + '\n'.join('      ' + p for p in parts)
+
+    safe('کلیدهای ایمیل', env_keys)
+
+    def mail_mode():
+        path = settings.EMAIL_BACKEND
+        if '.console.' in path:
+            return 'console — ایمیل ارسال نمی‌شود، فقط چاپ می‌شود'
+        return '%s  %s:%s  %s' % (
+            path.rsplit('.', 2)[-2],
+            getattr(settings, 'EMAIL_HOST', '—'),
+            getattr(settings, 'EMAIL_PORT', '—'),
+            'SSL' if getattr(settings, 'EMAIL_USE_SSL', False)
+            else ('TLS' if getattr(settings, 'EMAIL_USE_TLS', False) else 'بدون رمزنگاری'),
+        )
+
+    safe('وضعیت ایمیل', mail_mode)
+
     head('۴) پوشهٔ media — جای آپلود عکس')
     media = str(settings.MEDIA_ROOT)
     safe('وجود دارد', lambda: os.path.isdir(media))
