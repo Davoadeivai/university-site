@@ -1,6 +1,7 @@
 ﻿{% load static %}
 {% load i18n %}
 {% load custom_filters %}
+{% load assets %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -56,7 +57,7 @@
     <link rel="stylesheet" href="{% static 'vendor/vazirmatn/vazirmatn.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/aos/aos.css' %}">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260807a">
+    <link rel="stylesheet" href="{% static_v 'css/main.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 {% comment %}
@@ -595,7 +596,7 @@
 <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
 <script src="{% static 'vendor/aos/aos.js' %}" defer></script>
 <!-- Custom JS -->
-<script src="{% static 'js/main.js' %}?v=20260807a" defer></script>
+<script src="{% static_v 'js/main.js' %}" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1647,3 +1647,39 @@ class CaptchaTests(TestCase):
             html = self.client.get(reverse(name)).content.decode()
             self.assertIn('name="captcha"', html, name)
             self.assertIn(reverse('core:captcha'), html, name)
+
+
+class AssetVersionTests(TestCase):
+    """نشانی CSS و JS باید با محتوایشان عوض شود.
+
+    قبلاً نسخه دستی بود (`?v=20260807a`). یک بار که فایل عوض شد و آن
+    رشته نه، مرورگرها JS قدیمی را از کش دادند و دکمهٔ تازه‌سازی کپچا
+    بی‌صدا کار نکرد — نه خطایی، نه نشانه‌ای.
+    """
+
+    def test_tag_appends_a_content_hash(self):
+        from core.templatetags.assets import static_v, _cache
+        _cache.clear()
+        url = static_v('js/main.js')
+        self.assertIn('?v=', url)
+        self.assertEqual(len(url.split('?v=')[1]), 8)
+
+    def test_hash_follows_the_file(self):
+        from core.templatetags import assets
+        assets._cache.clear()
+        first = assets.static_v('js/main.js')
+        assets._cache.clear()
+        assets._cache['js/main.js'] = 'deadbeef'
+        self.assertNotEqual(first, assets.static_v('js/main.js'))
+
+    def test_base_template_has_no_hand_written_version(self):
+        from pathlib import Path
+        from django.conf import settings
+        html = (Path(settings.BASE_DIR) / 'templates' / 'base.html').read_text(
+            encoding='utf-8')
+        self.assertNotIn('?v=20', html, 'نسخهٔ دستی برگشته است')
+
+    def test_pages_serve_a_versioned_bundle(self):
+        html = self.client.get(reverse('accounts:login')).content.decode()
+        self.assertIn('js/main.js?v=', html)
+        self.assertIn('css/main.css?v=', html)
