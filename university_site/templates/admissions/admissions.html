@@ -183,13 +183,9 @@
             </div>
             {% endfor %}
         </div>
-        {% else %}
-        <div class="text-center py-5 text-muted">
-            <i class="fas fa-file-alt fa-3x mb-3 d-block opacity-25"></i>
-            <p>اطلاعات مقاطع از طریق پنل مدیریت تنظیم می‌شود. می‌توانید همین حالا درخواست ثبت کنید.</p>
-            <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni mt-3">شروع ثبت درخواست</a>
-        </div>
         {% endif %}
+        {# وقتی مقطعی تعریف نشده، این بخش خالی می‌ماند: دکمهٔ «شروع ثبت #}
+        {# درخواست» همان بالای صفحه هست و تکرارش فقط گیج‌کننده بود. #}
     </div>
 </section>
 {% endblock %}
