@@ -36,6 +36,18 @@ HINTS = [
      'احراز هویت رد شد',
      'رمز اشتباه است یا رمز اپلیکیشن نیست. برای صندوق cPanel، رمز همان '
      'چیزی است که هنگام ساخت حساب گذاشتید.'),
+    ('name or service not known',
+     'نام میزبان resolve نشد',
+     'سرور نتوانست EMAIL_HOST را به آی‌پی تبدیل کند — یعنی DNS، نه رمز.\n'
+     '     صندوق روی همین ماشین است، پس از DNS رد نشوید:\n'
+     '       EMAIL_HOST=localhost\n'
+     '       EMAIL_PORT=25\n'
+     '       EMAIL_USE_TLS=False\n'
+     '       EMAIL_USE_SSL=False\n'
+     '     ترافیک از ماشین بیرون نمی‌رود، پس رمزنگاری لازم نیست.'),
+    ('nodename nor servname',
+     'نام میزبان resolve نشد',
+     'همان مورد بالا — EMAIL_HOST=localhost و EMAIL_PORT=25 را بگذارید.'),
     ('connection refused',
      'سرور جواب نداد',
      'EMAIL_HOST یا EMAIL_PORT اشتباه است. مقدار درست را از cPanel ← '

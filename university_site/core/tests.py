@@ -1512,3 +1512,20 @@ class SeoBasicsTests(TestCase):
         data = json.loads(match.group(1))
         self.assertEqual(data['@type'], 'CollegeOrUniversity')
         self.assertTrue(data['url'].startswith('http'))
+
+
+class MailHostResolutionHintTests(TestCase):
+    """خطای DNS باید ترجمه شود، نه اینکه «ناشناخته» بماند.
+
+    روی این سرور `mail.portal.aab.ac.ir` — همان نامی که خود cPanel در
+    Connect Devices می‌دهد — resolve نمی‌شود. پیام خام پایتون
+    (`[Errno -2] Name or service not known`) شبیه مشکل رمز به نظر
+    می‌رسد و آدم را دنبال نخ اشتباه می‌فرستد.
+    """
+
+    def test_dns_failure_is_translated(self):
+        from core.management.commands.test_email import HINTS
+        text = '[errno -2] name or service not known'
+        matched = [fix for needle, _r, fix in HINTS if needle in text]
+        self.assertTrue(matched, 'خطای DNS ترجمه نشد')
+        self.assertIn('localhost', matched[0])
