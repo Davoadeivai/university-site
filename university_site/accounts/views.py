@@ -259,7 +259,11 @@ def register_view(request):
         elif phone and UserProfile.objects.filter(phone=phone).exists():
             messages.error(request, 'این شماره موبایل قبلاً ثبت‌نام شده است.')
         elif UserProfile.objects.filter(national_id=national_id).exists():
-            messages.error(request, 'برای این کد ملی قبلاً حساب ساخته شده است. وارد شوید.')
+            messages.error(
+                request,
+                'برای این کد ملی قبلاً حساب ساخته شده است. وارد شوید — '
+                'و اگر رمز را به خاطر ندارید، از «فراموشی رمز عبور» '
+                'استفاده کنید.')
         elif password1 != password2:
             messages.error(request, 'رمز عبور و تکرار آن یکسان نیستند.')
         elif pwd_error:
