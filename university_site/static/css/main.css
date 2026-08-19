@@ -2417,3 +2417,189 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 @media (prefers-reduced-motion: reduce) {
     .captcha-refresh.is-spinning i { animation: none; }
 }
+
+/* ── نوار کارهای فوری در پنل دانشجو ─────────────────────────
+   سه سطر، هر کدام یک تصمیم. رنگ فقط شدت را می‌گوید و تنها
+   نشانه نیست — متن «۲ روز مانده» همیشه کنارش هست. */
+.today-bar {
+    border: 1px solid var(--gray-200, #e9ecef);
+    border-radius: 12px;
+    background: var(--surface, #fff);
+    overflow: hidden;
+}
+
+.today-bar-head {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary, #1a3a6b);
+    background: rgba(26, 58, 107, .06);
+    border-bottom: 1px solid var(--gray-200, #e9ecef);
+}
+
+.today-list { list-style: none; margin: 0; padding: 0; }
+
+.today-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-100, #f1f3f5);
+    /* نوار رنگی کناری: شدت را بدون تکیه بر رنگِ تنها می‌رساند */
+    border-inline-start: 4px solid transparent;
+}
+
+.today-item:last-child { border-bottom: none; }
+
+.today-danger  { border-inline-start-color: #dc3545; }
+.today-warning { border-inline-start-color: #f59e0b; }
+.today-primary { border-inline-start-color: #1a3a6b; }
+.today-info    { border-inline-start-color: #0dcaf0; }
+.today-success { border-inline-start-color: #198754; }
+
+.today-icon { flex: 0 0 auto; width: 20px; text-align: center; opacity: .75; }
+
+.today-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+
+.today-title {
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.today-note { font-size: 12px; color: var(--gray-600, #6c757d); }
+
+.today-when {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: var(--gray-600, #6c757d);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.today-action {
+    flex: 0 0 auto;
+    padding: 5px 14px;
+    border-radius: 8px;
+    background: var(--primary, #1a3a6b);
+    color: #fff;
+    font-size: 13px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.today-action:hover { background: #142f57; color: #fff; }
+.today-action:focus-visible { outline: 2px solid #142f57; outline-offset: 2px; }
+
+@media (max-width: 575px) {
+    .today-item { flex-wrap: wrap; }
+    .today-text { flex: 1 1 100%; order: 1; }
+    .today-icon { order: 0; }
+    .today-when { order: 2; }
+    .today-action { order: 3; margin-inline-start: auto; }
+}
+
+/* ── پیش‌نویس فرم پذیرش ──────────────────────────────────── */
+.draft-banner {
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, .08);
+    overflow: hidden;
+}
+
+.draft-banner-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+}
+
+.draft-banner-row > div:first-of-type { flex: 1 1 auto; }
+.draft-banner-note { font-size: 12px; color: #92400e; margin-top: 2px; }
+
+.draft-progress { height: 4px; background: rgba(245, 158, 11, .2); }
+.draft-progress span { display: block; height: 100%; background: #f59e0b; }
+
+.draft-status {
+    min-height: 20px;
+    font-size: 12px;
+    color: var(--gray-600, #6c757d);
+    text-align: end;
+    margin-bottom: 4px;
+}
+
+.draft-status.is-ok { color: #16a34a; }
+
+@media (max-width: 575px) {
+    .draft-banner-row { flex-wrap: wrap; }
+}
+
+/* ── جعبهٔ پیشنهاد انتخاب واحد ───────────────────────────── */
+.advice-card {
+    border: 1px solid #16a34a;
+    border-radius: 12px;
+    background: rgba(22, 163, 74, .06);
+    overflow: hidden;
+}
+
+.advice-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #15803d;
+    border-bottom: 1px solid rgba(22, 163, 74, .25);
+}
+
+.advice-units {
+    margin-inline-start: auto;
+    font-size: 12px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+}
+
+.advice-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 16px;
+    display: grid;
+    gap: 6px;
+}
+
+.advice-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.advice-name { font-weight: 600; }
+.advice-meta { color: var(--gray-600, #6c757d); font-size: 12px; }
+
+.advice-note {
+    padding: 8px 16px 12px;
+    font-size: 12px;
+    color: var(--gray-600, #6c757d);
+    line-height: 1.8;
+}
+
+/* ── پیش‌نمایش مدارک آپلودی ─────────────────────────────── */
+.doc-preview { margin-top: 8px; }
+
+.doc-thumb {
+    max-width: 160px;
+    max-height: 120px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-300, #dee2e6);
+    display: block;
+}
+
+.doc-note { font-size: 12px; margin-top: 4px; line-height: 1.7; }
+.doc-note.is-ok  { color: #16a34a; }
+.doc-note.is-bad { color: #b45309; }

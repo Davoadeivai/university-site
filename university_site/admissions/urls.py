@@ -10,6 +10,8 @@ urlpatterns = [
     path('تایید-کد/', views.apply_otp_verify, name='apply_otp_verify'),
     path('ثبت-درخواست/', views.apply, name='apply'),
     path('ثبت-موفق/<str:code>/', views.apply_success, name='apply_success'),
+    path('پیش‌نویس/ذخیره/', views.save_draft, name='save_draft'),
+    path('پیش‌نویس/حذف/', views.discard_draft, name='discard_draft'),
     # پیگیری
     path('پیگیری/', views.track_application, name='track'),
     path('پیگیری/تایید/', views.track_otp, name='track_otp'),

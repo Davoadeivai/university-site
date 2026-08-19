@@ -81,6 +81,41 @@ def validate_image_upload(f, label: str = 'فایل', required: bool = False) ->
     size = getattr(f, 'size', 0) or 0
     if size > MAX_UPLOAD_BYTES:
         return f'حجم {label} نباید بیش از ۲ مگابایت باشد.'
+    return _too_small(f, label)
+
+
+# کمینهٔ ضلع کوچک تصویر. عکسی که هر ضلعش زیر این باشد، بزرگ که شود
+# خوانا نیست و کارشناس پذیرش باید تلفنی دوباره بخواهدش.
+MIN_IMAGE_SIDE = 400
+
+
+def _too_small(f, label: str) -> str | None:
+    """ابعاد تصویر را می‌سنجد؛ اگر Pillow نبود بی‌سروصدا رد می‌شود.
+
+    این بررسی عمداً بعد از حجم می‌آید: فایل بزرگ را نباید اول باز
+    کرد. و عمداً خطا را می‌بلعد — یک تصویر خراب را همان مرحلهٔ ذخیره
+    رد می‌کند و لازم نیست اینجا هم دوباره تشخیص داده شود.
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    try:
+        position = f.tell()
+        with Image.open(f) as image:
+            width, height = image.size
+        f.seek(position)
+    except Exception:                                   # noqa: BLE001
+        try:
+            f.seek(0)
+        except Exception:                               # noqa: BLE001
+            pass
+        return None
+    if min(width, height) < MIN_IMAGE_SIDE:
+        return (
+            f'{label} کم‌کیفیت است ({width}×{height}). '
+            f'تصویری با کمینهٔ {MIN_IMAGE_SIDE} پیکسل در هر ضلع بفرستید.'
+        )
     return None
 
 

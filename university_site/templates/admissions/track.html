@@ -31,6 +31,20 @@
     align-items: center;
     justify-content: center;
 }
+.track-step-hint {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.7;
+}
+.track-missing {
+    margin: 8px 0 0;
+    padding-inline-start: 18px;
+    font-size: 13px;
+    color: #b45309;
+}
+.track-missing li { margin-bottom: 2px; }
+[data-theme="dark"] .track-step-hint { color: #94a3b8; }
 .track-info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -117,6 +131,22 @@
                 <div style="font-size:14px;{% if step.state == 'current' %}font-weight:700;color:#1e293b;{% elif step.state == 'done' %}color:#16a34a;{% else %}color:#94a3b8;{% endif %}">
                     {{ step.label }}
                 </div>
+                {% comment %}
+                توضیح فقط زیر مرحلهٔ جاری: زیر هر مرحله بنویسیم، خط
+                زمانی به دیوار متن تبدیل می‌شود.
+                {% endcomment %}
+                {% if step.state == 'current' and step.hint %}
+                <div class="track-step-hint">{{ step.hint }}</div>
+                {% endif %}
+                {% if step.missing %}
+                <ul class="track-missing">
+                    {% for item in step.missing %}<li>{{ item }}</li>{% endfor %}
+                </ul>
+                <a href="{% url 'admissions:complete_documents' app.tracking_code %}"
+                   class="btn btn-sm btn-warning mt-2">
+                    <i class="fas fa-upload"></i> تکمیل مدارک
+                </a>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

@@ -402,3 +402,64 @@ class AdmissionOTP(models.Model):
         code = f'{secrets.randbelow(1000000):06d}'
         expires = timezone.now() + timezone.timedelta(minutes=10)
         return cls.objects.create(phone=phone, code=code, expires_at=expires)
+
+
+# ─────────────────────────────────────────────
+#  پیش‌نویس فرم پذیرش
+# ─────────────────────────────────────────────
+class ApplicationDraft(models.Model):
+    """آنچه متقاضی تا این لحظه در فرم نوشته، پیش از ثبت نهایی.
+
+    فرم پذیرش حدود چهل فیلد دارد. تا امروز اگر اینترنت قطع می‌شد یا
+    مرورگر بسته می‌شد، همه‌اش از بین می‌رفت و متقاضی باید از صفر
+    شروع می‌کرد — و بخشی از آن‌ها دیگر برنمی‌گشتند.
+
+    کلید، شمارهٔ موبایلِ تأییدشده با OTP است: همان چیزی که سامانه
+    پیش از باز شدن فرم از متقاضی گرفته، پس چیز تازه‌ای از او
+    نمی‌خواهیم. فقط مقادیر متنی نگه داشته می‌شوند؛ فایل‌ها نه —
+    مرورگر اجازهٔ پرکردن دوبارهٔ ورودی فایل را نمی‌دهد و نگه‌داشتن
+    تصویر مدرکی که هنوز ثبت نشده، خودش یک بار مسئولیت است.
+
+    بعد از ثبت موفق پرونده، پیش‌نویس پاک می‌شود.
+    """
+    phone = models.CharField(_('موبایل'), max_length=15, unique=True, db_index=True)
+    payload = models.JSONField(_('داده‌های فرم'), default=dict)
+    updated_at = models.DateTimeField(_('آخرین ذخیره'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('پیش‌نویس فرم پذیرش')
+        verbose_name_plural = _('پیش‌نویس‌های فرم پذیرش')
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'پیش‌نویس {self.phone}'
+
+    # فیلدهایی که هرگز در پیش‌نویس ذخیره نمی‌شوند
+    BLOCKED = {'csrfmiddlewaretoken', 'captcha', 'password', 'password1', 'password2'}
+
+    @classmethod
+    def store(cls, phone: str, data) -> 'ApplicationDraft':
+        payload = {
+            key: value for key, value in data.items()
+            if key not in cls.BLOCKED and isinstance(value, str) and value.strip()
+        }
+        obj, _created = cls.objects.update_or_create(
+            phone=phone, defaults={'payload': payload})
+        return obj
+
+    @classmethod
+    def load(cls, phone: str) -> dict:
+        if not phone:
+            return {}
+        obj = cls.objects.filter(phone=phone).first()
+        return obj.payload if obj else {}
+
+    @classmethod
+    def clear(cls, phone: str) -> None:
+        if phone:
+            cls.objects.filter(phone=phone).delete()
+
+    def filled_ratio(self) -> int:
+        """درصد تکمیل — برای نواری که به متقاضی می‌گوید کجای کار است."""
+        wanted = 22          # فیلدهای واقعاً لازم فرم
+        return min(100, round(100 * len(self.payload) / wanted))

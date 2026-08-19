@@ -684,3 +684,216 @@ function appendMsg(text, type) {
         setTimeout(function () { button.classList.remove('is-spinning'); }, 520);
     });
 })();
+
+
+// ============================================================
+//  پیش‌نویس فرم پذیرش — بازگرداندن و ذخیرهٔ خودکار
+// ============================================================
+// فرم چهل فیلد دارد. تا امروز قطع‌شدن اینترنت یا بسته‌شدن مرورگر
+// یعنی از صفر، و متقاضی‌ای که از صفر شروع کند معمولاً برنمی‌گردد.
+//
+// فایل‌ها ذخیره نمی‌شوند: مرورگر اجازهٔ پرکردن دوبارهٔ <input type=file>
+// را نمی‌دهد، و نگه‌داشتن تصویر مدرکی که هنوز ثبت نشده خودش یک بار
+// مسئولیت است.
+(function () {
+    'use strict';
+
+    var form = document.getElementById('applyForm');
+    if (!form || !form.dataset.draftUrl) return;
+
+    var status = document.getElementById('draftStatus');
+    var SAVE_EVERY = 15000;
+    var dirty = false;
+    var timer = null;
+
+    function token() {
+        var field = form.querySelector('[name=csrfmiddlewaretoken]');
+        return field ? field.value : '';
+    }
+
+    function say(text, tone) {
+        if (!status) return;
+        status.textContent = text;
+        status.className = 'draft-status' + (tone ? ' is-' + tone : '');
+        if (tone === 'ok') {
+            setTimeout(function () {
+                if (status.textContent === text) status.textContent = '';
+            }, 2500);
+        }
+    }
+
+    // ── بازگرداندن آنچه قبلاً نوشته شده ──
+    var holder = document.getElementById('draftData');
+    if (holder) {
+        var data = {};
+        try { data = JSON.parse(holder.textContent) || {}; } catch (e) { data = {}; }
+        Object.keys(data).forEach(function (name) {
+            var nodes = form.querySelectorAll('[name="' + name + '"]');
+            if (!nodes.length) return;
+            var node = nodes[0];
+            if (node.type === 'file') return;
+            if (node.type === 'checkbox' || node.type === 'radio') {
+                Array.prototype.forEach.call(nodes, function (item) {
+                    if (item.value === data[name]) item.checked = true;
+                });
+            } else {
+                node.value = data[name];
+            }
+        });
+    }
+
+    var discard = document.getElementById('draftDiscard');
+    if (discard) {
+        discard.addEventListener('click', function () {
+            fetch(form.dataset.draftDiscardUrl, {
+                method: 'POST',
+                headers: {'X-CSRFToken': token()},
+                credentials: 'same-origin'
+            }).then(function () { window.location.reload(); });
+        });
+    }
+
+    // ── ذخیرهٔ خودکار ──
+    function save() {
+        if (!dirty) return;
+        dirty = false;
+        var payload = new FormData(form);
+        // فایل‌ها را نفرست: حجیم‌اند و سمت سرور هم دور ریخته می‌شوند
+        Array.prototype.forEach.call(
+            form.querySelectorAll('input[type=file]'),
+            function (input) { payload.delete(input.name); });
+
+        fetch(form.dataset.draftUrl, {
+            method: 'POST',
+            body: payload,
+            headers: {'X-CSRFToken': token()},
+            credentials: 'same-origin'
+        }).then(function (response) {
+            return response.ok ? response.json() : null;
+        }).then(function (result) {
+            if (result && result.ok) say('ذخیره شد', 'ok');
+        }).catch(function () {
+            // شکست ذخیره نباید کاربر را بترساند؛ دفعهٔ بعد دوباره
+            dirty = true;
+        });
+    }
+
+    form.addEventListener('input', function () { dirty = true; });
+    form.addEventListener('change', function () { dirty = true; });
+    timer = setInterval(save, SAVE_EVERY);
+
+    // بستن زبانه یا رفتن به صفحهٔ دیگر: یک ذخیرهٔ آخر
+    window.addEventListener('pagehide', function () {
+        if (!dirty) return;
+        var payload = new FormData(form);
+        Array.prototype.forEach.call(
+            form.querySelectorAll('input[type=file]'),
+            function (input) { payload.delete(input.name); });
+        payload.append('csrfmiddlewaretoken', token());
+        if (navigator.sendBeacon) navigator.sendBeacon(form.dataset.draftUrl, payload);
+    });
+
+    // ثبت نهایی: دیگر ذخیره لازم نیست و سرور خودش پیش‌نویس را پاک می‌کند
+    form.addEventListener('submit', function () {
+        dirty = false;
+        if (timer) clearInterval(timer);
+    });
+})();
+
+
+// ============================================================
+//  مدارک آپلودی — پیش‌نمایش، هشدار کیفیت، فشرده‌سازی
+// ============================================================
+// چهار ورودی فایل داریم و تا امروز هیچ بازخوردی نمی‌دادند: متقاضی
+// عکسی می‌فرستاد و تازه چند روز بعد تلفنی می‌شنید که ناخواناست.
+//
+// سه کار اینجا انجام می‌شود: تصویر نشان داده می‌شود، اگر ابعادش کم
+// بود همان‌جا هشدار می‌آید، و اگر بزرگ‌تر از سقف بود پیش از ارسال
+// کوچک می‌شود — که هم آپلود را سریع می‌کند و هم خطای «حجم زیاد» را
+// از بین می‌برد.
+(function () {
+    'use strict';
+
+    var inputs = document.querySelectorAll('form input[type=file][accept*=image]');
+    if (!inputs.length) return;
+
+    var MIN_SIDE = 400;
+    var MAX_BYTES = 2 * 1024 * 1024;
+    var MAX_SIDE = 1600;
+
+    function box(input) {
+        var existing = input.parentNode.querySelector('.doc-preview');
+        if (existing) return existing;
+        var node = document.createElement('div');
+        node.className = 'doc-preview';
+        input.parentNode.appendChild(node);
+        return node;
+    }
+
+    function shrink(file, done) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+                var scale = Math.min(1, MAX_SIDE / Math.max(img.width, img.height));
+                var canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(function (blob) {
+                    done(blob && blob.size < file.size ? blob : null, img.width, img.height);
+                }, 'image/jpeg', 0.82);
+            };
+            img.onerror = function () { done(null, 0, 0); };
+            img.src = e.target.result;
+        };
+        reader.onerror = function () { done(null, 0, 0); };
+        reader.readAsDataURL(file);
+    }
+
+    Array.prototype.forEach.call(inputs, function (input) {
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            var view = box(input);
+            view.textContent = '';
+            if (!file) return;
+
+            shrink(file, function (blob, width, height) {
+                var url = URL.createObjectURL(file);
+                var thumb = document.createElement('img');
+                thumb.src = url;
+                thumb.alt = 'پیش‌نمایش ' + (input.name || 'مدرک');
+                thumb.className = 'doc-thumb';
+                thumb.onload = function () { URL.revokeObjectURL(url); };
+                view.appendChild(thumb);
+
+                var note = document.createElement('div');
+                note.className = 'doc-note';
+
+                if (width && Math.min(width, height) < MIN_SIDE) {
+                    note.classList.add('is-bad');
+                    note.textContent = 'کیفیت کم است (' + width + '×' + height +
+                        '). تصویری با کمینهٔ ' + MIN_SIDE + ' پیکسل بفرستید.';
+                } else if (blob && file.size > MAX_BYTES) {
+                    // جایگزینی فایل ورودی با نسخهٔ کوچک‌شده
+                    try {
+                        var box2 = new DataTransfer();
+                        box2.items.add(new File([blob], file.name, {type: 'image/jpeg'}));
+                        input.files = box2.files;
+                        note.classList.add('is-ok');
+                        note.textContent = 'حجم از ' +
+                            Math.round(file.size / 1024) + ' به ' +
+                            Math.round(blob.size / 1024) + ' کیلوبایت کاهش یافت.';
+                    } catch (e) {
+                        note.classList.add('is-bad');
+                        note.textContent = 'حجم بیش از ۲ مگابایت است؛ تصویر کوچک‌تری بفرستید.';
+                    }
+                } else if (width) {
+                    note.classList.add('is-ok');
+                    note.textContent = 'کیفیت مناسب است (' + width + '×' + height + ').';
+                }
+                if (note.textContent) view.appendChild(note);
+            });
+        });
+    });
+})();

@@ -186,6 +186,8 @@ def dashboard(request):
         context.update({
             'page_title': 'پنل دانشجو',
             'terminal_status': True,
+            # وضعیت نهایی یعنی ترمی در کار نیست؛ نوار کارها خالی می‌ماند
+            'today_tasks': [],
             'academic_status': journey.get('academic_status'),
             'academic_status_display': (
                 profile.get_academic_status_display() if profile else ''
@@ -223,9 +225,12 @@ def dashboard(request):
     my_requests = StudentRequest.objects.filter(student=user).order_by('-created_at')[:5]
     my_payments = Payment.objects.filter(student=user).order_by('-created_at')[:3]
 
+    from . import today as today_tasks
+
     context.update({
         'page_title': 'پنل دانشجو',
         'terminal_status': False,
+        'today_tasks': today_tasks.build(user, course_ids, journey),
         'academic_status': journey.get('academic_status') if journey else 'active',
         'academic_status_display': (
             profile.get_academic_status_display() if profile else 'در حال تحصیل'
@@ -434,8 +439,11 @@ def student_registration(request):
             'seats_left': primary.remaining_seats if primary else None,
         })
 
+    from . import advisor
+
     ctx.update({
         'rows': rows,
+        'advice': advisor.build(request.user, profile.major, rows, standing),
         'total_units': total_units,
         'max_units': standing.max_units,
         'min_units': standing.min_units,
@@ -1471,3 +1479,16 @@ def staff_student_export(request):
         'export_title': title,
     })
     return render(request, 'dashboard/staff_student_export.html', ctx)
+
+
+@role_required('student')
+def student_calendar_ics(request):
+    """برنامهٔ کلاس‌ها و امتحانات به شکل فایل تقویم."""
+    from django.http import HttpResponse
+    from . import calendar_feed
+
+    ctx = panel_context(request, 'تقویم', 'schedule')
+    body = calendar_feed.build(request.user, ctx['active_semester'])
+    response = HttpResponse(body, content_type='text/calendar; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="portal-schedule.ics"'
+    return response

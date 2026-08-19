@@ -1,4 +1,5 @@
 ﻿{% extends 'base.html' %}
+{% load custom_filters %}
 {% block content %}
 <div class="page-header">
     <div class="container">
@@ -35,7 +36,31 @@
 </div>
 {% endif %}
 
-<form method="post" enctype="multipart/form-data" id="applyForm">
+{# پیش‌نویس — فرم چهل فیلد دارد و قطع‌شدن وسط کار یعنی از صفر. #}
+{% if draft %}
+{{ draft|json_script:"draftData" }}
+<div class="draft-banner mb-4" id="draftBanner">
+    <div class="draft-banner-row">
+        <i class="fas fa-clock-rotate-left"></i>
+        <div>
+            <strong>ادامهٔ فرم نیمه‌کاره</strong>
+            <div class="draft-banner-note">
+                آخرین ذخیره: {{ draft_saved_at|jalali_datetime }} — حدود {{ draft_ratio }}٪ تکمیل شده
+            </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="draftDiscard">
+            از نو شروع می‌کنم
+        </button>
+    </div>
+    <div class="draft-progress"><span style="width: {{ draft_ratio }}%"></span></div>
+</div>
+{% endif %}
+
+<div class="draft-status" id="draftStatus" role="status" aria-live="polite"></div>
+
+<form method="post" enctype="multipart/form-data" id="applyForm"
+      data-draft-url="{% url 'admissions:save_draft' %}"
+      data-draft-discard-url="{% url 'admissions:discard_draft' %}">
 {% csrf_token %}
 <div class="row g-4">
 

@@ -11,6 +11,7 @@ urlpatterns = [
     path('registration/', views.student_registration, name='student_registration'),
     path('schedule/', views.student_schedule, name='student_schedule'),
     path('schedule/print/', views.print_class_schedule, name='print_class_schedule'),
+    path('schedule/calendar.ics', views.student_calendar_ics, name='student_calendar_ics'),
     path('exam-card/', views.student_exam_card, name='student_exam_card'),
     path('grades/', views.student_grades, name='student_grades'),
     path('grades/transcript/', views.print_transcript, name='print_transcript'),

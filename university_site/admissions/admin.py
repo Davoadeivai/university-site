@@ -10,7 +10,7 @@ from core.jalali import jalali_year_range
 
 from .application_export import excel_response, print_html_response, word_response
 from .models import (
-    AdmissionInfo, Application,
+    AdmissionInfo, Application, ApplicationDraft,
     TuitionStructure, TuitionDiscount, StudentPayment, AdmissionOTP,
 )
 
@@ -665,3 +665,18 @@ class AdmissionOTPAdmin(JalaliAdminMixin, admin.ModelAdmin):
             ),
         }),
     )
+
+
+@admin.register(ApplicationDraft)
+class ApplicationDraftAdmin(admin.ModelAdmin):
+    """پیش‌نویس‌های نیمه‌کاره — برای دیدن اینکه کجا رها می‌شوند.
+
+    فقط خواندنی است: این‌ها دادهٔ متقاضی‌اند و ویرایششان از اینجا
+    معنایی ندارد. حذف باز است تا بشود پیش‌نویس‌های کهنه را پاک کرد.
+    """
+    list_display = ('phone', 'filled_ratio', 'updated_at')
+    search_fields = ('phone',)
+    readonly_fields = ('phone', 'payload', 'updated_at')
+
+    def has_add_permission(self, request):
+        return False

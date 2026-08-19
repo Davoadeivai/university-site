@@ -9,6 +9,10 @@
         <a href="{% url 'dashboard:print_class_schedule' %}" class="btn btn-sm btn-outline-secondary" target="_blank">
             <i class="fas fa-print"></i> پرینت
         </a>
+        {# تقویم گوشی: کلاس‌های هفتگی و امتحان‌ها، با یادآور نیم‌ساعت قبل #}
+        <a href="{% url 'dashboard:student_calendar_ics' %}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-calendar-plus"></i> افزودن به تقویم
+        </a>
     </div>
 </div>
 

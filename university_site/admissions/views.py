@@ -20,7 +20,7 @@ from core.iran import (
     validate_image_upload,
 )
 from .models import (
-    AdmissionInfo, Application, AdmissionOTP,
+    AdmissionInfo, Application, AdmissionOTP, ApplicationDraft,
     TuitionStructure, TuitionDiscount,
 )
 import logging
@@ -282,6 +282,14 @@ def apply(request):
             ],
             **jalali_ctx,
         }
+        # پیش‌نویس فقط وقتی معنا دارد که هنوز چیزی POST نشده؛ بعد از
+        # ارسال، مقادیر خودِ فرم مرجع‌اند نه چیزی که قبلاً ذخیره شده.
+        if post is None and phone:
+            draft = ApplicationDraft.objects.filter(phone=phone).first()
+            if draft and draft.payload:
+                ctx['draft'] = draft.payload
+                ctx['draft_ratio'] = draft.filled_ratio()
+                ctx['draft_saved_at'] = draft.updated_at
         if extra:
             ctx.update(extra)
         return render(request, 'admissions/apply.html', ctx)
@@ -529,6 +537,8 @@ def apply(request):
             messages.error(request, 'ثبت درخواست با خطا مواجه شد. دوباره تلاش کنید.')
             return _apply_form(p)
 
+        # پرونده ثبت شد؛ پیش‌نویس دیگر کاری ندارد و نباید بماند
+        ApplicationDraft.clear(phone)
         request.session.pop('apply_phone', None)
         request.session.pop('apply_phone_verified', None)
         messages.success(request, f'درخواست شما با کد رهگیری {app.tracking_code} ثبت شد.')
@@ -676,37 +686,8 @@ def track_application(request):
                 'اگر هنوز ثبت نکرده‌اید از «ثبت درخواست» اقدام کنید.',
             )
         else:
-            labels = dict(Application.STATUS_CHOICES)
-            # مسیر واقعی بدون علامت‌زدن مراحل ردشده به‌عنوان انجام‌شده
-            main_flow = ['pending', 'reviewing', 'accepted']
-            optional = {'incomplete', 'interview'}
-            if app.status in ('rejected', 'waiting'):
-                timeline = [{
-                    'key': app.status,
-                    'label': labels.get(app.status, app.status),
-                    'state': 'current',
-                }]
-            elif app.status in optional:
-                timeline = [
-                    {'key': 'pending', 'label': labels['pending'], 'state': 'done'},
-                    {'key': 'reviewing', 'label': labels['reviewing'], 'state': 'done'},
-                    {'key': app.status, 'label': labels[app.status], 'state': 'current'},
-                    {'key': 'accepted', 'label': labels['accepted'], 'state': 'todo'},
-                ]
-            else:
-                try:
-                    cur = main_flow.index(app.status)
-                except ValueError:
-                    cur = 0
-                for i, key in enumerate(main_flow):
-                    state = 'done' if i < cur else ('current' if i == cur else 'todo')
-                    timeline.append({'key': key, 'label': labels[key], 'state': state})
-                if app.status == 'accepted' and app.interview_date:
-                    timeline.insert(-1, {
-                        'key': 'interview',
-                        'label': labels['interview'],
-                        'state': 'done',
-                    })
+            from . import tracking
+            timeline = tracking.build(app)
     journey = None
     viewer_is_staff = False
     if request.user.is_authenticated:
@@ -1087,3 +1068,37 @@ def tuition_info(request):
         'history': history,
         'page_title': 'اطلاعات شهریه',
     })
+
+
+def save_draft(request):
+    """ذخیرهٔ خودکار پیش‌نویس فرم پذیرش.
+
+    مرورگر هر چند ثانیه یک بار محتوای فرم را اینجا می‌فرستد. پاسخ
+    عمداً کوچک است و هیچ داده‌ای برنمی‌گرداند: این مسیر فقط برای
+    نوشتن است.
+
+    کلید، موبایلِ تأییدشده در نشست است. اگر نشستی نباشد ساکت رد
+    می‌شود — پیش‌نویس یک راحتی است، نه چیزی که ارزش خطا دادن به
+    کاربر وسط پرکردن فرم را داشته باشد.
+    """
+    from django.http import JsonResponse
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False}, status=405)
+
+    phone = request.session.get('apply_phone', '')
+    if not phone:
+        return JsonResponse({'ok': False, 'reason': 'no-session'})
+
+    draft = ApplicationDraft.store(phone, request.POST)
+    return JsonResponse({'ok': True, 'ratio': draft.filled_ratio()})
+
+
+def discard_draft(request):
+    """دور انداختن پیش‌نویس — وقتی متقاضی می‌خواهد از نو شروع کند."""
+    from django.http import JsonResponse
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False}, status=405)
+    ApplicationDraft.clear(request.session.get('apply_phone', ''))
+    return JsonResponse({'ok': True})

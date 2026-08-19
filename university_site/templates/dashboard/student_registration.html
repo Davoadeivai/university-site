@@ -9,6 +9,44 @@
     {% endif %}
 </div>
 
+{% comment %}
+پیشنهاد این ترم — فهرست کامل دروس رشته حدود چهل ردیف است. این جعبه
+می‌گوید کدام‌ها مالِ ترم فعلی دانشجو هستند و همین حالا قابل انتخاب‌اند.
+{% endcomment %}
+{% if advice.suggested %}
+<div class="advice-card mb-3">
+    <div class="advice-head">
+        <i class="fas fa-lightbulb"></i>
+        پیشنهاد برای ترم {{ advice.term }}
+        <span class="advice-units">
+            {{ advice.suggested_total }} درس — {{ advice.suggested_units }} واحد
+        </span>
+    </div>
+    <ul class="advice-list">
+        {% for row in advice.suggested %}
+        <li>
+            <span class="advice-name">{{ row.course.name }}</span>
+            <span class="advice-meta">{{ row.course.credits }} واحد</span>
+            {% if row.professor %}<span class="advice-meta">{{ row.professor.get_full_name }}</span>{% endif %}
+            {% if row.schedule %}<span class="advice-meta">{{ row.schedule }}</span>{% endif %}
+            {% if row.seats_left != None %}
+            <span class="advice-meta">{{ row.seats_left }} صندلی</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="advice-note">
+        این‌ها را در جدول پایین انتخاب کنید. دروسی که پیش‌نیازشان را
+        نگذرانده‌اید در همان جدول با دلیل قفل‌بودن نشان داده می‌شوند.
+    </div>
+</div>
+{% elif advice.term %}
+<div class="alert alert-secondary" style="font-size:13px;">
+    برای ترم {{ advice.term }} درس قابل انتخابی پیدا نشد. جدول پایین
+    همهٔ دروس رشته را با دلیل قفل‌بودن هرکدام نشان می‌دهد.
+</div>
+{% endif %}
+
 {# ── وضعیت تحصیلی و سقف واحد ── #}
 <div class="uni-card p-3 mb-3">
     <div class="row g-3 align-items-center">
