@@ -2627,87 +2627,45 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .pres-crumb .breadcrumb { font-size: 13px; }
 
-/* قاب تمام‌صفحه: ارتفاعش کل ارتفاع دیدنیِ مرورگر است.
-   svh نه vh — روی موبایل، vh نوار آدرس را هم حساب می‌کند و پایین
-   قاب زیر نوار پنهان می‌ماند. */
+/* قاب ریاست: عکس همان‌طور که هست.
+   ───────────────────────────────────────────────────────────
+   نه برش، نه حاشیهٔ تیره، نه قاب با ارتفاع ثابت. تصویر تمام‌عرض
+   می‌شود و ارتفاعش را نسبت خودش تعیین می‌کند. نسخهٔ قبلی با قاب
+   ثابت + contain کار می‌کرد ولی دو نوار مات کنار عکس عمودی
+   می‌گذاشت؛ حالا اصلاً نواری نیست چون چیزی برای پر کردن نمانده. */
 .pres-hero {
     position: relative;
     inline-size: 100%;
-    block-size: 100svh;
-    min-block-size: 480px;
-    overflow: hidden;
     background: #0a1628;
-    isolation: isolate;
+    line-height: 0;              /* فاصلهٔ زیر img در جریان متن */
 }
 
-/* پس‌زمینه: همان عکس، بزرگ و مات. کشیده‌شدنش اهمیتی ندارد چون
-   قرار نیست خوانده شود؛ کارش فقط پر کردن حاشیه‌ها با رنگ‌های خودِ
-   عکس است تا کنارهٔ قاب، سیاهِ مرده نباشد. */
-.pres-hero-wash {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    inline-size: 100%;
-    block-size: 100%;
-    object-fit: cover;
-    /* scale لازم است: blur لبه‌ها را شفاف می‌کند و بدون بزرگ‌نمایی
-       یک نوار روشن دور قاب می‌ماند. */
-    transform: scale(1.15);
-    filter: blur(38px) saturate(1.25) brightness(.42);
-}
-
-.pres-hero-veil {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(to top,
-        rgba(6, 16, 30, .94) 0%,
-        rgba(6, 16, 30, .55) 26%,
-        rgba(6, 16, 30, .08) 55%,
-        rgba(6, 16, 30, .35) 100%);
-}
-
-/* contain نه cover: هیچ بخشی از عکس بریده نمی‌شود. عکس اداری ممکن
-   است عمودی یا افقی باشد و هر عدد ثابتی برای object-position روی
-   یکی از این دو غلط از آب درمی‌آید — یک بار سرِ سوژه کامل از قاب
-   بیرون ماند و فقط دیوار دیده شد. */
 .pres-hero-img {
-    position: relative;
-    z-index: 0;
     display: block;
     inline-size: 100%;
-    block-size: 100%;
-    object-fit: contain;
-    object-position: center top;
+    block-size: auto;            /* نسبت اصلی عکس حفظ می‌شود */
+    max-inline-size: 100%;
 }
 
 .pres-hero-placeholder {
     display: grid;
     place-items: center;
-    block-size: 100%;
+    aspect-ratio: 16 / 9;
     background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
     color: rgba(255, 255, 255, .3);
     font-size: 6rem;
+    line-height: 1;
 }
 
-/* نام روی نوار پایین می‌نشیند. پرده در همان لایه است تا متن سفید
-   روی هر عکسی خوانا بماند. */
+/* نوار نام زیر عکس می‌نشیند، نه رویش: هیچ چیزی جلوی تصویر را
+   نمی‌گیرد و متن هم بدون پردهٔ تیره روی عکس خوانا می‌ماند. */
 .pres-hero-plate {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline: 0;
-    z-index: 2;
-    padding-block: clamp(60px, 12vh, 130px) clamp(52px, 9vh, 88px);
+    line-height: 1.7;
+    padding-block: clamp(26px, 4vw, 46px);
     color: #fff;
-    background: linear-gradient(to top,
-        rgba(4, 12, 24, .96) 0%,
-        rgba(4, 12, 24, .82) 40%,
-        rgba(4, 12, 24, 0) 100%);
-    pointer-events: none;
+    background: linear-gradient(135deg, #0d2144 0%, #0a1628 100%);
+    border-block-start: 3px solid var(--bnr-gold-300, #f0d080);
 }
-/* خودِ نوار کلیک را رد می‌کند تا عکس زیرش قابل انتخاب بماند؛
-   لینک‌های داخلش دوباره فعال می‌شوند. */
-.pres-hero-plate a { pointer-events: auto; }
 
 .pres-eyebrow {
     margin: 0 0 10px;
@@ -2729,18 +2687,17 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .pres-name {
     margin: 0;
-    font-size: clamp(26px, 4.6vw, 52px);
+    font-size: clamp(24px, 3.6vw, 44px);
     font-weight: 800;
-    line-height: 1.22;
+    line-height: 1.24;
     text-wrap: balance;
-    text-shadow: 0 2px 24px rgba(0, 0, 0, .6);
 }
 
 .pres-title {
-    margin: 12px 0 0;
-    font-size: clamp(13.5px, 1.6vw, 18px);
+    margin: 10px 0 0;
+    font-size: clamp(13.5px, 1.5vw, 17px);
     line-height: 1.9;
-    color: rgba(255, 255, 255, .88);
+    color: rgba(255, 255, 255, .85);
     max-inline-size: 52ch;
 }
 
@@ -2757,8 +2714,6 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     background: rgba(240, 208, 128, .12);
     color: var(--bnr-gold-300, #f0d080);
     text-decoration: none;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
     transition: background .16s ease, border-color .16s ease;
 }
 .pres-hero-url:hover {
@@ -2776,55 +2731,15 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     overflow-wrap: anywhere;
 }
 
-/* فلش پایین: می‌گوید صفحه ادامه دارد. بدون آن، قاب تمام‌صفحه شبیه
-   کل صفحه به نظر می‌رسد و بازدیدکننده اسکرول نمی‌کند. */
-.pres-hero-scroll {
-    position: absolute;
-    inset-block-end: 18px;
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
-    z-index: 3;
-    inline-size: 42px;
-    block-size: 42px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, .3);
-    background: rgba(4, 12, 24, .4);
-    color: #fff;
-    text-decoration: none;
-}
-.pres-hero-scroll:hover { background: rgba(4, 12, 24, .7); color: #fff; }
-.pres-hero-scroll:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-
-/* ورود آرام: عکس و متن با کمی فاصله می‌آیند، یک بار، بدون
-   کتابخانه. کسی که کاهش حرکت خواسته، هیچ‌کدام را نمی‌بیند. */
+/* ورود آرام نوار نام. عکس دست‌نخورده می‌ماند: محو کردن یک تصویر
+   تمام‌عرض روی اتصال کند، بدتر از نبودنش است. */
 @media (prefers-reduced-motion: no-preference) {
-    .pres-hero-img { animation: pres-fade .8s var(--easing-standard, ease) both; }
-    .pres-hero-plate { animation: pres-rise .7s var(--easing-standard, ease) .15s both; }
-    .pres-hero-scroll { animation: pres-nudge 2.4s ease-in-out 1.2s infinite; }
-}
-
-@keyframes pres-fade {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    .pres-hero-plate { animation: pres-rise .6s var(--easing-standard, ease) both; }
 }
 
 @keyframes pres-rise {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: none; }
-}
-
-@keyframes pres-nudge {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50%      { transform: translateX(-50%) translateY(5px); }
-}
-
-@media (max-width: 767.98px) {
-    /* روی گوشی، ۱۰۰svh با نوار پایین مرورگر تنگ می‌شود و نوار نام
-       روی چهره می‌افتد؛ کمی کوتاه‌تر، و عکس بالاتر. */
-    .pres-hero { block-size: 88svh; min-block-size: 420px; }
-    .pres-hero-plate { padding-block: clamp(44px, 10vh, 90px) 62px; }
 }
 
 /* ── نوار پرش ── */
@@ -3023,11 +2938,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 @media print {
-    .pres-jump, .pres-vcard, .pres-areas,
-    .pres-hero-wash, .pres-hero-veil, .pres-hero-scroll { display: none; }
-    .pres-hero { block-size: auto; min-block-size: 0; background: none; }
-    .pres-hero-img { block-size: auto; max-block-size: 90mm; }
-    .pres-hero-plate { position: static; background: none; color: #000; padding-block: 12px; }
-    .pres-name, .pres-title { text-shadow: none; }
+    .pres-jump, .pres-vcard, .pres-areas { display: none; }
+    .pres-hero { background: none; }
+    .pres-hero-img { max-block-size: 100mm; inline-size: auto; }
+    .pres-hero-plate { background: none; color: #000; padding-block: 12px; }
     .pres-hero-url { border-color: #999; background: none; color: #000; }
 }

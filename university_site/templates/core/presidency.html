@@ -54,19 +54,15 @@
 <header class="pres-hero{% if not office.president_photo %} pres-hero-empty{% endif %}">
     {% if office.president_photo %}
     {% comment %}
-    همان تصویر، بزرگ‌شده و مات، پشت قاب را پر می‌کند. تصویر اصلی
-    رویش با contain می‌نشیند و تمام ارتفاع صفحه را می‌گیرد، پس هیچ
-    بخشی بریده نمی‌شود — نه سرِ سوژه، نه پایین قاب. با cover و یک
-    نقطهٔ ثابت، عکس عمودی موسسه طوری بریده شد که فقط دیوار و پرده
-    دیده می‌شد و رئیس اصلاً در کادر نبود.
+    عکس همان‌طور که آپلود شده: تمام‌عرض، با نسبت خودش، بدون برش و
+    بدون حاشیه. width و height از ابعاد واقعی فایل می‌آیند تا مرورگر
+    پیش از رسیدن تصویر جایش را کنار بگذارد و صفحه هنگام بارگذاری
+    تکان نخورد.
     {% endcomment %}
-    <img src="{{ office.president_photo.url }}" alt="" aria-hidden="true"
-         class="pres-hero-wash" decoding="async">
-    <div class="pres-hero-veil" aria-hidden="true"></div>
-
     <img src="{{ office.president_photo.url }}"
          alt="{{ office.president_name }}، رئیس موسسه آموزش عالی علامه امینی"
-         class="pres-hero-img" fetchpriority="high" decoding="async">
+         class="pres-hero-img" fetchpriority="high" decoding="async"
+         {% if office.photo_size %}width="{{ office.photo_size.0 }}" height="{{ office.photo_size.1 }}"{% endif %}>
     {% else %}
     <div class="pres-hero-placeholder" aria-hidden="true">
         <i class="fas fa-user-tie"></i>
@@ -97,10 +93,6 @@
             {% endif %}
         </div>
     </div>
-
-    <a class="pres-hero-scroll" href="#pres-start" aria-label="رفتن به محتوای صفحه">
-        <i class="fas fa-chevron-down" aria-hidden="true"></i>
-    </a>
 </header>
 
 {% comment %}

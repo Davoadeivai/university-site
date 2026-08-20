@@ -398,6 +398,24 @@ class PresidencyOffice(models.Model):
     def orcid_url(self) -> str:
         return 'https://orcid.org/%s' % self.president_orcid if self.president_orcid else ''
 
+    @property
+    def photo_size(self) -> tuple | None:
+        """ابعاد واقعی عکس رئیس، برای گذاشتن در width/height تگ img.
+
+        عکس تمام‌عرض است و ارتفاعش از نسبت خودش می‌آید؛ بدون این دو
+        عدد، مرورگر تا رسیدن فایل ارتفاع را نمی‌داند و کل صفحه پس از
+        بارگذاری یک تکان می‌خورد (layout shift).
+
+        خواندن ابعاد یعنی باز کردن فایل؛ اگر فایل روی دیسک نباشد —
+        که بعد از انتقال مدیا پیش می‌آید — نباید کل صفحه بترکد.
+        """
+        if not self.president_photo:
+            return None
+        try:
+            return (self.president_photo.width, self.president_photo.height)
+        except Exception:                      # noqa: BLE001
+            return None
+
 
 class PresidencyOfficeUnit(models.Model):
     """زیرصفحه‌های دفتر ریاست مطابق سایت رسمی.

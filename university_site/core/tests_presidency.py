@@ -187,14 +187,14 @@ class PresidencyAdminTests(TestCase):
             self.assertIn(field, listed, '%s در ادمین دیده نمی‌شود' % field)
 
 
-class HeroNeverCropsTests(TestCase):
-    """قاب عکس رئیس نباید هیچ بخشی از تصویر را ببرد.
+class HeroShowsThePhotoAsUploadedTests(TestCase):
+    """عکس باید همان‌طور که آپلود شده دیده شود.
 
-    نسخهٔ اول با cover و object-position ثابت ساخته شده بود. عکسی
-    که موسسه آپلود کرد عمودی بود و سوژه در نیمهٔ پایین؛ نتیجه این شد
-    که فقط دیوار و پرده دیده می‌شد و رئیس اصلاً در قاب نبود. هر عدد
-    ثابتی برای یکی از دو نسبت تصویر غلط از آب درمی‌آید، پس تصویر
-    اصلی همیشه contain است و پس‌زمینه با نسخهٔ مات پر می‌شود.
+    دو نسخهٔ قبلی هر کدام یک چیز را خراب کردند: اولی با cover و یک
+    نقطهٔ ثابت، عکس عمودی موسسه را طوری برید که فقط دیوار ماند؛
+    دومی با قاب تمام‌صفحه و contain چیزی را نبرید ولی دو نوار تیره
+    کنار عکس گذاشت. حالا تصویر تمام‌عرض است و ارتفاعش را نسبت
+    خودش تعیین می‌کند، پس نه برشی هست نه حاشیه‌ای.
     """
 
     def _css(self):
@@ -208,38 +208,35 @@ class HeroNeverCropsTests(TestCase):
         start = css.index(selector + ' {')
         return css[start:css.index('}', start)]
 
-    def test_main_photo_is_contained(self):
+    def test_photo_keeps_its_own_ratio(self):
         rule = self._rule('.pres-hero-img')
-        self.assertIn('object-fit: contain', rule)
-        self.assertNotIn('cover', rule,
-                         'قاب دوباره برش می‌زند')
+        self.assertIn('block-size: auto', rule)
+        self.assertNotIn('object-fit', rule, 'قاب دوباره تصویر را جا می‌دهد')
 
-    def test_the_frame_fills_the_screen(self):
-        """قاب باید تمام ارتفاع دیدنی را بگیرد، نه یک عدد ثابت."""
-        rule = self._rule('.pres-hero')
-        self.assertIn('svh', rule)
-        # vh روی موبایل نوار آدرس را هم حساب می‌کند و پایین قاب را
-        # زیر نوار می‌برد
-        self.assertNotIn('100vh', rule)
+    def test_photo_spans_the_full_width(self):
+        self.assertIn('inline-size: 100%', self._rule('.pres-hero-img'))
 
-    def test_backdrop_fills_the_frame(self):
-        rule = self._rule('.pres-hero-wash')
-        self.assertIn('object-fit: cover', rule)
-        # بدون بزرگ‌نمایی، blur لبه‌ها را شفاف می‌کند و یک نوار روشن
-        # دور قاب می‌ماند
-        self.assertIn('scale(', rule)
+    def test_no_letterboxing_left_behind(self):
+        """نسخهٔ مات و پردهٔ تیره باید کاملاً رفته باشند."""
+        css = self._css()
+        for gone in ('.pres-hero-wash', '.pres-hero-veil'):
+            self.assertNotIn(gone, css, '%s هنوز هست' % gone)
+
+    def test_name_plate_sits_below_not_over(self):
+        rule = self._rule('.pres-hero-plate')
+        self.assertNotIn('position: absolute', rule,
+                         'نوار نام دوباره روی عکس افتاده است')
 
     def test_the_page_renders_without_a_photo(self):
         """رکورد بدون عکس نباید قاب را بشکند."""
         PresidencyOffice.objects.create(president_name='دکتر تست')
         html = self.client.get(reverse('core:presidency')).content.decode()
-        self.assertEqual(html.count('pres-hero-wash'), 0)
         self.assertIn('pres-hero-placeholder', html)
 
     def test_the_entrance_animation_is_opt_out(self):
         """انیمیشن باید داخل prefers-reduced-motion باشد، نه بیرونش."""
         css = self._css()
-        before = css[:css.index('.pres-hero-img { animation')]
+        before = css[:css.index('.pres-hero-plate { animation')]
         guard = before.rindex('@media')
         self.assertIn('prefers-reduced-motion: no-preference',
                       before[guard:guard + 60])
@@ -253,3 +250,12 @@ class HeroNeverCropsTests(TestCase):
         plate = html.split('pres-hero-plate')[1].split('</header>')[0]
         self.assertIn('https://WCM-Society.Com', plate)
         self.assertIn('dir="ltr"', plate)
+
+    def test_missing_file_does_not_break_the_page(self):
+        """photo_size فایل را باز می‌کند؛ فایل نبود نباید ۵۰۰ بدهد."""
+        office = PresidencyOffice.objects.create(
+            president_name='دکتر تست',
+            president_photo='presidency/does-not-exist.jpg')
+        self.assertIsNone(office.photo_size)
+        res = self.client.get(reverse('core:presidency'))
+        self.assertEqual(res.status_code, 200)
