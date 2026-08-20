@@ -2627,21 +2627,22 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .pres-crumb .breadcrumb { font-size: 13px; }
 
+/* قاب تمام‌صفحه: ارتفاعش کل ارتفاع دیدنیِ مرورگر است.
+   svh نه vh — روی موبایل، vh نوار آدرس را هم حساب می‌کند و پایین
+   قاب زیر نوار پنهان می‌ماند. */
 .pres-hero {
     position: relative;
     inline-size: 100%;
-    min-block-size: min(78svh, 660px);
-    display: flex;
-    align-items: center;
+    block-size: 100svh;
+    min-block-size: 480px;
     overflow: hidden;
     background: #0a1628;
-    padding-block: clamp(24px, 4vw, 48px);
     isolation: isolate;
 }
 
 /* پس‌زمینه: همان عکس، بزرگ و مات. کشیده‌شدنش اهمیتی ندارد چون
-   قرار نیست خوانده شود؛ کارش فقط پر کردن قاب با رنگ‌های خودِ
-   عکس است تا حاشیه‌های خالی، سیاهِ مرده نباشند. */
+   قرار نیست خوانده شود؛ کارش فقط پر کردن حاشیه‌ها با رنگ‌های خودِ
+   عکس است تا کنارهٔ قاب، سیاهِ مرده نباشد. */
 .pres-hero-wash {
     position: absolute;
     inset: 0;
@@ -2652,61 +2653,61 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     /* scale لازم است: blur لبه‌ها را شفاف می‌کند و بدون بزرگ‌نمایی
        یک نوار روشن دور قاب می‌ماند. */
     transform: scale(1.15);
-    filter: blur(34px) saturate(1.25) brightness(.45);
+    filter: blur(38px) saturate(1.25) brightness(.42);
 }
 
 .pres-hero-veil {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background:
-        radial-gradient(120% 90% at 70% 30%, rgba(10, 22, 40, .25), rgba(10, 22, 40, .88)),
-        linear-gradient(to top, rgba(6, 16, 30, .95), rgba(6, 16, 30, .35));
+    background: linear-gradient(to top,
+        rgba(6, 16, 30, .94) 0%,
+        rgba(6, 16, 30, .55) 26%,
+        rgba(6, 16, 30, .08) 55%,
+        rgba(6, 16, 30, .35) 100%);
 }
 
-.pres-hero-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-    align-items: center;
-    gap: clamp(20px, 4vw, 56px);
-    inline-size: 100%;
-}
-
-.pres-hero-frame {
-    margin: 0;
-    justify-self: center;
-    inline-size: 100%;
-    max-inline-size: 460px;
-    border-radius: 18px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, .04);
-    border: 1px solid rgba(240, 208, 128, .28);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
-}
-
-/* contain نه cover: هیچ بخشی از عکس بریده نمی‌شود. عکس اداری
-   ممکن است عمودی یا افقی باشد و هر عدد ثابتی برای object-position
-   روی یکی از این دو غلط از آب درمی‌آید — یک بار سرِ سوژه کامل از
-   قاب بیرون ماند و فقط دیوار دیده می‌شد. */
+/* contain نه cover: هیچ بخشی از عکس بریده نمی‌شود. عکس اداری ممکن
+   است عمودی یا افقی باشد و هر عدد ثابتی برای object-position روی
+   یکی از این دو غلط از آب درمی‌آید — یک بار سرِ سوژه کامل از قاب
+   بیرون ماند و فقط دیوار دیده شد. */
 .pres-hero-img {
+    position: relative;
+    z-index: 0;
     display: block;
     inline-size: 100%;
-    block-size: auto;
-    max-block-size: min(62svh, 540px);
+    block-size: 100%;
     object-fit: contain;
-    background: rgba(10, 22, 40, .55);
+    object-position: center top;
 }
 
 .pres-hero-placeholder {
     display: grid;
     place-items: center;
-    aspect-ratio: 4 / 5;
+    block-size: 100%;
     background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
     color: rgba(255, 255, 255, .3);
-    font-size: 5rem;
+    font-size: 6rem;
 }
 
-.pres-hero-plate { color: #fff; }
+/* نام روی نوار پایین می‌نشیند. پرده در همان لایه است تا متن سفید
+   روی هر عکسی خوانا بماند. */
+.pres-hero-plate {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    z-index: 2;
+    padding-block: clamp(60px, 12vh, 130px) clamp(52px, 9vh, 88px);
+    color: #fff;
+    background: linear-gradient(to top,
+        rgba(4, 12, 24, .96) 0%,
+        rgba(4, 12, 24, .82) 40%,
+        rgba(4, 12, 24, 0) 100%);
+    pointer-events: none;
+}
+/* خودِ نوار کلیک را رد می‌کند تا عکس زیرش قابل انتخاب بماند؛
+   لینک‌های داخلش دوباره فعال می‌شوند. */
+.pres-hero-plate a { pointer-events: auto; }
 
 .pres-eyebrow {
     margin: 0 0 10px;
@@ -2728,70 +2729,102 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .pres-name {
     margin: 0;
-    font-size: clamp(26px, 4.2vw, 50px);
+    font-size: clamp(26px, 4.6vw, 52px);
     font-weight: 800;
-    line-height: 1.24;
+    line-height: 1.22;
     text-wrap: balance;
-    text-shadow: 0 2px 24px rgba(0, 0, 0, .5);
+    text-shadow: 0 2px 24px rgba(0, 0, 0, .6);
 }
 
 .pres-title {
     margin: 12px 0 0;
-    font-size: clamp(13.5px, 1.6vw, 17px);
+    font-size: clamp(13.5px, 1.6vw, 18px);
     line-height: 1.9;
-    color: rgba(255, 255, 255, .85);
-    max-inline-size: 46ch;
+    color: rgba(255, 255, 255, .88);
+    max-inline-size: 52ch;
 }
 
-.pres-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block-start: 26px; }
-
-.pres-hero-btn {
+/* نشانی سایت: لاتین، چپ‌به‌راست، و کامل. کسی که می‌خواهد آن را
+   یادداشت کند باید خودِ نشانی را ببیند، نه یک برچسب فارسی. */
+.pres-hero-url {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 11px 22px;
+    gap: 9px;
+    margin-block-start: 20px;
+    padding: 11px 18px;
     border-radius: 10px;
-    background: var(--bnr-gold-300, #f0d080);
-    border: 1px solid var(--bnr-gold-300, #f0d080);
-    color: #0a1628;
-    font-size: 13.5px;
-    font-weight: 700;
+    border: 1px solid rgba(240, 208, 128, .5);
+    background: rgba(240, 208, 128, .12);
+    color: var(--bnr-gold-300, #f0d080);
     text-decoration: none;
-    transition: transform .16s ease, background .16s ease;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background .16s ease, border-color .16s ease;
 }
-.pres-hero-btn:hover { background: #f7e3a8; color: #0a1628; transform: translateY(-1px); }
-
-.pres-hero-btn-ghost {
-    background: transparent;
-    border-color: rgba(255, 255, 255, .38);
+.pres-hero-url:hover {
+    background: rgba(240, 208, 128, .22);
+    border-color: var(--bnr-gold-300, #f0d080);
     color: #fff;
 }
-.pres-hero-btn-ghost:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+.pres-hero-url:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-.pres-hero-btn:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 3px;
+.pres-hero-url-text {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: clamp(13px, 1.5vw, 16px);
+    font-weight: 600;
+    letter-spacing: .3px;
+    overflow-wrap: anywhere;
 }
 
-/* ورود آرام: عکس و متن با نیم‌ثانیه فاصله می‌آیند، یک بار، بدون
+/* فلش پایین: می‌گوید صفحه ادامه دارد. بدون آن، قاب تمام‌صفحه شبیه
+   کل صفحه به نظر می‌رسد و بازدیدکننده اسکرول نمی‌کند. */
+.pres-hero-scroll {
+    position: absolute;
+    inset-block-end: 18px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    inline-size: 42px;
+    block-size: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .3);
+    background: rgba(4, 12, 24, .4);
+    color: #fff;
+    text-decoration: none;
+}
+.pres-hero-scroll:hover { background: rgba(4, 12, 24, .7); color: #fff; }
+.pres-hero-scroll:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* ورود آرام: عکس و متن با کمی فاصله می‌آیند، یک بار، بدون
    کتابخانه. کسی که کاهش حرکت خواسته، هیچ‌کدام را نمی‌بیند. */
 @media (prefers-reduced-motion: no-preference) {
-    .pres-hero-frame { animation: pres-rise .7s var(--easing-standard, ease) both; }
-    .pres-hero-plate { animation: pres-rise .7s var(--easing-standard, ease) .12s both; }
+    .pres-hero-img { animation: pres-fade .8s var(--easing-standard, ease) both; }
+    .pres-hero-plate { animation: pres-rise .7s var(--easing-standard, ease) .15s both; }
+    .pres-hero-scroll { animation: pres-nudge 2.4s ease-in-out 1.2s infinite; }
+}
+
+@keyframes pres-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 @keyframes pres-rise {
-    from { opacity: 0; transform: translateY(18px); }
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: none; }
 }
 
-@media (max-width: 991.98px) {
-    .pres-hero-grid { grid-template-columns: 1fr; }
-    .pres-hero-frame { max-inline-size: 340px; }
-    .pres-hero-img { max-block-size: 46svh; }
-    .pres-hero-plate { text-align: center; }
-    .pres-hero-plate .pres-title { margin-inline: auto; }
-    .pres-hero-actions { justify-content: center; }
+@keyframes pres-nudge {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(5px); }
+}
+
+@media (max-width: 767.98px) {
+    /* روی گوشی، ۱۰۰svh با نوار پایین مرورگر تنگ می‌شود و نوار نام
+       روی چهره می‌افتد؛ کمی کوتاه‌تر، و عکس بالاتر. */
+    .pres-hero { block-size: 88svh; min-block-size: 420px; }
+    .pres-hero-plate { padding-block: clamp(44px, 10vh, 90px) 62px; }
 }
 
 /* ── نوار پرش ── */
@@ -2991,8 +3024,10 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 @media print {
     .pres-jump, .pres-vcard, .pres-areas,
-    .pres-hero-wash, .pres-hero-veil, .pres-hero-actions { display: none; }
-    .pres-hero { min-block-size: 0; background: none; }
-    .pres-hero-plate { color: #000; }
-    .pres-hero-img { max-block-size: 60mm; }
+    .pres-hero-wash, .pres-hero-veil, .pres-hero-scroll { display: none; }
+    .pres-hero { block-size: auto; min-block-size: 0; background: none; }
+    .pres-hero-img { block-size: auto; max-block-size: 90mm; }
+    .pres-hero-plate { position: static; background: none; color: #000; padding-block: 12px; }
+    .pres-name, .pres-title { text-shadow: none; }
+    .pres-hero-url { border-color: #999; background: none; color: #000; }
 }

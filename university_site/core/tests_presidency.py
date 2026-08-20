@@ -211,8 +211,16 @@ class HeroNeverCropsTests(TestCase):
     def test_main_photo_is_contained(self):
         rule = self._rule('.pres-hero-img')
         self.assertIn('object-fit: contain', rule)
-        self.assertNotIn('object-position', rule,
-                         'قاب دوباره به یک نقطهٔ ثابت گره خورده است')
+        self.assertNotIn('cover', rule,
+                         'قاب دوباره برش می‌زند')
+
+    def test_the_frame_fills_the_screen(self):
+        """قاب باید تمام ارتفاع دیدنی را بگیرد، نه یک عدد ثابت."""
+        rule = self._rule('.pres-hero')
+        self.assertIn('svh', rule)
+        # vh روی موبایل نوار آدرس را هم حساب می‌کند و پایین قاب را
+        # زیر نوار می‌برد
+        self.assertNotIn('100vh', rule)
 
     def test_backdrop_fills_the_frame(self):
         rule = self._rule('.pres-hero-wash')
@@ -231,7 +239,17 @@ class HeroNeverCropsTests(TestCase):
     def test_the_entrance_animation_is_opt_out(self):
         """انیمیشن باید داخل prefers-reduced-motion باشد، نه بیرونش."""
         css = self._css()
-        before = css[:css.index('.pres-hero-frame { animation')]
+        before = css[:css.index('.pres-hero-img { animation')]
         guard = before.rindex('@media')
         self.assertIn('prefers-reduced-motion: no-preference',
                       before[guard:guard + 60])
+
+    def test_the_website_shows_as_a_latin_url(self):
+        """نشانی باید خودش دیده شود، لاتین و چپ‌به‌راست."""
+        PresidencyOffice.objects.create(
+            president_name='دکتر تست',
+            president_website='https://WCM-Society.Com')
+        html = self.client.get(reverse('core:presidency')).content.decode()
+        plate = html.split('pres-hero-plate')[1].split('</header>')[0]
+        self.assertIn('https://WCM-Society.Com', plate)
+        self.assertIn('dir="ltr"', plate)
