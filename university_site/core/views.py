@@ -448,6 +448,25 @@ def presidency(request):
     return render(request, 'core/presidency.html', context)
 
 
+def presidency_vcard(request):
+    """کارت تماس دفتر ریاست — یک ضربه و در مخاطبان گوشی می‌نشیند."""
+    from django.http import Http404, HttpResponse
+    from core import vcard
+
+    office = PresidencyOffice.objects.first()
+    if office is None:
+        raise Http404('اطلاعات ریاست ثبت نشده است.')
+
+    settings_row = SiteSettings.objects.first()
+    org = getattr(settings_row, 'university_name_fa', '') or ''
+    response = HttpResponse(vcard.build(office, org),
+                            content_type='text/vcard; charset=utf-8')
+    # نام فایل عمداً ASCII است: نام فارسی را بعضی گوشی‌ها در هدر
+    # به هم می‌ریزند و فایل بدون پسوند ذخیره می‌شود.
+    response['Content-Disposition'] = 'attachment; filename="president.vcf"'
+    return response
+
+
 def presidency_office(request):
     office = PresidencyOffice.objects.first()
     units = PresidencyOfficeUnit.objects.filter(is_active=True)

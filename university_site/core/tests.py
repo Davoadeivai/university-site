@@ -1719,3 +1719,42 @@ class LightThemeByDefaultTests(TestCase):
     def test_an_explicit_choice_is_still_honoured(self):
         js = self._asset('js/main.js')
         self.assertIn("localStorage.setItem('site-theme'", js)
+
+
+class FloatingButtonOverlapTests(TestCase):
+    """دو دکمهٔ شناور نباید روی هم بیفتند.
+
+    «بازگشت به بالا» ۴۲×۳۰ پیکسل زیر دکمهٔ گفت‌وگو پنهان شده بود:
+    هر دو رندر می‌شدند، هیچ خطایی نبود، و کلیک روی آن ناحیه به چت
+    می‌رسید نه به دکمه‌ای که کاربر می‌دید.
+    """
+
+    def _run_detector(self, css):
+        from core.management.commands.check_responsive import Command
+        found = []
+        Command().check_fixed_overlap('x.css', css, found)
+        return found
+
+    def test_detector_catches_an_overlap(self):
+        css = ('.a { position: fixed; bottom: 20px; left: 20px; '
+               'width: 60px; height: 60px; }\n'
+               '.b { position: fixed; bottom: 30px; left: 30px; '
+               'width: 40px; height: 40px; }')
+        self.assertEqual(len(self._run_detector(css)), 1)
+
+    def test_detector_accepts_stacked_buttons(self):
+        css = ('.a { position: fixed; bottom: 20px; left: 20px; '
+               'width: 60px; height: 60px; }\n'
+               '.b { position: fixed; bottom: 100px; left: 20px; '
+               'width: 40px; height: 40px; }')
+        self.assertEqual(self._run_detector(css), [])
+
+    def test_the_real_stylesheet_is_clean(self):
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        found = self._run_detector(css)
+        self.assertEqual(
+            [f.message for f in found], [],
+            'دکمه‌های شناور دوباره روی هم افتاده‌اند')

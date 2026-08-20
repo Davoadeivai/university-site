@@ -192,8 +192,34 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         ('ریاست موسسه', {
             'fields': (
                 'president_name', 'president_title', 'president_photo',
-                'president_bio', 'president_education', 'president_resume',
-                'president_email', 'president_phone', 'president_message',
+                'president_message', 'president_bio',
+            ),
+            'description': (
+                'تصویر رئیس در صفحهٔ ریاست تمام‌عرض و بزرگ نمایش داده '
+                'می‌شود، پس عکس افقی با عرض دست‌کم ۱۶۰۰ پیکسل بگذارید. '
+                'عکس عمودی یا کوچک، کشیده و مات دیده می‌شود.'
+            ),
+        }),
+        ('سوابق', {
+            'fields': (
+                'president_education', 'president_resume',
+                'president_research', 'president_cv',
+            ),
+            'description': (
+                'در هر سه کادر، <b>هر مورد را در یک خط جدا</b> بنویسید — '
+                'صفحه آن‌ها را فهرست‌وار نشان می‌دهد. اگر همه را در یک '
+                'پاراگراف بنویسید، همان یک پاراگراف چاپ می‌شود.'
+            ),
+        }),
+        ('تماس و حضور علمی', {
+            'fields': (
+                'president_email', 'president_phone',
+                'president_website', 'president_website_label',
+                'president_scholar', 'president_orcid',
+            ),
+            'description': (
+                'نشانی وب‌سایت را کامل با https بنویسید. عنوان اگر خالی '
+                'بماند، نام دامنه روی دکمه می‌آید.'
             ),
         }),
         ('دفتر ریاست', {

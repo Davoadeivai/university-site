@@ -207,6 +207,7 @@ def seed_content() -> None:
     run('tidy_academic_structure')
     run('set_org_chart')
     run('set_contact_email', '--replace')
+    run('set_president_links')
 
     incoming = os.path.join(TARGET, 'media', '_incoming')
     if os.path.isdir(incoming):

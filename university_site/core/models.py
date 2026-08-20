@@ -329,6 +329,28 @@ class PresidencyOffice(models.Model):
     president_email = models.EmailField(_('ایمیل'), blank=True)
     president_phone = models.CharField(_('تلفن'), max_length=50, blank=True)
     president_message = models.TextField(_('پیام رئیس'), blank=True)
+
+    # ── حضور علمی بیرون از سایت ──
+    # رئیس یک هویت علمی بیرون از این سایت دارد؛ تا امروز جایی برای
+    # ثبتش نبود و بازدیدکننده‌ای که دنبال سوابقش می‌گشت باید گوگل
+    # می‌کرد.
+    president_website = models.URLField(
+        _('وب‌سایت / صفحهٔ علمی'), blank=True,
+        help_text=_('نشانی کامل با https، مثلاً https://example.com'))
+    president_website_label = models.CharField(
+        _('عنوان وب‌سایت'), max_length=120, blank=True,
+        help_text=_('متنی که روی دکمه دیده می‌شود؛ خالی بماند نام دامنه می‌آید.'))
+    president_scholar = models.URLField(_('گوگل اسکولار'), blank=True)
+    president_orcid = models.CharField(
+        _('شناسهٔ ORCID'), max_length=40, blank=True,
+        help_text=_('فقط شناسه، مثلاً 0000-0002-1825-0097'))
+    president_research = models.TextField(
+        _('زمینه‌های پژوهشی'), blank=True,
+        help_text=_('هر زمینه در یک خط جدا؛ برچسب‌وار نمایش داده می‌شود.'))
+    president_cv = models.FileField(
+        _('فایل رزومه'), upload_to='presidency/cv/', blank=True, null=True,
+        help_text=_('PDF — دکمهٔ دانلود زیر مشخصات دیده می‌شود.'))
+
     office_manager_name = models.CharField(_('مدیر دفتر ریاست'), max_length=200, blank=True)
     office_duties = models.TextField(_('شرح وظایف دفتر ریاست'), blank=True)
     office_address = models.TextField(_('آدرس دفتر'), blank=True)
@@ -343,6 +365,38 @@ class PresidencyOffice(models.Model):
 
     def __str__(self):
         return self.president_name or 'دفتر ریاست'
+
+    # ── متن‌های چندخطی به فهرست ──
+    # هر سه فیلد در ادمین یک textarea هستند و کاربر خط‌به‌خط می‌نویسد.
+    # چاپ‌کردنشان به‌صورت یک پاراگرافِ به‌هم‌چسبیده همان کاری بود که
+    # قالب قبلی می‌کرد و خواندنش سخت بود.
+    @staticmethod
+    def _lines(value: str) -> list:
+        return [ln.strip(' 	-•—') for ln in (value or '').splitlines() if ln.strip()]
+
+    @property
+    def education_list(self) -> list:
+        return self._lines(self.president_education)
+
+    @property
+    def resume_list(self) -> list:
+        return self._lines(self.president_resume)
+
+    @property
+    def research_list(self) -> list:
+        return self._lines(self.president_research)
+
+    @property
+    def website_label(self) -> str:
+        """عنوان دکمهٔ وب‌سایت — اگر خالی بود، نام دامنه."""
+        if self.president_website_label:
+            return self.president_website_label
+        host = (self.president_website or '').split('//')[-1]
+        return host.split('/')[0] or ''
+
+    @property
+    def orcid_url(self) -> str:
+        return 'https://orcid.org/%s' % self.president_orcid if self.president_orcid else ''
 
 
 class PresidencyOfficeUnit(models.Model):

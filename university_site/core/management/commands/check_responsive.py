@@ -109,6 +109,56 @@ class Command(BaseCommand):
                         'warn', path, no,
                         'فونت %spx — روی موبایل ناخواناست' % m.group(1)))
 
+    def check_fixed_overlap(self, path, text, out):
+        """دو عنصر شناور که روی هم می‌افتند.
+
+        این‌ها هیچ‌وقت در تست دیده نمی‌شوند: هر دو رندر می‌شوند، هیچ
+        خطایی نیست، فقط یکی زیر دیگری پنهان می‌ماند و کلیک کاربر به
+        عنصر اشتباه می‌رسد. دکمهٔ «بازگشت به بالا» ۴۲×۳۰ پیکسل زیر
+        دکمهٔ گفت‌وگو رفته بود و ماه‌ها کسی متوجه نشد.
+
+        فقط قواعد پایه بررسی می‌شوند، نه داخل @media: آن‌ها عمداً
+        همین‌ها را جابه‌جا می‌کنند.
+        """
+        boxes = []
+        for match in re.finditer(r'(\.[\w-]+)\s*\{([^}]*)\}', text):
+            name, body = match.group(1), match.group(2)
+            if not re.search(r'position\s*:\s*fixed', body, re.I):
+                continue
+            # چیزی که در @media است را رد کن
+            if text.count('@media', 0, match.start()) > text.count('}', 0, match.start()):
+                continue
+
+            def px(*props):
+                for prop in props:
+                    hit = re.search(r'(?<![\w-])%s\s*:\s*(-?\d+)px' % prop, body, re.I)
+                    if hit:
+                        return int(hit.group(1))
+                return None
+
+            box = {
+                'name': name,
+                'bottom': px('inset-block-end', 'bottom'),
+                'start': px('inset-inline-start', 'left'),
+                'w': px('width'),
+                'h': px('height'),
+                'line': text.count('\n', 0, match.start()) + 1,
+            }
+            if None not in (box['bottom'], box['start'], box['w'], box['h']):
+                boxes.append(box)
+
+        for i, a in enumerate(boxes):
+            for b in boxes[i + 1:]:
+                dx = (min(a['start'] + a['w'], b['start'] + b['w'])
+                      - max(a['start'], b['start']))
+                dy = (min(a['bottom'] + a['h'], b['bottom'] + b['h'])
+                      - max(a['bottom'], b['bottom']))
+                if dx > 0 and dy > 0:
+                    out.append(Finding(
+                        'error', path, a['line'],
+                        '%s و %s روی هم می‌افتند (%d×%d پیکسل) — یکی زیر '
+                        'دیگری پنهان می‌شود' % (a['name'], b['name'], dx, dy)))
+
     def check_css_vars(self, css_text, files, out):
         global_defs = set(CSS_VAR_DEF.findall(css_text))
         for path, text in files:
@@ -138,6 +188,10 @@ class Command(BaseCommand):
             css_text = open(css_path, encoding='utf-8').read()
             self.check_backdrop(css_path, css_text, out)
             self.check_tiny_fonts(css_path, css_text, out)
+            # main.css تا امروز فقط از نظر فونت و backdrop دیده می‌شد؛
+            # عرض ثابت در آن همان‌قدر صفحه را افقی می‌کشد که در قالب.
+            self.check_fixed_widths(css_path, css_text, out)
+            self.check_fixed_overlap(css_path, css_text, out)
 
         template_files = []
         for root in self._template_dirs():

@@ -1,103 +1,244 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% comment %}
+صفحهٔ ریاست موسسه.
+
+چیدمان عمداً «عکس تمام‌عرض، بعد همه‌چیز زیرش» است: چهرهٔ رئیس اولین
+چیزی است که دیده می‌شود و بقیه در یک ستون خوانا پشت سرش می‌آید. طرح
+قبلی عکس را در یک دایرهٔ ۲۰۰ پیکسلی کنار متن می‌گذاشت که نه چهره را
+نشان می‌داد نه متن را.
+{% endcomment %}
+
+{% block og_title %}{% if office.president_name %}{{ office.president_name }} — ریاست موسسه{% else %}ریاست موسسه{% endif %}{% endblock %}
+{% block og_description %}{% if office.president_title %}{{ office.president_title }} — {% endif %}معرفی، سوابق و راه‌های ارتباط با ریاست موسسه آموزش عالی علامه امینی.{% endblock %}
+{% block og_image %}{% if office.president_photo %}{{ request.scheme }}://{{ request.get_host }}{{ office.president_photo.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
+
 {% block content %}
-<div class="page-header">
+
+{% if office %}
+{% comment %}
+دادهٔ ساختاریافته: گوگل رئیس مؤسسه را یک شخص واقعی می‌شناسد، نه یک
+تکه متن در میان صفحه.
+{% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "{{ office.president_name|escapejs }}",
+  "jobTitle": "رئیس موسسه آموزش عالی علامه امینی"{% if office.president_title %},
+  "honorificPrefix": "{{ office.president_title|escapejs }}"{% endif %}{% if office.president_photo %},
+  "image": "{{ request.scheme }}://{{ request.get_host }}{{ office.president_photo.url }}"{% endif %}{% if office.president_email %},
+  "email": "{{ office.president_email|escapejs }}"{% endif %}{% if office.president_website %},
+  "url": "{{ office.president_website|escapejs }}"{% endif %}{% if office.orcid_url %},
+  "identifier": "{{ office.orcid_url|escapejs }}"{% endif %},
+  "worksFor": {
+    "@type": "CollegeOrUniversity",
+    "name": "موسسه آموزش عالی علامه امینی",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/"
+  }
+}
+</script>
+{% endif %}
+
+<nav class="pres-crumb" aria-label="breadcrumb">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
-                <li class="breadcrumb-item active">ریاست موسسه</li>
-            </ol>
-        </nav>
-        <h1 class="page-header-title">ریاست موسسه</h1>
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+            <li class="breadcrumb-item active" aria-current="page">ریاست موسسه</li>
+        </ol>
     </div>
-</div>
+</nav>
 
-<section class="section">
+{% if office %}
+<header class="pres-hero{% if not office.president_photo %} pres-hero-empty{% endif %}">
+    {% if office.president_photo %}
+    <img src="{{ office.president_photo.url }}"
+         alt="{{ office.president_name }}، رئیس موسسه آموزش عالی علامه امینی"
+         class="pres-hero-img" fetchpriority="high" decoding="async">
+    {% else %}
+    <div class="pres-hero-placeholder" aria-hidden="true">
+        <i class="fas fa-user-tie"></i>
+    </div>
+    {% endif %}
+
+    <div class="pres-hero-scrim"></div>
+
+    <div class="pres-hero-caption">
+        <div class="container">
+            <p class="pres-eyebrow">ریاست موسسه</p>
+            <h1 class="pres-name">{{ office.president_name|default:'ریاست موسسه' }}</h1>
+            {% if office.president_title %}
+            <p class="pres-title">{{ office.president_title }}</p>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+{% comment %}
+نوار چسبان: صفحه بلند است و بدون این، خواننده برای رسیدن از «پیام»
+به «ارتباط» باید کل سوابق را اسکرول کند.
+{% endcomment %}
+<nav class="pres-jump" aria-label="بخش‌های این صفحه">
+    <div class="container pres-jump-row">
+        {% if office.president_message %}<a href="#message">پیام رئیس</a>{% endif %}
+        {% if office.president_bio %}<a href="#bio">معرفی</a>{% endif %}
+        {% if office.education_list %}<a href="#education">سوابق تحصیلی</a>{% endif %}
+        {% if office.resume_list %}<a href="#resume">سوابق اجرایی</a>{% endif %}
+        {% if office.research_list %}<a href="#research">زمینه‌های پژوهشی</a>{% endif %}
+        <a href="#contact">ارتباط</a>
+    </div>
+</nav>
+
+<section class="section pres-body">
     <div class="container">
+        <div class="pres-column">
 
-        {% if office %}
-        <!-- معرفی رئیس -->
-        <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
-            <div class="col-lg-4 text-center">
-                {% if office.president_photo %}
-                <img loading="lazy" decoding="async" src="{{ office.president_photo.url }}" alt="{{ office.president_name }}"
-                     class="rounded-circle border border-4 border-primary shadow"
-                     style="width:200px;height:200px;object-fit:cover;">
-                {% else %}
-                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-primary shadow"
-                     style="width:200px;height:200px;background:var(--gradient-primary);">
-                    <i class="fas fa-user-tie text-white" style="font-size:5rem;"></i>
-                </div>
-                {% endif %}
-                <h3 class="mt-3 mb-1">{{ office.president_name }}</h3>
-                <p class="text-primary fw-semibold">{{ office.president_title }}</p>
-                <div class="d-flex justify-content-center gap-2 mt-3">
+            {% if office.president_message %}
+            <article class="pres-block" id="message">
+                <blockquote class="pres-quote">
+                    <i class="fas fa-quote-right pres-quote-mark" aria-hidden="true"></i>
+                    <p>{{ office.president_message|linebreaksbr }}</p>
+                    <footer>{{ office.president_name }}</footer>
+                </blockquote>
+            </article>
+            {% endif %}
+
+            {% if office.president_bio %}
+            <article class="pres-block" id="bio">
+                <h2 class="pres-h2"><i class="fas fa-user" aria-hidden="true"></i> معرفی</h2>
+                <div class="pres-prose">{{ office.president_bio|linebreaks }}</div>
+            </article>
+            {% endif %}
+
+            {% if office.education_list %}
+            <article class="pres-block" id="education">
+                <h2 class="pres-h2"><i class="fas fa-graduation-cap" aria-hidden="true"></i> سوابق تحصیلی</h2>
+                <ol class="pres-timeline">
+                    {% for item in office.education_list %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ol>
+            </article>
+            {% endif %}
+
+            {% if office.resume_list %}
+            <article class="pres-block" id="resume">
+                <h2 class="pres-h2"><i class="fas fa-briefcase" aria-hidden="true"></i> سوابق اجرایی</h2>
+                <ol class="pres-timeline">
+                    {% for item in office.resume_list %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ol>
+            </article>
+            {% endif %}
+
+            {% if office.research_list %}
+            <article class="pres-block" id="research">
+                <h2 class="pres-h2"><i class="fas fa-flask" aria-hidden="true"></i> زمینه‌های پژوهشی</h2>
+                <ul class="pres-tags">
+                    {% for item in office.research_list %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </article>
+            {% endif %}
+
+            <article class="pres-block" id="contact">
+                <h2 class="pres-h2"><i class="fas fa-address-card" aria-hidden="true"></i> ارتباط با ریاست</h2>
+
+                <div class="pres-contact-grid">
                     {% if office.president_email %}
-                    <a href="mailto:{{ office.president_email }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-envelope"></i> ایمیل
+                    <a class="pres-contact" href="mailto:{{ office.president_email }}">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        <span class="pres-contact-label">ایمیل</span>
+                        <span class="pres-contact-value" dir="ltr">{{ office.president_email }}</span>
                     </a>
                     {% endif %}
                     {% if office.president_phone %}
-                    <a href="tel:{{ office.president_phone }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-phone"></i> {{ office.president_phone }}
+                    <a class="pres-contact" href="tel:{{ office.president_phone }}">
+                        <i class="fas fa-phone" aria-hidden="true"></i>
+                        <span class="pres-contact-label">تلفن</span>
+                        <span class="pres-contact-value" dir="ltr">{{ office.president_phone }}</span>
+                    </a>
+                    {% endif %}
+                    {% if office.office_hours %}
+                    <div class="pres-contact pres-contact-static">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        <span class="pres-contact-label">ساعات مراجعه</span>
+                        <span class="pres-contact-value">{{ office.office_hours }}</span>
+                    </div>
+                    {% endif %}
+                    {% if office.office_address %}
+                    <div class="pres-contact pres-contact-static">
+                        <i class="fas fa-location-dot" aria-hidden="true"></i>
+                        <span class="pres-contact-label">نشانی دفتر</span>
+                        <span class="pres-contact-value">{{ office.office_address }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if office.president_website or office.president_scholar or office.orcid_url or office.president_cv %}
+                <div class="pres-links">
+                    {% if office.president_website %}
+                    <a href="{{ office.president_website }}" class="pres-link pres-link-main"
+                       target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-globe" aria-hidden="true"></i>
+                        {{ office.website_label }}
+                        <i class="fas fa-arrow-up-right-from-square pres-link-out" aria-hidden="true"></i>
+                    </a>
+                    {% endif %}
+                    {% if office.president_scholar %}
+                    <a href="{{ office.president_scholar }}" class="pres-link"
+                       target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-graduation-cap" aria-hidden="true"></i> گوگل اسکولار
+                    </a>
+                    {% endif %}
+                    {% if office.orcid_url %}
+                    <a href="{{ office.orcid_url }}" class="pres-link"
+                       target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-id-badge" aria-hidden="true"></i> ORCID
+                    </a>
+                    {% endif %}
+                    {% if office.president_cv %}
+                    <a href="{{ office.president_cv.url }}" class="pres-link">
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i> دانلود رزومه
                     </a>
                     {% endif %}
                 </div>
-            </div>
-            <div class="col-lg-8">
-                {% if office.president_message %}
-                <blockquote class="blockquote border-start border-primary border-4 ps-4 mb-4">
-                    <p class="text-muted" style="font-size:15px;line-height:2.2;font-style:italic;">
-                        {{ office.president_message }}
-                    </p>
-                    <footer class="blockquote-footer mt-2">{{ office.president_name }}</footer>
-                </blockquote>
                 {% endif %}
-                {% if office.president_bio %}
-                <div class="dept-card">
-                    <h5 class="dept-title"><i class="fas fa-user me-2 text-primary"></i>بیوگرافی</h5>
-                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.president_bio }}</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
 
-        <div class="row g-4 mb-5">
-            {% if office.president_education %}
-            <div class="col-md-6" data-aos="fade-up">
-                <div class="dept-card h-100">
-                    <div class="dept-icon text-success"><i class="fas fa-graduation-cap"></i></div>
-                    <h5 class="dept-title">سوابق تحصیلی</h5>
-                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.president_education }}</p>
-                </div>
-            </div>
-            {% endif %}
-            {% if office.president_resume %}
-            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="dept-card h-100">
-                    <div class="dept-icon text-info"><i class="fas fa-briefcase"></i></div>
-                    <h5 class="dept-title">سوابق اجرایی</h5>
-                    <p class="text-muted" style="font-size:14px;line-height:2;">{{ office.president_resume }}</p>
-                </div>
-            </div>
-            {% endif %}
+                <a href="{% url 'core:presidency_vcard' %}" class="pres-vcard">
+                    <i class="fas fa-address-book" aria-hidden="true"></i>
+                    افزودن به مخاطبان گوشی
+                </a>
+            </article>
+
         </div>
-        {% else %}
-        <div class="text-center py-5 dept-card mb-5" data-aos="fade-up">
+    </div>
+</section>
+
+{% else %}
+<section class="section">
+    <div class="container">
+        <div class="text-center py-5 dept-card">
             <div class="dept-icon mx-auto mb-3" style="width:80px;height:80px;font-size:2.5rem;">
                 <i class="fas fa-user-tie text-primary"></i>
             </div>
-            <h4>اطلاعات ریاست دانشگاه</h4>
-            <p class="text-muted">اطلاعات این بخش از طریق <a href="/admin/core/presidencyoffice/">پنل مدیریت</a> قابل تنظیم است.</p>
+            <h4>اطلاعات ریاست موسسه</h4>
+            <p class="text-muted">این بخش هنوز تکمیل نشده است.</p>
         </div>
-        {% endif %}
+    </div>
+</section>
+{% endif %}
 
-        <!-- معاونین -->
-        {% if deputies %}
-        <h3 class="section-title text-center mb-4" data-aos="fade-up">معاونین دانشگاه</h3>
+{% if deputies %}
+<section class="section pres-deputies">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">معاونین موسسه</h2>
         <div class="row g-4">
             {% for dep in deputies %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+            <div class="col-md-6 col-lg-4">
                 <div class="dept-card h-100 text-center">
                     {% if dep.photo %}
                     <img loading="lazy" decoding="async" src="{{ dep.photo.url }}" alt="{{ dep.full_name }}"
@@ -117,18 +258,20 @@
             </div>
             {% endfor %}
         </div>
-        {% endif %}
+    </div>
+</section>
+{% endif %}
 
-        <!-- لینک‌های حوزه ریاست -->
-        <div class="row g-3 mt-5" data-aos="fade-up">
-            <div class="col-12"><h4 class="section-title text-center mb-3">بخش‌های حوزه ریاست</h4></div>
+<section class="section pres-areas">
+    <div class="container">
+        <h2 class="section-title text-center mb-3">بخش‌های حوزه ریاست</h2>
+        <div class="row g-3">
             <div class="col-md-4"><a href="{% url 'core:presidency_office' %}" class="btn btn-outline-primary w-100 py-3"><i class="fas fa-door-open me-2"></i>دفتر ریاست</a></div>
             <div class="col-md-4"><a href="{% url 'core:vices_list' %}" class="btn btn-outline-success w-100 py-3"><i class="fas fa-users-cog me-2"></i>معاونین و معاونت‌ها</a></div>
             <div class="col-md-4"><a href="{% url 'core:international_office' %}" class="btn btn-outline-info w-100 py-3"><i class="fas fa-globe me-2"></i>دفتر بین‌الملل</a></div>
             <div class="col-md-6"><a href="{% url 'core:public_relations' %}" class="btn btn-outline-warning w-100 py-3"><i class="fas fa-bullhorn me-2"></i>روابط عمومی</a></div>
             <div class="col-md-6"><a href="{% url 'core:security_office' %}" class="btn btn-outline-danger w-100 py-3"><i class="fas fa-shield-alt me-2"></i>حراست</a></div>
         </div>
-
     </div>
 </section>
 {% endblock %}
