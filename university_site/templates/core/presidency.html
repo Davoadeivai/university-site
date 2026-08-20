@@ -112,127 +112,152 @@
 
 <section class="section pres-body" id="pres-start">
     <div class="container">
-        <div class="pres-column">
+        <div class="pres-layout">
 
-            {% if office.president_message %}
-            <article class="pres-block" id="message">
-                <blockquote class="pres-quote">
-                    <i class="fas fa-quote-right pres-quote-mark" aria-hidden="true"></i>
-                    <p>{{ office.president_message|linebreaksbr }}</p>
-                    <footer>{{ office.president_name }}</footer>
-                </blockquote>
-            </article>
-            {% endif %}
+            <div class="pres-main">
 
-            {% if office.president_bio %}
-            <article class="pres-block" id="bio">
-                <h2 class="pres-h2"><i class="fas fa-user" aria-hidden="true"></i> معرفی</h2>
-                <div class="pres-prose">{{ office.president_bio|linebreaks }}</div>
-            </article>
-            {% endif %}
-
-            {% if office.education_list %}
-            <article class="pres-block" id="education">
-                <h2 class="pres-h2"><i class="fas fa-graduation-cap" aria-hidden="true"></i> سوابق تحصیلی</h2>
-                <ol class="pres-timeline">
-                    {% for item in office.education_list %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ol>
-            </article>
-            {% endif %}
-
-            {% if office.resume_list %}
-            <article class="pres-block" id="resume">
-                <h2 class="pres-h2"><i class="fas fa-briefcase" aria-hidden="true"></i> سوابق اجرایی</h2>
-                <ol class="pres-timeline">
-                    {% for item in office.resume_list %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ol>
-            </article>
-            {% endif %}
-
-            {% if office.research_list %}
-            <article class="pres-block" id="research">
-                <h2 class="pres-h2"><i class="fas fa-flask" aria-hidden="true"></i> زمینه‌های پژوهشی</h2>
-                <ul class="pres-tags">
-                    {% for item in office.research_list %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
-            </article>
-            {% endif %}
-
-            <article class="pres-block" id="contact">
-                <h2 class="pres-h2"><i class="fas fa-address-card" aria-hidden="true"></i> ارتباط با ریاست</h2>
-
-                <div class="pres-contact-grid">
-                    {% if office.president_email %}
-                    <a class="pres-contact" href="mailto:{{ office.president_email }}">
-                        <i class="fas fa-envelope" aria-hidden="true"></i>
-                        <span class="pres-contact-label">ایمیل</span>
-                        <span class="pres-contact-value" dir="ltr">{{ office.president_email }}</span>
-                    </a>
-                    {% endif %}
-                    {% if office.president_phone %}
-                    <a class="pres-contact" href="tel:{{ office.president_phone }}">
-                        <i class="fas fa-phone" aria-hidden="true"></i>
-                        <span class="pres-contact-label">تلفن</span>
-                        <span class="pres-contact-value" dir="ltr">{{ office.president_phone }}</span>
-                    </a>
-                    {% endif %}
-                    {% if office.office_hours %}
-                    <div class="pres-contact pres-contact-static">
-                        <i class="fas fa-clock" aria-hidden="true"></i>
-                        <span class="pres-contact-label">ساعات مراجعه</span>
-                        <span class="pres-contact-value">{{ office.office_hours }}</span>
-                    </div>
-                    {% endif %}
-                    {% if office.office_address %}
-                    <div class="pres-contact pres-contact-static">
-                        <i class="fas fa-location-dot" aria-hidden="true"></i>
-                        <span class="pres-contact-label">نشانی دفتر</span>
-                        <span class="pres-contact-value">{{ office.office_address }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                {% if office.president_website or office.president_scholar or office.orcid_url or office.president_cv %}
-                <div class="pres-links">
-                    {% if office.president_website %}
-                    <a href="{{ office.president_website }}" class="pres-link pres-link-main"
-                       target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-globe" aria-hidden="true"></i>
-                        {{ office.website_label }}
-                        <i class="fas fa-arrow-up-right-from-square pres-link-out" aria-hidden="true"></i>
-                    </a>
-                    {% endif %}
-                    {% if office.president_scholar %}
-                    <a href="{{ office.president_scholar }}" class="pres-link"
-                       target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-graduation-cap" aria-hidden="true"></i> گوگل اسکولار
-                    </a>
-                    {% endif %}
-                    {% if office.orcid_url %}
-                    <a href="{{ office.orcid_url }}" class="pres-link"
-                       target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-id-badge" aria-hidden="true"></i> ORCID
-                    </a>
-                    {% endif %}
-                    {% if office.president_cv %}
-                    <a href="{{ office.president_cv.url }}" class="pres-link">
-                        <i class="fas fa-file-pdf" aria-hidden="true"></i> دانلود رزومه
-                    </a>
-                    {% endif %}
-                </div>
+                {% if office.president_message %}
+                <article class="pres-block" id="message">
+                    <blockquote class="pres-quote">
+                        <i class="fas fa-quote-right pres-quote-mark" aria-hidden="true"></i>
+                        <p>{{ office.president_message|linebreaksbr }}</p>
+                        <footer>{{ office.president_name }}</footer>
+                    </blockquote>
+                </article>
                 {% endif %}
 
-                <a href="{% url 'core:presidency_vcard' %}" class="pres-vcard">
-                    <i class="fas fa-address-book" aria-hidden="true"></i>
-                    افزودن به مخاطبان گوشی
-                </a>
-            </article>
+                {% if office.president_bio %}
+                <article class="pres-block" id="bio">
+                    <h2 class="pres-h2"><i class="fas fa-user" aria-hidden="true"></i> معرفی</h2>
+                    <div class="pres-prose">{{ office.president_bio|linebreaks }}</div>
+                </article>
+                {% endif %}
+
+                {% comment %}
+                سه فهرست سابقه پشت سر هم، صفحه را چند برابر بلند می‌کردند
+                در حالی که خواننده معمولاً یکی‌شان را می‌خواهد. جاوااسکریپت
+                این‌ها را به زبانه تبدیل می‌کند؛ اگر اجرا نشود، هر سه مثل
+                قبل زیر هم باز می‌مانند و چیزی از دست نمی‌رود.
+                {% endcomment %}
+                <div class="pres-records" data-pres-tabs>
+
+                    {% if office.education_list %}
+                    <article class="pres-block pres-panel" id="education"
+                             data-tab-title="سوابق تحصیلی" data-tab-icon="fa-graduation-cap">
+                        <h2 class="pres-h2"><i class="fas fa-graduation-cap" aria-hidden="true"></i> سوابق تحصیلی</h2>
+                        <ol class="pres-timeline">
+                            {% for item in office.education_list %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ol>
+                    </article>
+                    {% endif %}
+
+                    {% if office.resume_list %}
+                    <article class="pres-block pres-panel" id="resume"
+                             data-tab-title="سوابق اجرایی" data-tab-icon="fa-briefcase">
+                        <h2 class="pres-h2"><i class="fas fa-briefcase" aria-hidden="true"></i> سوابق اجرایی</h2>
+                        <ol class="pres-timeline">
+                            {% for item in office.resume_list %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ol>
+                    </article>
+                    {% endif %}
+
+                    {% if office.research_list %}
+                    <article class="pres-block pres-panel" id="research"
+                             data-tab-title="زمینه‌های پژوهشی" data-tab-icon="fa-flask">
+                        <h2 class="pres-h2"><i class="fas fa-flask" aria-hidden="true"></i> زمینه‌های پژوهشی</h2>
+                        <ul class="pres-tags">
+                            {% for item in office.research_list %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {% comment %}
+            کارت تماس در ستون کناری می‌نشیند و روی دسکتاپ همراه اسکرول
+            می‌آید. پیش از این ته صفحه بود: کسی که فقط شمارهٔ دفتر را
+            می‌خواست، باید کل سوابق را رد می‌کرد.
+            {% endcomment %}
+            <aside class="pres-aside" id="contact">
+                <div class="pres-card">
+                    <h2 class="pres-card-title">
+                        <i class="fas fa-address-card" aria-hidden="true"></i> ارتباط با ریاست
+                    </h2>
+
+                    <div class="pres-contact-grid">
+                        {% if office.president_email %}
+                        <a class="pres-contact" href="mailto:{{ office.president_email }}">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            <span class="pres-contact-label">ایمیل</span>
+                            <span class="pres-contact-value" dir="ltr">{{ office.president_email }}</span>
+                        </a>
+                        {% endif %}
+                        {% if office.president_phone %}
+                        <a class="pres-contact" href="tel:{{ office.president_phone }}">
+                            <i class="fas fa-phone" aria-hidden="true"></i>
+                            <span class="pres-contact-label">تلفن</span>
+                            <span class="pres-contact-value" dir="ltr">{{ office.president_phone }}</span>
+                        </a>
+                        {% endif %}
+                        {% if office.office_hours %}
+                        <div class="pres-contact pres-contact-static">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            <span class="pres-contact-label">ساعات مراجعه</span>
+                            <span class="pres-contact-value">{{ office.office_hours }}</span>
+                        </div>
+                        {% endif %}
+                        {% if office.office_address %}
+                        <div class="pres-contact pres-contact-static">
+                            <i class="fas fa-location-dot" aria-hidden="true"></i>
+                            <span class="pres-contact-label">نشانی دفتر</span>
+                            <span class="pres-contact-value">{{ office.office_address }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if office.president_website or office.president_scholar or office.orcid_url or office.president_cv %}
+                    <div class="pres-links">
+                        {% if office.president_website %}
+                        <a href="{{ office.president_website }}" class="pres-link pres-link-main"
+                           target="_blank" rel="noopener noreferrer">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                            {{ office.website_label }}
+                            <i class="fas fa-arrow-up-right-from-square pres-link-out" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                        {% if office.president_scholar %}
+                        <a href="{{ office.president_scholar }}" class="pres-link"
+                           target="_blank" rel="noopener noreferrer">
+                            <i class="fas fa-graduation-cap" aria-hidden="true"></i> گوگل اسکولار
+                        </a>
+                        {% endif %}
+                        {% if office.orcid_url %}
+                        <a href="{{ office.orcid_url }}" class="pres-link"
+                           target="_blank" rel="noopener noreferrer">
+                            <i class="fas fa-id-badge" aria-hidden="true"></i> ORCID
+                        </a>
+                        {% endif %}
+                        {% if office.president_cv %}
+                        <a href="{{ office.president_cv.url }}" class="pres-link">
+                            <i class="fas fa-file-pdf" aria-hidden="true"></i> دانلود رزومه
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <a href="{% url 'core:presidency_vcard' %}" class="pres-vcard">
+                        <i class="fas fa-address-book" aria-hidden="true"></i>
+                        افزودن به مخاطبان گوشی
+                    </a>
+                </div>
+            </aside>
 
         </div>
     </div>

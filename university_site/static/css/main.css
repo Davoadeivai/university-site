@@ -2773,10 +2773,43 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .pres-jump-row a:hover { background: var(--bg-light, #f1f3f5); color: var(--primary, #1a3a6b); }
 .pres-jump-row a:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: -2px; }
 
-/* ── بدنه ── */
-.pres-column { max-inline-size: 74ch; margin-inline: auto; }
+/* ── بدنه: دو ستون ─────────────────────────────────────────
+   کارت تماس از جریان عمودی بیرون می‌آید و کنار می‌نشیند. پیش از
+   این ته صفحه بود و کسی که فقط شمارهٔ دفتر را می‌خواست باید کل
+   سوابق را رد می‌کرد. */
+.pres-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: clamp(24px, 3vw, 48px);
+    align-items: start;
+}
 
-.pres-block { margin-block-end: 40px; scroll-margin-block-start: 72px; }
+.pres-main { min-inline-size: 0; max-inline-size: 74ch; }
+
+.pres-aside { position: sticky; inset-block-start: 84px; }
+
+.pres-card {
+    padding: 22px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 14px;
+    background: var(--bg-white, #fff);
+    box-shadow: 0 6px 22px rgba(15, 23, 42, .06);
+}
+
+.pres-card-title {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary, #1a3a6b);
+}
+.pres-card-title i { margin-inline-end: 6px; opacity: .7; }
+
+/* در ستون باریک، کارت‌های تماس زیر هم می‌روند */
+.pres-aside .pres-contact-grid { grid-template-columns: 1fr; }
+.pres-aside .pres-links { flex-direction: column; }
+.pres-aside .pres-link { justify-content: center; }
+
+.pres-block { margin-block-end: 40px; scroll-margin-block-start: 84px; }
 
 .pres-h2 {
     font-size: 19px;
@@ -2787,6 +2820,59 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-block-end: 2px solid rgba(26, 58, 107, .12);
 }
 .pres-h2 i { margin-inline-end: 6px; opacity: .7; }
+
+/* ── زبانه‌های سوابق ───────────────────────────────────────
+   بدون جاوااسکریپت هیچ‌کدام از این‌ها ساخته نمی‌شوند و سه بخش مثل
+   قبل زیر هم باز می‌مانند — پس صفحه هرگز خالی نمی‌ماند. */
+.pres-records { margin-block-end: 40px; scroll-margin-block-start: 84px; }
+
+.pres-tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-block-end: 20px;
+    padding: 5px;
+    border-radius: 12px;
+    background: var(--bg-light, #f1f3f5);
+}
+
+.pres-tab {
+    flex: 1 1 auto;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--gray-700, #495057);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .16s ease, color .16s ease;
+}
+.pres-tab i { margin-inline-end: 5px; opacity: .65; }
+.pres-tab:hover { color: var(--primary, #1a3a6b); }
+
+.pres-tab.is-on {
+    background: var(--bg-white, #fff);
+    color: var(--primary, #1a3a6b);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .1);
+}
+.pres-tab.is-on i { opacity: 1; }
+.pres-tab:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: -2px; }
+
+.pres-panel { margin-block-end: 0; }
+
+@media (max-width: 991.98px) {
+    .pres-layout { grid-template-columns: 1fr; }
+    .pres-main { max-inline-size: none; }
+    /* روی موبایل چسبیدن کارت یعنی نصف صفحه همیشه اشغال است */
+    .pres-aside { position: static; }
+    .pres-aside .pres-contact-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .pres-aside .pres-links { flex-direction: row; }
+}
 
 .pres-prose { font-size: 15px; line-height: 2.1; color: var(--gray-700, #495057); }
 .pres-prose p:last-child { margin-block-end: 0; }

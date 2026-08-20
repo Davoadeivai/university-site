@@ -259,3 +259,59 @@ class HeroShowsThePhotoAsUploadedTests(TestCase):
         self.assertIsNone(office.photo_size)
         res = self.client.get(reverse('core:presidency'))
         self.assertEqual(res.status_code, 200)
+
+
+class ShorterPageTests(TestCase):
+    """صفحه باید کوتاه‌تر شود بدون اینکه متنی حذف شود."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.office = PresidencyOffice.objects.create(
+            president_name='دکتر حسن فارسیجانی',
+            president_education='دکتری\nکارشناسی ارشد',
+            president_resume='رئیس موسسه\nمدیر گروه',
+            president_research='زنجیره تأمین\nتولید ناب',
+            president_phone='01135333333',
+        )
+
+    def _html(self):
+        return self.client.get(reverse('core:presidency')).content.decode()
+
+    def test_every_record_still_renders(self):
+        """زبانه‌ها نباید چیزی را از HTML حذف کنند — فقط پنهانش کنند.
+
+        اگر قالب فقط یکی را رندر می‌کرد، بازدیدکنندهٔ بدون
+        جاوااسکریپت و موتور جستجو دو بخش را اصلاً نمی‌دیدند.
+        """
+        html = self._html()
+        for text in ('دکتری', 'کارشناسی ارشد', 'رئیس موسسه',
+                     'مدیر گروه', 'زنجیره تأمین', 'تولید ناب'):
+            self.assertIn(text, html)
+
+    def test_records_are_marked_for_tabbing(self):
+        html = self._html()
+        self.assertIn('data-pres-tabs', html)
+        self.assertEqual(html.count('pres-panel'), 3)
+        self.assertIn('data-tab-title="سوابق تحصیلی"', html)
+
+    def test_panels_start_visible(self):
+        """بدون جاوااسکریپت هیچ پنلی نباید hidden باشد."""
+        html = self._html()
+        records = html.split('data-pres-tabs')[1].split('</section>')[0]
+        self.assertNotIn(' hidden', records)
+
+    def test_contact_moved_to_the_side_column(self):
+        html = self._html()
+        self.assertIn('pres-aside', html)
+        self.assertIn('id="contact"', html.split('pres-aside')[1][:200])
+
+    def test_side_column_is_sticky_on_desktop_only(self):
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        start = css.index('.pres-aside {')
+        self.assertIn('position: sticky', css[start:css.index('}', start)])
+        # روی موبایل چسبیدن یعنی نصف صفحه همیشه اشغال است
+        mobile = css[css.index('@media (max-width: 991.98px)', start):]
+        self.assertIn('.pres-aside { position: static; }', mobile[:600])
