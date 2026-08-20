@@ -2630,74 +2630,168 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .pres-hero {
     position: relative;
     inline-size: 100%;
-    block-size: min(82svh, 720px);
-    min-block-size: 340px;
+    min-block-size: min(78svh, 660px);
+    display: flex;
+    align-items: center;
     overflow: hidden;
-    background: #0d1f3c;
+    background: #0a1628;
+    padding-block: clamp(24px, 4vw, 48px);
+    isolation: isolate;
 }
 
-.pres-hero-img {
+/* پس‌زمینه: همان عکس، بزرگ و مات. کشیده‌شدنش اهمیتی ندارد چون
+   قرار نیست خوانده شود؛ کارش فقط پر کردن قاب با رنگ‌های خودِ
+   عکس است تا حاشیه‌های خالی، سیاهِ مرده نباشند. */
+.pres-hero-wash {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
-    /* بالای قاب: در عکس پرترهٔ اداری، چهره بالای مرکز است و
-       object-fit مرکزگرا سر را می‌برد. */
-    object-position: center 22%;
+    /* scale لازم است: blur لبه‌ها را شفاف می‌کند و بدون بزرگ‌نمایی
+       یک نوار روشن دور قاب می‌ماند. */
+    transform: scale(1.15);
+    filter: blur(34px) saturate(1.25) brightness(.45);
+}
+
+.pres-hero-veil {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(120% 90% at 70% 30%, rgba(10, 22, 40, .25), rgba(10, 22, 40, .88)),
+        linear-gradient(to top, rgba(6, 16, 30, .95), rgba(6, 16, 30, .35));
+}
+
+.pres-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: center;
+    gap: clamp(20px, 4vw, 56px);
+    inline-size: 100%;
+}
+
+.pres-hero-frame {
+    margin: 0;
+    justify-self: center;
+    inline-size: 100%;
+    max-inline-size: 460px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(240, 208, 128, .28);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+}
+
+/* contain نه cover: هیچ بخشی از عکس بریده نمی‌شود. عکس اداری
+   ممکن است عمودی یا افقی باشد و هر عدد ثابتی برای object-position
+   روی یکی از این دو غلط از آب درمی‌آید — یک بار سرِ سوژه کامل از
+   قاب بیرون ماند و فقط دیوار دیده می‌شد. */
+.pres-hero-img {
     display: block;
+    inline-size: 100%;
+    block-size: auto;
+    max-block-size: min(62svh, 540px);
+    object-fit: contain;
+    background: rgba(10, 22, 40, .55);
 }
 
 .pres-hero-placeholder {
     display: grid;
     place-items: center;
-    block-size: 100%;
+    aspect-ratio: 4 / 5;
     background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
-    color: rgba(255, 255, 255, .35);
-    font-size: 6rem;
+    color: rgba(255, 255, 255, .3);
+    font-size: 5rem;
 }
 
-/* پردهٔ تیره فقط پایین قاب: متن سفید روی هر عکسی خوانا می‌ماند
-   بدون اینکه کل تصویر تیره شود. */
-.pres-hero-scrim {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline: 0;
-    block-size: 62%;
-    background: linear-gradient(to top,
-        rgba(6, 20, 40, .92) 0%,
-        rgba(6, 20, 40, .72) 38%,
-        rgba(6, 20, 40, 0) 100%);
-    pointer-events: none;
-}
-
-.pres-hero-caption {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline: 0;
-    padding-block: 0 clamp(20px, 4vw, 44px);
-    color: #fff;
-}
+.pres-hero-plate { color: #fff; }
 
 .pres-eyebrow {
-    margin: 0 0 6px;
-    font-size: 13px;
-    letter-spacing: 1.5px;
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 2px;
     color: var(--bnr-gold-300, #f0d080);
+}
+/* خط طلایی کوتاه پیش از برچسب — همان زبان بصری سربرگ سایت */
+.pres-eyebrow::before {
+    content: "";
+    display: inline-block;
+    inline-size: 26px;
+    block-size: 2px;
+    margin-inline-end: 10px;
+    vertical-align: middle;
+    background: var(--bnr-gold-300, #f0d080);
 }
 
 .pres-name {
     margin: 0;
-    font-size: clamp(24px, 4.4vw, 46px);
+    font-size: clamp(26px, 4.2vw, 50px);
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1.24;
     text-wrap: balance;
-    text-shadow: 0 2px 18px rgba(0, 0, 0, .55);
+    text-shadow: 0 2px 24px rgba(0, 0, 0, .5);
 }
 
 .pres-title {
-    margin: 8px 0 0;
-    font-size: clamp(13px, 1.7vw, 17px);
-    color: rgba(255, 255, 255, .88);
-    max-inline-size: 62ch;
+    margin: 12px 0 0;
+    font-size: clamp(13.5px, 1.6vw, 17px);
+    line-height: 1.9;
+    color: rgba(255, 255, 255, .85);
+    max-inline-size: 46ch;
+}
+
+.pres-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-block-start: 26px; }
+
+.pres-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    background: var(--bnr-gold-300, #f0d080);
+    border: 1px solid var(--bnr-gold-300, #f0d080);
+    color: #0a1628;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .16s ease, background .16s ease;
+}
+.pres-hero-btn:hover { background: #f7e3a8; color: #0a1628; transform: translateY(-1px); }
+
+.pres-hero-btn-ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, .38);
+    color: #fff;
+}
+.pres-hero-btn-ghost:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+
+.pres-hero-btn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+/* ورود آرام: عکس و متن با نیم‌ثانیه فاصله می‌آیند، یک بار، بدون
+   کتابخانه. کسی که کاهش حرکت خواسته، هیچ‌کدام را نمی‌بیند. */
+@media (prefers-reduced-motion: no-preference) {
+    .pres-hero-frame { animation: pres-rise .7s var(--easing-standard, ease) both; }
+    .pres-hero-plate { animation: pres-rise .7s var(--easing-standard, ease) .12s both; }
+}
+
+@keyframes pres-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 991.98px) {
+    .pres-hero-grid { grid-template-columns: 1fr; }
+    .pres-hero-frame { max-inline-size: 340px; }
+    .pres-hero-img { max-block-size: 46svh; }
+    .pres-hero-plate { text-align: center; }
+    .pres-hero-plate .pres-title { margin-inline: auto; }
+    .pres-hero-actions { justify-content: center; }
 }
 
 /* ── نوار پرش ── */
@@ -2892,14 +2986,13 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 [data-theme="dark"] .pres-link { background: var(--bg-white); }
 
 @media (max-width: 767.98px) {
-    .pres-hero { block-size: min(64svh, 460px); }
-    /* روی گوشی، عکس افقی در قاب کوتاه چهره را از دست می‌دهد؛
-       کمی بالاتر می‌نشیند تا سر در کادر بماند. */
-    .pres-hero-img { object-position: center 18%; }
     .pres-block { margin-block-end: 32px; }
 }
 
 @media print {
-    .pres-jump, .pres-vcard, .pres-areas { display: none; }
-    .pres-hero { block-size: 240px; }
+    .pres-jump, .pres-vcard, .pres-areas,
+    .pres-hero-wash, .pres-hero-veil, .pres-hero-actions { display: none; }
+    .pres-hero { min-block-size: 0; background: none; }
+    .pres-hero-plate { color: #000; }
+    .pres-hero-img { max-block-size: 60mm; }
 }

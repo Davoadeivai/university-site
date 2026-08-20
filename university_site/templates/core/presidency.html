@@ -53,23 +53,51 @@
 {% if office %}
 <header class="pres-hero{% if not office.president_photo %} pres-hero-empty{% endif %}">
     {% if office.president_photo %}
-    <img src="{{ office.president_photo.url }}"
-         alt="{{ office.president_name }}، رئیس موسسه آموزش عالی علامه امینی"
-         class="pres-hero-img" fetchpriority="high" decoding="async">
-    {% else %}
-    <div class="pres-hero-placeholder" aria-hidden="true">
-        <i class="fas fa-user-tie"></i>
-    </div>
+    {% comment %}
+    همان تصویر، بزرگ‌شده و مات، پس‌زمینه را پر می‌کند. تصویر اصلی
+    رویش با contain می‌نشیند، پس هیچ بخشی از عکس بریده نمی‌شود —
+    نه سرِ سوژه، نه پایین قاب. این همان روشی است که پخش‌کننده‌های
+    موسیقی برای جلد آلبوم با نسبت‌های متفاوت به کار می‌برند و
+    تنها راهی است که برای هر عکسی جواب می‌دهد، عمودی یا افقی.
+    {% endcomment %}
+    <img src="{{ office.president_photo.url }}" alt="" aria-hidden="true"
+         class="pres-hero-wash" decoding="async">
+    <div class="pres-hero-veil" aria-hidden="true"></div>
     {% endif %}
 
-    <div class="pres-hero-scrim"></div>
+    <div class="container pres-hero-grid">
+        <figure class="pres-hero-frame">
+            {% if office.president_photo %}
+            <img src="{{ office.president_photo.url }}"
+                 alt="{{ office.president_name }}، رئیس موسسه آموزش عالی علامه امینی"
+                 class="pres-hero-img" fetchpriority="high" decoding="async">
+            {% else %}
+            <div class="pres-hero-placeholder" aria-hidden="true">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            {% endif %}
+        </figure>
 
-    <div class="pres-hero-caption">
-        <div class="container">
+        <div class="pres-hero-plate">
             <p class="pres-eyebrow">ریاست موسسه</p>
             <h1 class="pres-name">{{ office.president_name|default:'ریاست موسسه' }}</h1>
             {% if office.president_title %}
             <p class="pres-title">{{ office.president_title }}</p>
+            {% endif %}
+            {% if office.president_website or office.president_email %}
+            <div class="pres-hero-actions">
+                {% if office.president_website %}
+                <a href="{{ office.president_website }}" class="pres-hero-btn"
+                   target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-globe" aria-hidden="true"></i> {{ office.website_label }}
+                </a>
+                {% endif %}
+                {% if office.president_email %}
+                <a href="mailto:{{ office.president_email }}" class="pres-hero-btn pres-hero-btn-ghost">
+                    <i class="fas fa-envelope" aria-hidden="true"></i> ایمیل
+                </a>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>

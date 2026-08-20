@@ -185,3 +185,53 @@ class PresidencyAdminTests(TestCase):
                       'president_scholar', 'president_orcid',
                       'president_research', 'president_cv'):
             self.assertIn(field, listed, '%s در ادمین دیده نمی‌شود' % field)
+
+
+class HeroNeverCropsTests(TestCase):
+    """قاب عکس رئیس نباید هیچ بخشی از تصویر را ببرد.
+
+    نسخهٔ اول با cover و object-position ثابت ساخته شده بود. عکسی
+    که موسسه آپلود کرد عمودی بود و سوژه در نیمهٔ پایین؛ نتیجه این شد
+    که فقط دیوار و پرده دیده می‌شد و رئیس اصلاً در قاب نبود. هر عدد
+    ثابتی برای یکی از دو نسبت تصویر غلط از آب درمی‌آید، پس تصویر
+    اصلی همیشه contain است و پس‌زمینه با نسخهٔ مات پر می‌شود.
+    """
+
+    def _css(self):
+        from pathlib import Path
+        from django.conf import settings
+        return (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+
+    def _rule(self, selector):
+        css = self._css()
+        start = css.index(selector + ' {')
+        return css[start:css.index('}', start)]
+
+    def test_main_photo_is_contained(self):
+        rule = self._rule('.pres-hero-img')
+        self.assertIn('object-fit: contain', rule)
+        self.assertNotIn('object-position', rule,
+                         'قاب دوباره به یک نقطهٔ ثابت گره خورده است')
+
+    def test_backdrop_fills_the_frame(self):
+        rule = self._rule('.pres-hero-wash')
+        self.assertIn('object-fit: cover', rule)
+        # بدون بزرگ‌نمایی، blur لبه‌ها را شفاف می‌کند و یک نوار روشن
+        # دور قاب می‌ماند
+        self.assertIn('scale(', rule)
+
+    def test_the_page_renders_without_a_photo(self):
+        """رکورد بدون عکس نباید قاب را بشکند."""
+        PresidencyOffice.objects.create(president_name='دکتر تست')
+        html = self.client.get(reverse('core:presidency')).content.decode()
+        self.assertEqual(html.count('pres-hero-wash'), 0)
+        self.assertIn('pres-hero-placeholder', html)
+
+    def test_the_entrance_animation_is_opt_out(self):
+        """انیمیشن باید داخل prefers-reduced-motion باشد، نه بیرونش."""
+        css = self._css()
+        before = css[:css.index('.pres-hero-frame { animation')]
+        guard = before.rindex('@media')
+        self.assertIn('prefers-reduced-motion: no-preference',
+                      before[guard:guard + 60])
