@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
@@ -257,6 +259,13 @@ class AcademicCalendar(models.Model):
     tone = models.CharField(
         _('رنگ باکس'), max_length=10, choices=TONE_CHOICES, default='gold',
     )
+    bg_color = models.CharField(
+        _('رنگ دلخواه زمینه'), max_length=9, blank=True, default='',
+        help_text=_(
+            'هر رنگی که بخواهید، مثل #1f6f5c. خالی بگذارید تا همان '
+            '«رنگ باکس» بالا استفاده شود. رنگ نوشته خودکار روشن یا '
+            'تیره می‌شود تا خوانا بماند.'),
+    )
     image = models.ImageField(
         _('تصویر مرحله'), upload_to='calendar/', blank=True, null=True,
         help_text=_('اختیاری — پشت باکس این مرحله نمایش داده می‌شود.'),
@@ -290,6 +299,60 @@ class AcademicCalendar(models.Model):
         'admissions_track': 'fa-search',
         'tuition_calc': 'fa-calculator',
     }
+
+
+    # ── رنگ دلخواه زمینه ──
+    HEX_PATTERN = re.compile(r'^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
+
+    @property
+    def safe_bg_color(self) -> str:
+        """رنگ زمینه، فقط اگر شکل هگز داشته باشد.
+
+        این مقدار داخل صفت style کارت می‌نشیند. هر رشتهٔ دیگری آنجا
+        می‌تواند از اعلان بیرون بزند، پس به‌جای فرار دادن، هرچه
+        الگو را نداشته باشد دور ریخته می‌شود.
+        """
+        value = (self.bg_color or '').strip()
+        return value if self.HEX_PATTERN.match(value) else ''
+
+    @property
+    def bg_is_dark(self) -> bool:
+        """آیا زمینهٔ انتخابی تیره است؟
+
+        روشنایی نسبی طبق WCAG حساب می‌شود تا رنگ نوشته خودکار
+        برعکسِ زمینه انتخاب شود. بدون این، اولین رنگ تیره‌ای که
+        ادمین انتخاب کند متن سرمه‌ای را نامرئی می‌کند — همان اشتباهی
+        که یک بار در حالت تیرهٔ سایت افتاد.
+        """
+        colour = self.safe_bg_color
+        if not colour:
+            return False
+        value = colour.lstrip('#')
+        if len(value) == 3:
+            value = ''.join(ch * 2 for ch in value)
+        channels = []
+        for i in (0, 2, 4):
+            c = int(value[i:i + 2], 16) / 255
+            channels.append(c / 12.92 if c <= 0.03928
+                            else ((c + 0.055) / 1.055) ** 2.4)
+        luminance = (0.2126 * channels[0] + 0.7152 * channels[1]
+                     + 0.0722 * channels[2])
+        # ۰٫۳۶ آستانه‌ای است که برای رنگ‌های میانه (سبز و آبی سیر)
+        # نتیجهٔ درست می‌دهد؛ ۰٫۵ آن‌ها را روشن حساب می‌کرد.
+        return luminance < 0.36
+
+    @property
+    def card_style(self) -> str:
+        """محتوای صفت style کارت — خالی اگر رنگی انتخاب نشده باشد."""
+        colour = self.safe_bg_color
+        if not colour:
+            return ''
+        if self.bg_is_dark:
+            ink, soft = '#ffffff', 'rgba(255,255,255,.82)'
+        else:
+            ink, soft = '#0d2137', '#3c5470'
+        return ('--acal-bg:%s;--acal-ink:%s;--acal-ink-soft:%s;'
+                '--acal-accent:%s' % (colour, ink, soft, ink))
 
     @property
     def display_icon(self) -> str:

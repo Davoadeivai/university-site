@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.db.models import Count, Q
 from django.utils.html import format_html
@@ -196,6 +197,15 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(AcademicCalendar)
 class AcademicCalendarAdmin(JalaliAdminFormMixin, JalaliAdminMixin, admin.ModelAdmin):
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        """انتخابگر رنگ مرورگر برای زمینهٔ دلخواه."""
+        if db_field.name == 'bg_color':
+            kwargs['widget'] = forms.TextInput(attrs={
+                'type': 'color',
+                'style': 'width:70px;height:38px;padding:2px;',
+            })
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
     list_display = [
         'title', 'step_preview', 'semester', 'academic_year_jalali',
         'start_date_jalali', 'end_date_jalali',
@@ -232,11 +242,15 @@ class AcademicCalendarAdmin(JalaliAdminFormMixin, JalaliAdminMixin, admin.ModelA
             ),
         }),
         ('ظاهر', {
-            'fields': ('icon', 'tone', 'image', 'order'),
+            'fields': ('icon', 'tone', 'bg_color', 'image', 'order'),
             'description': (
                 'آیکون را از <a href="https://fontawesome.com/search?o=r&m=free" '
                 'target="_blank" rel="noopener">Font Awesome</a> بردارید '
                 '(مثلاً <code>fa-check-square</code>). خالی = آیکون خودکار بر اساس مقصد.'
+                '<br><b>رنگ باکس</b> شش رنگ آماده است و روی نیم‌دایره و '
+                'قاب اثر می‌گذارد. <b>رنگ دلخواه زمینه</b> هر رنگی را '
+                'می‌پذیرد و کل زمینهٔ کارت را پر می‌کند؛ رنگ نوشته خودکار '
+                'روشن یا تیره می‌شود تا خوانا بماند.'
             ),
         }),
         ('نمایش', {'fields': ('is_important', 'is_active')}),

@@ -86,6 +86,8 @@ def build_timeline(limit: int = 8) -> dict:
             'action_label': it.get_action_display() if it.action else '',
             'icon': it.display_icon,
             'tone': it.tone or 'gold',
+            # رنگ دلخواه زمینه؛ خالی یعنی همان رنگ‌بندی tone
+            'card_style': it.card_style,
             'image': it.image if it.image else None,
         })
 

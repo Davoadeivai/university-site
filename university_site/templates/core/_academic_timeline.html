@@ -53,6 +53,7 @@ main.css می‌آید: انتخابگرها همانی هستند که در ش�
       {# اگر مرحله مقصد دارد، کارت لینک است؛ وگرنه یک div ساده #}
       {% if n.url %}<a href="{{ n.url }}"{% else %}<div{% endif %}
         class="acal-card tone-{{ n.tone }}{% if n.image %} has-img{% endif %}"
+        {% if n.card_style %}style="{{ n.card_style }}"{% endif %}
         {% if n.url %}title="{{ n.title }} — {{ n.action_label }}"{% endif %}>
 
         {% if n.image %}<span class="acal-bg" style="background-image:url('{{ n.image.url }}');"></span>{% endif %}

@@ -1568,7 +1568,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         linear-gradient(112deg, #16283c 0%, #101d2c 48%, #0a1723 100%);
 }
 [data-theme="dark"] .acal-card {
-    background: linear-gradient(170deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, .03) 100%);
+    background: var(--acal-bg,
+        linear-gradient(170deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, .03) 100%));
     border-color: rgba(255, 255, 255, .16);
     /* یک اعلان به‌جای پنج تا: همهٔ متن‌های کارت از همین دو متغیر
        می‌خوانند، پس هیچ عنصری جا نمی‌ماند. پیش از این فقط روز و
@@ -2096,9 +2097,12 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     color: inherit;
     border-radius: 16px;
     /* شست‌وشوی رنگی بسیار ملایم از رنگ خود مرحله — کارت‌ها کنار هم
-       یک طیف نرم می‌سازند، نه هفت جعبهٔ سفید یکسان */
-    background:
-        linear-gradient(170deg, var(--tone-wash) 0%, #ffffff 62%);
+       یک طیف نرم می‌سازند، نه هفت جعبهٔ سفید یکسان.
+
+       اگر ادمین برای این مرحله رنگ دلخواه گذاشته باشد، --acal-bg
+       روی خودِ کارت تعریف می‌شود و جای این طیف را می‌گیرد. */
+    background: var(--acal-bg,
+        linear-gradient(170deg, var(--tone-wash) 0%, #ffffff 62%));
     border: 1px solid var(--tone-line);
     /* لبهٔ نورانی طلایی */
     box-shadow:
@@ -2175,6 +2179,11 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* پردهٔ روی تصویر: متن هرگز مستقیم روی پیکسل‌های عکس نمی‌نشیند.
    بدون این، خوانایی به روشنی همان عکسی وابسته می‌شد که ادمین
    آپلود کرده — و هیچ رنگ متنی برای همهٔ عکس‌ها جواب نمی‌دهد. */
+/* وقتی رنگ دلخواه هست، تصویر پشت کارت کم‌رنگ‌تر می‌شود تا رنگ
+   انتخابیِ ادمین دیده شود؛ وگرنه عکس رنگ را می‌پوشاند. */
+.acal-card[style*="--acal-bg"] .acal-bg { opacity: .1; }
+.acal-card[style*="--acal-bg"]::after { display: none; }
+
 .acal-card.has-img::after {
     content: "";
     position: absolute; inset: 0; z-index: -1;
