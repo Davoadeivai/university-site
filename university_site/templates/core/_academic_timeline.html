@@ -2,6 +2,40 @@
 {% if timeline.has_data %}
 {% with sec=sections.timeline %}
 {% if sec.is_visible|default_if_none:True %}
+{% with acal_colours=site_settings.calendar_colours %}
+{% if acal_colours %}
+{% comment %}
+رنگ‌هایی که ادمین در «تنظیمات سایت» گذاشته. عمداً اینجا و بعد از
+main.css می‌آید: انتخابگرها همانی هستند که در شیوه‌نامه‌اند، پس با
+همان اختصاصیت و دیرتر، برنده می‌شوند — بدون یک !important.
+
+هر سه حالت (عادی، گذشته، جاری) با هم نوشته می‌شوند، وگرنه رنگِ
+انتخابیِ ادمین را قاعدهٔ حالتِ بعدی پس می‌زد و به‌نظر می‌رسید فیلد
+رنگ کار نمی‌کند.
+
+مقدارها در مدل با الگوی هگز بررسی شده‌اند و هرچه غیر از آن باشد
+اصلاً به اینجا نمی‌رسد.
+{% endcomment %}
+<style>
+{% if acal_colours.calendar_ink or acal_colours.calendar_ink_soft %}
+.acal-card,
+.acal-node.is-past .acal-card,
+.acal-node.is-now .acal-card {
+{% if acal_colours.calendar_ink %}    --acal-ink: {{ acal_colours.calendar_ink }};{% endif %}
+{% if acal_colours.calendar_ink_soft %}    --acal-ink-soft: {{ acal_colours.calendar_ink_soft }};{% endif %}
+}
+{% endif %}
+{% if acal_colours.calendar_ink_dark or acal_colours.calendar_ink_soft_dark %}
+[data-theme="dark"] .acal-card,
+[data-theme="dark"] .acal-node.is-past .acal-card,
+[data-theme="dark"] .acal-node.is-now .acal-card {
+{% if acal_colours.calendar_ink_dark %}    --acal-ink: {{ acal_colours.calendar_ink_dark }};{% endif %}
+{% if acal_colours.calendar_ink_soft_dark %}    --acal-ink-soft: {{ acal_colours.calendar_ink_soft_dark }};{% endif %}
+}
+{% endif %}
+</style>
+{% endif %}
+{% endwith %}
 <section class="acal" aria-labelledby="acalTitle"
   {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
   <div class="acal-head">

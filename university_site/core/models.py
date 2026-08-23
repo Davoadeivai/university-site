@@ -68,6 +68,26 @@ class SiteSettings(models.Model):
     vision_text = models.TextField(_('چشم‌انداز'), blank=True)
     mission_text = models.TextField(_('مأموریت'), blank=True)
     values_text = models.TextField(_('ارزش‌ها'), blank=True)
+    # ── رنگ متن تقویم آموزشی ──
+    # اینجاست تا عوض‌کردن رنگ یک ویرایش در پنل باشد، نه یک تغییر در
+    # CSS و یک دیپلوی. خالی یعنی «همان رنگ پیش‌فرض قالب».
+    CALENDAR_COLOUR_HELP = _(
+        'خالی بگذارید تا رنگ پیش‌فرض بماند. مقدار باید شش‌رقمی '
+        'هگز باشد، مثل #0d2137.')
+
+    calendar_ink = models.CharField(
+        _('رنگ عنوان و تاریخ (حالت روشن)'), max_length=9, blank=True,
+        help_text=CALENDAR_COLOUR_HELP)
+    calendar_ink_soft = models.CharField(
+        _('رنگ توضیحات (حالت روشن)'), max_length=9, blank=True,
+        help_text=CALENDAR_COLOUR_HELP)
+    calendar_ink_dark = models.CharField(
+        _('رنگ عنوان و تاریخ (حالت تیره)'), max_length=9, blank=True,
+        help_text=CALENDAR_COLOUR_HELP)
+    calendar_ink_soft_dark = models.CharField(
+        _('رنگ توضیحات (حالت تیره)'), max_length=9, blank=True,
+        help_text=CALENDAR_COLOUR_HELP)
+
     org_chart_file = models.FileField(
         _('فایل چارت سازمانی'),
         upload_to=_org_chart_file_upload_to,
@@ -85,6 +105,26 @@ class SiteSettings(models.Model):
 
     def __str__(self):
         return self.university_name_fa
+
+    @property
+    def calendar_colours(self) -> dict:
+        """رنگ‌های تقویم که ادمین گذاشته — فقط مقدارهای معتبر.
+
+        این مقدارها مستقیم داخل یک بلوک <style> می‌نشینند. هر رشتهٔ
+        دلخواهی آنجا می‌تواند از اعلان بیرون بزند و قاعدهٔ دیگری
+        تزریق کند، پس هرچه شکل هگز نداشته باشد دور ریخته می‌شود —
+        نه پاک‌سازی، نه فرار دادن؛ فقط پذیرفتن الگوی درست.
+        """
+        import re
+
+        pattern = re.compile(r'^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$')
+        found = {}
+        for key in ('calendar_ink', 'calendar_ink_soft',
+                    'calendar_ink_dark', 'calendar_ink_soft_dark'):
+            value = (getattr(self, key, '') or '').strip()
+            if pattern.match(value):
+                found[key] = value
+        return found
 
     @property
     def org_chart_file_kind(self):

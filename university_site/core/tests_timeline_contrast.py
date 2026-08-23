@@ -189,3 +189,94 @@ class TimelineCardsLookAlikeTests(TestCase):
         block = css[start:css.index(chr(10) + '}', start)]
         self.assertIn('[data-theme="dark"] .acal-node.is-past .acal-card',
                       block)
+
+
+class AdminChosenColoursTests(TestCase):
+    """رنگ متن تقویم باید از پنل عوض شود، نه از فایل CSS.
+
+    قالب مستقیم رندر می‌شود، نه از راه صفحهٔ اصلی: آنجا بخش تقویم
+    فقط وقتی می‌آید که ردیف تقویم ثبت شده باشد، و تست رنگ نباید به
+    آن وابسته شود.
+    """
+
+    def _render(self, **colours):
+        from django.template.loader import render_to_string
+        from core.models import SiteSettings
+
+        SiteSettings.objects.all().delete()
+        row = SiteSettings.objects.create(**colours)
+        html = render_to_string('core/_academic_timeline.html', {
+            'site_settings': row,
+            'timeline': {'has_data': True, 'nodes': [], 'academic_year': ''},
+            'sections': {},
+        })
+        return row, html
+
+    def test_nothing_is_injected_when_unset(self):
+        _row, html = self._render()
+        self.assertNotIn('--acal-ink:', html)
+
+    def test_a_chosen_colour_reaches_the_page(self):
+        _row, html = self._render(calendar_ink='#7b2d8e')
+        self.assertIn('--acal-ink: #7b2d8e', html)
+
+    def test_it_covers_every_state(self):
+        """اگر فقط .acal-card نوشته شود، حالت گذشته رنگ را پس می‌زند."""
+        _row, html = self._render(calendar_ink='#7b2d8e')
+        block = html.split('--acal-ink: #7b2d8e')[0]
+        self.assertIn('.acal-node.is-past .acal-card', block)
+        self.assertIn('.acal-node.is-now .acal-card', block)
+
+    def test_dark_colours_are_scoped_to_dark(self):
+        _row, html = self._render(calendar_ink_dark='#ffd27f')
+        block = html.split('--acal-ink: #ffd27f')[0]
+        self.assertIn('[data-theme="dark"]', block)
+
+    def test_a_bogus_value_never_reaches_the_style_block(self):
+        """مقدار داخل <style> می‌رود؛ هرچه هگز نباشد باید دور ریخته شود."""
+        attack = 'red; } body { display:none } .x{color:red'
+        row, html = self._render(calendar_ink=attack)
+        self.assertEqual(row.calendar_colours, {})
+        self.assertNotIn(attack, html)
+        self.assertNotIn('--acal-ink:', html)
+
+    def test_named_colours_are_refused_too(self):
+        """«red» بی‌خطر است ولی الگو را باز می‌کند؛ فقط هگز می‌پذیریم."""
+        row, _html = self._render(calendar_ink='red')
+        self.assertEqual(row.calendar_colours, {})
+
+    def test_short_and_long_hex_both_pass(self):
+        row, _html = self._render(calendar_ink='#abc',
+                                  calendar_ink_soft='#aabbccdd')
+        self.assertEqual(len(row.calendar_colours), 2)
+
+    def test_the_admin_exposes_the_fields(self):
+        from core.admin import SiteSettingsAdmin
+        listed = set()
+        for _title, opts in SiteSettingsAdmin.fieldsets:
+            listed.update(opts['fields'])
+        for field in ('calendar_ink', 'calendar_ink_soft',
+                      'calendar_ink_dark', 'calendar_ink_soft_dark'):
+            self.assertIn(field, listed)
+
+    def test_the_admin_uses_a_colour_picker(self):
+        from django.contrib.admin.sites import AdminSite
+        from core.admin import SiteSettingsAdmin
+        from core.models import SiteSettings
+
+        admin_obj = SiteSettingsAdmin(SiteSettings, AdminSite())
+        field = SiteSettings._meta.get_field('calendar_ink')
+        form_field = admin_obj.formfield_for_dbfield(field, None)
+        # Input.__init__ کلید type را از attrs برمی‌دارد و در
+        # input_type می‌گذارد؛ پس attrs اینجا خالی است، نه ویجت.
+        self.assertEqual(form_field.widget.input_type, 'color')
+
+    def test_other_char_fields_keep_their_normal_widget(self):
+        from django.contrib.admin.sites import AdminSite
+        from core.admin import SiteSettingsAdmin
+        from core.models import SiteSettings
+
+        admin_obj = SiteSettingsAdmin(SiteSettings, AdminSite())
+        field = SiteSettings._meta.get_field('university_name_fa')
+        form_field = admin_obj.formfield_for_dbfield(field, None)
+        self.assertNotEqual(form_field.widget.input_type, 'color')

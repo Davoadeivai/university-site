@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
@@ -27,6 +28,19 @@ from core.sms_queue import QueuedSMS
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     list_display = ['university_name_fa', 'phone', 'email', 'completeness']
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        """انتخابگر رنگ مرورگر به‌جای کادر متنی.
+
+        نوشتن دستیِ کد هگز هم غلط‌پذیر است و هم نتیجه را تا ذخیره‌شدن
+        نشان نمی‌دهد.
+        """
+        if db_field.name.startswith('calendar_ink'):
+            kwargs['widget'] = forms.TextInput(attrs={
+                'type': 'color',
+                'style': 'width:70px;height:38px;padding:2px;',
+            })
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
     
     fieldsets = (
         ('اطلاعات اصلی', {
@@ -37,6 +51,21 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         }),
         ('آمار صفحه اصلی', {
             'fields': ('stat_students', 'stat_faculty', 'stat_majors', 'stat_years'),
+        }),
+        ('رنگ متن تقویم آموزشی', {
+            'fields': (
+                'calendar_ink', 'calendar_ink_soft',
+                'calendar_ink_dark', 'calendar_ink_soft_dark',
+            ),
+            'classes': ('collapse',),
+            'description': (
+                'رنگ نوشته‌های باکس‌های تقویم در صفحهٔ اصلی. خالی '
+                'بگذارید تا رنگ پیش‌فرض قالب بماند.<br>'
+                '<b>رنگ خود باکس</b> جای دیگری است: هر مرحله در '
+                '«تقویم آموزشی» فیلد «رنگ باکس» خودش را دارد.<br>'
+                'رنگ روشن روی زمینهٔ روشن خوانده نمی‌شود — پس از '
+                'تغییر، صفحهٔ اصلی را در هر دو حالت روشن و تیره ببینید.'
+            ),
         }),
         ('شبکه‌های اجتماعی', {
             'fields': ('telegram', 'instagram', 'twitter', 'linkedin', 'youtube')

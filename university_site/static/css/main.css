@@ -56,8 +56,13 @@ body {
        چسبندگی (sticky) سربرگ را خراب نمی‌کند. */
     overflow-x: clip;
 }
+/* تور ایمنی روی html هم لازم است، نه فقط body: در بعضی مرورگرهای
+   موبایل عنصرِ اسکرول‌شونده html است و بریدنِ body جلوی کشیده‌شدن
+   افقی صفحه را نمی‌گیرد. */
+html { overflow-x: clip; }
+
 @supports not (overflow: clip) {
-    body { overflow-x: hidden; }
+    html, body { overflow-x: hidden; }
 }
 
 /* هیچ تصویر یا ویدیویی نباید از ظرفش پهن‌تر شود */

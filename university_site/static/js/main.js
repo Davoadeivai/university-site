@@ -1009,3 +1009,103 @@ function appendMsg(text, type) {
 
     openFor(window.location.hash);
 })();
+
+
+// ============================================================
+//  یابندهٔ سرریز افقی — فقط با #overflow در نشانی
+// ============================================================
+// «صفحه روی گوشی به هم ریخته» از روی کد قابل حدس نیست: هر عنصری
+// می‌تواند چند پیکسل از عرض بیرون بزند و کل صفحه را افقی بکشد.
+// این تکه هر عنصری را که از پهنای صفحه بیرون زده پیدا می‌کند و
+// نامش را می‌نویسد، تا به‌جای حدس، خودِ گوشی جواب بدهد.
+//
+// روی بازدیدکنندهٔ عادی هیچ اثری ندارد: بدون #overflow در نشانی
+// حتی اجرا نمی‌شود.
+(function () {
+    'use strict';
+
+    if (window.location.hash !== '#overflow') return;
+
+    function describe(el) {
+        var name = el.tagName.toLowerCase();
+        if (el.id) return name + '#' + el.id;
+        var cls = (el.getAttribute('class') || '').trim().split(/\s+/)[0];
+        return cls ? name + '.' + cls : name;
+    }
+
+    function scan() {
+        var limit = document.documentElement.clientWidth;
+        var found = [];
+
+        document.querySelectorAll('body *').forEach(function (el) {
+            var style = getComputedStyle(el);
+            if (style.position === 'fixed' || style.display === 'none') return;
+            var box = el.getBoundingClientRect();
+            if (!box.width) return;
+            // چند پیکسل خطا طبیعی است؛ دنبال سرریز واقعی هستیم
+            var over = Math.max(box.right - limit, -box.left);
+            if (over > 2) {
+                found.push({ el: el, over: Math.round(over) });
+            }
+        });
+
+        // بیرونی‌ترین‌ها را نگه دار: اگر یک ظرف سرریز دارد، همهٔ
+        // بچه‌هایش هم دارند و فهرست را بی‌فایده شلوغ می‌کنند.
+        found = found.filter(function (row) {
+            return !found.some(function (other) {
+                return other !== row && other.el.contains(row.el);
+            });
+        });
+
+        found.sort(function (a, b) { return b.over - a.over; });
+        return found;
+    }
+
+    function report() {
+        var found = scan();
+        var box = document.createElement('div');
+        box.dir = 'rtl';
+        box.style.cssText =
+            'position:fixed;inset-block-end:0;inset-inline:0;z-index:99999;' +
+            'max-height:52vh;overflow:auto;padding:14px 16px;' +
+            'background:#0a1628;color:#fff;font:13px/1.9 Tahoma,sans-serif;' +
+            'box-shadow:0 -8px 30px rgba(0,0,0,.5)';
+
+        var title = document.createElement('div');
+        title.style.cssText = 'font-weight:700;margin-bottom:8px;color:#f0d080';
+        title.textContent = found.length
+            ? found.length + ' عنصر از عرض صفحه بیرون زده‌اند'
+            : 'هیچ عنصری از عرض صفحه بیرون نزده است';
+        box.appendChild(title);
+
+        var width = document.createElement('div');
+        width.style.cssText = 'opacity:.75;margin-bottom:10px';
+        width.textContent = 'عرض صفحه: ' + document.documentElement.clientWidth
+            + 'px — عرض سند: ' + document.documentElement.scrollWidth + 'px';
+        box.appendChild(width);
+
+        found.slice(0, 12).forEach(function (row) {
+            var line = document.createElement('div');
+            line.textContent = describe(row.el) + '  →  ' + row.over + 'px';
+            box.appendChild(line);
+            row.el.style.outline = '2px solid #ff4d4f';
+        });
+
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.textContent = 'بستن';
+        close.style.cssText =
+            'margin-top:12px;padding:8px 18px;border:1px solid #f0d080;' +
+            'border-radius:8px;background:transparent;color:#f0d080;' +
+            'font-family:inherit;cursor:pointer';
+        close.addEventListener('click', function () { box.remove(); });
+        box.appendChild(close);
+
+        document.body.appendChild(box);
+    }
+
+    // بعد از رسیدن تصویرها اندازه‌ها نهایی می‌شوند؛ زودتر از آن،
+    // عکسِ هنوز نیامده عرض صفر دارد و گزارش دروغ می‌شود.
+    if (document.readyState === 'complete') report();
+    else window.addEventListener('load', report);
+})();
