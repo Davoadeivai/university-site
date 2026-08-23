@@ -1563,11 +1563,33 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         linear-gradient(112deg, #16283c 0%, #101d2c 48%, #0a1723 100%);
 }
 [data-theme="dark"] .acal-card {
-    background: linear-gradient(170deg, rgba(255, 255, 255, .05) 0%, rgba(255, 255, 255, .02) 100%);
-    border-color: rgba(255, 255, 255, .12);
+    background: linear-gradient(170deg, rgba(255, 255, 255, .07) 0%, rgba(255, 255, 255, .03) 100%);
+    border-color: rgba(255, 255, 255, .16);
+    /* یک اعلان به‌جای پنج تا: همهٔ متن‌های کارت از همین دو متغیر
+       می‌خوانند، پس هیچ عنصری جا نمی‌ماند. پیش از این فقط روز و
+       عنوان بازنویسی می‌شدند و ماه، توضیح و دکمه رنگ حالت روشن را
+       نگه می‌داشتند. */
+    --acal-ink: #f2f7fc;
+    --acal-ink-soft: #c2d3e4;
+    --acal-accent: #f0d080;
 }
-[data-theme="dark"] .acal-day { color: #e8eef6; }
-[data-theme="dark"] .acal-label { color: #dbe4ef; }
+[data-theme="dark"] .acal-node.is-past .acal-card {
+    --acal-ink: #dfe9f3;
+    --acal-ink-soft: #a8bccf;
+    --acal-accent: #cbd8e6;
+}
+[data-theme="dark"] .acal-node.is-now .acal-card {
+    --acal-ink: #ffffff;
+    --acal-ink-soft: #d6e3f0;
+}
+/* در حالت تیره، پردهٔ روی عکس هم باید تیره باشد؛ پردهٔ سفید
+   همان‌قدر متن روشن را ناخوانا می‌کند که عکسِ بی‌پرده. */
+[data-theme="dark"] .acal-card.has-img::after {
+    background: linear-gradient(180deg,
+        rgba(10, 22, 36, .62) 0%,
+        rgba(10, 22, 36, .88) 58%,
+        rgba(10, 22, 36, .95) 100%);
+}
 [data-theme="dark"] .topbar-search-box { background: #1c2b3d; border-color: #2b3f57; }
 [data-theme="dark"] .topbar-search-input { color: #e6edf5; }
 [data-theme="dark"] .topbar-search-clear { background: #24364c; color: #93a4b8; }
@@ -2050,6 +2072,18 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --tone-soft: rgba(184, 134, 43, .13);
     --tone-line: #ecdcb8;
     --tone-wash: #fdf8ec;
+    /* رنگ متن یک بار اینجا تعریف می‌شود و همهٔ عنصرها از آن
+       می‌خوانند. پیش از این هر عنصر رنگ خودش را داشت و برای حالت
+       تیره فقط دوتاشان بازنویسی شده بود؛ بقیه رنگ حالت روشن را
+       نگه می‌داشتند و روی زمینهٔ تیره محو می‌شدند. */
+    --acal-ink: #0d2137;
+    --acal-ink-soft: #3c5470;
+    /* رنگ مرحله برای متن ریز روی زمینهٔ روشن کم‌کنتراست است —
+       طلایی #b8862b روی سفید حدود ۳٫۶:۱ می‌دهد، زیر حداقل ۴٫۵:۱.
+       آمیختنش با سرمه‌ای، هویت رنگی مرحله را نگه می‌دارد و متن را
+       خوانا می‌کند. */
+    --acal-accent: var(--tone);
+    --acal-accent: color-mix(in srgb, var(--tone) 62%, #0d2137);
     position: relative;
     z-index: 1;
     display: flex; flex-direction: column; align-items: center;
@@ -2097,33 +2131,37 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 
 .acal-day {
-    font-size: clamp(1.3rem, 2.5vw, 1.9rem);
-    font-weight: 800; line-height: 1.15; color: var(--primary);
+    font-size: clamp(1.35rem, 2.5vw, 1.95rem);
+    font-weight: 800; line-height: 1.15; color: var(--acal-ink);
     font-variant-numeric: tabular-nums; letter-spacing: -.015em;
     white-space: nowrap;
 }
 .acal-month {
-    font-size: clamp(.64rem, .95vw, .75rem);
-    color: var(--text-muted); white-space: nowrap;
+    font-size: clamp(.72rem, .95vw, .8rem);
+    font-weight: 600;
+    color: var(--acal-ink-soft); white-space: nowrap;
 }
 .acal-label {
     margin-top: 7px;
-    font-size: clamp(.74rem, 1.05vw, .86rem);
-    font-weight: 600; line-height: 1.65;
-    color: var(--text-dark);
+    font-size: clamp(.8rem, 1.05vw, .92rem);
+    font-weight: 700; line-height: 1.65;
+    color: var(--acal-ink);
     text-wrap: balance;
 }
 .acal-desc {
-    font-size: .68rem; line-height: 1.7;
-    color: var(--text-muted);
+    font-size: .75rem; line-height: 1.7;
+    font-weight: 500;
+    color: var(--acal-ink-soft);
     text-wrap: pretty;
 }
 .acal-go {
     margin-top: 8px;
-    font-size: .66rem; font-weight: 700;
-    color: var(--tone);
+    font-size: .74rem; font-weight: 800;
+    /* رنگ مرحله تیره‌تر می‌شود تا روی زمینهٔ روشن هم کنتراست کافی
+       داشته باشد؛ نسخهٔ قبلی خودِ رنگ را با opacity .85 می‌گذاشت و
+       رنگ‌های روشن (طلایی، کهربایی) عملاً ناخوانا می‌شدند. */
+    color: var(--acal-accent);
     display: inline-flex; align-items: center; gap: 4px;
-    opacity: .85;
 }
 
 /* تصویر اختیاری پشت کارت */
@@ -2131,7 +2169,19 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .acal-bg {
     position: absolute; inset: 0; z-index: -1;
     background-size: cover; background-position: center;
-    opacity: .14;
+    opacity: .16;
+}
+/* پردهٔ روی تصویر: متن هرگز مستقیم روی پیکسل‌های عکس نمی‌نشیند.
+   بدون این، خوانایی به روشنی همان عکسی وابسته می‌شد که ادمین
+   آپلود کرده — و هیچ رنگ متنی برای همهٔ عکس‌ها جواب نمی‌دهد. */
+.acal-card.has-img::after {
+    content: "";
+    position: absolute; inset: 0; z-index: -1;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, .62) 0%,
+        rgba(255, 255, 255, .9) 58%,
+        rgba(255, 255, 255, .96) 100%);
+    pointer-events: none;
 }
 
 /* ── رنگ‌های قابل انتخاب از پنل ── */
@@ -2164,6 +2214,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 /* ── وضعیت مراحل ── */
 .acal-node.is-past .acal-card {
+    --acal-ink: #24405c;
+    --acal-ink-soft: #4d6a87;
+    --acal-accent: #3f5f7e;
     /* نشان «انجام شد» برداشته شد؛ کم‌رنگ‌شدن و تیکِ روی نیم‌دایره
        همان معنی را بدون تکرار متن می‌رسانند.
 
@@ -2197,11 +2250,14 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* تیک کوچک روی نیم‌دایرهٔ مرحلهٔ انجام‌شده */
 .acal-node.is-past .acal-cap i::before { content: "\f00c"; }
 .acal-node.is-past .acal-cap i { color: #ffffff; }
-.acal-node.is-past .acal-day   { color: #8496a8; }
-.acal-node.is-past .acal-label { color: #6d7f92; }
-.acal-node.is-past .acal-go    { color: #8496a8; }
+/* مرحلهٔ گذشته کم‌جان می‌شود، نه ناخوانا. نسخهٔ قبلی خاکستری روشنِ
+   ثابت می‌گذاشت و چون بیشتر مراحل تقویم گذشته‌اند، تقریباً تمام
+   کارت‌ها همان خاکستری محو را می‌گرفتند. تیکِ روی نیم‌دایره و
+   کم‌رنگیِ قاب همان معنی را می‌رسانند بدون قربانی‌کردن متن. */
 
 .acal-node.is-now .acal-card {
+    --acal-ink: #06182b;
+    --acal-ink-soft: #33506d;
     border-color: var(--tone);
     background:
         linear-gradient(170deg, var(--tone-soft) 0%, #ffffff 78%);
@@ -2210,8 +2266,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         0 0 34px -10px var(--tone),
         0 14px 34px -18px rgba(16, 54, 90, .4);
 }
-.acal-node.is-now .acal-day   { color: var(--primary); }
-.acal-node.is-now .acal-label { color: var(--text-dark); }
+/* مرحلهٔ جاری تیره‌ترین متن را می‌گیرد — همان‌جایی که چشم باید
+   اول برود. */
 
 .acal-node.is-next .acal-card {
     border-color: var(--tone);

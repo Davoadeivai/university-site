@@ -233,17 +233,32 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-jazb' %}">دبیرخانه هیأت اجرایی جذب هیأت علمی</a></li>
 
-                        <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">معاونت‌ها</span></li>
-                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'core:vices_list' %}">همهٔ معاونین و معاونت‌ها</a></li>
-                        {# فهرست از پایگاه داده می‌آید تا با پنل ادمین یکی بماند #}
-                        {% for v in nav_vices %}
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' v.vice_type %}">{{ v.get_vice_type_display }}</a></li>
-                        {% endfor %}
 
                         <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">واحدهای وابسته</span></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:international_office' %}">دفتر همکاریهای علمی و بین المللی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:public_relations' %}">مدیریت روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:security_office' %}">حراست</a></li>
+                    </ul>
+                </li>
+
+                {% comment %}
+                معاونت‌ها منوی خودشان را دارند، نه یک بخش داخل «حوزه
+                ریاست». هفت معاونت زیر یک زیرمنوی سه‌بخشی گم می‌شدند و
+                برای رسیدن به هرکدام باید کل فهرست ریاست مرور می‌شد.
+                {% endcomment %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'core:vices_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-users-cog" style="font-size:13px;margin-left:3px;"></i> معاونت‌ها
+                    </a>
+                    <ul class="dropdown-menu nav-dd">
+                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'core:vices_list' %}">همهٔ معاونین و معاونت‌ها</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {# فهرست از پایگاه داده می‌آید تا با پنل ادمین یکی بماند #}
+                        {% for v in nav_vices %}
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' v.vice_type %}">{{ v.get_vice_type_display }}</a></li>
+                        {% empty %}
+                        <li><span class="dropdown-item nav-dd-item" style="opacity:.6;">معاونتی ثبت نشده</span></li>
+                        {% endfor %}
                     </ul>
                 </li>
 
