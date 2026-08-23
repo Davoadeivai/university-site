@@ -1578,24 +1578,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --acal-ink-soft: #c2d3e4;
     --acal-accent: #f0d080;
 }
-/* پس‌زمینه هم باید بازنویسی شود، نه فقط رنگ متن. قاعدهٔ حالت
-   روشنِ «مرحلهٔ گذشته» یک گرادیان سفید می‌گذارد و چون اینجا فقط
-   متغیرهای رنگ تعریف شده بود، آن سفید در حالت تیره سر جایش
-   می‌ماند: کارت اول و آخرِ تقویم روشن می‌شدند و بقیه تیره. */
-[data-theme="dark"] .acal-node.is-past .acal-card {
-    background: linear-gradient(170deg, rgba(255, 255, 255, .045) 0%, rgba(255, 255, 255, .015) 100%);
-    border-color: rgba(255, 255, 255, .1);
-    --acal-ink: #dfe9f3;
-    --acal-ink-soft: #a8bccf;
-    --acal-accent: #cbd8e6;
-}
-[data-theme="dark"] .acal-node.is-now .acal-card {
-    background: linear-gradient(170deg, var(--tone-soft) 0%, rgba(255, 255, 255, .04) 78%);
-    --acal-ink: #ffffff;
-    --acal-ink-soft: #d6e3f0;
-}
-/* نسخهٔ بدونِ color-mix هم همین مشکل را دارد: آنجا صریحاً
-   #f7f9fc گذاشته شده که در حالت تیره یک کارت سفید می‌سازد. */
+/* حالت‌های مرحله دیگر زمینهٔ خودشان را ندارند، پس اینجا هم چیزی
+   برای بازنویسی نمانده — فقط قاب نیم‌دایره کمی روشن‌تر می‌شود. */
 [data-theme="dark"] .acal-node.is-past .acal-cap {
     border-color: rgba(255, 255, 255, .25);
 }
@@ -2052,9 +2036,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* ── ریل کارت‌ها ── */
 .acal-track {
     display: flex; align-items: stretch;
-    gap: clamp(10px, 1.5vw, 20px);
+    gap: clamp(8px, 1.1vw, 14px);
     max-width: 1360px; margin: 0 auto;
-    padding: 26px clamp(14px, 2.4vw, 28px) 10px;
+    padding: 22px clamp(12px, 2vw, 24px) 8px;
     list-style: none;
     overflow-x: auto; overflow-y: visible;
     scroll-snap-type: x proximity;
@@ -2066,7 +2050,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 .acal-node {
     position: relative;
-    flex: 1 1 0; min-width: 178px;
+    flex: 1 1 0; min-width: 152px;
     scroll-snap-align: center;
     display: flex;
 }
@@ -2106,7 +2090,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     display: flex; flex-direction: column; align-items: center;
     gap: 4px;
     width: 100%;
-    padding: 30px 12px 16px;
+    padding: 26px 10px 13px;
     text-align: center;
     text-decoration: none;
     color: inherit;
@@ -2127,9 +2111,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* نیم‌دایرهٔ بالای کارت — آیکون مرحله داخلش */
 .acal-cap {
     position: absolute;
-    top: -22px; left: 50%; transform: translateX(-50%);
-    width: 52px; height: 26px;
-    border-radius: 26px 26px 0 0;
+    top: -19px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 22px;
+    border-radius: 22px 22px 0 0;
     /* fallback برای مرورگرهای قدیمی که color-mix ندارند */
     background: var(--tone);
     background: linear-gradient(180deg,
@@ -2148,7 +2132,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 
 .acal-day {
-    font-size: clamp(1.35rem, 2.5vw, 1.95rem);
+    font-size: clamp(1.2rem, 2.1vw, 1.6rem);
     font-weight: 800; line-height: 1.15; color: var(--acal-ink);
     font-variant-numeric: tabular-nums; letter-spacing: -.015em;
     white-space: nowrap;
@@ -2160,13 +2144,13 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 .acal-label {
     margin-top: 7px;
-    font-size: clamp(.8rem, 1.05vw, .92rem);
+    font-size: clamp(.76rem, .95vw, .86rem);
     font-weight: 700; line-height: 1.65;
     color: var(--acal-ink);
     text-wrap: balance;
 }
 .acal-desc {
-    font-size: .75rem; line-height: 1.7;
+    font-size: .72rem; line-height: 1.65;
     font-weight: 500;
     color: var(--acal-ink-soft);
     text-wrap: pretty;
@@ -2229,69 +2213,37 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --tone-line: #d3e3f1; --tone-wash: #f1f7fc;
 }
 
-/* ── وضعیت مراحل ── */
-.acal-node.is-past .acal-card {
-    --acal-ink: #24405c;
-    --acal-ink-soft: #4d6a87;
-    --acal-accent: #3f5f7e;
-    /* نشان «انجام شد» برداشته شد؛ کم‌رنگ‌شدن و تیکِ روی نیم‌دایره
-       همان معنی را بدون تکرار متن می‌رسانند.
+/* ── وضعیت مراحل ──
+   ───────────────────────────────────────────────────────────
+   هیچ حالتی پس‌زمینه یا رنگ متنِ خودش را ندارد. دو تلاش قبلی برای
+   «کم‌جان کردن» مرحلهٔ گذشته، هر بار یک گرادیان روشن می‌ساخت که در
+   حالت تیره سر جایش می‌ماند و کارت اول و آخر سفید درمی‌آمدند.
 
-       رنگ انتخابی ادمین اینجا حذف نمی‌شود، فقط کم‌جان می‌شود. نسخهٔ
-       قبلی خاکستریِ ثابت می‌گذاشت و چون معمولاً همهٔ مراحل تقویم
-       گذشته‌اند، عوض‌کردن رنگ در پنل هیچ اثری روی صفحه نداشت و
-       این‌طور به‌نظر می‌رسید که فیلد رنگ کار نمی‌کند. */
-    background:
-        linear-gradient(170deg,
-            color-mix(in srgb, var(--tone-wash) 45%, #f7f9fc) 0%,
-            #ffffff 62%);
-    border-color: color-mix(in srgb, var(--tone-line) 55%, #e3e9f1);
-    box-shadow: 0 4px 14px -14px rgba(16, 54, 90, .35);
-}
+   وقتی تفاوتی در کار نباشد، چیزی هم برای نشت‌کردن نمی‌ماند. مرحلهٔ
+   انجام‌شده با تیکِ روی نیم‌دایره شناخته می‌شود و مرحلهٔ جاری با
+   حلقهٔ نورانی — هر دو نشانه‌اند، نه رنگِ زمینه. */
+
+/* نیم‌دایرهٔ مرحلهٔ انجام‌شده کمی روشن‌تر است تا تیک دیده شود */
 .acal-node.is-past .acal-cap {
-    /* نیم‌دایره ته‌رنگ خودش را نگه می‌دارد تا مرحله همچنان قابل
-       تشخیص باشد، ولی روشن‌تر از مرحلهٔ فعال. */
-    background: color-mix(in srgb, var(--tone) 38%, #b9c6d6);
-    border-color: #ffffff; box-shadow: none;
+    background: color-mix(in srgb, var(--tone) 55%, #8fa3b8);
+    box-shadow: none;
 }
-
-/* color-mix در مرورگرهای قدیمی‌تر پشتیبانی نمی‌شود؛ آنجا همان
-   خاکستری قبلی می‌ماند که خوانا و بی‌عیب است. */
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .acal-node.is-past .acal-card {
-        background: linear-gradient(170deg, #f7f9fc 0%, #ffffff 62%);
-        border-color: #e3e9f1;
-    }
-    .acal-node.is-past .acal-cap { background: #b9c6d6; }
-    /* بدون این، مرورگر قدیمی در حالت تیره همان کارت سفید را
-       می‌سازد که تازه رفعش کردیم. */
-    [data-theme="dark"] .acal-node.is-past .acal-card {
-        background: linear-gradient(170deg, rgba(255, 255, 255, .045) 0%, rgba(255, 255, 255, .015) 100%);
-        border-color: rgba(255, 255, 255, .1);
-    }
-    [data-theme="dark"] .acal-node.is-past .acal-cap { background: #47637f; }
+    .acal-node.is-past .acal-cap { background: #7f93a8; }
 }
 /* تیک کوچک روی نیم‌دایرهٔ مرحلهٔ انجام‌شده */
 .acal-node.is-past .acal-cap i::before { content: "\f00c"; }
 .acal-node.is-past .acal-cap i { color: #ffffff; }
-/* مرحلهٔ گذشته کم‌جان می‌شود، نه ناخوانا. نسخهٔ قبلی خاکستری روشنِ
-   ثابت می‌گذاشت و چون بیشتر مراحل تقویم گذشته‌اند، تقریباً تمام
-   کارت‌ها همان خاکستری محو را می‌گرفتند. تیکِ روی نیم‌دایره و
-   کم‌رنگیِ قاب همان معنی را می‌رسانند بدون قربانی‌کردن متن. */
 
+/* مرحلهٔ جاری: فقط یک حلقهٔ نورانی دور همان کارت، بدون عوض‌کردن
+   زمینه. این تنها نشانه‌ای است که می‌گوید امروز کجای تقویم‌ایم. */
 .acal-node.is-now .acal-card {
-    --acal-ink: #06182b;
-    --acal-ink-soft: #33506d;
     border-color: var(--tone);
-    background:
-        linear-gradient(170deg, var(--tone-soft) 0%, #ffffff 78%);
     box-shadow:
         0 0 0 1px var(--tone),
-        0 0 34px -10px var(--tone),
-        0 14px 34px -18px rgba(16, 54, 90, .4);
+        0 0 30px -12px var(--tone),
+        0 12px 30px -20px rgba(16, 54, 90, .4);
 }
-/* مرحلهٔ جاری تیره‌ترین متن را می‌گیرد — همان‌جایی که چشم باید
-   اول برود. */
 
 .acal-node.is-next .acal-card {
     border-color: var(--tone);

@@ -49,12 +49,12 @@ class TimelineContrastTests(TestCase):
         """متغیرهای --acal-* داخل یک بلوک CSS.
 
         لنگر سطر ابتدای انتخابگر لازم است: بدون آن،
-        `.acal-node.is-past .acal-card {` داخل نسخهٔ
-        `[data-theme="dark"] …` هم پیدا می‌شود و چون آن بلوک زودتر
-        در فایل است، تست رنگ حالت تیره را روی زمینهٔ روشن می‌سنجد.
+        `.acal-card {` داخل نسخهٔ `[data-theme="dark"] …` هم پیدا
+        می‌شود و چون آن بلوک زودتر در فایل است، تست رنگ حالت تیره را
+        روی زمینهٔ روشن می‌سنجد.
         """
         css = _css()
-        start = css.index('\n' + block_start) + 1
+        start = css.index(chr(10) + block_start) + 1
         block = css[start:css.index('}', start)]
         found = {}
         for line in block.splitlines():
@@ -75,30 +75,60 @@ class TimelineContrastTests(TestCase):
                 '%s = %s روی %s فقط %.1f:۱ کنتراست دارد'
                 % (name, colour, background, ratio))
 
-    def test_light_theme_default_card(self):
+    def test_light_theme_card(self):
         self._assert_readable(self._vars('.acal-card {'), self.LIGHT_CARD)
 
-    def test_light_theme_past_card(self):
-        self._assert_readable(
-            self._vars('.acal-node.is-past .acal-card {'), self.LIGHT_CARD)
-
-    def test_light_theme_current_card(self):
-        self._assert_readable(
-            self._vars('.acal-node.is-now .acal-card {'), self.LIGHT_CARD)
-
-    def test_dark_theme_default_card(self):
+    def test_dark_theme_card(self):
         self._assert_readable(
             self._vars('[data-theme="dark"] .acal-card {'), self.DARK_CARD)
 
-    def test_dark_theme_past_card(self):
-        self._assert_readable(
-            self._vars('[data-theme="dark"] .acal-node.is-past .acal-card {'),
-            self.DARK_CARD)
 
-    def test_dark_theme_current_card(self):
-        self._assert_readable(
-            self._vars('[data-theme="dark"] .acal-node.is-now .acal-card {'),
-            self.DARK_CARD)
+class TimelineCardsLookAlikeTests(TestCase):
+    """همهٔ کارت‌ها باید یک شکل باشند، در هر دو تم.
+
+    دو تلاش برای «کم‌جان کردن» مرحلهٔ گذشته هر بار یک گرادیان روشن
+    ساخت که در حالت تیره سر جایش می‌ماند و کارت اول و آخر سفید
+    درمی‌آمدند. حالا هیچ حالتی زمینهٔ خودش را ندارد، پس چیزی هم برای
+    نشت‌کردن نمانده.
+    """
+
+    STATES = ('.acal-node.is-past .acal-card',
+              '.acal-node.is-now .acal-card')
+
+    def test_no_state_repaints_the_card(self):
+        css = _css()
+        for state in self.STATES:
+            marker = chr(10) + state + ' {'
+            if marker not in css:
+                continue
+            start = css.index(marker) + 1
+            block = css[start:css.index('}', start)]
+            for line in block.splitlines():
+                self.assertFalse(
+                    line.strip().startswith('background'),
+                    '%s دوباره زمینهٔ خودش را دارد' % state)
+
+    def test_no_state_overrides_the_text_colour(self):
+        css = _css()
+        for state in self.STATES:
+            marker = chr(10) + state + ' {'
+            if marker not in css:
+                continue
+            start = css.index(marker) + 1
+            block = css[start:css.index('}', start)]
+            self.assertNotIn('--acal-ink', block,
+                             '%s رنگ متن جدا دارد' % state)
+
+    def test_done_is_still_marked(self):
+        """یکسان‌شدن نباید نشانهٔ «انجام شد» را از بین ببرد."""
+        css = _css()
+        self.assertIn('.acal-node.is-past .acal-cap i::before', css)
+        self.assertIn('\\f00c', css)
+
+    def test_today_is_still_marked(self):
+        css = _css()
+        start = css.index(chr(10) + '.acal-node.is-now .acal-card {') + 1
+        self.assertIn('box-shadow', css[start:css.index('}', start)])
 
 
 class TimelineTextPlumbingTests(TestCase):
@@ -133,62 +163,6 @@ class TimelineTextPlumbingTests(TestCase):
                 self.assertGreaterEqual(
                     float(size) * 16, 11,
                     '%s فونت %srem دارد' % (selector, size))
-
-
-class TimelineCardsLookAlikeTests(TestCase):
-    """هر حالتی که کارت را در تم روشن رنگ می‌کند، باید نسخهٔ تیره هم داشته باشد.
-
-    قاعدهٔ «مرحلهٔ گذشته» یک گرادیان سفید می‌گذاشت و نسخهٔ تیره‌اش
-    فقط رنگ متن را بازنویسی می‌کرد، نه پس‌زمینه را. نتیجه در حالت
-    تیره: کارت اول و آخر تقویم سفید و بقیه تیره — بدون هیچ خطایی،
-    فقط یک صفحهٔ ناهماهنگ.
-    """
-
-    STATES = ('.acal-node.is-past .acal-card',
-              '.acal-node.is-now .acal-card')
-
-    def _block(self, selector, css=None):
-        css = css or _css()
-        start = css.index(chr(10) + selector + ' {') + 1
-        return css[start:css.index('}', start)]
-
-    def test_each_state_has_a_dark_counterpart(self):
-        css = _css()
-        for state in self.STATES:
-            light = self._block(state, css)
-            if 'background' not in light:
-                continue
-            dark_selector = '[data-theme="dark"] ' + state
-            self.assertIn(dark_selector + ' {', css,
-                          '%s در حالت تیره بازنویسی نشده' % state)
-            dark = self._block(dark_selector, css)
-            self.assertIn('background', dark,
-                          '%s فقط رنگ متن را عوض می‌کند، نه پس‌زمینه'
-                          % dark_selector)
-
-    def test_dark_states_are_not_painted_white(self):
-        """هیچ کارتی در حالت تیره نباید زمینهٔ روشن بگیرد.
-
-        فقط اعلان background بررسی می‌شود، نه کل بلوک: رنگ متن در
-        حالت تیره عمداً سفید است و بلوک را کاملاً رد می‌کرد.
-        """
-        css = _css()
-        for state in self.STATES:
-            dark = self._block('[data-theme="dark"] ' + state, css)
-            painted = [ln for ln in dark.splitlines()
-                       if ln.strip().startswith('background')]
-            for line in painted:
-                for bad in ('#ffffff', '#fff;', '#f7f9fc', '#fdf8ec'):
-                    self.assertNotIn(bad, line,
-                                     '%s زمینهٔ روشن %s دارد' % (state, bad))
-
-    def test_the_no_color_mix_fallback_covers_dark_too(self):
-        """مرورگر بدون color-mix هم نباید کارت سفید بسازد."""
-        css = _css()
-        start = css.index('@supports not (color: color-mix')
-        block = css[start:css.index(chr(10) + '}', start)]
-        self.assertIn('[data-theme="dark"] .acal-node.is-past .acal-card',
-                      block)
 
 
 class AdminChosenColoursTests(TestCase):
