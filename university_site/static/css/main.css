@@ -1800,12 +1800,33 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 
 /* ── نام موسسه: مرکبِ برنزی با درخششِ فلزی ── */
-.bnr-name { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+/* نشان کلاس جهانی در دو سو، و نام موسسه در میان — پس ردیف افقی
+   به‌جای ستون. زیرنویس «دانش · مهارت · آینده» و خط تزئینی حذف
+   شدند، پس چیزی برای چیدن زیر نام نمانده. */
+.bnr-name {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 1.6vw, 22px);
+    min-width: 0;
+}
+
+.bnr-wcu {
+    flex: 0 0 auto;
+    inline-size: clamp(38px, 4.6vw, 64px);
+    block-size: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 3px rgba(59, 42, 9, .28));
+}
+
 .bnr-fa {
     position: relative;
-    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    /* Arial به درخواست موسسه؛ Vazirmatn پشت سرش می‌ماند تا حروف
+       فارسی روی سیستمی که Arial فارسی ندارد هم درست بنشینند. */
+    font-family: Arial, 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
     font-weight: 800;
-    font-size: clamp(1.05rem, 2.5vw, 1.9rem);
+    font-size: clamp(1.3rem, 3.2vw, 2.45rem);
     letter-spacing: .012em;
     line-height: 1.25;
     white-space: nowrap;
@@ -2668,79 +2689,111 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .pres-crumb .breadcrumb { font-size: 13px; }
 
-/* قاب ریاست: عکس همان‌طور که هست.
-   ───────────────────────────────────────────────────────────
-   نه برش، نه حاشیهٔ تیره، نه قاب با ارتفاع ثابت. تصویر تمام‌عرض
-   می‌شود و ارتفاعش را نسبت خودش تعیین می‌کند. نسخهٔ قبلی با قاب
-   ثابت + contain کار می‌کرد ولی دو نوار مات کنار عکس عمودی
-   می‌گذاشت؛ حالا اصلاً نواری نیست چون چیزی برای پر کردن نمانده. */
-.pres-hero {
-    position: relative;
-    inline-size: 100%;
-    background: #0a1628;
-    line-height: 0;              /* فاصلهٔ زیر img در جریان متن */
+/* ── صفحهٔ ریاست: عکس و نشان کلاس جهانی کنار هم ────────────
+   دو خانهٔ هم‌وزن، مطابق جدولی که سند اصلاحات کشیده است. روی
+   موبایل زیر هم می‌روند. */
+.pres-top { padding-block-end: clamp(20px, 3vw, 36px); }
+
+.pres-duo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: clamp(20px, 3vw, 44px);
+    align-items: center;
 }
 
-.pres-hero-img {
+.pres-portrait {
+    margin: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    box-shadow: 0 12px 34px -22px rgba(15, 23, 42, .5);
+}
+
+/* عکس همان‌طور که آپلود شده: تمام‌عرضِ خانه، با نسبت خودش، بدون
+   برش. هر عدد ثابتی برای object-position روی عکس عمودی یا افقی
+   غلط از آب درمی‌آید — یک بار سرِ سوژه کامل از قاب بیرون ماند. */
+.pres-portrait img {
     display: block;
     inline-size: 100%;
-    block-size: auto;            /* نسبت اصلی عکس حفظ می‌شود */
-    max-inline-size: 100%;
+    block-size: auto;
 }
 
-.pres-hero-placeholder {
+.pres-portrait-empty {
     display: grid;
     place-items: center;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 5;
     background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
     color: rgba(255, 255, 255, .3);
-    font-size: 6rem;
-    line-height: 1;
+    font-size: 5rem;
 }
 
-/* نوار نام زیر عکس می‌نشیند، نه رویش: هیچ چیزی جلوی تصویر را
-   نمی‌گیرد و متن هم بدون پردهٔ تیره روی عکس خوانا می‌ماند. */
-.pres-hero-plate {
-    line-height: 1.7;
-    padding-block: clamp(26px, 4vw, 46px);
-    color: #fff;
+.pres-portrait figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 20px 18px;
     background: linear-gradient(135deg, #0d2144 0%, #0a1628 100%);
     border-block-start: 3px solid var(--bnr-gold-300, #f0d080);
+    color: #fff;
 }
 
 .pres-eyebrow {
-    margin: 0 0 10px;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 2px;
     color: var(--bnr-gold-300, #f0d080);
 }
-/* خط طلایی کوتاه پیش از برچسب — همان زبان بصری سربرگ سایت */
-.pres-eyebrow::before {
-    content: "";
-    display: inline-block;
-    inline-size: 26px;
-    block-size: 2px;
-    margin-inline-end: 10px;
-    vertical-align: middle;
-    background: var(--bnr-gold-300, #f0d080);
-}
 
 .pres-name {
-    margin: 0;
-    font-size: clamp(24px, 3.6vw, 44px);
+    font-size: clamp(19px, 2.4vw, 27px);
     font-weight: 800;
-    line-height: 1.24;
+    line-height: 1.3;
     text-wrap: balance;
 }
 
 .pres-title {
-    margin: 10px 0 0;
-    font-size: clamp(13.5px, 1.5vw, 17px);
-    line-height: 1.9;
+    font-size: clamp(12.5px, 1.3vw, 15px);
+    line-height: 1.8;
     color: rgba(255, 255, 255, .85);
-    max-inline-size: 52ch;
 }
+
+.pres-wcu-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(16px, 2.4vw, 30px);
+    text-align: center;
+}
+
+.pres-wcu {
+    inline-size: min(100%, 300px);
+    block-size: auto;
+    filter: drop-shadow(0 10px 26px rgba(15, 23, 42, .22));
+}
+
+.pres-duo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.pres-cv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 26px;
+    border-radius: 10px;
+    background: var(--primary, #1a3a6b);
+    border: 1px solid var(--primary, #1a3a6b);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.pres-cv-btn:hover { background: #142f57; color: #fff; }
+.pres-cv-btn:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: 3px; }
 
 /* نشانی سایت: لاتین، چپ‌به‌راست، و کامل. کسی که می‌خواهد آن را
    یادداشت کند باید خودِ نشانی را ببیند، نه یک برچسب فارسی. */
@@ -2748,326 +2801,170 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    margin-block-start: 20px;
-    padding: 11px 18px;
+    padding: 12px 22px;
     border-radius: 10px;
-    border: 1px solid rgba(240, 208, 128, .5);
-    background: rgba(240, 208, 128, .12);
-    color: var(--bnr-gold-300, #f0d080);
+    border: 1px solid var(--bnr-gold-300, #f0d080);
+    background: rgba(240, 208, 128, .16);
+    color: #8a6a12;
     text-decoration: none;
-    transition: background .16s ease, border-color .16s ease;
+    transition: background .16s ease;
 }
-.pres-hero-url:hover {
-    background: rgba(240, 208, 128, .22);
-    border-color: var(--bnr-gold-300, #f0d080);
-    color: #fff;
-}
-.pres-hero-url:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.pres-hero-url:hover { background: rgba(240, 208, 128, .3); color: #6d520a; }
+.pres-hero-url:focus-visible { outline: 2px solid #8a6a12; outline-offset: 3px; }
 
 .pres-hero-url-text {
-    font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: clamp(13px, 1.5vw, 16px);
-    font-weight: 600;
+    font-family: Arial, "Segoe UI", Roboto, sans-serif;
+    font-size: clamp(13px, 1.4vw, 15.5px);
+    font-weight: 700;
     letter-spacing: .3px;
     overflow-wrap: anywhere;
 }
 
-/* ورود آرام نوار نام. عکس دست‌نخورده می‌ماند: محو کردن یک تصویر
-   تمام‌عرض روی اتصال کند، بدتر از نبودنش است. */
-@media (prefers-reduced-motion: no-preference) {
-    .pres-hero-plate { animation: pres-rise .6s var(--easing-standard, ease) both; }
-}
+[data-theme="dark"] .pres-hero-url { color: var(--bnr-gold-300, #f0d080); }
 
-@keyframes pres-rise {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: none; }
-}
+/* ── ارتباط با ریاست: ردیف افقی، هر کارت با رنگ خودش ────────
+   سند اصلاحات صریحاً «به شکل افقی و در رنگ‌بندی‌های مختلف» خواسته
+   است. رنگ‌ها فقط روی نوار کناری و آیکون می‌نشینند، نه روی زمینهٔ
+   متن — متن تیره روی پنج زمینهٔ رنگی، پنج مسئلهٔ کنتراست است. */
+.pres-contact-band { background: var(--bg-light, #f7f8fa); }
 
-/* ── نوار پرش ── */
-.pres-jump {
-    position: sticky;
-    inset-block-start: 0;
-    z-index: 20;
-    background: var(--bg-white, #fff);
-    border-block-end: 1px solid var(--border, #e5e7eb);
-    box-shadow: 0 2px 10px rgba(15, 23, 42, .05);
-}
-
-.pres-jump-row {
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-block: 6px;
-}
-.pres-jump-row::-webkit-scrollbar { display: none; }
-
-.pres-jump-row a {
-    flex: 0 0 auto;
-    padding: 9px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    color: var(--gray-700, #495057);
-    text-decoration: none;
-    white-space: nowrap;
-}
-.pres-jump-row a:hover { background: var(--bg-light, #f1f3f5); color: var(--primary, #1a3a6b); }
-.pres-jump-row a:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: -2px; }
-
-/* ── بدنه: دو ستون ─────────────────────────────────────────
-   کارت تماس از جریان عمودی بیرون می‌آید و کنار می‌نشیند. پیش از
-   این ته صفحه بود و کسی که فقط شمارهٔ دفتر را می‌خواست باید کل
-   سوابق را رد می‌کرد. */
-.pres-layout {
+.pres-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: clamp(24px, 3vw, 48px);
-    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
 }
 
-.pres-main { min-inline-size: 0; max-inline-size: 74ch; }
-
-.pres-aside { position: sticky; inset-block-start: 84px; }
-
-.pres-card {
-    padding: 22px;
-    border: 1px solid var(--border, #e5e7eb);
+.pres-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 22px 16px;
     border-radius: 14px;
     background: var(--bg-white, #fff);
-    box-shadow: 0 6px 22px rgba(15, 23, 42, .06);
+    border: 1px solid var(--border, #e5e7eb);
+    border-block-start: 4px solid var(--tile, #1a3a6b);
+    color: inherit;
+    text-align: center;
+    text-decoration: none;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.pres-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px -18px rgba(15, 23, 42, .55);
+    color: inherit;
+}
+.pres-tile:focus-visible { outline: 2px solid var(--tile); outline-offset: 2px; }
+
+.pres-tile i {
+    inline-size: 42px;
+    block-size: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tile) 14%, transparent);
+    color: var(--tile);
+    font-size: 17px;
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+    .pres-tile i { background: rgba(26, 58, 107, .12); }
 }
 
-.pres-card-title {
-    margin: 0 0 16px;
-    font-size: 16px;
+.pres-tile-label { font-size: 12px; color: var(--gray-600, #6c757d); }
+.pres-tile-value {
+    font-size: 14.5px;
     font-weight: 700;
-    color: var(--primary, #1a3a6b);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
 }
-.pres-card-title i { margin-inline-end: 6px; opacity: .7; }
 
-/* در ستون باریک، کارت‌های تماس زیر هم می‌روند */
-.pres-aside .pres-contact-grid { grid-template-columns: 1fr; }
-.pres-aside .pres-links { flex-direction: column; }
-.pres-aside .pres-link { justify-content: center; }
+.pres-tile-1 { --tile: #1a6f5c; }
+.pres-tile-2 { --tile: #1a3a6b; }
+.pres-tile-3 { --tile: #a3671b; }
+.pres-tile-4 { --tile: #6b3f8f; }
+.pres-tile-5 { --tile: #a33b4e; }
 
-.pres-block { margin-block-end: 40px; scroll-margin-block-start: 84px; }
+[data-theme="dark"] .pres-tile { background: var(--bg-white); }
+[data-theme="dark"] .pres-tile-1 { --tile: #4fd1ad; }
+[data-theme="dark"] .pres-tile-2 { --tile: #7fb2f0; }
+[data-theme="dark"] .pres-tile-3 { --tile: #eab464; }
+[data-theme="dark"] .pres-tile-4 { --tile: #c39ce8; }
+[data-theme="dark"] .pres-tile-5 { --tile: #f08a9c; }
 
-.pres-h2 {
-    font-size: 19px;
-    font-weight: 700;
-    color: var(--primary, #1a3a6b);
-    margin-block-end: 16px;
-    padding-block-end: 10px;
-    border-block-end: 2px solid rgba(26, 58, 107, .12);
+@media print {
+    .pres-tile { break-inside: avoid; }
 }
-.pres-h2 i { margin-inline-end: 6px; opacity: .7; }
 
-/* ── زبانه‌های سوابق ───────────────────────────────────────
-   بدون جاوااسکریپت هیچ‌کدام از این‌ها ساخته نمی‌شوند و سه بخش مثل
-   قبل زیر هم باز می‌مانند — پس صفحه هرگز خالی نمی‌ماند. */
-.pres-records { margin-block-end: 40px; scroll-margin-block-start: 84px; }
 
-.pres-tablist {
+/* زیرمجموعهٔ هر معاونت در منو — یک پله تورفته و کمی کوچک‌تر، تا
+   رابطهٔ «زیرِ» دیده شود بدون ساختن منوی تودرتو که روی موبایل
+   عملاً باز نمی‌شود. */
+.nav-dd-sub {
+    padding-inline-start: 30px !important;
+    font-size: 12.5px !important;
+    opacity: .82;
+}
+.nav-dd-sub:hover, .nav-dd-sub:focus { opacity: 1; }
+
+/* ── کارت گروه: مدیر گروه با عکس ─────────────────────────── */
+.grp-head {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-block-end: 20px;
-    padding: 5px;
+    align-items: center;
+    gap: 10px;
+    margin-block-end: 12px;
+    padding: 8px 10px;
     border-radius: 12px;
     background: var(--bg-light, #f1f3f5);
 }
 
-.pres-tab {
-    flex: 1 1 auto;
-    padding: 11px 16px;
-    border: none;
-    border-radius: 9px;
-    background: transparent;
-    color: var(--gray-700, #495057);
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background .16s ease, color .16s ease;
-}
-.pres-tab i { margin-inline-end: 5px; opacity: .65; }
-.pres-tab:hover { color: var(--primary, #1a3a6b); }
-
-.pres-tab.is-on {
-    background: var(--bg-white, #fff);
-    color: var(--primary, #1a3a6b);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, .1);
-}
-.pres-tab.is-on i { opacity: 1; }
-.pres-tab:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: -2px; }
-
-.pres-panel { margin-block-end: 0; }
-
-@media (max-width: 991.98px) {
-    .pres-layout { grid-template-columns: 1fr; }
-    .pres-main { max-inline-size: none; }
-    /* روی موبایل چسبیدن کارت یعنی نصف صفحه همیشه اشغال است */
-    .pres-aside { position: static; }
-    .pres-aside .pres-contact-grid {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-    .pres-aside .pres-links { flex-direction: row; }
-}
-
-.pres-prose { font-size: 15px; line-height: 2.1; color: var(--gray-700, #495057); }
-.pres-prose p:last-child { margin-block-end: 0; }
-
-.pres-quote {
-    position: relative;
-    margin: 0;
-    padding: 26px 30px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(26, 58, 107, .05), rgba(26, 58, 107, .02));
-    border-inline-start: 4px solid var(--primary, #1a3a6b);
-}
-.pres-quote p {
-    margin: 0;
-    font-size: 15.5px;
-    line-height: 2.2;
-    color: var(--gray-800, #343a40);
-}
-.pres-quote footer {
-    margin-block-start: 14px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--primary, #1a3a6b);
-}
-.pres-quote-mark {
-    position: absolute;
-    inset-block-start: 14px;
-    inset-inline-end: 18px;
-    font-size: 30px;
-    color: rgba(26, 58, 107, .1);
-}
-
-/* ── فهرست سوابق ── */
-.pres-timeline {
-    list-style: none;
-    margin: 0;
-    padding-inline-start: 22px;
-    border-inline-start: 2px solid rgba(26, 58, 107, .14);
-}
-.pres-timeline li {
-    position: relative;
-    padding-block: 4px;
-    margin-block-end: 14px;
-    font-size: 14.5px;
-    line-height: 1.95;
-    color: var(--gray-700, #495057);
-}
-.pres-timeline li::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: -29px;
-    inset-block-start: 13px;
-    inline-size: 11px;
-    block-size: 11px;
+.grp-head-photo {
+    flex: 0 0 auto;
+    inline-size: 52px;
+    block-size: 52px;
     border-radius: 50%;
-    background: var(--bg-white, #fff);
-    border: 2px solid var(--primary, #1a3a6b);
+    object-fit: cover;
+    border: 2px solid var(--bnr-gold-300, #f0d080);
 }
-.pres-timeline li:last-child { margin-block-end: 0; }
 
-.pres-tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.pres-tags li {
-    padding: 7px 15px;
-    border-radius: 999px;
-    background: rgba(26, 58, 107, .07);
+.grp-head-empty {
+    display: grid;
+    place-items: center;
+    background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
+    color: rgba(255, 255, 255, .8);
+    font-size: 20px;
+}
+
+.grp-head-text { display: flex; flex-direction: column; min-inline-size: 0; }
+.grp-head-role { font-size: 11.5px; color: var(--gray-600, #6c757d); }
+.grp-head-name { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+
+[data-theme="dark"] .grp-head { background: rgba(255, 255, 255, .05); }
+
+/* ── هیات امنا و هیات موسس: نام‌ها خواناتر و رسمی‌تر ───────
+   نسخهٔ قبلی نام را با همان خاکستریِ متن معمولی می‌نوشت و کارت‌ها
+   از هم تفکیک نمی‌شدند. نام حالا تیره و ضخیم است و سمت زیرش با
+   رنگ طلایی موسسه — همان زبان بصری سربرگ. */
+.board-name {
+    font-size: clamp(15px, 1.7vw, 18px);
+    font-weight: 800;
+    line-height: 1.6;
     color: var(--primary, #1a3a6b);
-    font-size: 13px;
-    font-weight: 600;
+    text-wrap: balance;
 }
 
-/* ── ارتباط ── */
-.pres-contact-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 12px;
+.board-role {
+    display: inline-block;
+    margin-block-start: 6px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(201, 168, 76, .14);
+    color: #8a6a12;
+    font-size: 12.5px;
+    font-weight: 700;
 }
 
-.pres-contact {
-    display: grid;
-    grid-template-columns: 22px 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 10px;
-    align-items: center;
-    padding: 14px 16px;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 12px;
-    background: var(--bg-white, #fff);
-    text-decoration: none;
-    color: inherit;
-    transition: border-color .18s ease, box-shadow .18s ease;
-}
-.pres-contact:hover {
-    border-color: var(--primary, #1a3a6b);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, .07);
-    color: inherit;
-}
-.pres-contact i { grid-row: 1 / 3; color: var(--primary, #1a3a6b); font-size: 17px; }
-.pres-contact-label { font-size: 11.5px; color: var(--gray-600, #6c757d); }
-.pres-contact-value { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
-.pres-contact-static { cursor: default; }
-.pres-contact-static:hover { border-color: var(--border, #e5e7eb); box-shadow: none; }
+.board-meta { font-size: 13px; line-height: 1.9; color: var(--gray-700, #495057); }
 
-.pres-links { display: flex; flex-wrap: wrap; gap: 10px; margin-block-start: 18px; }
-
-.pres-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 10px;
-    border: 1px solid var(--border, #e5e7eb);
-    background: var(--bg-white, #fff);
-    color: var(--gray-800, #343a40);
-    font-size: 13.5px;
-    font-weight: 600;
-    text-decoration: none;
-}
-.pres-link:hover { border-color: var(--primary, #1a3a6b); color: var(--primary, #1a3a6b); }
-
-.pres-link-main {
-    background: var(--primary, #1a3a6b);
-    border-color: var(--primary, #1a3a6b);
-    color: #fff;
-}
-.pres-link-main:hover { background: #142f57; border-color: #142f57; color: #fff; }
-.pres-link-out { font-size: 11.5px; opacity: .7; }
-
-.pres-vcard {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-block-start: 16px;
-    font-size: 13px;
-    color: var(--gray-600, #6c757d);
-    text-decoration: none;
-}
-.pres-vcard:hover { color: var(--primary, #1a3a6b); text-decoration: underline; }
-
-.pres-deputies { background: var(--bg-light, #f7f8fa); }
-
-/* حالت تیره */
-[data-theme="dark"] .pres-crumb { background: var(--bg-light); }
-[data-theme="dark"] .pres-jump { background: var(--bg-white); }
-[data-theme="dark"] .pres-contact,
-[data-theme="dark"] .pres-link { background: var(--bg-white); }
-
-@media (max-width: 767.98px) {
-    .pres-block { margin-block-end: 32px; }
-}
-
-@media print {
-    .pres-jump, .pres-vcard, .pres-areas { display: none; }
-    .pres-hero { background: none; }
-    .pres-hero-img { max-block-size: 100mm; inline-size: auto; }
-    .pres-hero-plate { background: none; color: #000; padding-block: 12px; }
-    .pres-hero-url { border-color: #999; background: none; color: #000; }
-}
+[data-theme="dark"] .board-name { color: #cfe0f5; }
+[data-theme="dark"] .board-role { background: rgba(240, 208, 128, .16); color: var(--bnr-gold-300, #f0d080); }
+[data-theme="dark"] .board-meta { color: #b9c9db; }

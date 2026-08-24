@@ -418,6 +418,14 @@ class AcademicGroup(models.Model):
     location = models.CharField(_('محل'), max_length=200, blank=True)
     established_year = models.CharField(_('سال تأسیس'), max_length=10, blank=True)
     image = models.ImageField(_('تصویر'), upload_to='groups/', blank=True, null=True)
+    # ── تحصیلات تکمیلی (بند ۱۷ سند اصلاحات موسسه) ──
+    has_graduate = models.BooleanField(
+        _('دارای تحصیلات تکمیلی'), default=False,
+        help_text=_('اگر تیک بخورد، زیر منوی «تحصیلات تکمیلی» می‌آید.'))
+    graduate_order = models.PositiveIntegerField(
+        _('ترتیب در تحصیلات تکمیلی'), default=0,
+        help_text=_('ترتیب نمایش در همان زیرمنو؛ عدد کوچک‌تر بالاتر.'))
+
     order = models.PositiveIntegerField(_('ترتیب'), default=0)
     is_active = models.BooleanField(_('فعال'), default=True)
 

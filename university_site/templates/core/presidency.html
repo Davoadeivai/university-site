@@ -2,25 +2,23 @@
 {% load static %}
 
 {% comment %}
-صفحهٔ ریاست موسسه.
+صفحهٔ ریاست موسسه — مطابق سند اصلاحات موسسه.
 
-چیدمان عمداً «عکس تمام‌عرض، بعد همه‌چیز زیرش» است: چهرهٔ رئیس اولین
-چیزی است که دیده می‌شود و بقیه در یک ستون خوانا پشت سرش می‌آید. طرح
-قبلی عکس را در یک دایرهٔ ۲۰۰ پیکسلی کنار متن می‌گذاشت که نه چهره را
-نشان می‌داد نه متن را.
+چیدمان: عکس رئیس در یک سو، نشان کلاس جهانی در سوی دیگر؛ زیرشان
+رزومه و نشانی وب‌سایت؛ و در پایان «ارتباط با ریاست» به‌صورت افقی.
+
+پیام رئیس، معرفی و فهرست سوابق عمداً برداشته شده‌اند: موسسه خواست
+صفحه فقط همین چند چیز را داشته باشد. فیلدهایشان در پنل سر جای خود
+می‌مانند، پس اگر روزی خواستند برگردند، داده‌ای از دست نرفته.
 {% endcomment %}
 
 {% block og_title %}{% if office.president_name %}{{ office.president_name }} — ریاست موسسه{% else %}ریاست موسسه{% endif %}{% endblock %}
-{% block og_description %}{% if office.president_title %}{{ office.president_title }} — {% endif %}معرفی، سوابق و راه‌های ارتباط با ریاست موسسه آموزش عالی علامه امینی.{% endblock %}
+{% block og_description %}{% if office.president_title %}{{ office.president_title }} — {% endif %}رزومه و راه‌های ارتباط با ریاست موسسه آموزش عالی علامه امینی.{% endblock %}
 {% block og_image %}{% if office.president_photo %}{{ request.scheme }}://{{ request.get_host }}{{ office.president_photo.url }}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {% block content %}
 
 {% if office %}
-{% comment %}
-دادهٔ ساختاریافته: گوگل رئیس مؤسسه را یک شخص واقعی می‌شناسد، نه یک
-تکه متن در میان صفحه.
-{% endcomment %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -30,8 +28,7 @@
   "honorificPrefix": "{{ office.president_title|escapejs }}"{% endif %}{% if office.president_photo %},
   "image": "{{ request.scheme }}://{{ request.get_host }}{{ office.president_photo.url }}"{% endif %}{% if office.president_email %},
   "email": "{{ office.president_email|escapejs }}"{% endif %}{% if office.president_website %},
-  "url": "{{ office.president_website|escapejs }}"{% endif %}{% if office.orcid_url %},
-  "identifier": "{{ office.orcid_url|escapejs }}"{% endif %},
+  "url": "{{ office.president_website|escapejs }}"{% endif %},
   "worksFor": {
     "@type": "CollegeOrUniversity",
     "name": "موسسه آموزش عالی علامه امینی",
@@ -51,214 +48,105 @@
 </nav>
 
 {% if office %}
-<header class="pres-hero{% if not office.president_photo %} pres-hero-empty{% endif %}">
-    {% if office.president_photo %}
-    {% comment %}
-    عکس همان‌طور که آپلود شده: تمام‌عرض، با نسبت خودش، بدون برش و
-    بدون حاشیه. width و height از ابعاد واقعی فایل می‌آیند تا مرورگر
-    پیش از رسیدن تصویر جایش را کنار بگذارد و صفحه هنگام بارگذاری
-    تکان نخورد.
-    {% endcomment %}
-    <img src="{{ office.president_photo.url }}"
-         alt="{{ office.president_name }}، رئیس موسسه آموزش عالی علامه امینی"
-         class="pres-hero-img" fetchpriority="high" decoding="async"
-         {% if office.photo_size %}width="{{ office.photo_size.0 }}" height="{{ office.photo_size.1 }}"{% endif %}>
-    {% else %}
-    <div class="pres-hero-placeholder" aria-hidden="true">
-        <i class="fas fa-user-tie"></i>
-    </div>
-    {% endif %}
-
-    <div class="pres-hero-plate">
-        <div class="container">
-            <p class="pres-eyebrow">ریاست موسسه</p>
-            <h1 class="pres-name">{{ office.president_name|default:'ریاست موسسه' }}</h1>
-            {% if office.president_title %}
-            <p class="pres-title">{{ office.president_title }}</p>
-            {% endif %}
-
-            {% if office.president_website %}
-            {% comment %}
-            نشانی عمداً کامل و لاتین نوشته می‌شود، نه پشت یک برچسب
-            فارسی: کسی که می‌خواهد آن را یادداشت کند یا در گوشی
-            بزند، باید خودِ نشانی را ببیند.
-            {% endcomment %}
-            <a class="pres-hero-url" dir="ltr"
-               href="{{ office.president_website }}"
-               target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-globe" aria-hidden="true"></i>
-                <span class="pres-hero-url-text">{{ office.president_website }}</span>
-                <i class="fas fa-arrow-up-right-from-square pres-link-out" aria-hidden="true"></i>
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</header>
-
-{% comment %}
-نوار چسبان: صفحه بلند است و بدون این، خواننده برای رسیدن از «پیام»
-به «ارتباط» باید کل سوابق را اسکرول کند.
-{% endcomment %}
-<nav class="pres-jump" aria-label="بخش‌های این صفحه">
-    <div class="container pres-jump-row">
-        {% if office.president_message %}<a href="#message">پیام رئیس</a>{% endif %}
-        {% if office.president_bio %}<a href="#bio">معرفی</a>{% endif %}
-        {% if office.education_list %}<a href="#education">سوابق تحصیلی</a>{% endif %}
-        {% if office.resume_list %}<a href="#resume">سوابق اجرایی</a>{% endif %}
-        {% if office.research_list %}<a href="#research">زمینه‌های پژوهشی</a>{% endif %}
-        <a href="#contact">ارتباط</a>
-    </div>
-</nav>
-
-<section class="section pres-body" id="pres-start">
+<section class="section pres-top">
     <div class="container">
-        <div class="pres-layout">
 
-            <div class="pres-main">
-
-                {% if office.president_message %}
-                <article class="pres-block" id="message">
-                    <blockquote class="pres-quote">
-                        <i class="fas fa-quote-right pres-quote-mark" aria-hidden="true"></i>
-                        <p>{{ office.president_message|linebreaksbr }}</p>
-                        <footer>{{ office.president_name }}</footer>
-                    </blockquote>
-                </article>
+        <div class="pres-duo">
+            <figure class="pres-portrait">
+                {% if office.president_photo %}
+                <img src="{{ office.president_photo.url }}"
+                     alt="{{ office.president_name }}، رئیس موسسه آموزش عالی علامه امینی"
+                     fetchpriority="high" decoding="async"
+                     {% if office.photo_size %}width="{{ office.photo_size.0 }}" height="{{ office.photo_size.1 }}"{% endif %}>
+                {% else %}
+                <div class="pres-portrait-empty" aria-hidden="true">
+                    <i class="fas fa-user-tie"></i>
+                </div>
                 {% endif %}
+                <figcaption>
+                    <span class="pres-eyebrow">ریاست موسسه</span>
+                    <span class="pres-name">{{ office.president_name|default:'ریاست موسسه' }}</span>
+                    {% if office.president_title %}
+                    <span class="pres-title">{{ office.president_title }}</span>
+                    {% endif %}
+                </figcaption>
+            </figure>
 
-                {% if office.president_bio %}
-                <article class="pres-block" id="bio">
-                    <h2 class="pres-h2"><i class="fas fa-user" aria-hidden="true"></i> معرفی</h2>
-                    <div class="pres-prose">{{ office.president_bio|linebreaks }}</div>
-                </article>
+            <div class="pres-wcu-cell">
+                {% if site_settings.world_class_logo %}
+                <img src="{{ site_settings.world_class_logo.url }}"
+                     alt="نشان دانشگاه‌ها و مؤسسات آموزش عالی در کلاس جهانی"
+                     class="pres-wcu" decoding="async">
                 {% endif %}
 
                 {% comment %}
-                سه فهرست سابقه پشت سر هم، صفحه را چند برابر بلند می‌کردند
-                در حالی که خواننده معمولاً یکی‌شان را می‌خواهد. جاوااسکریپت
-                این‌ها را به زبانه تبدیل می‌کند؛ اگر اجرا نشود، هر سه مثل
-                قبل زیر هم باز می‌مانند و چیزی از دست نمی‌رود.
+                رزومه و نشانی وب‌سایت — دو چیزی که سند اصلاحات زیر
+                عکس خواسته است.
                 {% endcomment %}
-                <div class="pres-records" data-pres-tabs>
-
-                    {% if office.education_list %}
-                    <article class="pres-block pres-panel" id="education"
-                             data-tab-title="سوابق تحصیلی" data-tab-icon="fa-graduation-cap">
-                        <h2 class="pres-h2"><i class="fas fa-graduation-cap" aria-hidden="true"></i> سوابق تحصیلی</h2>
-                        <ol class="pres-timeline">
-                            {% for item in office.education_list %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                        </ol>
-                    </article>
+                <div class="pres-duo-actions">
+                    {% if office.president_cv %}
+                    <a href="{{ office.president_cv.url }}" class="pres-cv-btn" target="_blank" rel="noopener">
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i> رزومه
+                    </a>
                     {% endif %}
-
-                    {% if office.resume_list %}
-                    <article class="pres-block pres-panel" id="resume"
-                             data-tab-title="سوابق اجرایی" data-tab-icon="fa-briefcase">
-                        <h2 class="pres-h2"><i class="fas fa-briefcase" aria-hidden="true"></i> سوابق اجرایی</h2>
-                        <ol class="pres-timeline">
-                            {% for item in office.resume_list %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                        </ol>
-                    </article>
+                    {% if office.president_website %}
+                    <a class="pres-hero-url" dir="ltr"
+                       href="{{ office.president_website }}"
+                       target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-globe" aria-hidden="true"></i>
+                        <span class="pres-hero-url-text">{{ office.president_website }}</span>
+                    </a>
                     {% endif %}
-
-                    {% if office.research_list %}
-                    <article class="pres-block pres-panel" id="research"
-                             data-tab-title="زمینه‌های پژوهشی" data-tab-icon="fa-flask">
-                        <h2 class="pres-h2"><i class="fas fa-flask" aria-hidden="true"></i> زمینه‌های پژوهشی</h2>
-                        <ul class="pres-tags">
-                            {% for item in office.research_list %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                        </ul>
-                    </article>
-                    {% endif %}
-
                 </div>
             </div>
+        </div>
 
-            {% comment %}
-            کارت تماس در ستون کناری می‌نشیند و روی دسکتاپ همراه اسکرول
-            می‌آید. پیش از این ته صفحه بود: کسی که فقط شمارهٔ دفتر را
-            می‌خواست، باید کل سوابق را رد می‌کرد.
-            {% endcomment %}
-            <aside class="pres-aside" id="contact">
-                <div class="pres-card">
-                    <h2 class="pres-card-title">
-                        <i class="fas fa-address-card" aria-hidden="true"></i> ارتباط با ریاست
-                    </h2>
+    </div>
+</section>
 
-                    <div class="pres-contact-grid">
-                        {% if office.president_email %}
-                        <a class="pres-contact" href="mailto:{{ office.president_email }}">
-                            <i class="fas fa-envelope" aria-hidden="true"></i>
-                            <span class="pres-contact-label">ایمیل</span>
-                            <span class="pres-contact-value" dir="ltr">{{ office.president_email }}</span>
-                        </a>
-                        {% endif %}
-                        {% if office.president_phone %}
-                        <a class="pres-contact" href="tel:{{ office.president_phone }}">
-                            <i class="fas fa-phone" aria-hidden="true"></i>
-                            <span class="pres-contact-label">تلفن</span>
-                            <span class="pres-contact-value" dir="ltr">{{ office.president_phone }}</span>
-                        </a>
-                        {% endif %}
-                        {% if office.office_hours %}
-                        <div class="pres-contact pres-contact-static">
-                            <i class="fas fa-clock" aria-hidden="true"></i>
-                            <span class="pres-contact-label">ساعات مراجعه</span>
-                            <span class="pres-contact-value">{{ office.office_hours }}</span>
-                        </div>
-                        {% endif %}
-                        {% if office.office_address %}
-                        <div class="pres-contact pres-contact-static">
-                            <i class="fas fa-location-dot" aria-hidden="true"></i>
-                            <span class="pres-contact-label">نشانی دفتر</span>
-                            <span class="pres-contact-value">{{ office.office_address }}</span>
-                        </div>
-                        {% endif %}
-                    </div>
+{% comment %}
+ارتباط با ریاست — افقی و هر کارت با رنگ خودش، مطابق سند اصلاحات.
+{% endcomment %}
+<section class="section pres-contact-band" id="contact">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">ارتباط با ریاست</h2>
 
-                    {% if office.president_website or office.president_scholar or office.orcid_url or office.president_cv %}
-                    <div class="pres-links">
-                        {% if office.president_website %}
-                        <a href="{{ office.president_website }}" class="pres-link pres-link-main"
-                           target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-globe" aria-hidden="true"></i>
-                            {{ office.website_label }}
-                            <i class="fas fa-arrow-up-right-from-square pres-link-out" aria-hidden="true"></i>
-                        </a>
-                        {% endif %}
-                        {% if office.president_scholar %}
-                        <a href="{{ office.president_scholar }}" class="pres-link"
-                           target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-graduation-cap" aria-hidden="true"></i> گوگل اسکولار
-                        </a>
-                        {% endif %}
-                        {% if office.orcid_url %}
-                        <a href="{{ office.orcid_url }}" class="pres-link"
-                           target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-id-badge" aria-hidden="true"></i> ORCID
-                        </a>
-                        {% endif %}
-                        {% if office.president_cv %}
-                        <a href="{{ office.president_cv.url }}" class="pres-link">
-                            <i class="fas fa-file-pdf" aria-hidden="true"></i> دانلود رزومه
-                        </a>
-                        {% endif %}
-                    </div>
-                    {% endif %}
+        <div class="pres-row">
+            {% if office.president_phone %}
+            <a class="pres-tile pres-tile-1" href="tel:{{ office.president_phone }}">
+                <i class="fas fa-phone" aria-hidden="true"></i>
+                <span class="pres-tile-label">تلفن</span>
+                <span class="pres-tile-value" dir="ltr">{{ office.president_phone }}</span>
+            </a>
+            {% endif %}
 
-                    <a href="{% url 'core:presidency_vcard' %}" class="pres-vcard">
-                        <i class="fas fa-address-book" aria-hidden="true"></i>
-                        افزودن به مخاطبان گوشی
-                    </a>
-                </div>
-            </aside>
+            {% if office.president_email %}
+            <a class="pres-tile pres-tile-2" href="mailto:{{ office.president_email }}">
+                <i class="fas fa-envelope" aria-hidden="true"></i>
+                <span class="pres-tile-label">ایمیل</span>
+                <span class="pres-tile-value" dir="ltr">{{ office.president_email }}</span>
+            </a>
+            {% endif %}
 
+            <div class="pres-tile pres-tile-3">
+                <i class="fas fa-calendar-day" aria-hidden="true"></i>
+                <span class="pres-tile-label">روزهای مراجعه</span>
+                <span class="pres-tile-value">{{ office.office_hours|default:'شنبه تا پنجشنبه' }}</span>
+            </div>
+
+            <div class="pres-tile pres-tile-4">
+                <i class="fas fa-building" aria-hidden="true"></i>
+                <span class="pres-tile-label">دفتر ریاست</span>
+                <span class="pres-tile-value">طبقهٔ سوم</span>
+            </div>
+
+            {% if office.office_address %}
+            <div class="pres-tile pres-tile-5">
+                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                <span class="pres-tile-label">نشانی</span>
+                <span class="pres-tile-value">{{ office.office_address }}</span>
+            </div>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -276,47 +164,4 @@
     </div>
 </section>
 {% endif %}
-
-{% if deputies %}
-<section class="section pres-deputies">
-    <div class="container">
-        <h2 class="section-title text-center mb-4">معاونین موسسه</h2>
-        <div class="row g-4">
-            {% for dep in deputies %}
-            <div class="col-md-6 col-lg-4">
-                <div class="dept-card h-100 text-center">
-                    {% if dep.photo %}
-                    <img loading="lazy" decoding="async" src="{{ dep.photo.url }}" alt="{{ dep.full_name }}"
-                         class="rounded-circle border border-3 border-warning mb-3"
-                         style="width:90px;height:90px;object-fit:cover;">
-                    {% else %}
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-3 border-warning mb-3"
-                         style="width:90px;height:90px;background:var(--gradient-primary);">
-                        <i class="fas fa-user text-white" style="font-size:2rem;"></i>
-                    </div>
-                    {% endif %}
-                    <h6 class="dept-title mb-1">{{ dep.full_name }}</h6>
-                    <p class="text-warning fw-semibold mb-1" style="font-size:13px;">{{ dep.get_vice_type_display }}</p>
-                    {% if dep.academic_rank %}<p class="text-muted mb-0" style="font-size:12px;">{{ dep.academic_rank }}</p>{% endif %}
-                    {% if dep.email %}<a href="mailto:{{ dep.email }}" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-envelope"></i></a>{% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<section class="section pres-areas">
-    <div class="container">
-        <h2 class="section-title text-center mb-3">بخش‌های حوزه ریاست</h2>
-        <div class="row g-3">
-            <div class="col-md-4"><a href="{% url 'core:presidency_office' %}" class="btn btn-outline-primary w-100 py-3"><i class="fas fa-door-open me-2"></i>دفتر ریاست</a></div>
-            <div class="col-md-4"><a href="{% url 'core:vices_list' %}" class="btn btn-outline-success w-100 py-3"><i class="fas fa-users-cog me-2"></i>معاونین و معاونت‌ها</a></div>
-            <div class="col-md-4"><a href="{% url 'core:international_office' %}" class="btn btn-outline-info w-100 py-3"><i class="fas fa-globe me-2"></i>دفتر بین‌الملل</a></div>
-            <div class="col-md-6"><a href="{% url 'core:public_relations' %}" class="btn btn-outline-warning w-100 py-3"><i class="fas fa-bullhorn me-2"></i>روابط عمومی</a></div>
-            <div class="col-md-6"><a href="{% url 'core:security_office' %}" class="btn btn-outline-danger w-100 py-3"><i class="fas fa-shield-alt me-2"></i>حراست</a></div>
-        </div>
-    </div>
-</section>
 {% endblock %}

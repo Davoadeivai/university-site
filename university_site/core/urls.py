@@ -55,7 +55,6 @@ urlpatterns = [
     ),
     # حوزه ریاست
     path('ریاست/', views.presidency, name='presidency'),
-    path('ریاست/کارت-تماس.vcf', views.presidency_vcard, name='presidency_vcard'),
     path('دفتر-ریاست/', views.presidency_office, name='presidency_office'),
     path('دفتر-ریاست/<path:slug>/', views.presidency_office_unit, name='presidency_office_unit'),
     path('معاونین/', views.deputies, name='deputies'),

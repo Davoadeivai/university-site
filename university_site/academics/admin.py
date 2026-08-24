@@ -295,9 +295,10 @@ class LaboratoryAdmin(admin.ModelAdmin):
 
 @admin.register(AcademicGroup)
 class AcademicGroupAdmin(admin.ModelAdmin):
-    list_display        = ['name', 'department', 'head', 'majors_count', 'order', 'is_active']
-    list_editable       = ['order', 'is_active']
-    list_filter         = ['department', 'is_active']
+    list_display        = ['name', 'department', 'head', 'majors_count',
+                           'has_graduate', 'order', 'is_active']
+    list_editable       = ['has_graduate', 'order', 'is_active']
+    list_filter         = ['department', 'is_active', 'has_graduate']
     search_fields       = ['name', 'head', 'description', 'research_areas']
     list_select_related = ('department',)
     prepopulated_fields = {'slug': ('name',)}
@@ -315,6 +316,14 @@ class AcademicGroupAdmin(admin.ModelAdmin):
         }),
         ('اطلاعات تماس', {
             'fields': ('phone', 'email', 'location', 'established_year')
+        }),
+        ('تحصیلات تکمیلی', {
+            'fields': ('has_graduate', 'graduate_order'),
+            'description': (
+                'با زدن این تیک، گروه زیر منوی «معاونین ← معاونت آموزشی ← '
+                'تحصیلات تکمیلی» می‌آید. ترتیب را با عدد تعیین کنید؛ '
+                'کوچک‌تر بالاتر.'
+            ),
         }),
     )
 

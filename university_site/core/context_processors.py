@@ -37,13 +37,18 @@ def global_context(request):
             .prefetch_related('groups').order_by('order')
         )
 
-        # معاونت‌ها برای منو — از پایگاه داده، نه فهرست ثابت در قالب.
-        # قبلاً پنج لینک در base.html هاردکد بود: معاونتی که در پنل
-        # غیرفعال می‌شد همچنان در منو می‌ماند، و معاونت تازه هرگز
-        # ظاهر نمی‌شد مگر کسی قالب را دست بزند.
+        # معاونت‌ها برای صفحه‌ها (نه منو). منوی معاونین از بند ۱۳ سند
+        # اصلاحات ترتیب ثابتی دارد و در قالب نوشته شده؛ این فهرست
+        # جاهای دیگری که به داده نیاز دارند را تغذیه می‌کند.
         from core.models import VicePresidency
         nav_vices = list(
             VicePresidency.objects.filter(is_active=True).order_by('vice_type')
+        )
+
+        # گروه‌های دارای تحصیلات تکمیلی — بند ۱۷ سند اصلاحات
+        nav_graduate_groups = list(
+            AcademicGroup.objects.filter(is_active=True, has_graduate=True)
+            .order_by('graduate_order', 'name')
         )
 
         cached = {
@@ -55,6 +60,7 @@ def global_context(request):
             'nav_groups': nav_groups,
             'nav_departments': nav_departments,
             'nav_vices': nav_vices,
+            'nav_graduate_groups': nav_graduate_groups,
         }
         cache.set(CACHE_KEY, cached, _CACHE_TTL)
 

@@ -74,18 +74,22 @@
                         </div>
                         {% endif %}
                     </div>
-                    <!-- Name & Title -->
-                    <h5 class="dept-title mb-1">{{ member.full_name }}</h5>
+                    {% comment %}
+                    نام با رنگ و وزن خودش، و سمت به‌صورت برچسب —
+                    نسخهٔ قبلی هر سه را با یک خاکستری می‌نوشت و
+                    کارت‌ها از هم تفکیک نمی‌شدند.
+                    {% endcomment %}
+                    <h5 class="board-name mb-1">{{ member.full_name }}</h5>
                     {% if member.title %}
-                    <p class="text-warning fw-semibold mb-2" style="font-size:14px;">{{ member.title }}</p>
+                    <p class="mb-2"><span class="board-role">{{ member.title }}</span></p>
                     {% endif %}
                     {% if member.education %}
-                    <p class="text-muted mb-1" style="font-size:13px;">
+                    <p class="board-meta mb-1">
                         <i class="fas fa-graduation-cap me-1"></i> {{ member.education }}
                     </p>
                     {% endif %}
                     {% if member.specialization %}
-                    <p class="text-muted mb-2" style="font-size:13px;">
+                    <p class="board-meta mb-2">
                         <i class="fas fa-briefcase me-1"></i> {{ member.specialization }}
                     </p>
                     {% endif %}

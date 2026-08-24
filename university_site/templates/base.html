@@ -161,10 +161,20 @@
             </span>
         </span>
 
+        {% comment %}
+        نشان کلاس جهانی در دو سوی نام موسسه. اگر در پنل آپلود نشده
+        باشد، هیچ جای خالی‌ای نمی‌ماند — دو span اصلاً رندر نمی‌شوند.
+        {% endcomment %}
         <span class="bnr-name">
+            {% if site_settings.world_class_logo %}
+            <img class="bnr-wcu" src="{{ site_settings.world_class_logo.url }}"
+                 alt="" aria-hidden="true" width="64" height="64">
+            {% endif %}
             <span class="bnr-fa">{{ site_settings.university_name_fa|default:"موسسه آموزش عالی علامه امینی" }}</span>
-            <span class="bnr-rule" aria-hidden="true"><i></i><b></b><i></i></span>
-            <span class="bnr-sub">دانش · مهارت · آینده</span>
+            {% if site_settings.world_class_logo %}
+            <img class="bnr-wcu" src="{{ site_settings.world_class_logo.url }}"
+                 alt="" aria-hidden="true" width="64" height="64">
+            {% endif %}
         </span>
 
         <span class="bnr-state">
@@ -210,9 +220,7 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">معرفی و تاریخچه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم انداز و اهداف</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_founders' %}">هیات موسس دانشگاه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:board_trustees' %}">هیات امناء دانشگاه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:people' %}">اعضای موسسه</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:people' %}">هیئت علمی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:staff' %}">دفترچه تلفن و مسئولان</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:city_behnammir' %}">آشنایی با شهر بابلسر</a></li>
@@ -233,32 +241,51 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-jazb' %}">دبیرخانه هیأت اجرایی جذب هیأت علمی</a></li>
 
-
+                        {% comment %}
+                        «دفتر همکاری‌های علمی و بین‌المللی» به درخواست
+                        موسسه به زیرمجموعهٔ معاونت پژوهشی منتقل شد و
+                        اینجا نمی‌آید.
+                        {% endcomment %}
                         <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">واحدهای وابسته</span></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:international_office' %}">دفتر همکاریهای علمی و بین المللی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:public_relations' %}">مدیریت روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:security_office' %}">حراست</a></li>
                     </ul>
                 </li>
 
                 {% comment %}
-                معاونت‌ها منوی خودشان را دارند، نه یک بخش داخل «حوزه
-                ریاست». هفت معاونت زیر یک زیرمنوی سه‌بخشی گم می‌شدند و
-                برای رسیدن به هرکدام باید کل فهرست ریاست مرور می‌شد.
+                معاونین منوی خودشان را دارند و ترتیبشان همانی است که
+                سند اصلاحات خواسته: آموزشی، پژوهشی، اداری و مالی،
+                دانشجویی، فنی و عمرانی. زیرمجموعهٔ هر معاونت هم زیر
+                همان می‌آید — «تحصیلات تکمیلی» زیر آموزشی و «دفتر
+                همکاری‌های علمی» زیر پژوهشی.
                 {% endcomment %}
                 <li class="nav-item dropdown">
                     <a class="nav-link-flat dropdown-toggle" href="{% url 'core:vices_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="fas fa-users-cog" style="font-size:13px;margin-left:3px;"></i> معاونت‌ها
+                        <i class="fas fa-users-cog" style="font-size:13px;margin-left:3px;"></i> معاونین
                     </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'core:vices_list' %}">همهٔ معاونین و معاونت‌ها</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        {# فهرست از پایگاه داده می‌آید تا با پنل ادمین یکی بماند #}
-                        {% for v in nav_vices %}
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' v.vice_type %}">{{ v.get_vice_type_display }}</a></li>
-                        {% empty %}
-                        <li><span class="dropdown-item nav-dd-item" style="opacity:.6;">معاونتی ثبت نشده</span></li>
+
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'education' %}">۱. معاونت آموزشی</a></li>
+                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:graduate_studies' %}">— تحصیلات تکمیلی</a></li>
+                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:graduate_manager' %}">— مدیر تحصیلات تکمیلی</a></li>
+                        {% comment %}
+                        گروه‌های دارای تحصیلات تکمیلی — بند ۱۷ سند
+                        اصلاحات. ترتیبشان از پنل می‌آید، نه از قالب.
+                        {% endcomment %}
+                        {% for g in nav_graduate_groups %}
+                        <li><a class="dropdown-item nav-dd-sub" href="{{ g.get_absolute_url }}">— {{ g.name }}</a></li>
                         {% endfor %}
+                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:groups_list' %}">— همهٔ گروه‌های آموزشی</a></li>
+
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'research' %}">۲. معاونت پژوهشی</a></li>
+                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:international_office' %}">— دفتر همکاری‌های علمی و بین‌المللی</a></li>
+                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:resources' %}">— منابع پژوهشی</a></li>
+
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'admin_finance' %}">۳. معاونت اداری و مالی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'student' %}">۴. معاونت دانشجویی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'construction' %}">۵. معاونت فنی و عمرانی</a></li>
                     </ul>
                 </li>
 
@@ -277,18 +304,6 @@
                         {% endif %}
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'directory:curricula' %}">سرفصل مصوب رشته‌ها</a></li>
-                    </ul>
-                </li>
-
-                <!-- تحصیلات تکمیلی — منوی سطح‌بالا مطابق سایت رسمی -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link-flat dropdown-toggle" href="{% url 'core:graduate_studies' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="fas fa-graduation-cap" style="font-size:13px;margin-left:3px;"></i> تحصیلات تکمیلی
-                    </a>
-                    <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_manager' %}">مدیر تحصیلات تکمیلی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:graduate_news' %}">اخبار تحصیلات تکمیلی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:documents' %}?degree=master">آیین‌نامه‌ها و فرم‌ها</a></li>
                     </ul>
                 </li>
 

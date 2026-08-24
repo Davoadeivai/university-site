@@ -31,6 +31,11 @@ class SiteSettings(models.Model):
     )
     logo = models.ImageField(_('لوگو'), upload_to='site/', blank=True, null=True)
     favicon = models.ImageField(_('فاویکون'), upload_to='site/', blank=True, null=True)
+    world_class_logo = models.ImageField(
+        _('نشان کلاس جهانی (WCU)'), upload_to='site/', blank=True, null=True,
+        help_text=_(
+            'در دو سوی عنوان سربرگ و در صفحهٔ ریاست نمایش داده می‌شود. '
+            'ترجیحاً PNG با پس‌زمینهٔ شفاف و مربع.'))
     address = models.TextField(_('آدرس'), blank=True)
     phone = models.CharField(_('تلفن'), max_length=50, blank=True)
     fax = models.CharField(_('فکس'), max_length=50, blank=True)

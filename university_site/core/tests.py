@@ -257,15 +257,39 @@ class HomeSectionTests(TestCase):
         self.assertGreater(light, dark,
                            'تعریف روشن باید بعد از تیره باشد تا ویژگی معنا پیدا کند')
 
-    def test_banner_content_is_unchanged(self):
-        """بازطراحی بنر فقط ظاهری است؛ متن‌ها نباید عوض شده باشند."""
+    def test_banner_keeps_its_identity(self):
+        """نام موسسه و نشان‌های رسمی باید در بنر بمانند."""
         body = self.client.get(reverse('core:home')).content.decode()
         for text in ('موسسه آموزش عالی علامه امینی',
-                     'دانش · مهارت · آینده',
                      'وزارت علوم، تحقیقات و فناوری',
                      'Allameh Amini'):
             self.assertIn(text, body, 'از بنر افتاده: %s' % text)
         self.assertNotIn('علامه امینی بابلسر', body)
+
+    def test_the_slogan_is_gone(self):
+        """موسسه خواست شعار «دانش · مهارت · آینده» برداشته شود."""
+        body = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn('دانش · مهارت · آینده', body)
+        self.assertNotIn('bnr-sub', body)
+
+    def test_the_name_is_set_in_arial(self):
+        """سند اصلاحات فونت Arial و اندازهٔ درشت‌تر خواسته است."""
+        from pathlib import Path
+        from django.conf import settings as dj
+        css = (Path(dj.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        start = css.index(chr(10) + '.bnr-fa {')
+        block = css[start:css.index('}', start)]
+        self.assertIn('font-family: Arial', block)
+
+    def test_the_world_class_logo_flanks_the_name(self):
+        """نشان کلاس جهانی باید در هر دو سوی نام بیاید، نه یک سو."""
+        from core.models import SiteSettings
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+        body = self.client.get(reverse('core:home')).content.decode()
+        banner = body.split('bnr-name')[1].split('bnr-state')[0]
+        self.assertEqual(banner.count('bnr-wcu'), 2)
 
     def test_floating_buttons_do_not_overlap_on_mobile(self):
         """دکمهٔ «برو بالا» و دکمهٔ گفت‌وگو نباید روی هم بیفتند."""
@@ -475,7 +499,12 @@ class LeadershipSectionTests(TestCase):
         self.assertEqual(res.status_code, 301)
         self.assertIn(reverse('core:vices_list'), res['Location'])
 
-    def test_presidency_lists_vices_from_the_model_that_has_data(self):
+    def test_presidency_page_no_longer_lists_the_deputies(self):
+        """بند ۹ سند اصلاحات: جز «ارتباط با ریاست» چیزی نماند.
+
+        معاونان صفحهٔ خودشان را دارند و در منوی اصلی هم هستند؛ تکرار
+        فهرستشان اینجا همان چیزی بود که موسسه خواست برداشته شود.
+        """
         from core.models import VicePresidency
 
         VicePresidency.objects.update_or_create(
@@ -483,7 +512,10 @@ class LeadershipSectionTests(TestCase):
             defaults={'full_name': 'دکتر آزمایشی', 'is_active': True},
         )
         body = self.client.get(reverse('core:presidency')).content.decode()
-        self.assertIn('دکتر آزمایشی', body)
+        self.assertNotIn('دکتر آزمایشی', body)
+        # ولی صفحهٔ معاونان همچنان نشانش می‌دهد
+        listed = self.client.get(reverse('core:vices_list')).content.decode()
+        self.assertIn('دکتر آزمایشی', listed)
 
     def test_presidency_office_is_a_real_singleton(self):
         """رکورد دوم روی سایت دیده نمی‌شود، پس ساختنش باید بسته باشد."""
@@ -554,9 +586,18 @@ class PresidencyUnitTests(TestCase):
         self.assertIn('شرح وظایف', body)
         self.assertIn('ساختمان مرکزی', body)
 
-    def test_president_message_reaches_the_page(self):
+    def test_president_message_is_kept_but_not_shown(self):
+        """بند ۹ سند اصلاحات: پیام رئیس از صفحه برداشته شود.
+
+        فیلدش در پنل می‌ماند تا اگر روزی خواستند برگردد، متنی از
+        دست نرفته باشد.
+        """
+        from core.models import PresidencyOffice
+
         body = self.client.get(reverse('core:presidency')).content.decode()
-        self.assertIn('خانهٔ اندیشه', body)
+        self.assertNotIn('خانهٔ اندیشه', body)
+        self.assertIn('خانهٔ اندیشه',
+                      PresidencyOffice.objects.first().president_message)
 
     def test_seed_does_not_overwrite_admin_edits(self):
         import io
@@ -702,14 +743,19 @@ class VicesNavigationTests(TestCase):
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertNotIn('fa-sitemap" style="font-size:13px;margin-left:3px;"></i> معاونت ها', body)
 
-    def test_vices_appear_inside_the_presidency_menu(self):
+    def test_deputies_have_their_own_top_level_menu(self):
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertIn('حوزه ریاست', body)
+        self.assertIn('معاونین', body)
         self.assertIn('همهٔ معاونین و معاونت‌ها', body)
-        self.assertIn(self.vice.get_vice_type_display(), body)
 
-    def test_menu_follows_the_database(self):
-        """معاونت غیرفعال باید از منو برود، بدون دست‌زدن به قالب."""
+    def test_the_menu_order_is_fixed_by_the_institute(self):
+        """بند ۱۳ سند اصلاحات ترتیب مشخصی خواسته است.
+
+        پیش از این فهرست از دیتابیس می‌آمد و ترتیبش را ادمین تعیین
+        می‌کرد؛ حالا ثابت است، چون سند هم ترتیب و هم زیرمجموعهٔ
+        متفاوت هر معاونت را مشخص کرده.
+        """
         from django.core.cache import cache
 
         self.vice.is_active = False
@@ -717,7 +763,7 @@ class VicesNavigationTests(TestCase):
         cache.clear()
 
         body = self.client.get(reverse('core:home')).content.decode()
-        self.assertNotIn(
+        self.assertIn(
             reverse('core:vice_detail', args=[self.vice.vice_type]), body)
 
     def test_list_page_shows_the_person_not_a_fixed_card(self):

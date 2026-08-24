@@ -1,11 +1,11 @@
-"""صفحهٔ ریاست موسسه — چیدمان تازه، نشانی‌های علمی، و کارت تماس."""
+"""صفحهٔ ریاست موسسه — مطابق سند اصلاحات موسسه."""
 from io import StringIO
 
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import PresidencyOffice
+from core.models import PresidencyOffice, SiteSettings
 
 
 class PresidencyPageTests(TestCase):
@@ -15,162 +15,156 @@ class PresidencyPageTests(TestCase):
     def setUpTestData(cls):
         cls.office = PresidencyOffice.objects.create(
             president_name='دکتر حسن فارسیجانی',
-            president_title='دانشیار مدیریت صنعتی',
+            president_title='استاد گروه مدیریت صنعتی و فناوری اطلاعات',
             president_message='دانشگاه جایی برای ساختن است.',
             president_bio='متن معرفی.',
             president_education='دکتری مدیریت صنعتی\nکارشناسی ارشد صنایع',
             president_resume='رئیس موسسه\nمدیر گروه صنایع',
-            president_research='مدیریت زنجیره تأمین\nتولید ناب',
             president_email='president@portal.aab.ac.ir',
             president_phone='01135333333',
             president_website='https://WCM-Society.Com',
-            president_website_label='انجمن مدیریت زنجیره تأمین',
-            president_orcid='0000-0002-1825-0097',
             office_address='بابلسر، خیابان شهید بهشتی',
-            office_hours='شنبه تا چهارشنبه ۸ تا ۱۴',
+            office_hours='شنبه تا پنج‌شنبه',
         )
 
-    def test_page_opens(self):
-        res = self.client.get(reverse('core:presidency'))
-        self.assertEqual(res.status_code, 200)
+    def _html(self):
+        return self.client.get(reverse('core:presidency')).content.decode()
 
-    def test_hero_carries_the_name(self):
-        html = self.client.get(reverse('core:presidency')).content.decode()
-        self.assertIn('pres-hero', html)
+    def test_page_opens(self):
+        self.assertEqual(
+            self.client.get(reverse('core:presidency')).status_code, 200)
+
+    def test_the_portrait_carries_the_name(self):
+        html = self._html()
+        self.assertIn('pres-portrait', html)
         self.assertIn('دکتر حسن فارسیجانی', html)
 
-    def test_multiline_history_becomes_a_list(self):
-        """دو خط سابقه باید دو <li> شود، نه یک پاراگراف چسبیده."""
-        html = self.client.get(reverse('core:presidency')).content.decode()
-        block = html.split('id="education"')[1].split('</article>')[0]
-        self.assertEqual(block.count('<li>'), 2)
+    def test_message_and_bio_are_gone(self):
+        """سند اصلاحات خواست جز «ارتباط با ریاست» چیزی نماند."""
+        html = self._html()
+        self.assertNotIn('دانشگاه جایی برای ساختن است.', html)
+        self.assertNotIn('متن معرفی.', html)
 
-    def test_website_is_linked_and_safe(self):
-        html = self.client.get(reverse('core:presidency')).content.decode()
+    def test_history_lists_are_gone(self):
+        html = self._html()
+        self.assertNotIn('مدیر گروه صنایع', html)
+        self.assertNotIn('pres-timeline', html)
+
+    def test_the_fields_are_kept_in_the_database(self):
+        """حذف از صفحه نباید یعنی حذف از پنل — داده باید بماند."""
+        office = PresidencyOffice.objects.first()
+        self.assertEqual(office.president_bio, 'متن معرفی.')
+        self.assertTrue(office.education_list)
+
+    def test_contact_items_are_horizontal_and_coloured(self):
+        html = self._html()
+        self.assertIn('pres-row', html)
+        for tile in ('pres-tile-1', 'pres-tile-2', 'pres-tile-3', 'pres-tile-4'):
+            self.assertIn(tile, html)
+
+    def test_visiting_days_and_floor_are_shown(self):
+        html = self._html()
+        self.assertIn('روزهای مراجعه', html)
+        self.assertIn('شنبه تا پنج‌شنبه', html)
+        self.assertIn('طبقهٔ سوم', html)
+
+    def test_the_website_shows_as_a_bare_latin_url(self):
+        """«زنجیره تأمین» باید برداشته شده باشد و خودِ نشانی بماند."""
+        self.office.president_website_label = 'انجمن مدیریت زنجیره تأمین'
+        self.office.save(update_fields=['president_website_label'])
+        html = self._html()
         self.assertIn('https://WCM-Society.Com', html)
-        self.assertIn('انجمن مدیریت زنجیره تأمین', html)
-        # بدون noopener، صفحهٔ مقصد می‌تواند تب ما را جای دیگری ببرد
-        self.assertIn('rel="noopener noreferrer"', html)
+        self.assertNotIn('زنجیره تأمین', html)
+        self.assertIn('dir="ltr"', html)
+
+    def test_the_phone_contact_download_is_gone(self):
+        html = self._html()
+        self.assertNotIn('افزودن به مخاطبان', html)
+        self.assertNotIn('.vcf', html)
+
+    def test_the_vcard_route_no_longer_exists(self):
+        from django.urls import NoReverseMatch
+        with self.assertRaises(NoReverseMatch):
+            reverse('core:presidency_vcard')
+
+    def test_the_world_class_logo_appears_when_uploaded(self):
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+        html = self._html()
+        self.assertIn('pres-wcu', html)
+        self.assertIn('site/wcu.png', html)
+
+    def test_no_logo_means_no_broken_image(self):
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create()
+        self.assertNotIn('pres-wcu"', self._html())
 
     def test_structured_data_is_valid_json(self):
         import json
-        html = self.client.get(reverse('core:presidency')).content.decode()
-        # base.html خودش یک بلوک CollegeOrUniversity دارد و اول صفحه
-        # می‌آید؛ بلوک این صفحه را باید از میان همه پیدا کرد.
+        html = self._html()
         blocks = [chunk.split('</script>')[0]
                   for chunk in html.split('application/ld+json">')[1:]]
-        people = [json.loads(b) for b in blocks
-                  if '"Person"' in b]
+        people = [json.loads(b) for b in blocks if '"Person"' in b]
         self.assertEqual(len(people), 1, 'بلوک Person پیدا نشد')
         self.assertEqual(people[0]['name'], 'دکتر حسن فارسیجانی')
-        self.assertIn('worksFor', people[0])
-
-    def test_orcid_becomes_a_full_url(self):
-        self.assertEqual(self.office.orcid_url,
-                         'https://orcid.org/0000-0002-1825-0097')
-
-    def test_label_falls_back_to_the_domain(self):
-        self.office.president_website_label = ''
-        self.assertEqual(self.office.website_label, 'WCM-Society.Com')
-
-    def test_empty_lines_are_dropped(self):
-        self.office.president_education = 'دکتری\n\n  \nکارشناسی'
-        self.assertEqual(self.office.education_list, ['دکتری', 'کارشناسی'])
 
     def test_page_survives_an_empty_record(self):
-        """هیچ فیلدی اجباری نیست؛ صفحه نباید با رکورد خالی بترکد."""
         PresidencyOffice.objects.all().delete()
         PresidencyOffice.objects.create()
-        res = self.client.get(reverse('core:presidency'))
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(
+            self.client.get(reverse('core:presidency')).status_code, 200)
 
-
-class PresidencyVCardTests(TestCase):
-    """کارت تماس باید فایلی بدهد که گوشی بازش کند."""
-
-    def setUp(self):
-        self.office = PresidencyOffice.objects.create(
-            president_name='دکتر حسن فارسیجانی',
-            president_title='دانشیار مدیریت صنعتی',
-            president_phone='01135333333',
-            president_email='president@portal.aab.ac.ir',
-            office_address='بابلسر، خیابان شهید بهشتی',
-        )
-
-    def test_download_is_a_vcard(self):
-        res = self.client.get(reverse('core:presidency_vcard'))
-        self.assertEqual(res.status_code, 200)
-        self.assertIn('text/vcard', res['Content-Type'])
-        self.assertIn('attachment', res['Content-Disposition'])
-
-    def test_body_has_the_required_fields(self):
-        body = self.client.get(
-            reverse('core:presidency_vcard')).content.decode('utf-8')
-        self.assertTrue(body.startswith('BEGIN:VCARD'))
-        self.assertIn('VERSION:3.0', body)
-        self.assertIn('FN:دکتر حسن فارسیجانی', body)
-        self.assertIn('01135333333', body)
-        self.assertTrue(body.rstrip().endswith('END:VCARD'))
-
-    def test_lines_end_with_crlf(self):
-        """بعضی گوشی‌ها فایل با \\n تنها را رد می‌کنند."""
-        body = self.client.get(
-            reverse('core:presidency_vcard')).content.decode('utf-8')
-        self.assertIn('\r\n', body)
-
-    def test_separators_inside_a_value_are_escaped(self):
-        """کاما و سمی‌کالن لاتین، فیلد vCard را نصف می‌کنند.
-
-        کاماى فارسى (،) جداکنندهٔ vCard نیست و نباید دست بخورد — یک
-        نشانى فارسى معمولى اصلاً به فرار نیاز ندارد. فرار فقط براى
-        نویسه‌هاى لاتین لازم است، که در نشانى‌هاى دوزبانه پیش مى‌آید.
-        """
-        from core import vcard
-        self.office.office_address = 'Babolsar, Beheshti St; No. 12'
-        body = vcard.build(self.office)
-        line = [x for x in body.splitlines() if x.startswith('ADR')][0]
-        self.assertIn(r'\,', line)
-        self.assertIn(r'\;', line.split('ADR;TYPE=WORK:')[1])
-
-    def test_persian_comma_is_left_alone(self):
-        from core import vcard
-        self.office.office_address = 'بابلسر، خیابان شهید بهشتی'
-        body = vcard.build(self.office)
-        self.assertIn('بابلسر، خیابان شهید بهشتی', body)
-
-    def test_missing_record_is_a_404_not_a_crash(self):
-        PresidencyOffice.objects.all().delete()
-        res = self.client.get(reverse('core:presidency_vcard'))
-        self.assertEqual(res.status_code, 404)
-
-
-class PresidentLinksCommandTests(TestCase):
-    """دستور باید در هر دیپلوی بی‌خطر باشد."""
-
-    def test_it_fills_an_empty_field(self):
-        PresidencyOffice.objects.create(president_name='رئیس')
-        call_command('set_president_links', stdout=StringIO())
+    def test_missing_photo_file_does_not_break_the_page(self):
         office = PresidencyOffice.objects.first()
-        self.assertEqual(office.president_website, 'https://WCM-Society.Com')
+        office.president_photo = 'presidency/does-not-exist.jpg'
+        office.save(update_fields=['president_photo'])
+        self.assertIsNone(office.photo_size)
+        self.assertEqual(
+            self.client.get(reverse('core:presidency')).status_code, 200)
+
+
+class PresidentCvSeedTests(TestCase):
+    """رزومهٔ رسمی باید در پنل بنشیند و ویرایش ادمین را پاک نکند."""
+
+    def test_it_fills_an_empty_record(self):
+        PresidencyOffice.objects.create()
+        call_command('seed_president_cv', stdout=StringIO())
+        office = PresidencyOffice.objects.first()
+        self.assertEqual(office.president_name, 'دکتر حسن فارسیجانی')
+        self.assertIn('برادفورد', office.president_education)
+        self.assertGreaterEqual(len(office.resume_list), 8)
+
+    def test_it_creates_the_record_when_none_exists(self):
+        PresidencyOffice.objects.all().delete()
+        call_command('seed_president_cv', stdout=StringIO())
+        self.assertEqual(PresidencyOffice.objects.count(), 1)
 
     def test_it_leaves_an_admin_edit_alone(self):
-        PresidencyOffice.objects.create(
-            president_name='رئیس', president_website='https://elsewhere.ir')
-        call_command('set_president_links', stdout=StringIO())
-        self.assertEqual(PresidencyOffice.objects.first().president_website,
-                         'https://elsewhere.ir')
+        PresidencyOffice.objects.create(president_title='عنوان دستی')
+        call_command('seed_president_cv', stdout=StringIO())
+        self.assertEqual(PresidencyOffice.objects.first().president_title,
+                         'عنوان دستی')
 
     def test_replace_overrides_on_request(self):
-        PresidencyOffice.objects.create(
-            president_name='رئیس', president_website='https://elsewhere.ir')
-        call_command('set_president_links', '--replace', stdout=StringIO())
-        self.assertEqual(PresidencyOffice.objects.first().president_website,
-                         'https://WCM-Society.Com')
+        PresidencyOffice.objects.create(president_title='عنوان دستی')
+        call_command('seed_president_cv', '--replace', stdout=StringIO())
+        self.assertIn('مدیریت صنعتی',
+                      PresidencyOffice.objects.first().president_title)
 
-    def test_no_record_is_reported_not_crashed(self):
+    def test_replace_clears_the_website_label(self):
+        """برچسب «زنجیره تأمین» باید برود و خودِ نشانی بماند."""
+        PresidencyOffice.objects.create(
+            president_website_label='انجمن مدیریت زنجیره تأمین')
+        call_command('seed_president_cv', '--replace', stdout=StringIO())
+        self.assertEqual(
+            PresidencyOffice.objects.first().president_website_label, '')
+
+    def test_running_twice_changes_nothing_the_second_time(self):
+        PresidencyOffice.objects.create()
+        call_command('seed_president_cv', stdout=StringIO())
         out = StringIO()
-        call_command('set_president_links', stdout=out)
-        self.assertIn('وجود ندارد', out.getvalue())
+        call_command('seed_president_cv', stdout=out)
+        self.assertIn('چیزی برای تغییر نبود', out.getvalue())
 
 
 class PresidencyAdminTests(TestCase):
@@ -181,137 +175,13 @@ class PresidencyAdminTests(TestCase):
         listed = set()
         for _title, opts in PresidencyOfficeAdmin.fieldsets:
             listed.update(opts['fields'])
-        for field in ('president_website', 'president_website_label',
-                      'president_scholar', 'president_orcid',
-                      'president_research', 'president_cv'):
+        for field in ('president_website', 'president_cv', 'president_research',
+                      'president_education', 'president_resume'):
             self.assertIn(field, listed, '%s در ادمین دیده نمی‌شود' % field)
 
-
-class HeroShowsThePhotoAsUploadedTests(TestCase):
-    """عکس باید همان‌طور که آپلود شده دیده شود.
-
-    دو نسخهٔ قبلی هر کدام یک چیز را خراب کردند: اولی با cover و یک
-    نقطهٔ ثابت، عکس عمودی موسسه را طوری برید که فقط دیوار ماند؛
-    دومی با قاب تمام‌صفحه و contain چیزی را نبرید ولی دو نوار تیره
-    کنار عکس گذاشت. حالا تصویر تمام‌عرض است و ارتفاعش را نسبت
-    خودش تعیین می‌کند، پس نه برشی هست نه حاشیه‌ای.
-    """
-
-    def _css(self):
-        from pathlib import Path
-        from django.conf import settings
-        return (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
-            encoding='utf-8')
-
-    def _rule(self, selector):
-        css = self._css()
-        start = css.index(selector + ' {')
-        return css[start:css.index('}', start)]
-
-    def test_photo_keeps_its_own_ratio(self):
-        rule = self._rule('.pres-hero-img')
-        self.assertIn('block-size: auto', rule)
-        self.assertNotIn('object-fit', rule, 'قاب دوباره تصویر را جا می‌دهد')
-
-    def test_photo_spans_the_full_width(self):
-        self.assertIn('inline-size: 100%', self._rule('.pres-hero-img'))
-
-    def test_no_letterboxing_left_behind(self):
-        """نسخهٔ مات و پردهٔ تیره باید کاملاً رفته باشند."""
-        css = self._css()
-        for gone in ('.pres-hero-wash', '.pres-hero-veil'):
-            self.assertNotIn(gone, css, '%s هنوز هست' % gone)
-
-    def test_name_plate_sits_below_not_over(self):
-        rule = self._rule('.pres-hero-plate')
-        self.assertNotIn('position: absolute', rule,
-                         'نوار نام دوباره روی عکس افتاده است')
-
-    def test_the_page_renders_without_a_photo(self):
-        """رکورد بدون عکس نباید قاب را بشکند."""
-        PresidencyOffice.objects.create(president_name='دکتر تست')
-        html = self.client.get(reverse('core:presidency')).content.decode()
-        self.assertIn('pres-hero-placeholder', html)
-
-    def test_the_entrance_animation_is_opt_out(self):
-        """انیمیشن باید داخل prefers-reduced-motion باشد، نه بیرونش."""
-        css = self._css()
-        before = css[:css.index('.pres-hero-plate { animation')]
-        guard = before.rindex('@media')
-        self.assertIn('prefers-reduced-motion: no-preference',
-                      before[guard:guard + 60])
-
-    def test_the_website_shows_as_a_latin_url(self):
-        """نشانی باید خودش دیده شود، لاتین و چپ‌به‌راست."""
-        PresidencyOffice.objects.create(
-            president_name='دکتر تست',
-            president_website='https://WCM-Society.Com')
-        html = self.client.get(reverse('core:presidency')).content.decode()
-        plate = html.split('pres-hero-plate')[1].split('</header>')[0]
-        self.assertIn('https://WCM-Society.Com', plate)
-        self.assertIn('dir="ltr"', plate)
-
-    def test_missing_file_does_not_break_the_page(self):
-        """photo_size فایل را باز می‌کند؛ فایل نبود نباید ۵۰۰ بدهد."""
-        office = PresidencyOffice.objects.create(
-            president_name='دکتر تست',
-            president_photo='presidency/does-not-exist.jpg')
-        self.assertIsNone(office.photo_size)
-        res = self.client.get(reverse('core:presidency'))
-        self.assertEqual(res.status_code, 200)
-
-
-class ShorterPageTests(TestCase):
-    """صفحه باید کوتاه‌تر شود بدون اینکه متنی حذف شود."""
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.office = PresidencyOffice.objects.create(
-            president_name='دکتر حسن فارسیجانی',
-            president_education='دکتری\nکارشناسی ارشد',
-            president_resume='رئیس موسسه\nمدیر گروه',
-            president_research='زنجیره تأمین\nتولید ناب',
-            president_phone='01135333333',
-        )
-
-    def _html(self):
-        return self.client.get(reverse('core:presidency')).content.decode()
-
-    def test_every_record_still_renders(self):
-        """زبانه‌ها نباید چیزی را از HTML حذف کنند — فقط پنهانش کنند.
-
-        اگر قالب فقط یکی را رندر می‌کرد، بازدیدکنندهٔ بدون
-        جاوااسکریپت و موتور جستجو دو بخش را اصلاً نمی‌دیدند.
-        """
-        html = self._html()
-        for text in ('دکتری', 'کارشناسی ارشد', 'رئیس موسسه',
-                     'مدیر گروه', 'زنجیره تأمین', 'تولید ناب'):
-            self.assertIn(text, html)
-
-    def test_records_are_marked_for_tabbing(self):
-        html = self._html()
-        self.assertIn('data-pres-tabs', html)
-        self.assertEqual(html.count('pres-panel'), 3)
-        self.assertIn('data-tab-title="سوابق تحصیلی"', html)
-
-    def test_panels_start_visible(self):
-        """بدون جاوااسکریپت هیچ پنلی نباید hidden باشد."""
-        html = self._html()
-        records = html.split('data-pres-tabs')[1].split('</section>')[0]
-        self.assertNotIn(' hidden', records)
-
-    def test_contact_moved_to_the_side_column(self):
-        html = self._html()
-        self.assertIn('pres-aside', html)
-        self.assertIn('id="contact"', html.split('pres-aside')[1][:200])
-
-    def test_side_column_is_sticky_on_desktop_only(self):
-        from pathlib import Path
-        from django.conf import settings
-        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
-            encoding='utf-8')
-        start = css.index('.pres-aside {')
-        self.assertIn('position: sticky', css[start:css.index('}', start)])
-        # روی موبایل چسبیدن یعنی نصف صفحه همیشه اشغال است
-        mobile = css[css.index('@media (max-width: 991.98px)', start):]
-        self.assertIn('.pres-aside { position: static; }', mobile[:600])
+    def test_the_world_class_logo_is_editable(self):
+        from core.admin import SiteSettingsAdmin
+        listed = set()
+        for _title, opts in SiteSettingsAdmin.fieldsets:
+            listed.update(opts['fields'])
+        self.assertIn('world_class_logo', listed)
