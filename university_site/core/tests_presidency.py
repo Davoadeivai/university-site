@@ -258,12 +258,33 @@ class PresidencyCvOnThePageTests(TestCase):
         names = [f.name for f in PresidencyOffice._meta.fields]
         self.assertNotIn('president_cv', names)
 
-    def test_the_emblem_comes_before_the_portrait(self):
-        """در RTL، اولی سمت راست می‌نشیند — نشان باید چپ باشد."""
+    def test_the_resume_column_comes_before_the_portrait(self):
+        """در RTL اولی سمت راست می‌نشیند، پس ستون رزومه باید دوم…
+
+        …نه: عکس باید راست باشد و رزومه چپ، پس ستون رزومه اول
+        نوشته می‌شود و عکس بعدش. اگر جای این دو عوض شود، صفحه
+        آینه‌ای می‌شود بدون اینکه چیزی بشکند.
+        """
         SiteSettings.objects.all().delete()
         SiteSettings.objects.create(world_class_logo='site/wcu.png')
         html = self._html()
-        self.assertLess(html.index('pres-wcu-cell'), html.index('pres-portrait'))
+        self.assertLess(html.index('pres-side'), html.index('pres-portrait'))
+
+    def test_the_emblem_sits_above_the_resume(self):
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+        html = self._html()
+        self.assertLess(html.index('pres-wcu-cell'), html.index('pres-cv-head'))
+
+    def test_the_portrait_sticks_on_desktop_only(self):
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        start = css.index(chr(10) + '.pres-portrait {') + 1
+        self.assertIn('position: sticky', css[start:css.index('}', start)])
+        # روی موبایل چسبیدن یعنی نصف صفحه همیشه اشغال است
+        self.assertIn('.pres-portrait { position: static; order: -1; }', css)
 
     def test_a_record_without_a_cv_renders_nothing_extra(self):
         PresidencyOffice.objects.all().delete()

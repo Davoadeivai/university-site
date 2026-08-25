@@ -2689,23 +2689,24 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .pres-crumb .breadcrumb { font-size: 13px; }
 
-/* ── ریاست: نشان کلاس جهانی کنار عکس ────────────────────────
-   نشان اول می‌آید و عکس دوم، پس در RTL نشان سمت چپ می‌نشیند —
-   جایی که سند اصلاحات خواسته است. */
-.pres-top { padding-block-end: clamp(18px, 2.6vw, 32px); }
-
-.pres-duo {
+/* ── ریاست: رزومه سمت چپ، عکس سمت راست ──────────────────────
+   ستون چپ نشان کلاس جهانی را بالا و رزومه را زیرش دارد؛ عکس در
+   ستون راست می‌چسبد و رزومه کنارش اسکرول می‌شود. رزومه بلند است
+   و بدون چسبیدن عکس، خواننده نیمه‌راه دیگر نمی‌داند صفحهٔ چه کسی
+   را می‌خواند. */
+.pres-split {
     display: grid;
-    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
-    gap: clamp(18px, 3vw, 46px);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: clamp(20px, 3vw, 46px);
     align-items: start;
 }
 
+.pres-side { min-inline-size: 0; }
+
 .pres-wcu-cell {
     display: flex;
-    align-items: flex-start;
     justify-content: center;
-    padding-block-start: clamp(6px, 1.4vw, 18px);
+    margin-block-end: clamp(18px, 2.6vw, 32px);
 }
 
 .pres-wcu {
@@ -2716,6 +2717,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .pres-portrait {
     margin: 0;
+    position: sticky;
+    inset-block-start: 84px;
     border-radius: 16px;
     overflow: hidden;
     background: var(--bg-white, #fff);
@@ -2770,7 +2773,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    شش بخش، هر کدام یک رنگ. رنگ روی تیتر، آیکون و نوار کناری
    می‌نشیند و نه روی خودِ متن: متن تیره روی شش زمینهٔ رنگی، شش
    مسئلهٔ کنتراست است. */
-.pres-cv { background: var(--bg-light, #f7f8fa); }
+/* رزومه داخل ستون است، نه یک بخش تمام‌عرض — پس زمینهٔ خودش را
+   نمی‌سازد. */
+.pres-cv { min-inline-size: 0; }
 
 .pres-cv-head { text-align: center; margin-block-end: clamp(22px, 3vw, 38px); }
 
@@ -2805,7 +2810,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 /* آمار برجسته */
 .pres-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
     gap: 14px;
     margin-block-end: clamp(24px, 3vw, 40px);
 }
@@ -2844,7 +2849,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 /* کارت‌های رزومه */
 .pres-cv-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 16px;
     align-items: start;
 }
@@ -2976,11 +2981,11 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 [data-theme="dark"] .pres-stat-3 { --tone: #eab464; }
 
 @media (max-width: 767.98px) {
-    /* نشان زیر عکس می‌رود، نه کنارش: در ۳۶۰ پیکسل، دو ستون یعنی
-       هر کدام ۱۶۰ پیکسل و هیچ‌کدام خوانا نیست. */
-    .pres-duo { grid-template-columns: 1fr; }
-    .pres-wcu-cell { order: 2; }
-    .pres-wcu { inline-size: min(70%, 220px); }
+    /* یک ستون: در ۳۶۰ پیکسل، دو ستون یعنی هر کدام ۱۶۰ پیکسل و
+       هیچ‌کدام خوانا نیست. عکس اول می‌آید، بعد نشان و رزومه. */
+    .pres-split { grid-template-columns: 1fr; }
+    .pres-portrait { position: static; order: -1; }
+    .pres-wcu { inline-size: min(70%, 200px); }
     .pres-site { flex-direction: column; }
     .pres-site-rule { inline-size: 60%; flex: 0 0 auto; }
 }
