@@ -63,9 +63,16 @@
             <aside class="pres-side">
                 {% if site_settings.world_class_logo %}
                 <div class="pres-wcu-cell">
+                    {% comment %}
+                    اندازه روی خود تگ است، نه فقط در CSS: سه بار
+                    اصلاح CSS به سرور نرسید و تصویر ۱۰۲۴ پیکسلی هر
+                    بار قاب را ترکاند. صفت style به هیچ فایلی وابسته
+                    نیست و حتی با شیوه‌نامهٔ کهنه هم درست می‌ماند.
+                    {% endcomment %}
                     <img src="{{ site_settings.world_class_logo.url }}"
                          alt="نشان دانشگاه‌ها و مؤسسات آموزش عالی در کلاس جهانی"
-                         class="pres-wcu" decoding="async">
+                         class="pres-wcu" decoding="async"
+                         style="max-width:290px;max-height:290px;object-fit:contain;border-radius:50%;">
                 </div>
                 {% endif %}
 

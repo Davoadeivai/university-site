@@ -29,6 +29,80 @@ from core.sms_queue import QueuedSMS
 class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     list_display = ['university_name_fa', 'phone', 'email', 'completeness']
 
+
+    # ── پیش‌نمایش سه فیلد تصویری ──
+    # هر سه «یک عکس» می‌خواهند و از روی نامشان معلوم نیست کدام کجا
+    # دیده می‌شود؛ یک بار همان عکس در هر سه نشست. پیش‌نمایش کنار هر
+    # فیلد، همان لحظه نشان می‌دهد کدام چیست و چه ابعادی دارد.
+    LOGO_FIELDS = {
+        'logo': ('لوگو', 'فوتر و صفحه‌های چاپی', 'افقی، حدود ۴۰۰ پیکسل'),
+        'favicon': ('فاویکون', 'آیکون تب مرورگر', 'مربع، ۳۲ یا ۶۴ پیکسل'),
+        'world_class_logo': ('نشان کلاس جهانی',
+                             'دو سوی نام در سربرگ، و صفحهٔ ریاست',
+                             'مربع، ترجیحاً PNG شفاف'),
+    }
+
+    def _preview(self, field_name):
+        """تصویر کوچک + ابعاد واقعی + هشدار اگر نسبتش نامناسب باشد."""
+        image = getattr(self.instance_for_preview, field_name, None) \
+            if getattr(self, 'instance_for_preview', None) else None
+        if not image:
+            return format_html('<span style="color:#888;">— آپلود نشده —</span>')
+
+        label, where, wanted = self.LOGO_FIELDS[field_name]
+        try:
+            width, height = image.width, image.height
+        except Exception:                      # noqa: BLE001
+            # فایل روی دیسک نیست — بعد از انتقال مدیا پیش می‌آید
+            return format_html(
+                '<span style="color:#b45309;">فایل پیدا نشد: {}</span>', image.name)
+
+        note = ''
+        if field_name in ('favicon', 'world_class_logo') and width and height:
+            ratio = max(width, height) / min(width, height)
+            if ratio > 1.2:
+                note = format_html(
+                    '<div style="color:#b45309;margin-top:4px;">'
+                    'این تصویر مربع نیست ({}×{}). گوشه‌هایش بریده '
+                    'می‌شود — بهتر است نسخهٔ مربع بگذارید.</div>',
+                    width, height)
+
+        return format_html(
+            '<div style="display:flex;gap:12px;align-items:flex-start;">'
+            '<img src="{}" style="width:72px;height:72px;object-fit:contain;'
+            'border:1px solid #ddd;border-radius:8px;background:'
+            'repeating-conic-gradient(#f0f0f0 0% 25%, #fff 0% 50%) 0 0/12px 12px;">'
+            '<div style="font-size:12px;line-height:1.9;">'
+            '<b>{}</b> — {}<br>ابعاد فعلی: {}×{} پیکسل<br>'
+            '<span style="color:#666;">پیشنهاد: {}</span>{}</div></div>',
+            image.url, label, where, width, height, wanted, note)
+
+    def logo_preview(self, obj=None):
+        return self._preview('logo')
+    logo_preview.short_description = 'پیش‌نمایش لوگو'
+
+    def favicon_preview(self, obj=None):
+        return self._preview('favicon')
+    favicon_preview.short_description = 'پیش‌نمایش فاویکون'
+
+    def world_class_logo_preview(self, obj=None):
+        return self._preview('world_class_logo')
+    world_class_logo_preview.short_description = 'پیش‌نمایش نشان کلاس جهانی'
+
+    def get_form(self, request, obj=None, **kwargs):
+        # پیش‌نمایش‌ها به رکورد نیاز دارند و متدهای readonly آن را
+        # نمی‌گیرند؛ همین‌جا نگهش می‌داریم.
+        self.instance_for_preview = obj
+        return super().get_form(request, obj, **kwargs)
+
+    def get_readonly_fields(self, request, obj=None):
+        base = list(super().get_readonly_fields(request, obj))
+        for name in ('logo_preview', 'favicon_preview',
+                     'world_class_logo_preview'):
+            if name not in base:
+                base.append(name)
+        return base
+
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         """انتخابگر رنگ مرورگر به‌جای کادر متنی.
 
@@ -44,8 +118,18 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     
     fieldsets = (
         ('اطلاعات اصلی', {
-            'fields': ('university_name_fa', 'university_name_en', 'logo',
-                       'favicon', 'world_class_logo')
+            'fields': (
+                'university_name_fa', 'university_name_en',
+                'logo', 'logo_preview',
+                'favicon', 'favicon_preview',
+                'world_class_logo', 'world_class_logo_preview',
+            ),
+            'description': (
+                'سه فیلد تصویری سه کار متفاوت دارند و پیش‌نمایش هرکدام '
+                'زیرش می‌آید.<br>'
+                'برای <b>برداشتن</b> یک تصویر، تیک «Clear» کنار همان '
+                'فیلد را بزنید و ذخیره کنید — بقیه دست‌نخورده می‌مانند.'
+            ),
         }),
         ('اطلاعات تماس', {
             'fields': ('address', 'phone', 'fax', 'email', 'postal_code')

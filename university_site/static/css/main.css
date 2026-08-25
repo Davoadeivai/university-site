@@ -1822,6 +1822,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     inline-size: clamp(38px, 4.6vw, 64px);
     block-size: clamp(38px, 4.6vw, 64px);
     object-fit: contain;
+    /* نشان یک دایرهٔ وسط‌چین روی زمینهٔ سفید است، نه PNG شفاف؛
+       گرد کردن قاب، چهار گوشهٔ سفید را می‌برد بدون اینکه لازم
+       باشد کسی فایل را دوباره بسازد. */
+    border-radius: 50%;
     filter: drop-shadow(0 1px 3px rgba(59, 42, 9, .28));
 }
 
@@ -2721,6 +2725,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     max-block-size: 290px;
     block-size: auto;
     object-fit: contain;
+    border-radius: 50%;
     filter: drop-shadow(0 12px 30px rgba(15, 23, 42, .24));
 }
 

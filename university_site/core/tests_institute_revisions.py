@@ -274,3 +274,68 @@ class UploadedLogoCannotStretchTheLayoutTests(TestCase):
         rule = self._rule('.pres-wcu')
         self.assertIn('max-block-size', rule)
         self.assertIn('object-fit: contain', rule)
+
+
+class EmblemSizeIsPinnedOnTheTagTests(TestCase):
+    """اندازهٔ نشان نباید به رسیدن فایل CSS وابسته باشد.
+
+    سه بار اصلاح CSS به سرور نرسید و تصویر ۱۰۲۴ پیکسلی هر بار سربرگ
+    را ترکاند. صفت style روی خود تگ، حتی با شیوه‌نامهٔ کهنه هم
+    درست می‌ماند.
+    """
+
+    def _template(self, name):
+        from pathlib import Path
+        from django.conf import settings
+        return (Path(settings.BASE_DIR) / 'templates' / name).read_text(
+            encoding='utf-8')
+
+    def test_the_header_emblem_carries_its_own_size(self):
+        html = self._template('base.html')
+        pinned = html.count('style="width:64px;height:64px;object-fit:contain;')
+        self.assertEqual(pinned, 2, 'هر دو نشان سربرگ اندازهٔ خودشان را ندارند')
+
+    def test_the_page_emblem_carries_its_own_ceiling(self):
+        html = self._template('core/presidency.html')
+        self.assertIn('max-width:290px;max-height:290px;object-fit:contain;', html)
+
+
+class SettingsImagePreviewTests(TestCase):
+    """سه فیلد تصویری باید از هم قابل تشخیص باشند."""
+
+    def _admin(self):
+        from django.contrib.admin.sites import AdminSite
+        from core.admin import SiteSettingsAdmin
+        from core.models import SiteSettings
+        return SiteSettingsAdmin(SiteSettings, AdminSite())
+
+    def test_each_field_has_a_preview_beside_it(self):
+        listed = []
+        for _title, opts in self._admin().fieldsets:
+            listed.extend(opts['fields'])
+        for name in ('logo_preview', 'favicon_preview',
+                     'world_class_logo_preview'):
+            self.assertIn(name, listed)
+
+    def test_previews_are_read_only(self):
+        readonly = self._admin().get_readonly_fields(None, None)
+        self.assertIn('logo_preview', readonly)
+        self.assertIn('world_class_logo_preview', readonly)
+
+    def test_an_empty_field_says_so_instead_of_breaking(self):
+        from core.models import SiteSettings
+        admin_obj = self._admin()
+        admin_obj.instance_for_preview = SiteSettings()
+        self.assertIn('آپلود نشده', admin_obj.logo_preview())
+
+    def test_a_missing_file_is_reported_not_raised(self):
+        """photo.width فایل را باز می‌کند؛ نبودنش نباید صفحه را بشکند."""
+        from core.models import SiteSettings
+        admin_obj = self._admin()
+        admin_obj.instance_for_preview = SiteSettings(logo='site/gone.png')
+        self.assertIn('پیدا نشد', admin_obj.logo_preview())
+
+    def test_no_instance_yet_is_handled(self):
+        admin_obj = self._admin()
+        admin_obj.instance_for_preview = None
+        self.assertIn('آپلود نشده', admin_obj.favicon_preview())
