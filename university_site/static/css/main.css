@@ -3150,3 +3150,76 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 [data-theme="dark"] .board-name { color: #cfe0f5; }
 [data-theme="dark"] .board-role { background: rgba(240, 208, 128, .16); color: var(--bnr-gold-300, #f0d080); }
 [data-theme="dark"] .board-meta { color: #b9c9db; }
+
+/* ── نمایش تمام‌صفحهٔ تصویر ─────────────────────────────────
+   svh نه vh: روی مرورگر موبایل، vh ارتفاع نوار آدرس را هم حساب
+   می‌کند و پایین تصویر زیر نوار پنهان می‌ماند. */
+.zoom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: none;
+    place-items: center;
+    padding: clamp(8px, 2vw, 24px);
+    background: rgba(4, 10, 20, .96);
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.zoom-overlay.is-on { display: grid; }
+
+.zoom-image {
+    max-inline-size: 100%;
+    max-block-size: 100svh;
+    inline-size: auto;
+    block-size: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+    border-radius: 6px;
+    background: #fff;
+}
+
+/* بزرگ‌نمایی: تصویر به اندازهٔ واقعی می‌رود و پوشش خودش اسکرول
+   می‌شود. روی چارت سازمانی که متن ریز دارد، این تنها راه خواندن
+   جزئیات روی گوشی است. */
+.zoom-overlay.is-zoomed { place-items: start; }
+.zoom-overlay.is-zoomed .zoom-image {
+    max-inline-size: none;
+    max-block-size: none;
+    inline-size: auto;
+    cursor: zoom-out;
+}
+
+.zoom-close {
+    position: fixed;
+    inset-block-start: 14px;
+    inset-inline-end: 14px;
+    z-index: 1;
+    inline-size: 46px;
+    block-size: 46px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 50%;
+    background: rgba(10, 22, 40, .75);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}
+.zoom-close:hover { background: rgba(10, 22, 40, .95); }
+.zoom-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.zoom-hint {
+    position: fixed;
+    inset-block-end: 12px;
+    inset-inline: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, .7);
+    pointer-events: none;
+}
+
+@media (max-width: 575.98px) {
+    .zoom-hint { font-size: 11.5px; }
+}

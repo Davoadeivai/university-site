@@ -339,3 +339,61 @@ class SettingsImagePreviewTests(TestCase):
         admin_obj = self._admin()
         admin_obj.instance_for_preview = None
         self.assertIn('آپلود نشده', admin_obj.favicon_preview())
+
+
+class OrgChartFullScreenTests(TestCase):
+    """چارت سازمانی باید تمام‌صفحهٔ همان دستگاه باز شود."""
+
+    def _about(self):
+        from core.models import SiteSettings
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create(org_chart_file='site/org_chart/chart.png')
+        return self.client.get(reverse('core:about')).content.decode()
+
+    def _asset(self, name):
+        from pathlib import Path
+        from django.conf import settings
+        return (Path(settings.BASE_DIR) / 'static' / name).read_text(
+            encoding='utf-8')
+
+    def test_the_chart_is_marked_zoomable(self):
+        html = self._about()
+        self.assertIn('data-zoomable', html)
+        self.assertIn('org-chart-img', html)
+
+    def test_the_button_opens_the_same_image(self):
+        html = self._about()
+        self.assertIn('data-zoom-open=".org-chart-img"', html)
+
+    def test_the_old_new_tab_link_is_gone(self):
+        """باز کردن فایل در تب تازه یعنی خروج از سایت و برگشت با back."""
+        html = self._about()
+        chart = html.split('org-chart-file')[1].split('</div>')[0]
+        self.assertNotIn('target="_blank"', chart)
+
+    def test_downloading_is_still_offered(self):
+        self.assertIn('دانلود', self._about())
+
+    def test_the_viewer_asks_for_real_full_screen(self):
+        js = self._asset('js/main.js')
+        self.assertIn('requestFullscreen', js)
+        # سافاری آیفون روی عنصر غیرویدیویی نمی‌دهد؛ پوشش fixed جایش
+        self.assertIn('zoom-overlay', js)
+
+    def test_leaving_full_screen_closes_the_overlay(self):
+        """وگرنه یک تصویر تمام‌صفحه بدون راه خروج می‌ماند."""
+        js = self._asset('js/main.js')
+        self.assertIn('fullscreenchange', js)
+
+    def test_escape_closes_it(self):
+        js = self._asset('js/main.js')
+        block = js[js.index('zoom-overlay'):]
+        self.assertIn("e.key === 'Escape'", block)
+
+    def test_the_overlay_uses_small_viewport_units(self):
+        """vh روی موبایل نوار آدرس را هم حساب می‌کند."""
+        css = self._asset('css/main.css')
+        start = css.index(chr(10) + '.zoom-image {') + 1
+        rule = css[start:css.index('}', start)]
+        self.assertIn('svh', rule)
+        self.assertNotIn('100vh', rule)

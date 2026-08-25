@@ -999,3 +999,137 @@ function appendMsg(text, type) {
     if (document.readyState === 'complete') report();
     else window.addEventListener('load', report);
 })();
+
+
+// ============================================================
+//  نمایش تمام‌صفحهٔ تصویر — چارت سازمانی و هر تصویر data-zoomable
+// ============================================================
+// چارت سازمانی روی صفحهٔ عادی کوچک است و خوانده نمی‌شود. لینک قبلی
+// فایل را در تب تازه باز می‌کرد، که یعنی خروج از سایت و برگشت با
+// دکمهٔ back.
+//
+// اینجا اول Fullscreen API امتحان می‌شود — همان تمام‌صفحهٔ واقعیِ
+// دستگاه، بدون نوار آدرس و نوار وضعیت. اگر مرورگر ندهد (سافاری
+// آیفون روی عنصر غیرویدیویی نمی‌دهد)، یک پوشش fixed جایش می‌نشیند
+// که همان اندازه است.
+(function () {
+    'use strict';
+
+    var overlay = null;
+    var image = null;
+    var zoomed = false;
+    var lastFocus = null;
+
+    function build() {
+        overlay = document.createElement('div');
+        overlay.className = 'zoom-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-label', 'نمایش تمام‌صفحهٔ تصویر');
+
+        image = document.createElement('img');
+        image.className = 'zoom-image';
+        image.alt = '';
+
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'zoom-close';
+        close.setAttribute('aria-label', 'بستن');
+        close.innerHTML = '<i class="fas fa-xmark" aria-hidden="true"></i>';
+        close.addEventListener('click', hide);
+
+        var hint = document.createElement('p');
+        hint.className = 'zoom-hint';
+        hint.textContent = 'برای بزرگ‌نمایی روی تصویر بزنید — Esc برای بستن';
+
+        overlay.appendChild(image);
+        overlay.appendChild(close);
+        overlay.appendChild(hint);
+        document.body.appendChild(overlay);
+
+        // کلیک روی خودِ تصویر بزرگ‌نمایی می‌کند، کلیک روی زمینه می‌بندد
+        image.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleZoom();
+        });
+        overlay.addEventListener('click', hide);
+    }
+
+    function toggleZoom() {
+        zoomed = !zoomed;
+        overlay.classList.toggle('is-zoomed', zoomed);
+        if (!zoomed) { overlay.scrollTop = 0; overlay.scrollLeft = 0; }
+    }
+
+    function show(source) {
+        if (!overlay) build();
+        lastFocus = document.activeElement;
+
+        image.src = source.currentSrc || source.src;
+        image.alt = source.alt || '';
+        zoomed = false;
+        overlay.classList.remove('is-zoomed');
+        overlay.classList.add('is-on');
+        // نوار اسکرول صفحه پشت پوشش نباید حرکت کند
+        document.body.style.overflow = 'hidden';
+
+        // تمام‌صفحهٔ واقعی، اگر مرورگر بدهد. رد شدنش خطا نیست —
+        // پوشش fixed خودش همان اندازه است.
+        var request = overlay.requestFullscreen
+            || overlay.webkitRequestFullscreen;
+        if (request) {
+            try {
+                var result = request.call(overlay);
+                if (result && result.catch) result.catch(function () {});
+            } catch (e) { /* پوشش fixed کافی است */ }
+        }
+
+        overlay.querySelector('.zoom-close').focus();
+    }
+
+    function hide() {
+        if (!overlay) return;
+        overlay.classList.remove('is-on', 'is-zoomed');
+        document.body.style.overflow = '';
+        image.removeAttribute('src');
+
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            var exit = document.exitFullscreen || document.webkitExitFullscreen;
+            if (exit) {
+                try {
+                    var result = exit.call(document);
+                    if (result && result.catch) result.catch(function () {});
+                } catch (e) { /* از قبل بسته شده */ }
+            }
+        }
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    document.addEventListener('click', function (e) {
+        var target = e.target.closest ? e.target.closest('[data-zoomable]') : null;
+        if (target && target.tagName === 'IMG') { show(target); return; }
+
+        var opener = e.target.closest ? e.target.closest('[data-zoom-open]') : null;
+        if (opener) {
+            var picture = document.querySelector(
+                opener.getAttribute('data-zoom-open'));
+            if (picture) show(picture);
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay && overlay.classList.contains('is-on')) {
+            hide();
+        }
+    });
+
+    // خروج از تمام‌صفحه با دکمهٔ خود مرورگر هم باید پوشش را ببندد،
+    // وگرنه یک تصویر تمام‌صفحه بدون راه خروج می‌ماند.
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (name) {
+        document.addEventListener(name, function () {
+            var active = document.fullscreenElement
+                || document.webkitFullscreenElement;
+            if (!active && overlay && overlay.classList.contains('is-on')) hide();
+        });
+    });
+})();

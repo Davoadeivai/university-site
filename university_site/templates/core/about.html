@@ -73,15 +73,27 @@
             {% if settings and settings.org_chart_file %}
             <div class="org-chart-file mt-4 bg-white rounded-xl shadow-sm overflow-hidden">
                 {% if settings.org_chart_file_kind == 'image' %}
+                {% comment %}
+                کلیک روی چارت، آن را تمام‌صفحهٔ همان دستگاه باز می‌کند.
+                data-zoomable کافی است؛ بقیه‌اش در main.js است، پس
+                هر تصویر دیگری هم با همین یک صفت همین رفتار را
+                می‌گیرد.
+                {% endcomment %}
                 <div class="p-3 p-md-4 text-center">
                     <img loading="lazy" decoding="async" src="{{ settings.org_chart_file.url }}"
                          alt="چارت سازمانی"
-                         class="img-fluid"
-                         style="max-width:100%;height:auto;border-radius:8px;">
+                         class="img-fluid org-chart-img"
+                         data-zoomable
+                         style="max-width:100%;height:auto;border-radius:8px;cursor:zoom-in;">
                 </div>
                 <div class="px-3 pb-3 text-center">
-                    <a href="{{ settings.org_chart_file.url }}" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">
+                    <button type="button" class="btn btn-outline-primary btn-sm"
+                            data-zoom-open=".org-chart-img">
                         <i class="fas fa-expand me-1"></i> مشاهده تمام‌صفحه
+                    </button>
+                    <a href="{{ settings.org_chart_file.url }}" class="btn btn-outline-secondary btn-sm"
+                       download>
+                        <i class="fas fa-download me-1"></i> دانلود
                     </a>
                 </div>
                 {% elif settings.org_chart_file_kind == 'pdf' %}
