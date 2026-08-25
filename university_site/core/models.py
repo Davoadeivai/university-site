@@ -392,9 +392,21 @@ class PresidencyOffice(models.Model):
     president_research = models.TextField(
         _('زمینه‌های پژوهشی'), blank=True,
         help_text=_('هر زمینه در یک خط جدا؛ برچسب‌وار نمایش داده می‌شود.'))
-    president_cv = models.FileField(
-        _('فایل رزومه'), upload_to='presidency/cv/', blank=True, null=True,
-        help_text=_('PDF — دکمهٔ دانلود زیر مشخصات دیده می‌شود.'))
+    president_teaching = models.TextField(
+        _('سوابق تدریسی'), blank=True,
+        help_text=_('هر درس در یک خط جدا.'))
+    president_awards = models.TextField(
+        _('جوایز و افتخارات علمی'), blank=True,
+        help_text=_('هر مورد در یک خط جدا.'))
+    president_memberships = models.TextField(
+        _('عضویت در مراکز علمی و پژوهشی'), blank=True,
+        help_text=_('هر مورد در یک خط جدا.'))
+    president_highlights = models.TextField(
+        _('آمار برجسته'), blank=True,
+        help_text=_(
+            'هر خط به شکل «عدد | برچسب»، مثلاً:<br>'
+            '<code>۳۱ | جلد کتاب دانشگاهی</code><br>'
+            'بالای رزومه به‌صورت کارت‌های عددی دیده می‌شوند.'))
 
     office_manager_name = models.CharField(_('مدیر دفتر ریاست'), max_length=200, blank=True)
     office_duties = models.TextField(_('شرح وظایف دفتر ریاست'), blank=True)
@@ -430,6 +442,61 @@ class PresidencyOffice(models.Model):
     @property
     def research_list(self) -> list:
         return self._lines(self.president_research)
+
+    @property
+    def teaching_list(self) -> list:
+        return self._lines(self.president_teaching)
+
+    @property
+    def awards_list(self) -> list:
+        return self._lines(self.president_awards)
+
+    @property
+    def memberships_list(self) -> list:
+        return self._lines(self.president_memberships)
+
+    @property
+    def highlight_items(self) -> list:
+        """آمار برجسته — هر خط «عدد | برچسب».
+
+        خطی که جداکننده ندارد کنار گذاشته می‌شود، نه اینکه نیمه‌کاره
+        رندر شود: یک کارت با عدد خالی بدتر از نبودن کارت است.
+        """
+        items = []
+        for line in self._lines(self.president_highlights):
+            if '|' not in line:
+                continue
+            number, _, label = line.partition('|')
+            number, label = number.strip(), label.strip()
+            if number and label:
+                items.append({'number': number, 'label': label})
+        return items
+
+    @property
+    def cv_sections(self) -> list:
+        """بخش‌های رزومه به همان ترتیبی که روی صفحه می‌آیند.
+
+        قالب به‌جای پنج بلوک تکراری، روی همین فهرست حلقه می‌زند —
+        پس اضافه‌کردن بخش تازه یک ردیف اینجاست، نه بیست خط HTML.
+        `tone` شمارهٔ رنگ است؛ سند اصلاحات چندرنگ‌بودن را خواسته.
+        """
+        raw = [
+            ('education', 'سوابق تحصیلی', 'fa-graduation-cap', self.education_list),
+            ('resume', 'سوابق اجرایی', 'fa-briefcase', self.resume_list),
+            ('teaching', 'سوابق تدریسی', 'fa-chalkboard-teacher', self.teaching_list),
+            ('awards', 'جوایز و افتخارات', 'fa-award', self.awards_list),
+            ('memberships', 'عضویت‌های علمی', 'fa-users-rectangle', self.memberships_list),
+            ('research', 'زمینه‌های پژوهشی', 'fa-flask', self.research_list),
+        ]
+        sections = []
+        for index, (key, title, icon, items) in enumerate(raw, start=1):
+            if not items:
+                continue
+            sections.append({
+                'key': key, 'title': title, 'icon': icon,
+                'items': items, 'tone': index,
+            })
+        return sections
 
     @property
     def website_label(self) -> str:

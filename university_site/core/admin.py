@@ -230,10 +230,12 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'عکس عمودی یا کوچک، کشیده و مات دیده می‌شود.'
             ),
         }),
-        ('سوابق', {
+        ('رزومه', {
             'fields': (
+                'president_highlights',
                 'president_education', 'president_resume',
-                'president_research', 'president_cv',
+                'president_teaching', 'president_awards',
+                'president_memberships', 'president_research',
             ),
             'description': (
                 'در هر سه کادر، <b>هر مورد را در یک خط جدا</b> بنویسید — '

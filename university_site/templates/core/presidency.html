@@ -51,7 +51,20 @@
 <section class="section pres-top">
     <div class="container">
 
+        {% comment %}
+        نشان کلاس جهانی بالا-چپ کنار عکس. عمداً یک شبکهٔ دو ستونی
+        با ترتیب صریح است، نه شناور: با float، نشان روی متن
+        figcaption می‌افتاد وقتی عکس کوتاه‌تر از نشان بود.
+        {% endcomment %}
         <div class="pres-duo">
+            {% if site_settings.world_class_logo %}
+            <div class="pres-wcu-cell">
+                <img src="{{ site_settings.world_class_logo.url }}"
+                     alt="نشان دانشگاه‌ها و مؤسسات آموزش عالی در کلاس جهانی"
+                     class="pres-wcu" decoding="async">
+            </div>
+            {% endif %}
+
             <figure class="pres-portrait">
                 {% if office.president_photo %}
                 <img src="{{ office.president_photo.url }}"
@@ -71,38 +84,77 @@
                     {% endif %}
                 </figcaption>
             </figure>
-
-            <div class="pres-wcu-cell">
-                {% if site_settings.world_class_logo %}
-                <img src="{{ site_settings.world_class_logo.url }}"
-                     alt="نشان دانشگاه‌ها و مؤسسات آموزش عالی در کلاس جهانی"
-                     class="pres-wcu" decoding="async">
-                {% endif %}
-
-                {% comment %}
-                رزومه و نشانی وب‌سایت — دو چیزی که سند اصلاحات زیر
-                عکس خواسته است.
-                {% endcomment %}
-                <div class="pres-duo-actions">
-                    {% if office.president_cv %}
-                    <a href="{{ office.president_cv.url }}" class="pres-cv-btn" target="_blank" rel="noopener">
-                        <i class="fas fa-file-pdf" aria-hidden="true"></i> رزومه
-                    </a>
-                    {% endif %}
-                    {% if office.president_website %}
-                    <a class="pres-hero-url" dir="ltr"
-                       href="{{ office.president_website }}"
-                       target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-globe" aria-hidden="true"></i>
-                        <span class="pres-hero-url-text">{{ office.president_website }}</span>
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
         </div>
 
     </div>
 </section>
+
+{% comment %}
+رزومه — متنی، در میانهٔ صفحه، هر بخش با رنگ خودش. سند اصلاحات
+«چند رنگ مختلف» خواسته بود؛ رنگ روی تیتر، شماره و خط کنارهٔ هر
+بخش می‌نشیند، نه روی متن، تا خوانایی دست‌نخورده بماند.
+{% endcomment %}
+{% if office.highlight_items or office.cv_sections %}
+<section class="section pres-cv" id="cv">
+    <div class="container">
+
+        <header class="pres-cv-head">
+            <span class="pres-cv-kicker">رزومه</span>
+            <h2 class="pres-cv-title">{{ office.president_name }}</h2>
+            {% if office.president_title %}
+            <p class="pres-cv-sub">{{ office.president_title }}</p>
+            {% endif %}
+        </header>
+
+        {% if office.highlight_items %}
+        <div class="pres-stats">
+            {% for stat in office.highlight_items %}
+            <div class="pres-stat pres-stat-{{ forloop.counter }}">
+                <span class="pres-stat-num">{{ stat.number }}</span>
+                <span class="pres-stat-label">{{ stat.label }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="pres-cv-grid">
+            {% for section in office.cv_sections %}
+            <article class="pres-cv-card pres-tone-{{ section.tone }}" id="{{ section.key }}">
+                <h3 class="pres-cv-card-title">
+                    <i class="fas {{ section.icon }}" aria-hidden="true"></i>
+                    {{ section.title }}
+                </h3>
+                <ul class="pres-cv-list">
+                    {% for item in section.items %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </article>
+            {% endfor %}
+        </div>
+
+        {% if office.president_website %}
+        {% comment %}
+        نشانی سایت زیر رزومه، با یک خط تزئینی دو طرفه. نشانی کامل و
+        لاتین نوشته می‌شود، نه پشت برچسب فارسی: کسی که می‌خواهد آن
+        را یادداشت کند باید خودِ نشانی را ببیند.
+        {% endcomment %}
+        <div class="pres-site">
+            <span class="pres-site-rule" aria-hidden="true"></span>
+            <a class="pres-site-link" dir="ltr"
+               href="{{ office.president_website }}"
+               target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-globe" aria-hidden="true"></i>
+                <span class="pres-site-url">{{ office.president_website }}</span>
+                <i class="fas fa-arrow-up-right-from-square pres-site-out" aria-hidden="true"></i>
+            </a>
+            <span class="pres-site-rule" aria-hidden="true"></span>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endif %}
 
 {% comment %}
 ارتباط با ریاست — افقی و هر کارت با رنگ خودش، مطابق سند اصلاحات.

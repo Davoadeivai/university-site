@@ -45,10 +45,9 @@ class PresidencyPageTests(TestCase):
         self.assertNotIn('دانشگاه جایی برای ساختن است.', html)
         self.assertNotIn('متن معرفی.', html)
 
-    def test_history_lists_are_gone(self):
-        html = self._html()
-        self.assertNotIn('مدیر گروه صنایع', html)
-        self.assertNotIn('pres-timeline', html)
+    def test_the_old_timeline_markup_is_gone(self):
+        """سوابق حالا کارت رنگی‌اند، نه خط زمانی تک‌ستونی."""
+        self.assertNotIn('pres-timeline', self._html())
 
     def test_the_fields_are_kept_in_the_database(self):
         """حذف از صفحه نباید یعنی حذف از پنل — داده باید بماند."""
@@ -175,8 +174,10 @@ class PresidencyAdminTests(TestCase):
         listed = set()
         for _title, opts in PresidencyOfficeAdmin.fieldsets:
             listed.update(opts['fields'])
-        for field in ('president_website', 'president_cv', 'president_research',
-                      'president_education', 'president_resume'):
+        for field in ('president_website', 'president_highlights',
+                      'president_research', 'president_education',
+                      'president_resume', 'president_teaching',
+                      'president_awards', 'president_memberships'):
             self.assertIn(field, listed, '%s در ادمین دیده نمی‌شود' % field)
 
     def test_the_world_class_logo_is_editable(self):
@@ -185,3 +186,88 @@ class PresidencyAdminTests(TestCase):
         for _title, opts in SiteSettingsAdmin.fieldsets:
             listed.update(opts['fields'])
         self.assertIn('world_class_logo', listed)
+
+
+class PresidencyCvOnThePageTests(TestCase):
+    """رزومه باید متنی و چندرنگ روی صفحه باشد، نه یک فایل برای دانلود."""
+
+    @classmethod
+    def setUpTestData(cls):
+        NL = chr(10)
+        cls.office = PresidencyOffice.objects.create(
+            president_name='دکتر حسن فارسیجانی',
+            president_title='استاد گروه مدیریت صنعتی',
+            president_education=NL.join(['دکتری برادفورد', 'کارشناسی ارشد تربیت مدرس']),
+            president_resume=NL.join(['رئیس موسسه', 'مشاور ایران‌خودرو']),
+            president_teaching=NL.join(['مدیریت تولید', 'زنجیره تأمین']),
+            president_awards=NL.join(['استاد نمونه']),
+            president_memberships=NL.join(['سردبیر چشم‌انداز مدیریت صنعتی']),
+            president_research=NL.join(['مدیریت در کلاس جهانی']),
+            president_highlights=NL.join(['۳۱ | جلد کتاب', '۲۵۰ | مقاله']),
+            president_website='https://WCM-Society.Com',
+        )
+
+    def _html(self):
+        return self.client.get(reverse('core:presidency')).content.decode()
+
+    def test_every_section_is_rendered(self):
+        html = self._html()
+        for text in ('دکتری برادفورد', 'مشاور ایران‌خودرو', 'زنجیره تأمین',
+                     'استاد نمونه', 'سردبیر چشم‌انداز مدیریت صنعتی',
+                     'مدیریت در کلاس جهانی'):
+            self.assertIn(text, html)
+
+    def test_sections_each_get_their_own_colour(self):
+        """سند اصلاحات «چند رنگ مختلف» خواسته بود."""
+        html = self._html()
+        tones = {'pres-tone-%d' % n for n in range(1, 7)}
+        found = {tone for tone in tones if tone in html}
+        self.assertEqual(len(found), 6, 'شش بخش شش رنگ ندارند')
+
+    def test_an_empty_section_is_skipped_not_left_blank(self):
+        self.office.president_awards = ''
+        self.office.save(update_fields=['president_awards'])
+        keys = [s['key'] for s in self.office.cv_sections]
+        self.assertNotIn('awards', keys)
+        self.assertIn('education', keys)
+
+    def test_highlights_split_on_the_pipe(self):
+        items = self.office.highlight_items
+        self.assertEqual(len(items), 2)
+        self.assertEqual(items[0], {'number': '۳۱', 'label': 'جلد کتاب'})
+
+    def test_a_highlight_without_a_separator_is_dropped(self):
+        """کارت با عدد خالی بدتر از نبودن کارت است."""
+        self.office.president_highlights = 'بدون جداکننده'
+        self.assertEqual(self.office.highlight_items, [])
+
+    def test_the_website_sits_below_the_cv(self):
+        html = self._html()
+        self.assertIn('pres-site-link', html)
+        self.assertIn('https://WCM-Society.Com', html)
+        cv_at = html.index('pres-cv-grid')
+        site_at = html.index('pres-site-link')
+        self.assertLess(cv_at, site_at, 'نشانی بالای رزومه افتاده است')
+
+    def test_the_download_button_is_gone(self):
+        html = self._html()
+        self.assertNotIn('pres-cv-btn', html)
+        self.assertNotIn('fa-file-pdf', html)
+
+    def test_the_cv_file_field_no_longer_exists(self):
+        names = [f.name for f in PresidencyOffice._meta.fields]
+        self.assertNotIn('president_cv', names)
+
+    def test_the_emblem_comes_before_the_portrait(self):
+        """در RTL، اولی سمت راست می‌نشیند — نشان باید چپ باشد."""
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+        html = self._html()
+        self.assertLess(html.index('pres-wcu-cell'), html.index('pres-portrait'))
+
+    def test_a_record_without_a_cv_renders_nothing_extra(self):
+        PresidencyOffice.objects.all().delete()
+        PresidencyOffice.objects.create(president_name='رئیس')
+        html = self.client.get(reverse('core:presidency')).content.decode()
+        self.assertNotIn('pres-cv-grid', html)
+        self.assertNotIn('pres-stats', html)
