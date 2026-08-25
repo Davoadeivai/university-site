@@ -243,3 +243,34 @@ class GraduateGroupsTests(TestCase):
         nav = html.split('id="mainNav"')[1].split('</nav>')[0]
         block = nav.split('۱. معاونت آموزشی')[1].split('۲. معاونت پژوهشی')[0]
         self.assertIn('گروه آموزشی حسابداری', block)
+
+
+class UploadedLogoCannotStretchTheLayoutTests(TestCase):
+    """هر تصویری که ادمین آپلود کند باید در قاب خودش بماند.
+
+    نشان کلاس جهانی که موسسه فرستاد یک اسکرین‌شات ۵۹۱×۱۲۸۰ بود، نه
+    لوگوی مربع. با بستنِ فقط عرض، ارتفاعش در سربرگ به ۱۳۹ پیکسل
+    می‌رسید، نوار کش می‌آمد و نام موسسه از قاب بیرون می‌رفت — بدون
+    هیچ خطایی، فقط یک صفحهٔ به‌هم‌ریخته.
+    """
+
+    def _rule(self, selector):
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        start = css.index(chr(10) + selector + ' {') + 1
+        return css[start:css.index('}', start)]
+
+    def test_the_header_emblem_is_boxed_in_both_directions(self):
+        rule = self._rule('.bnr-wcu')
+        self.assertIn('inline-size', rule)
+        self.assertIn('block-size', rule)
+        self.assertNotIn('block-size: auto', rule,
+                         'ارتفاع باز است — تصویر بلند سربرگ را می‌کشد')
+        self.assertIn('object-fit: contain', rule)
+
+    def test_the_page_emblem_has_a_height_ceiling(self):
+        rule = self._rule('.pres-wcu')
+        self.assertIn('max-block-size', rule)
+        self.assertIn('object-fit: contain', rule)

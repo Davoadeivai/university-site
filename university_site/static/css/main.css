@@ -1814,8 +1814,13 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 .bnr-wcu {
     flex: 0 0 auto;
+    /* هر دو بُعد بسته می‌شوند، نه فقط عرض. با block-size:auto یک
+       تصویر بلند (مثلاً اسکرین‌شات ۵۹۱×۱۲۸۰) در ۶۴ پیکسل عرض
+       ۱۳۹ پیکسل ارتفاع می‌گرفت، سربرگ کش می‌آمد و نام موسسه از
+       قاب بیرون می‌رفت. contain یعنی هر نسبتی داخل همین مربع
+       جا می‌شود. */
     inline-size: clamp(38px, 4.6vw, 64px);
-    block-size: auto;
+    block-size: clamp(38px, 4.6vw, 64px);
     object-fit: contain;
     filter: drop-shadow(0 1px 3px rgba(59, 42, 9, .28));
 }
@@ -2710,8 +2715,12 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 .pres-wcu {
+    /* سقف ارتفاع لازم است: تصویر بلند وگرنه کل ستون را می‌کشد و
+       رزومه را پایین می‌راند. */
     inline-size: min(100%, 290px);
+    max-block-size: 290px;
     block-size: auto;
+    object-fit: contain;
     filter: drop-shadow(0 12px 30px rgba(15, 23, 42, .24));
 }
 
