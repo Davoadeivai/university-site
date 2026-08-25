@@ -397,3 +397,124 @@ class OrgChartFullScreenTests(TestCase):
         rule = css[start:css.index('}', start)]
         self.assertIn('svh', rule)
         self.assertNotIn('100vh', rule)
+
+
+class GraduateGroupMatchingTests(TestCase):
+    """نام واقعی گروه با کلیدواژهٔ سند یکی نیست."""
+
+    def _group(self, name, **extra):
+        # گروه بدون دانشکده ساخته نمی‌شود؛ یکی مشترک برای همهٔ تست‌ها
+        from academics.models import AcademicGroup, Department
+        from django.utils.text import slugify
+        department, _ = Department.objects.get_or_create(
+            slug='dept-test', defaults={'name': 'دانشکدهٔ آزمایشی'})
+        return AcademicGroup.objects.create(
+            name=name, slug=slugify(name, allow_unicode=True),
+            department=department, **extra)
+
+    def _run(self):
+        from io import StringIO
+        from django.core.management import call_command
+        out = StringIO()
+        call_command('set_graduate_groups', stdout=out)
+        return out.getvalue()
+
+    def setUp(self):
+        from academics.models import AcademicGroup
+        AcademicGroup.objects.all().delete()
+
+    def test_a_longer_real_name_still_matches(self):
+        """سند «بازرگانی» نوشته و نام واقعی «گروه مدیریت بازرگانی» است."""
+        from academics.models import AcademicGroup
+        self._group('گروه مدیریت بازرگانی')
+        self._run()
+        self.assertTrue(AcademicGroup.objects.first().has_graduate)
+
+    def test_all_four_from_the_document_are_found(self):
+        from academics.models import AcademicGroup
+        for name in ('گروه مدیریت بازرگانی', 'گروه مدیریت صنعتی و مالی',
+                     'گروه علوم تربیتی - مدیریت آموزشی', 'گروه حسابداری'):
+            self._group(name)
+        self._run()
+        self.assertEqual(
+            AcademicGroup.objects.filter(has_graduate=True).count(), 4)
+
+    def test_the_document_order_is_kept(self):
+        from academics.models import AcademicGroup
+        self._group('گروه حسابداری')
+        self._group('گروه مدیریت بازرگانی')
+        self._run()
+        marked = list(AcademicGroup.objects.filter(has_graduate=True)
+                      .order_by('graduate_order').values_list('name', flat=True))
+        self.assertEqual(marked[0], 'گروه مدیریت بازرگانی')
+
+    def test_an_unrelated_group_is_left_alone(self):
+        from academics.models import AcademicGroup
+        self._group('گروه مکانیک')
+        self._run()
+        self.assertFalse(AcademicGroup.objects.get(name='گروه مکانیک').has_graduate)
+
+    def test_a_stale_mark_is_removed(self):
+        from academics.models import AcademicGroup
+        self._group('گروه مکانیک', has_graduate=True)
+        self._run()
+        self.assertFalse(AcademicGroup.objects.get(name='گروه مکانیک').has_graduate)
+
+    def test_running_twice_keeps_the_same_four(self):
+        """پاک‌سازی نباید همان‌هایی را بردارد که تازه علامت خورده‌اند."""
+        from academics.models import AcademicGroup
+        for name in ('گروه مدیریت بازرگانی', 'گروه مدیریت صنعتی و مالی',
+                     'گروه علوم تربیتی - مدیریت آموزشی', 'گروه حسابداری'):
+            self._group(name)
+        self._run()
+        self._run()
+        self.assertEqual(
+            AcademicGroup.objects.filter(has_graduate=True).count(), 4)
+
+    def test_each_keyword_takes_a_different_group(self):
+        """دو کلیدواژه نباید به یک گروه بچسبند."""
+        from academics.models import AcademicGroup
+        self._group('گروه مدیریت صنعتی و مالی')
+        self._group('گروه مدیریت بازرگانی')
+        self._run()
+        marked = AcademicGroup.objects.filter(has_graduate=True)
+        self.assertEqual(marked.count(), 2)
+        self.assertEqual(len({g.graduate_order for g in marked}), 2)
+
+
+class RevisionInspectorTests(TestCase):
+    """بازرس باید روی همان چیزی بسنجد که کاربر می‌بیند."""
+
+    def _report(self):
+        from io import StringIO
+        from django.core.management import call_command
+        out = StringIO()
+        call_command('check_revisions', stdout=out)
+        return out.getvalue()
+
+    def test_it_lists_all_eighteen(self):
+        report = self._report()
+        for number in range(1, 19):
+            self.assertIn('%2d.' % number, report)
+
+    def test_it_ends_with_a_tally(self):
+        self.assertIn('از 18 بند', self._report())
+
+    def test_it_reports_an_empty_database_without_crashing(self):
+        from core.models import PresidencyOffice, SiteSettings
+        PresidencyOffice.objects.all().delete()
+        SiteSettings.objects.all().delete()
+        self.assertIn('وضعیت بندهای سند اصلاحات', self._report())
+
+    def test_the_menu_items_are_seen_as_done(self):
+        """بندهای ۱۳ تا ۱۶ در قالب‌اند و به داده وابسته نیستند."""
+        report = self._report()
+        for number in (13, 14, 15, 16):
+            line = [ln for ln in report.splitlines()
+                    if ln.strip().startswith(('✓ %d.' % number,
+                                              '✗ %d.' % number,
+                                              '✓ %2d.' % number,
+                                              '✗ %2d.' % number))]
+            self.assertTrue(line, 'بند %d گزارش نشد' % number)
+            self.assertTrue(line[0].lstrip().startswith('✓'),
+                            'بند %d انجام‌نشده گزارش شد: %s' % (number, line[0]))

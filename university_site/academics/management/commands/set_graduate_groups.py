@@ -57,14 +57,32 @@ class Command(BaseCommand):
                 'هیچ گروهی ثبت نشده — چیزی برای علامت‌زدن نیست.'))
             return
 
-        index = {key(g.name): g for g in groups}
         found, missing = [], []
+        taken = set()
+
+        def match(wanted):
+            """گروهی که نامش شامل کلیدواژهٔ سند است.
+
+            تطبیق دقیق کار نمی‌کند: سند «بازرگانی» نوشته و نام واقعی
+            «گروه مدیریت بازرگانی» است، «صنعتی» در برابر «گروه مدیریت
+            صنعتی و مالی»، و «علوم تربیتی» در برابر «گروه علوم تربیتی -
+            مدیریت آموزشی». پس زیررشته می‌گیریم، و کوتاه‌ترین نامِ
+            منطبق را برمی‌داریم تا اگر دو گروه هر دو شامل کلیدواژه
+            بودند، دقیق‌ترینش انتخاب شود.
+            """
+            needle = key(wanted)
+            hits = [g for g in groups
+                    if g.pk not in taken and needle in key(g.name)]
+            if not hits:
+                return None
+            return min(hits, key=lambda g: len(key(g.name)))
 
         for wanted, order in WANTED:
-            group = index.get(key(wanted))
+            group = match(wanted)
             if group is None:
                 missing.append(wanted)
                 continue
+            taken.add(group.pk)
             changes = []
             if not group.has_graduate:
                 group.has_graduate = True
@@ -76,10 +94,13 @@ class Command(BaseCommand):
                 group.save(update_fields=changes)
             found.append(group.name)
 
-        # هر گروه دیگری که پیش‌تر علامت خورده و در فهرست سند نیست
-        wanted_keys = {key(name) for name, _ in WANTED}
+        # هر گروه دیگری که پیش‌تر علامت خورده و در فهرست سند نیست.
+        # مبنا `taken` است نه مقایسهٔ نام: نام واقعی گروه با کلیدواژهٔ
+        # سند یکی نیست («گروه مدیریت بازرگانی» در برابر «بازرگانی»)،
+        # و با مقایسهٔ نام، همان‌هایی که تازه علامت خورده بودند
+        # بلافاصله برداشته می‌شدند.
         for group in groups:
-            if key(group.name) not in wanted_keys and group.has_graduate:
+            if group.pk not in taken and group.has_graduate:
                 group.has_graduate = False
                 group.save(update_fields=['has_graduate'])
                 self.stdout.write('  برداشته شد: %s' % group.name)
