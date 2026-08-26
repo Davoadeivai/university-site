@@ -527,20 +527,15 @@ def security_office(request):
 # ─── معاونت‌ها ────────────────────────────────────────────────
 
 def vices_list(request):
-    """معاونین و معاونت‌های موسسه — یک صفحه برای هر دو مفهوم."""
-    vices = list(
-        VicePresidency.objects.filter(is_active=True).order_by('vice_type')
-    )
-    context = {
-        'vices': vices,
-        # معاونت‌هایی که هنوز رکوردی ندارند، تا ادمین بداند چه مانده
-        'unregistered': [
-            label for key, label in VicePresidency.VICE_TYPE_CHOICES
-            if key not in {v.vice_type for v in vices}
-        ],
-        'page_title': 'معاونین و معاونت‌ها',
-    }
-    return render(request, 'core/vices_list.html', context)
+    """معاونت‌های موسسه.
+
+    فهرست از context_processor می‌آید (`nav_vices`) — همان ساختاری
+    که نوار بالای سایت از آن می‌خواند. پیش از این صفحه فهرست خودش
+    را می‌ساخت و ترتیبش با منو یکی نبود.
+    """
+    return render(request, 'core/vices_list.html', {
+        'page_title': 'معاونت‌ها',
+    })
 
 
 def vice_detail(request, vice_type):

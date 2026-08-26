@@ -2984,14 +2984,6 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 
-/* زیرمجموعهٔ هر معاونت در منو — یک پله تورفته و کمی کوچک‌تر، تا
-   رابطهٔ «زیرِ» دیده شود بدون ساختن منوی تودرتو که روی موبایل
-   عملاً باز نمی‌شود. */
-.nav-dd-sub {
-    padding-inline-start: 30px !important;
-    font-size: 12.5px !important;
-    opacity: .82;
-}
 .nav-dd-sub:hover, .nav-dd-sub:focus { opacity: 1; }
 
 /* ── کارت گروه: مدیر گروه با عکس ─────────────────────────── */
@@ -3264,4 +3256,255 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     /* خط‌های کناری نشانی روی صفحهٔ باریک چیزی جز فشردن متن نیستند */
     .wcu-link { flex-direction: column; gap: 10px; }
     .wcu-link-rule { inline-size: 60%; flex: 0 0 auto; }
+}
+
+/* ── منوی معاونت‌ها ─────────────────────────────────────────
+   پنج معاونت با زیرمجموعه‌هایشان در یک فهرست، پیش از این ۱۵ ردیف
+   هم‌شکل بود و چشم نمی‌فهمید کدام سرگروه است و کدام زیرمجموعه.
+   حالا شماره‌ی گرد سرگروه را مشخص می‌کند و زیرمجموعه‌ها تورفتگی و
+   خط راهنما دارند. */
+.nav-dd-vices { min-inline-size: 288px; padding-block: 8px !important; }
+
+.vice-group { display: block; }
+.vice-group + .vice-group {
+    margin-block-start: 6px;
+    padding-block-start: 6px;
+    border-block-start: 1px solid rgba(255, 255, 255, .08);
+}
+
+.vice-lead {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700 !important;
+}
+
+.vice-num {
+    flex: 0 0 auto;
+    inline-size: 22px;
+    block-size: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(201, 163, 78, .18);
+    border: 1px solid rgba(201, 163, 78, .55);
+    color: var(--bnr-gold-300, #f0d080);
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.vice-lead-text { min-inline-size: 0; }
+
+/* زیرمجموعه: تورفته، با یک خط راهنمای عمودی که به سرگروهش وصلش
+   می‌کند. بدون آن، در فهرست بلند معلوم نبود زیرِ کدام معاونت است. */
+.nav-dd-sub {
+    position: relative;
+    padding-inline-start: 44px !important;
+    font-size: 12.5px !important;
+    opacity: .85;
+}
+.nav-dd-sub::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 26px;
+    inset-block: 0;
+    inline-size: 1px;
+    background: rgba(201, 163, 78, .3);
+}
+.nav-dd-sub.is-plain { cursor: default; opacity: .6; }
+
+/* ── صفحهٔ معاونت‌ها ─────────────────────────────────────────
+   ستون شماره‌دار: خط عمودی از ۱ تا ۵ می‌گذرد و هر شماره آن را
+   می‌شکند. ترتیب معنا دارد (سند اصلاحات آن را تعیین کرده)، پس
+   شماره تزئین نیست. */
+.vices-lead {
+    max-inline-size: 62ch;
+    margin: 0 auto clamp(28px, 4vw, 52px);
+    font-size: clamp(14px, 1.5vw, 16px);
+    line-height: 2.1;
+    color: var(--text-muted, #6b5b5e);
+    text-align: center;
+}
+
+.vices-spine {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-inline-start: clamp(32px, 4vw, 54px);
+}
+
+/* خودِ ستون */
+.vices-spine::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: clamp(15px, 2vw, 26px);
+    inset-block: 12px;
+    inline-size: 2px;
+    background: linear-gradient(to bottom,
+        var(--gold-light, #c9a34e), rgba(201, 163, 78, .15));
+}
+
+.vice-item { position: relative; margin-block-end: clamp(18px, 2.4vw, 30px); }
+.vice-item:last-child { margin-block-end: 0; }
+
+.vice-marker {
+    position: absolute;
+    inset-inline-start: calc(clamp(32px, 4vw, 54px) * -1 + clamp(15px, 2vw, 26px) - 16px);
+    inset-block-start: 18px;
+    inline-size: 34px;
+    block-size: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--gradient-primary, linear-gradient(135deg, #4e1220, #9c2c3d));
+    border: 2px solid var(--bg-light, #faf6f1);
+    color: var(--bnr-gold-300, #f0d080);
+    font-size: 15px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 4px 12px -6px rgba(78, 18, 32, .6);
+}
+
+.vice-card {
+    padding: clamp(18px, 2.4vw, 26px);
+    border-radius: 16px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    box-shadow: 0 8px 26px -22px rgba(78, 18, 32, .5);
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.vice-card:hover {
+    border-color: var(--gold-light, #c9a34e);
+    box-shadow: 0 14px 34px -24px rgba(78, 18, 32, .6);
+}
+
+.vice-card-head {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 1.8vw, 18px);
+    margin-block-end: 14px;
+}
+
+.vice-photo {
+    flex: 0 0 auto;
+    inline-size: 68px;
+    block-size: 68px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid var(--border, #e8dcd0);
+}
+
+.vice-photo-empty {
+    display: grid;
+    place-items: center;
+    background: rgba(122, 31, 46, .07);
+    color: var(--primary, #7a1f2e);
+    font-size: 26px;
+}
+
+.vice-headings { min-inline-size: 0; }
+
+.vice-title { margin: 0; font-size: clamp(16px, 1.8vw, 20px); font-weight: 800; }
+.vice-title a { color: var(--primary, #7a1f2e); text-decoration: none; }
+.vice-title a:hover { color: var(--primary-light, #9c2c3d); }
+
+.vice-person {
+    margin: 5px 0 0;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-dark, #241a1c);
+}
+
+.vice-rank { margin: 2px 0 0; font-size: 12.5px; color: var(--text-muted, #6b5b5e); }
+
+.vice-desc {
+    margin: 0 0 14px;
+    font-size: 14px;
+    line-height: 2;
+    color: var(--text-muted, #6b5b5e);
+}
+
+.vice-units {
+    margin-block-end: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--bg-light, #faf6f1);
+}
+
+.vice-units-title {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--gold-ink, #8a6412);
+}
+
+.vice-unit-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.vice-unit-list li a,
+.vice-unit-list li span {
+    display: inline-block;
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    font-size: 12.5px;
+    color: var(--text-dark, #241a1c);
+    text-decoration: none;
+}
+.vice-unit-list li a:hover {
+    border-color: var(--primary, #7a1f2e);
+    color: var(--primary, #7a1f2e);
+}
+.vice-unit-list li span { opacity: .7; }
+
+.vice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+
+.vice-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--primary, #7a1f2e);
+    text-decoration: none;
+}
+.vice-more:hover { color: var(--primary-light, #9c2c3d); gap: 11px; }
+.vice-more i { font-size: 11px; transition: none; }
+
+.vice-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-muted, #6b5b5e);
+    text-decoration: none;
+}
+.vice-contact:hover { color: var(--primary, #7a1f2e); }
+
+[data-theme="dark"] .vice-card,
+[data-theme="dark"] .vice-unit-list li a,
+[data-theme="dark"] .vice-unit-list li span { background: var(--bg-white); }
+[data-theme="dark"] .vice-units { background: rgba(255, 255, 255, .04); }
+
+@media (max-width: 575.98px) {
+    /* ستون شماره‌دار روی صفحهٔ باریک نصف پهنا را می‌خورد */
+    .vices-spine { padding-inline-start: 0; }
+    .vices-spine::before { display: none; }
+    .vice-marker {
+        position: static;
+        inline-size: 30px;
+        block-size: 30px;
+        margin-block-end: 10px;
+    }
+    .vice-card-head { flex-direction: column; text-align: center; }
 }

@@ -260,33 +260,34 @@
                 همان می‌آید — «تحصیلات تکمیلی» زیر آموزشی و «دفتر
                 همکاری‌های علمی» زیر پژوهشی.
                 {% endcomment %}
-                <li class="nav-item dropdown">
+                                <li class="nav-item dropdown">
                     <a class="nav-link-flat dropdown-toggle" href="{% url 'core:vices_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="fas fa-users-cog" style="font-size:13px;margin-left:3px;"></i> معاونین
+                        <i class="fas fa-users-cog" style="font-size:13px;margin-left:3px;"></i> معاونت‌ها
                     </a>
-                    <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'core:vices_list' %}">همهٔ معاونین و معاونت‌ها</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                    {% comment %}
+                    ساختار از core/vices.py می‌آید، نه از این قالب: منو و
+                    صفحهٔ معاونت‌ها پیش از این دو فهرست جدا بودند و با هم
+                    اختلاف پیدا می‌کردند.
 
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'education' %}">۱. معاونت آموزشی</a></li>
-                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:graduate_studies' %}">— تحصیلات تکمیلی</a></li>
-                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:graduate_manager' %}">— مدیر تحصیلات تکمیلی</a></li>
-                        {% comment %}
-                        گروه‌های دارای تحصیلات تکمیلی — بند ۱۷ سند
-                        اصلاحات. ترتیبشان از پنل می‌آید، نه از قالب.
-                        {% endcomment %}
-                        {% for g in nav_graduate_groups %}
-                        <li><a class="dropdown-item nav-dd-sub" href="{{ g.get_absolute_url }}">— {{ g.name }}</a></li>
+                    آیتم «همهٔ معاونین» برداشته شد؛ خودِ عنوان منو به همان
+                    صفحه می‌رود، پس تکرارش فقط یک ردیف اضافه بود.
+                    {% endcomment %}
+                    <ul class="dropdown-menu nav-dd nav-dd-vices">
+                        {% for row in nav_vices %}
+                        <li class="vice-group">
+                            <a class="dropdown-item nav-dd-item vice-lead" href="{{ row.url }}">
+                                <span class="vice-num" aria-hidden="true">{{ row.number }}</span>
+                                <span class="vice-lead-text">{{ row.label }}</span>
+                            </a>
+                            {% for child in row.children %}
+                            {% if child.url %}
+                            <a class="dropdown-item nav-dd-sub" href="{{ child.url }}">{{ child.title }}</a>
+                            {% else %}
+                            <span class="dropdown-item nav-dd-sub is-plain">{{ child.title }}</span>
+                            {% endif %}
+                            {% endfor %}
+                        </li>
                         {% endfor %}
-                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:groups_list' %}">— همهٔ گروه‌های آموزشی</a></li>
-
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'research' %}">۲. معاونت پژوهشی</a></li>
-                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:international_office' %}">— دفتر همکاری‌های علمی و بین‌المللی</a></li>
-                        <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:resources' %}">— منابع پژوهشی</a></li>
-
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'admin_finance' %}">۳. معاونت اداری و مالی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'student' %}">۴. معاونت دانشجویی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:vice_detail' 'construction' %}">۵. معاونت فنی و عمرانی</a></li>
                     </ul>
                 </li>
 

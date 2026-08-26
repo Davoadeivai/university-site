@@ -41,15 +41,21 @@ def global_context(request):
         # اصلاحات ترتیب ثابتی دارد و در قالب نوشته شده؛ این فهرست
         # جاهای دیگری که به داده نیاز دارند را تغذیه می‌کند.
         from core.models import VicePresidency
-        nav_vices = list(
-            VicePresidency.objects.filter(is_active=True).order_by('vice_type')
-        )
+        vices_by_type = {
+            v.vice_type: v for v in
+            VicePresidency.objects.filter(is_active=True).prefetch_related('units')
+        }
 
         # گروه‌های دارای تحصیلات تکمیلی — بند ۱۷ سند اصلاحات
         nav_graduate_groups = list(
             AcademicGroup.objects.filter(is_active=True, has_graduate=True)
             .order_by('graduate_order', 'name')
         )
+
+        # ساختار معاونت‌ها از یک منبع می‌آید تا منو و صفحه هرگز
+        # با هم اختلاف پیدا نکنند.
+        from core import vices as vices_structure
+        nav_vices = vices_structure.build(vices_by_type, nav_graduate_groups)
 
         cached = {
             'site_settings': settings,

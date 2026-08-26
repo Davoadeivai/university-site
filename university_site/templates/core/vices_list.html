@@ -1,4 +1,17 @@
 {% extends 'base.html' %}
+
+{% comment %}
+معاونت‌ها — یک ستون شماره‌دار.
+
+پیش از این دو مفهوم جدا نشان داده می‌شد: «معاونین» (اشخاص) و
+«معاونت‌ها» (حوزه‌ها). موسسه خواست یکی شوند، و درست هم هست: هر
+معاونت یک معاون دارد و جدا کردنشان بازدیدکننده را دو بار به دنبال
+یک چیز می‌فرستاد.
+
+ترتیب و زیرمجموعه‌ها از core/vices.py می‌آید — همان منبعی که نوار
+بالای سایت از آن می‌خواند.
+{% endcomment %}
+
 {% block content %}
 <div class="page-header">
     <div class="container">
@@ -6,103 +19,105 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'core:presidency' %}">حوزه ریاست</a></li>
-                <li class="breadcrumb-item active">معاونین و معاونت‌ها</li>
+                <li class="breadcrumb-item active" aria-current="page">معاونت‌ها</li>
             </ol>
         </nav>
-        <h1 class="page-header-title">معاونین و معاونت‌ها</h1>
+        <h1 class="page-header-title">معاونت‌های موسسه</h1>
     </div>
 </div>
 
-<section class="section">
+<section class="section vices-page">
     <div class="container">
 
-        <div class="row mb-5">
-            <div class="col-lg-8 mx-auto text-center" data-aos="fade-up">
-                <div class="dept-icon mx-auto mb-3" style="width:70px;height:70px;font-size:2rem;">
-                    <i class="fas fa-sitemap text-primary"></i>
-                </div>
-                <h2 class="section-title">ساختار معاونت‌های موسسه</h2>
-                <p class="text-muted" style="font-size:15px;line-height:2;">
-                    هر معاونت حوزهٔ مشخصی از فعالیت‌های موسسه را بر عهده دارد.
-                    روی هر کارت بزنید تا معرفی، شرح وظایف، واحدهای زیرمجموعه و
-                    راه تماس آن معاونت را ببینید.
-                </p>
-            </div>
-        </div>
+        <p class="vices-lead">
+            هر معاونت حوزه‌ای مشخص از فعالیت‌های موسسه را بر عهده دارد.
+            روی هر معاونت بزنید تا معرفی، شرح وظایف و راه تماس آن را ببینید.
+        </p>
 
-        {% comment %}
-          کارت‌ها از پایگاه داده می‌آیند. نسخهٔ قبلی پنج کارت ثابت در قالب
-          داشت: معاونتی که در پنل غیرفعال می‌شد باز هم نمایش داده می‌شد، و
-          نام معاون هیچ‌جا دیده نمی‌شد چون قالب اصلاً به رکورد وصل نبود.
-        {% endcomment %}
-        <div class="row g-4">
-            {% for vice in vices %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
-                <a href="{% url 'core:vice_detail' vice.vice_type %}" class="text-decoration-none">
-                    <div class="dept-card h-100 d-flex flex-column">
+        <ol class="vices-spine">
+            {% for row in nav_vices %}
+            <li class="vice-item">
+                {% comment %}
+                شماره روی ستون عمودی می‌نشیند و خط را می‌شکند؛ ترتیب
+                همان است که سند اصلاحات خواسته، پس عدد معنا دارد و
+                تزئین نیست.
+                {% endcomment %}
+                <span class="vice-marker" aria-hidden="true">{{ row.number }}</span>
 
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            {% if vice.photo %}
-                            <img loading="lazy" decoding="async" src="{{ vice.photo.url }}" alt="{{ vice.full_name }}"
-                                 class="rounded-circle border border-2 border-warning flex-shrink-0"
-                                 style="width:62px;height:62px;object-fit:cover;">
-                            {% else %}
-                            <span class="rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0"
-                                  style="width:62px;height:62px;background:var(--gradient-primary);">
-                                <i class="fas fa-user-tie text-white" style="font-size:1.4rem;"></i>
-                            </span>
-                            {% endif %}
-                            <div class="min-w-0">
-                                <h5 class="dept-title mb-1" style="font-size:15px;">{{ vice.get_vice_type_display }}</h5>
-                                {% if vice.full_name %}
-                                <div class="text-muted" style="font-size:13px;">{{ vice.full_name }}</div>
-                                {% if vice.academic_rank %}
-                                <small class="text-muted">{{ vice.academic_rank }}</small>
-                                {% endif %}
-                                {% else %}
-                                <small class="text-muted">معاون هنوز معرفی نشده</small>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        {% if vice.description %}
-                        <p class="text-muted flex-grow-1" style="font-size:13px;line-height:1.9;">
-                            {{ vice.description|truncatewords:22 }}
-                        </p>
+                <article class="vice-card">
+                    <header class="vice-card-head">
+                        {% if row.vice and row.vice.photo %}
+                        <img loading="lazy" decoding="async"
+                             src="{{ row.vice.photo.url }}"
+                             alt="{{ row.vice.full_name }}" class="vice-photo">
                         {% else %}
-                        <div class="flex-grow-1"></div>
+                        <span class="vice-photo vice-photo-empty" aria-hidden="true">
+                            <i class="fas {{ row.icon }}"></i>
+                        </span>
                         {% endif %}
 
-                        <div class="d-flex flex-wrap gap-2 align-items-center pt-2 border-top"
-                             style="font-size:12px;">
-                            {% if vice.phone %}
-                            <span class="text-muted"><i class="fas fa-phone-alt ms-1"></i>{{ vice.phone }}</span>
+                        <div class="vice-headings">
+                            <h2 class="vice-title">
+                                <a href="{{ row.url }}">{{ row.label }}</a>
+                            </h2>
+                            {% if row.vice and row.vice.full_name %}
+                            <p class="vice-person">{{ row.vice.full_name }}</p>
+                            {% if row.vice.academic_rank %}
+                            <p class="vice-rank">{{ row.vice.academic_rank }}</p>
                             {% endif %}
-                            {% if vice.office %}
-                            <span class="text-muted"><i class="fas fa-map-marker-alt ms-1"></i>{{ vice.office }}</span>
+                            {% elif request.user.is_staff %}
+                            {% comment %}
+                            فقط کارکنان: بازدیدکننده لازم نیست بداند کدام
+                            رکورد پر نشده، ولی ادمین باید بداند چه مانده.
+                            {% endcomment %}
+                            <p class="vice-rank vice-todo">معاون این حوزه هنوز ثبت نشده است.</p>
                             {% endif %}
-                            <span class="text-primary ms-auto">
-                                بیشتر بدانید <i class="fas fa-arrow-left"></i>
-                            </span>
                         </div>
+                    </header>
 
+                    {% if row.vice and row.vice.description %}
+                    <p class="vice-desc">{{ row.vice.description|truncatewords:38 }}</p>
+                    {% endif %}
+
+                    {% if row.children %}
+                    <div class="vice-units">
+                        <h3 class="vice-units-title">زیرمجموعه‌ها</h3>
+                        <ul class="vice-unit-list">
+                            {% for child in row.children %}
+                            <li>
+                                {% if child.url %}
+                                <a href="{{ child.url }}">{{ child.title }}</a>
+                                {% else %}
+                                <span>{{ child.title }}</span>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
-                </a>
-            </div>
-            {% empty %}
-            {% include 'core/_empty_state.html' with label='معاونتی' add_url='/admin/core/vicepresidency/add/' hint='هر معاونت که ثبت شود، همین‌جا و در منوی «حوزه ریاست» ظاهر می‌شود.' %}
-            {% endfor %}
-        </div>
+                    {% endif %}
 
-        {% if unregistered and user.is_staff %}
-        <div class="alert alert-warning mt-4" style="font-size:13px;border-radius:12px;">
-            <i class="fas fa-info-circle ms-1"></i>
-            این معاونت‌ها هنوز رکوردی ندارند و در سایت دیده نمی‌شوند:
-            <strong>{{ unregistered|join:'، ' }}</strong>
-            <a href="/admin/core/vicepresidency/add/" class="fw-bold">افزودن</a>
-            <br><small>این پیام فقط برای همکاران موسسه دیده می‌شود.</small>
-        </div>
-        {% endif %}
+                    <div class="vice-actions">
+                        <a href="{{ row.url }}" class="vice-more">
+                            صفحهٔ این معاونت
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        </a>
+                        {% if row.vice and row.vice.email %}
+                        <a href="mailto:{{ row.vice.email }}" class="vice-contact" dir="ltr">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            {{ row.vice.email }}
+                        </a>
+                        {% endif %}
+                        {% if row.vice and row.vice.phone %}
+                        <a href="tel:{{ row.vice.phone }}" class="vice-contact" dir="ltr">
+                            <i class="fas fa-phone" aria-hidden="true"></i>
+                            {{ row.vice.phone }}
+                        </a>
+                        {% endif %}
+                    </div>
+                </article>
+            </li>
+            {% endfor %}
+        </ol>
 
     </div>
 </section>

@@ -128,18 +128,22 @@ class Command(BaseCommand):
                      has('grp-head-photo', groups),
                      'عکس و نام مدیر گروه'))
 
-        order = all(
-            ('%d. معاونت' % n) in base.replace('۱', '1').replace('۲', '2')
-            .replace('۳', '3').replace('۴', '4').replace('۵', '5')
-            for n in range(1, 6))
-        rows.append((13, 'منوی معاونین با ترتیب سند',
-                     DONE if order else MISSING,
+        # ساختار از core/vices.py می‌آید؛ همان را می‌سنجیم، نه متن
+        # قالب. شماره‌ها حالا در <span> جدا هستند و جست‌وجوی
+        # «۱. معاونت» دیگر چیزی پیدا نمی‌کند.
+        from core.vices import VICE_ORDER
+        expected = ['education', 'research', 'admin_finance',
+                    'student', 'construction']
+        order = [key for key, _label, _icon in VICE_ORDER] == expected
+        looped = 'nav_vices' in base
+        rows.append((13, 'منوی معاونت‌ها با ترتیب سند',
+                     DONE if (order and looped) else MISSING,
                      'آموزشی، پژوهشی، اداری‌ومالی، دانشجویی، فنی‌وعمرانی'))
 
         # لنگر باید خودِ آیتم منو باشد: اولین «معاونت پژوهشی» در
         # base.html داخل یک کامنت است و بلوکِ بعدش منو نیست.
-        marker = "vice_detail" + chr(39) + " " + chr(39) + "research"
-        research_block = base.split(marker)[1][:500] if marker in base else ""
+        from core.vices import STATIC_UNITS
+        research_block = str(STATIC_UNITS.get('research', []))
         rows.append((14, 'دفتر همکاری‌های علمی زیر معاونت پژوهشی',
                      DONE if 'international_office' in research_block else MISSING,
                      'و برداشته‌شده از حوزهٔ ریاست'))
@@ -149,9 +153,7 @@ class Command(BaseCommand):
                      'بر اساس چارت سازمانی'))
 
         top_level = base.count('nav-link-flat') and 'تحصیلات تکمیلی' in base
-        edu_marker = "vice_detail" + chr(39) + " " + chr(39) + "education"
-        education_block = (base.split(edu_marker)[1][:600]
-                           if edu_marker in base else "")
+        education_block = str(STATIC_UNITS.get('education', []))
         rows.append((
             16, 'تحصیلات تکمیلی زیر معاونت آموزشی',
             DONE if 'graduate_studies' in education_block else MISSING,

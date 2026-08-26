@@ -746,8 +746,11 @@ class VicesNavigationTests(TestCase):
     def test_deputies_have_their_own_top_level_menu(self):
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertIn('حوزه ریاست', body)
-        self.assertIn('معاونین', body)
-        self.assertIn('همهٔ معاونین و معاونت‌ها', body)
+        # موسسه خواست «معاونین» به «معاونت‌ها» تغییر کند و آیتم
+        # «همهٔ معاونین» برداشته شود؛ عنوان منو خودش به آن صفحه می‌رود.
+        self.assertIn('معاونت‌ها', body)
+        self.assertNotIn('همهٔ معاونین و معاونت‌ها', body)
+        self.assertIn(reverse('core:vices_list'), body)
 
     def test_the_menu_order_is_fixed_by_the_institute(self):
         """بند ۱۳ سند اصلاحات ترتیب مشخصی خواسته است.
@@ -775,13 +778,13 @@ class VicesNavigationTests(TestCase):
         from django.contrib.auth.models import User
 
         body = self.client.get(reverse('core:vices_list')).content.decode()
-        self.assertNotIn('هنوز رکوردی ندارند', body)
+        self.assertNotIn('هنوز ثبت نشده', body)
 
         User.objects.create_user('kar2', password='Str0ng!Pass2026', is_staff=True)
         self.client.login(username='kar2', password='Str0ng!Pass2026')
         body = self.client.get(reverse('core:vices_list')).content.decode()
-        self.assertIn('هنوز رکوردی ندارند', body)
-        self.assertIn('معاونت پژوهشی و فناوری', body)
+        self.assertIn('هنوز ثبت نشده', body)
+        self.assertIn('معاونت پژوهشی', body)
 
 
 class CompletenessPlaceholderTests(TestCase):

@@ -42,6 +42,21 @@ class HeaderRevisionTests(TestCase):
         self.assertEqual(banner.count('bnr-wcu'), 2)
 
 
+
+def _vice_block(nav, key, next_key=None):
+    """قطعهٔ منوی یک معاونت.
+
+    شماره‌ها حالا در یک <span> جدا هستند، نه چسبیده به عنوان، پس
+    لنگر باید نشانی خودِ معاونت باشد — چیزی که با تغییر ظاهر عوض
+    نمی‌شود.
+    """
+    from django.urls import reverse
+    start = nav.index(reverse('core:vice_detail', args=[key]))
+    if next_key is None:
+        return nav[start:]
+    return nav[start:nav.index(reverse('core:vice_detail', args=[next_key]))]
+
+
 class NavigationRevisionTests(TestCase):
     """بندهای ۱۱، ۱۳، ۱۴ و ۱۶ — منوی اصلی."""
 
@@ -68,15 +83,20 @@ class NavigationRevisionTests(TestCase):
 
     def test_deputies_have_their_own_menu_in_order(self):
         """بند ۱۳: معاونین در منوی اصلی، با ترتیب خواسته‌شده."""
+        from django.urls import reverse as url_of
         nav = self._nav()
-        order = ['۱. معاونت آموزشی', '۲. معاونت پژوهشی',
-                 '۳. معاونت اداری و مالی', '۴. معاونت دانشجویی',
-                 '۵. معاونت فنی و عمرانی']
+        keys = ['education', 'research', 'admin_finance',
+                'student', 'construction']
         positions = []
-        for label in order:
-            self.assertIn(label, nav, 'در منو نیست: %s' % label)
-            positions.append(nav.index(label))
-        self.assertEqual(positions, sorted(positions), 'ترتیب معاونت‌ها به هم خورده')
+        for key in keys:
+            target = url_of('core:vice_detail', args=[key])
+            self.assertIn(target, nav, 'در منو نیست: %s' % key)
+            positions.append(nav.index(target))
+        self.assertEqual(positions, sorted(positions),
+                         'ترتیب معاونت‌ها به هم خورده')
+        # شماره‌ها هم باید باشند، ولی جدا از عنوان
+        for number in range(1, 6):
+            self.assertIn('>%d</span>' % number, nav)
 
     def test_graduate_studies_moved_under_education(self):
         """بند ۱۶: تحصیلات تکمیلی از منوهای اصلی به زیر معاونت آموزشی."""
@@ -85,16 +105,16 @@ class NavigationRevisionTests(TestCase):
         self.assertNotIn('fa-graduation-cap" style="font-size:13px;'
                          'margin-left:3px;"></i> تحصیلات تکمیلی', nav)
         # ولی زیر معاونت آموزشی هست
-        block = nav.split('۱. معاونت آموزشی')[1].split('۲. معاونت پژوهشی')[0]
+        block = _vice_block(nav, 'education', 'research')
         self.assertIn('تحصیلات تکمیلی', block)
 
     def test_international_office_moved_under_research(self):
         """بند ۱۴: دفتر همکاری‌های علمی زیر معاونت پژوهشی."""
         nav = self._nav()
-        block = nav.split('۲. معاونت پژوهشی')[1].split('۳. معاونت اداری')[0]
+        block = _vice_block(nav, 'research', 'admin_finance')
         self.assertIn('دفتر همکاری‌های علمی', block)
         # و دیگر زیر «حوزه ریاست» نیست
-        presidency = nav.split('حوزه ریاست')[1].split('معاونین')[0]
+        presidency = nav.split('fa-user-tie')[1].split('</ul>')[0]
         self.assertNotIn('دفتر همکاری', presidency)
 
 
@@ -241,7 +261,7 @@ class GraduateGroupsTests(TestCase):
 
         html = self.client.get(reverse('core:home')).content.decode()
         nav = html.split('id="mainNav"')[1].split('</nav>')[0]
-        block = nav.split('۱. معاونت آموزشی')[1].split('۲. معاونت پژوهشی')[0]
+        block = _vice_block(nav, 'education', 'research')
         self.assertIn('گروه آموزشی حسابداری', block)
 
 
