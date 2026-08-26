@@ -3,12 +3,67 @@ from .models import Department, Major, AcademicCalendar, Laboratory, AcademicGro
 
 
 def departments_list(request):
-    departments = Department.objects.filter(is_active=True)
-    context = {
+    """ساختار آموزشی موسسه — دانشکده، گروه، رشته، در یک درخت.
+
+    سه پرس‌وجو برای کل درخت: دانشکده‌ها، گروه‌ها، رشته‌ها. حلقه‌زدن
+    روی روابط در قالب، برای یازده گروه و پنجاه‌وهشت رشته ده‌ها
+    پرس‌وجوی جدا می‌ساخت.
+    """
+    from academics.models import AcademicGroup
+
+    departments = list(
+        Department.objects.filter(is_active=True).order_by('order', 'name'))
+    groups = list(
+        AcademicGroup.objects.filter(is_active=True)
+        .order_by('order', 'name'))
+    majors = list(
+        Major.objects.filter(is_active=True)
+        .order_by('degree', 'name')
+        .values('name', 'slug', 'degree', 'group_id', 'department_id'))
+
+    degree_label = dict(Major.DEGREE_CHOICES)
+
+    by_group = {}
+    loose = {}
+    for major in majors:
+        row = {
+            'name': major['name'],
+            'slug': major['slug'],
+            'degree': major['degree'],
+            'degree_label': degree_label.get(major['degree'], ''),
+        }
+        if major['group_id']:
+            by_group.setdefault(major['group_id'], []).append(row)
+        else:
+            # رشتهٔ بی‌گروه نباید از درخت بیفتد
+            loose.setdefault(major['department_id'], []).append(row)
+
+    groups_by_department = {}
+    for group in groups:
+        groups_by_department.setdefault(group.department_id, []).append({
+            'group': group,
+            'majors': by_group.get(group.id, []),
+        })
+
+    tree = []
+    for department in departments:
+        branches = groups_by_department.get(department.id, [])
+        tree.append({
+            'department': department,
+            'branches': branches,
+            'loose': loose.get(department.id, []),
+            'group_count': len(branches),
+            'major_count': sum(len(b['majors']) for b in branches)
+                           + len(loose.get(department.id, [])),
+        })
+
+    return render(request, 'academics/departments.html', {
         'departments': departments,
-        'page_title': 'دانشکده‌ها و گروه‌های آموزشی',
-    }
-    return render(request, 'academics/departments.html', context)
+        'tree': tree,
+        'total_groups': len(groups),
+        'total_majors': len(majors),
+        'page_title': 'دانشکده‌ها',
+    })
 
 
 def department_detail(request, slug):

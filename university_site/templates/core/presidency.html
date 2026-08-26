@@ -159,7 +159,7 @@
 
         <div class="pres-row">
             {% if office.president_phone %}
-            <a class="pres-tile pres-tile-1" href="tel:{{ office.president_phone }}">
+            <a class="pres-tile pres-tile-1" {% if office.tile_styles.phone %}style="{{ office.tile_styles.phone }}"{% endif %} href="tel:{{ office.president_phone }}">
                 <i class="fas fa-phone" aria-hidden="true"></i>
                 <span class="pres-tile-label">تلفن</span>
                 <span class="pres-tile-value" dir="ltr">{{ office.president_phone }}</span>
@@ -167,27 +167,27 @@
             {% endif %}
 
             {% if office.president_email %}
-            <a class="pres-tile pres-tile-2" href="mailto:{{ office.president_email }}">
+            <a class="pres-tile pres-tile-2" {% if office.tile_styles.email %}style="{{ office.tile_styles.email }}"{% endif %} href="mailto:{{ office.president_email }}">
                 <i class="fas fa-envelope" aria-hidden="true"></i>
                 <span class="pres-tile-label">ایمیل</span>
                 <span class="pres-tile-value" dir="ltr">{{ office.president_email }}</span>
             </a>
             {% endif %}
 
-            <div class="pres-tile pres-tile-3">
+            <div class="pres-tile pres-tile-3" {% if office.tile_styles.hours %}style="{{ office.tile_styles.hours }}"{% endif %}>
                 <i class="fas fa-calendar-day" aria-hidden="true"></i>
                 <span class="pres-tile-label">روزهای مراجعه</span>
                 <span class="pres-tile-value">{{ office.office_hours|default:'شنبه تا پنجشنبه' }}</span>
             </div>
 
-            <div class="pres-tile pres-tile-4">
+            <div class="pres-tile pres-tile-4" {% if office.tile_styles.floor %}style="{{ office.tile_styles.floor }}"{% endif %}>
                 <i class="fas fa-building" aria-hidden="true"></i>
                 <span class="pres-tile-label">دفتر ریاست</span>
                 <span class="pres-tile-value">{{ office.office_floor|default:"—" }}</span>
             </div>
 
             {% if office.office_address %}
-            <div class="pres-tile pres-tile-5">
+            <div class="pres-tile pres-tile-5" {% if office.tile_styles.address %}style="{{ office.tile_styles.address }}"{% endif %}>
                 <i class="fas fa-location-dot" aria-hidden="true"></i>
                 <span class="pres-tile-label">نشانی</span>
                 <span class="pres-tile-value">{{ office.office_address }}</span>

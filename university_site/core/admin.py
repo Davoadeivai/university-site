@@ -109,7 +109,7 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         نوشتن دستیِ کد هگز هم غلط‌پذیر است و هم نتیجه را تا ذخیره‌شدن
         نشان نمی‌دهد.
         """
-        if db_field.name.startswith('calendar_ink'):
+        if db_field.name.startswith(('calendar_ink', 'tile_color')):
             kwargs['widget'] = forms.TextInput(attrs={
                 'type': 'color',
                 'style': 'width:70px;height:38px;padding:2px;',
@@ -349,6 +349,19 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'office_address', 'office_floor',
                 'office_phone', 'office_fax',
                 'office_email', 'office_hours',
+            ),
+        }),
+        ('رنگ کارت‌های ارتباط با ریاست', {
+            'fields': (
+                'tile_color_phone', 'tile_color_email', 'tile_color_hours',
+                'tile_color_floor', 'tile_color_address',
+            ),
+            'classes': ('collapse',),
+            'description': (
+                'رنگ پنج کارت پایین صفحهٔ ریاست. رنگ روی نوار بالای '
+                'کارت و آیکون می‌نشیند، نه روی زمینهٔ متن — متن تیره '
+                'روی پنج زمینهٔ رنگی، پنج مسئلهٔ کنتراست است.<br>'
+                'خالی بگذارید تا رنگ پیش‌فرض بماند.'
             ),
         }),
     )

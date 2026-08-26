@@ -448,6 +448,21 @@ class PresidencyOffice(models.Model):
         help_text=_(
             'مثلاً «طبقهٔ سوم». پیش از این در قالب ثابت نوشته شده بود و '
             'با نشانیِ ثبت‌شده نمی‌خواند — یکی سوم می‌گفت و دیگری دوم.'))
+    # ── رنگ کارت‌های «ارتباط با ریاست» ──
+    # پیش از این پنج رنگ در CSS ثابت بود و عوض‌کردنشان یک دیپلوی
+    # می‌خواست. خالی یعنی همان رنگ پیش‌فرض قالب.
+    TILE_HELP = _('خالی بگذارید تا رنگ پیش‌فرض بماند.')
+    tile_color_phone = models.CharField(
+        _('رنگ کارت تلفن'), max_length=9, blank=True, help_text=TILE_HELP)
+    tile_color_email = models.CharField(
+        _('رنگ کارت ایمیل'), max_length=9, blank=True, help_text=TILE_HELP)
+    tile_color_hours = models.CharField(
+        _('رنگ کارت روزهای مراجعه'), max_length=9, blank=True, help_text=TILE_HELP)
+    tile_color_floor = models.CharField(
+        _('رنگ کارت دفتر ریاست'), max_length=9, blank=True, help_text=TILE_HELP)
+    tile_color_address = models.CharField(
+        _('رنگ کارت نشانی'), max_length=9, blank=True, help_text=TILE_HELP)
+
     president_cv = models.FileField(
         _('فایل رزومه'), upload_to='presidency/cv/', blank=True, null=True,
         validators=[FileExtensionValidator(
@@ -544,6 +559,25 @@ class PresidencyOffice(models.Model):
             return self.president_website_label
         host = (self.president_website or '').split('//')[-1]
         return host.split('/')[0] or ''
+
+    @property
+    def tile_styles(self) -> dict:
+        """رنگ کارت‌های ارتباط، فقط مقدارهای معتبر.
+
+        این مقدارها داخل صفت style کارت می‌نشینند؛ هر رشتهٔ دیگری
+        آنجا می‌تواند از اعلان بیرون بزند، پس هرچه شکل هگز نداشته
+        باشد دور ریخته می‌شود — نه پاک‌سازی، نه فرار دادن.
+        """
+        import re
+
+        pattern = re.compile(
+            r'^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$')
+        found = {}
+        for key in ('phone', 'email', 'hours', 'floor', 'address'):
+            value = (getattr(self, 'tile_color_%s' % key, '') or '').strip()
+            if pattern.match(value):
+                found[key] = '--tile:%s' % value
+        return found
 
     @property
     def orcid_url(self) -> str:

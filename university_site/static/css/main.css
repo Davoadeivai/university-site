@@ -2720,7 +2720,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .pres-split {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-    gap: clamp(20px, 3vw, 46px);
+    /* فاصلهٔ بازتر میان عکس و نشان: با ۴۶ پیکسل، نشان به لبهٔ قاب
+       عکس می‌چسبید و دو چیز جدا یکی به‌نظر می‌رسیدند. */
+    gap: clamp(28px, 5vw, 76px);
     align-items: start;
 }
 
@@ -3763,4 +3765,198 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     margin: 10px 0 0;
     font-size: 12.5px;
     color: var(--text-muted, #6b5b5e);
+}
+
+/* ── درخت ساختار آموزشی ─────────────────────────────────────
+   دانشکده ← گروه ← رشته. باز و بسته‌شدن از details می‌آید، نه از
+   جاوااسکریپت: رفتار خودِ مرورگر است، با صفحه‌کلید کار می‌کند، و
+   بدون اسکریپت هم همهٔ رشته‌ها در HTML هستند. */
+.tree-summary {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(16px, 3vw, 40px);
+    margin-block-end: clamp(26px, 3.4vw, 44px);
+    padding: 16px 22px;
+    border-radius: 14px;
+    background: var(--bg-light, #faf6f1);
+    border: 1px solid var(--border, #e8dcd0);
+    font-size: 14px;
+    color: var(--text-muted, #6b5b5e);
+}
+.tree-summary strong {
+    font-size: 19px;
+    color: var(--primary, #7a1f2e);
+    font-variant-numeric: tabular-nums;
+}
+
+.tree { display: grid; gap: clamp(18px, 2.4vw, 28px); }
+
+.tree-dept {
+    padding: clamp(18px, 2.4vw, 26px);
+    border-radius: 16px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    border-inline-start: 5px solid var(--tone, #7a1f2e);
+    box-shadow: 0 8px 26px -22px rgba(78, 18, 32, .5);
+}
+
+.tree-dept-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.tree-dept-icon {
+    inline-size: 40px;
+    block-size: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--tone) 12%, transparent);
+    color: var(--tone, #7a1f2e);
+    font-size: 17px;
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+    .tree-dept-icon { background: rgba(122, 31, 46, .1); }
+}
+
+.tree-dept-name { margin: 0; font-size: clamp(16px, 1.9vw, 20px); font-weight: 800; }
+.tree-dept-name a { color: var(--tone, #7a1f2e); text-decoration: none; }
+.tree-dept-name a:hover { text-decoration: underline; }
+
+.tree-dept-count {
+    margin-inline-start: auto;
+    font-size: 12.5px;
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.tree-dept-blurb {
+    margin: 12px 0 0;
+    font-size: 13.5px;
+    line-height: 2;
+    color: var(--text-muted, #6b5b5e);
+}
+
+/* شاخه‌ها: خط عمودی از دانشکده به هر گروه */
+.tree-branches {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    padding-inline-start: 22px;
+    border-inline-start: 2px solid color-mix(in srgb, var(--tone) 25%, transparent);
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+    .tree-branches { border-inline-start-color: rgba(122, 31, 46, .25); }
+}
+
+.tree-branch { position: relative; margin-block-end: 8px; }
+.tree-branch:last-child { margin-block-end: 0; }
+
+/* بازوی افقی از خط عمودی به هر گروه */
+.tree-branch::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -22px;
+    inset-block-start: 19px;
+    inline-size: 16px;
+    block-size: 2px;
+    background: color-mix(in srgb, var(--tone) 25%, transparent);
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+    .tree-branch::before { background: rgba(122, 31, 46, .25); }
+}
+
+.tree-branch summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--bg-light, #faf6f1);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    list-style: none;
+}
+.tree-branch summary::-webkit-details-marker { display: none; }
+.tree-branch summary:hover { background: color-mix(in srgb, var(--tone) 7%, var(--bg-light)); }
+.tree-branch summary:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
+
+/* مثلث باز/بسته — چرخش به‌جای دو آیکون جدا */
+.tree-branch summary::before {
+    content: "\f0da";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 12px;
+    color: var(--tone, #7a1f2e);
+    transition: transform .18s ease;
+}
+.tree-branch details[open] > summary::before { transform: rotate(-90deg); }
+
+.tree-group-name { min-inline-size: 0; }
+.tree-group-loose { color: var(--text-muted, #6b5b5e); font-weight: 600; }
+
+.tree-group-count {
+    margin-inline-start: auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.tree-majors {
+    list-style: none;
+    margin: 8px 0 12px;
+    padding: 0;
+    padding-inline-start: 26px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 6px;
+}
+
+.tree-majors li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border, #e8dcd0);
+    font-size: 13px;
+}
+.tree-majors li a { color: var(--text-dark, #241a1c); text-decoration: none; }
+.tree-majors li a:hover { color: var(--tone, #7a1f2e); text-decoration: underline; }
+
+.tree-degree {
+    margin-inline-start: auto;
+    font-size: 11px;
+    color: var(--text-muted, #6b5b5e);
+    white-space: nowrap;
+}
+
+.tree-empty {
+    margin: 8px 0 12px 26px;
+    font-size: 13px;
+    color: var(--text-muted, #6b5b5e);
+}
+
+.tree-dept-1 { --tone: #7a1f2e; }
+.tree-dept-2 { --tone: #8a6412; }
+.tree-dept-3 { --tone: #1f5c4a; }
+.tree-dept-4 { --tone: #4a3b8a; }
+
+[data-theme="dark"] .tree-dept,
+[data-theme="dark"] .tree-majors li { background: var(--bg-white); }
+[data-theme="dark"] .tree-summary,
+[data-theme="dark"] .tree-branch summary { background: rgba(255, 255, 255, .04); }
+[data-theme="dark"] .tree-summary strong { color: #f2a0ab; }
+[data-theme="dark"] .tree-dept-1 { --tone: #f2a0ab; }
+[data-theme="dark"] .tree-dept-2 { --tone: #e5c77a; }
+[data-theme="dark"] .tree-dept-3 { --tone: #6fd1b0; }
+[data-theme="dark"] .tree-dept-4 { --tone: #b0a4ef; }
+[data-theme="dark"] .tree-majors li a { color: #dfe9f3; }
+
+@media (max-width: 575.98px) {
+    .tree-branches { padding-inline-start: 14px; }
+    .tree-branch::before { inset-inline-start: -14px; inline-size: 10px; }
+    .tree-majors { padding-inline-start: 12px; }
 }

@@ -48,15 +48,19 @@
 }
 
 /* dark gradient overlay */
+/* پردهٔ تیره فقط برای خوانا نگه‌داشتن متنِ روی اسلاید بود؛ متن
+   برداشته شد و آنچه ماند، تصویر را بی‌دلیل کدر می‌کرد. یک لایهٔ
+   بسیار ملایم می‌ماند تا فلش‌ها و نقطه‌های ناوبری روی عکس روشن هم
+   دیده شوند. */
 .uni-hero-slide::after {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(
         to bottom,
-        rgba(0,0,0,.18) 0%,
-        rgba(0,0,0,.45) 55%,
-        rgba(0,0,0,.72) 100%
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,0) 62%,
+        rgba(0,0,0,.28) 100%
     );
 }
 
@@ -226,46 +230,7 @@
                  alt="{{ slide.title }}" loading="lazy">
             {% endif %}
 
-            <!-- content -->
-            <div class="uni-slide-body">
-                <div class="container">
 
-                    <!-- news/announcement badge -->
-                    {% if slide.badge_text %}
-                    <div class="uni-slide-badge badge-{{ slide.badge_color|default:'danger' }}">
-                        <i class="{{ slide.badge_icon|default:'fas fa-bell' }}"></i>
-                        {{ slide.badge_text }}
-                    </div>
-                    {% endif %}
-
-                    <h1 class="uni-slide-title">{{ slide.title }}</h1>
-                    {% if slide.subtitle %}
-                    <p class="uni-slide-subtitle">{{ slide.subtitle }}</p>
-                    {% endif %}
-                    <div class="uni-slide-actions">
-                        {% if slide.link_text and slide.link %}
-                        <a href="{{ slide.link }}" class="hero-btn">
-                            {{ slide.link_text }}
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
-                        {% elif slide.link %}
-                        <a href="{{ slide.link }}" class="hero-btn">
-                            {{ slide.link_text|default:"بیشتر بدانید" }}
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
-                        {% endif %}
-                        {% if slide.btn2_text and slide.btn2_url %}
-                        <a href="{{ slide.btn2_url }}" class="hero-btn-outline">
-                            {{ slide.btn2_text }}
-                        </a>
-                        {% else %}
-                        <a href="{% url 'admissions:apply_otp_send' %}" class="hero-btn-outline">
-                            <i class="fas fa-file-alt"></i> ثبت‌نام
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
 
         </div>
         {% endfor %}
@@ -276,24 +241,7 @@
             <img class="slide-bg"
                  src="{% static 'images/hero-campus-01.jpg' %}"
                  alt="پردیس دانشگاهی" loading="eager">
-            <div class="uni-slide-body">
-                <div class="container">
-                    <div class="uni-slide-badge badge-danger">
-                        <i class="fas fa-calendar-alt"></i>
-                        تاریخ شروع کلاس‌ها: ۱ مهرماه ۱۴۰۴
-                    </div>
-                    <h1 class="uni-slide-title">موسسه آموزش عالی<br>علامه امینی</h1>
-                    <p class="uni-slide-subtitle">مرکز برتر آموزش عالی؛ جایی که دانش، نوآوری و توسعه فردی با هم تلاقی می‌یابند</p>
-                    <div class="uni-slide-actions">
-                        <a href="{% url 'core:student_path' %}" class="hero-btn">
-                            <i class="fas fa-route"></i> مسیر دانشجو
-                        </a>
-                        <a href="{% url 'academics:departments' %}" class="hero-btn-outline">
-                            <i class="fas fa-building"></i> دانشکده‌ها
-                        </a>
-                    </div>
-                </div>
-            </div>
+            
         </div>
 
         <!-- اسلاید ۲ — پل زمستانی -->
@@ -301,24 +249,7 @@
             <img class="slide-bg"
                  src="{% static 'images/hero-campus-01.jpg' %}"
                  alt="پل برفی" loading="lazy">
-            <div class="uni-slide-body">
-                <div class="container">
-                    <div class="uni-slide-badge badge-warning">
-                        <i class="fas fa-mouse-pointer"></i>
-                        زمان انتخاب واحد: ۱۵ تا ۲۵ شهریور ۱۴۰۴
-                    </div>
-                    <h1 class="uni-slide-title">انتخاب واحد<br>نیمسال اول</h1>
-                    <p class="uni-slide-subtitle">انتخاب واحد نیمسال اول سال تحصیلی ۱۴۰۵-۱۴۰۴ از ۱۵ شهریور آغاز می‌شود</p>
-                    <div class="uni-slide-actions">
-                        <a href="{% url 'dashboard:dashboard' %}" class="hero-btn">
-                            <i class="fas fa-check-square"></i> سامانه آموزشی
-                        </a>
-                        <a href="{% url 'core:student_path' %}" class="hero-btn-outline">
-                            <i class="fas fa-route"></i> مسیر دانشجو
-                        </a>
-                    </div>
-                </div>
-            </div>
+            
         </div>
         {% endif %}
 

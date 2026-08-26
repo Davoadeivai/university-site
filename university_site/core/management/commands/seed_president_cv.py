@@ -123,6 +123,27 @@ class Command(BaseCommand):
             '--replace', action='store_true',
             help='مقدار فعلی را هم بازنویسی کن (پیش‌فرض: فقط جای خالی)')
 
+    @staticmethod
+    def _align_floor(office) -> bool:
+        """طبقه در نشانی باید با فیلد طبقه یکی باشد.
+
+        نشانی «طبقهٔ دوم» می‌گفت و کارتِ کنارش «طبقهٔ سوم» — دو منبع
+        برای یک واقعیت، که بازدیدکننده را به طبقهٔ اشتباه می‌فرستد.
+        فیلد طبقه مرجع است و نشانی با آن هم‌راستا می‌شود.
+        """
+        import re
+
+        floor = (office.office_floor or '').strip()
+        address = (office.office_address or '').strip()
+        if not floor or not address:
+            return False
+        pattern = 'طبقه' + chr(1620) + '?' + r'\s*[^\s،,]+'
+        fixed = re.sub(pattern, floor, address, count=1)
+        if fixed == address:
+            return False
+        office.office_address = fixed
+        return True
+
     def handle(self, *args, **options):
         # سایت این رکورد را با .first() می‌خواند، پس همان یکی مبناست
         office = PresidencyOffice.objects.first() or PresidencyOffice()
@@ -143,6 +164,9 @@ class Command(BaseCommand):
                 continue
             setattr(office, field, value)
             changed.append(field)
+
+        if self._align_floor(office):
+            changed.append('office_address')
 
         if not changed:
             self.stdout.write('چیزی برای تغییر نبود.')

@@ -247,7 +247,6 @@
                         موسسه به زیرمجموعهٔ معاونت پژوهشی منتقل شد و
                         اینجا نمی‌آید.
                         {% endcomment %}
-                        <li><span class="dropdown-item nav-dd-section" style="font-size:11px;color:#f0d080;font-weight:700;padding:8px 16px 4px;letter-spacing:.5px;cursor:default;opacity:1;background:rgba(201,168,76,.08);">واحدهای وابسته</span></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:public_relations' %}">مدیریت روابط عمومی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:security_office' %}">حراست</a></li>
                     </ul>
@@ -289,6 +288,12 @@
                         </li>
                         {% endfor %}
                     </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link-flat" href="{% url 'academics:departments' %}">
+                        <i class="fas fa-building-columns" style="font-size:13px;margin-left:3px;"></i> دانشکده‌ها
+                    </a>
                 </li>
 
                 <!-- گروه‌های آموزشی — dynamic از DB (مطابق سایت رسمی؛ بدون موارد اضافه) -->

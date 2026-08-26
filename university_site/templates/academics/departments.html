@@ -1,25 +1,109 @@
 {% extends 'base.html' %}
+
+{% comment %}
+ساختار آموزشی موسسه، به‌صورت درخت.
+
+دانشکده ← گروه ← رشته. پیش از این هر لایه صفحهٔ جدا داشت و برای
+دیدن کل ساختار باید یازده بار رفت‌وبرگشت می‌شد؛ اینجا همه‌اش در یک
+نگاه است و هر شاخه تاشو.
+
+جزئیات از عنصر details می‌آید، نه از جاوااسکریپت: باز و بسته‌شدن
+رفتار خودِ مرورگر است، با صفحه‌کلید کار می‌کند، و بدون اسکریپت هم
+همهٔ رشته‌ها در HTML هستند — پس موتور جست‌وجو هم می‌بیندشان.
+{% endcomment %}
+
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">دانشکده‌ها</h1></div></div>
-<section class="section"><div class="container">
-<div class="row g-4">
-{% for dept in departments %}
-<div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
-<a href="{{ dept.get_absolute_url }}" class="text-decoration-none">
-<div class="dept-card">
-{% if dept.image %}<img loading="lazy" decoding="async" src="{{ dept.image.url }}" alt="{{ dept.name }}" class="w-100 mb-3" style="height:160px;object-fit:cover;border-radius:var(--radius-sm);">{% else %}<div style="height:120px;background:var(--gradient-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:16px;"><i class="fas fa-building" style="font-size:48px;color:rgba(255,255,255,0.4);"></i></div>{% endif %}
-<div class="dept-icon"><i class="fas fa-building"></i></div>
-<h3 class="dept-title">{{ dept.name }}</h3>
-<p class="text-muted" style="font-size:14px;">{{ dept.short_description|truncatewords:15 }}</p>
-{% if dept.head %}<div class="text-muted" style="font-size:13px;"><i class="fas fa-user-tie text-primary"></i> {{ dept.head }}</div>{% endif %}
-<div class="dept-stats">
-<div class="dept-stat"><strong>{{ dept.majors.count }}</strong>رشته</div>
-<div class="dept-stat"><strong>{{ dept.professors.count }}</strong>استاد</div>
-<div class="dept-stat"><strong>{{ dept.labs.count }}</strong>آزمایشگاه</div>
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active" aria-current="page">دانشکده‌ها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">ساختار آموزشی موسسه</h1>
+    </div>
 </div>
-</div></a></div>
-{% empty %}
-<div class="col-12 text-center py-5 text-muted"><i class="fas fa-building fa-3x mb-3 d-block opacity-25"></i>دانشکده‌ای تعریف نشده</div>
-{% endfor %}
-</div></div></section>
+
+<section class="section">
+    <div class="container">
+
+        {% if tree %}
+        <div class="tree-summary">
+            <span><strong>{{ tree|length }}</strong> دانشکده</span>
+            <span><strong>{{ total_groups }}</strong> گروه آموزشی</span>
+            <span><strong>{{ total_majors }}</strong> رشته</span>
+        </div>
+
+        <div class="tree">
+            {% for node in tree %}
+            <section class="tree-dept tree-dept-{{ forloop.counter }}">
+                <header class="tree-dept-head">
+                    <span class="tree-dept-icon" aria-hidden="true">
+                        <i class="fas fa-building-columns"></i>
+                    </span>
+                    <h2 class="tree-dept-name">
+                        <a href="{{ node.department.get_absolute_url }}">{{ node.department.name }}</a>
+                    </h2>
+                    <span class="tree-dept-count">
+                        {{ node.group_count }} گروه · {{ node.major_count }} رشته
+                    </span>
+                </header>
+
+                {% if node.department.short_description %}
+                <p class="tree-dept-blurb">{{ node.department.short_description }}</p>
+                {% endif %}
+
+                <ul class="tree-branches">
+                    {% for branch in node.branches %}
+                    <li class="tree-branch">
+                        <details{% if forloop.first %} open{% endif %}>
+                            <summary>
+                                <span class="tree-group-name">{{ branch.group.name }}</span>
+                                <span class="tree-group-count">{{ branch.majors|length }} رشته</span>
+                            </summary>
+                            {% if branch.majors %}
+                            <ul class="tree-majors">
+                                {% for major in branch.majors %}
+                                <li>
+                                    <a href="{% url 'academics:major_detail' major.slug %}">{{ major.name }}</a>
+                                    <span class="tree-degree">{{ major.degree_label }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="tree-empty">رشته‌ای برای این گروه ثبت نشده است.</p>
+                            {% endif %}
+                        </details>
+                    </li>
+                    {% endfor %}
+
+                    {% if node.loose %}
+                    <li class="tree-branch">
+                        <details>
+                            <summary>
+                                <span class="tree-group-name tree-group-loose">بدون گروه</span>
+                                <span class="tree-group-count">{{ node.loose|length }} رشته</span>
+                            </summary>
+                            <ul class="tree-majors">
+                                {% for major in node.loose %}
+                                <li>
+                                    <a href="{% url 'academics:major_detail' major.slug %}">{{ major.name }}</a>
+                                    <span class="tree-degree">{{ major.degree_label }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    </li>
+                    {% endif %}
+                </ul>
+            </section>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% include 'core/_empty_state.html' with label='دانشکده‌ای' add_url='/admin/academics/department/add/' hint='دانشکده‌ها و گروه‌هایشان در همین صفحه به‌صورت درختی نمایش داده می‌شوند.' %}
+        {% endif %}
+
+    </div>
+</section>
 {% endblock %}
