@@ -3619,3 +3619,113 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 [data-theme="dark"] .fac-card-1 { --tone: #f2a0ab; }
 [data-theme="dark"] .fac-card-2 { --tone: #e5c77a; }
 [data-theme="dark"] .fac-card-3 { --tone: #6fd1b0; }
+
+/* ── رشته‌های دانشکده، دسته‌بندی‌شده زیر گروه ────────────────
+   دانشکدهٔ مدیریت ۲۷ رشته دارد. ریختنشان در یک شبکه یعنی دیواری از
+   کارت که معلوم نیست کدام مال کدام گروه است — گروه‌بندی همان
+   ساختاری است که در دیتابیس هست و فقط دیده نمی‌شد. */
+.dept-majors-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-block-end: clamp(18px, 2.4vw, 28px);
+}
+
+.deg-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.deg-chip {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border, #e8dcd0);
+    background: var(--bg-white, #fff);
+    color: var(--text-muted, #6b5b5e);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease, border-color .16s ease;
+}
+.deg-chip:hover { border-color: var(--primary, #7a1f2e); color: var(--primary, #7a1f2e); }
+.deg-chip.is-on {
+    background: var(--primary, #7a1f2e);
+    border-color: var(--primary, #7a1f2e);
+    color: #fff;
+}
+.deg-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.mj-group { margin-block-end: clamp(22px, 3vw, 34px); }
+
+.mj-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-block-end: 12px;
+    padding-block-end: 8px;
+    border-block-end: 2px solid rgba(122, 31, 46, .12);
+}
+
+.mj-group-name { margin: 0; font-size: clamp(15px, 1.7vw, 18px); font-weight: 800; }
+.mj-group-name a { color: var(--primary, #7a1f2e); text-decoration: none; }
+.mj-group-name a:hover { text-decoration: underline; }
+.mj-group-loose { color: var(--text-muted, #6b5b5e); }
+
+.mj-group-count {
+    font-size: 12.5px;
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.mj-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+    gap: 10px;
+}
+
+.mj-card {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    border-inline-start: 3px solid transparent;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .16s ease, box-shadow .16s ease;
+}
+.mj-card:hover {
+    border-inline-start-color: var(--primary, #7a1f2e);
+    box-shadow: 0 8px 20px -16px rgba(78, 18, 32, .55);
+    color: inherit;
+}
+
+.mj-name { font-size: 14px; font-weight: 700; line-height: 1.7; }
+
+.mj-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+.mj-degree {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(122, 31, 46, .08);
+    color: var(--primary, #7a1f2e);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.mj-credits {
+    font-size: 11.5px;
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+}
+
+.mj-empty { margin: 8px 0 0; font-size: 13px; color: var(--text-muted, #6b5b5e); }
+
+[data-theme="dark"] .mj-card,
+[data-theme="dark"] .deg-chip { background: var(--bg-white); }
+[data-theme="dark"] .deg-chip.is-on { background: var(--primary-light, #9c2c3d); }
+[data-theme="dark"] .mj-degree { background: rgba(242, 160, 171, .14); color: #f2a0ab; }
+[data-theme="dark"] .mj-group-name a { color: #f2a0ab; }

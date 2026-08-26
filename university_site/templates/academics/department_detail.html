@@ -5,18 +5,59 @@
 <div class="row g-5">
 <div class="col-lg-8">
 {% if department.description %}<div class="uni-card p-4 mb-4"><p style="font-size:15px;line-height:2;">{{ department.description }}</p></div>{% endif %}
-{% if majors %}
-<div class="mb-5"><h4 class="section-title">رشته‌های تحصیلی</h4>
-<div class="row g-3 mt-3">
-{% for major in majors %}
-<div class="col-md-6">
-<a href="{{ major.get_absolute_url }}" class="text-decoration-none">
-<div class="dept-card"><h5 class="dept-title" style="font-size:16px;">{{ major.name }}</h5>
-<span class="uni-card-badge">{{ major.get_degree_display }}</span>
-<div class="text-muted mt-2" style="font-size:13px;"><i class="fas fa-credit-card"></i> {{ major.total_credits }} واحد</div>
-</div></a></div>
-{% endfor %}
-</div></div>{% endif %}
+{% if major_blocks %}
+<div class="mb-5">
+    <div class="dept-majors-head">
+        <h2 class="section-title mb-0">رشته‌های تحصیلی</h2>
+        {% if degree_filters|length > 1 %}
+        {% comment %}
+        فیلتر مقطع سمت کاربر است، نه یک درخواست تازه: فهرست از قبل
+        روی صفحه است و رفت‌وبرگشت به سرور فقط برای پنهان‌کردن چند
+        کارت، انتظار بی‌دلیل می‌سازد. بدون جاوااسکریپت هم همهٔ
+        رشته‌ها دیده می‌شوند.
+        {% endcomment %}
+        <div class="deg-filter" data-degree-filter role="group" aria-label="فیلتر مقطع">
+            <button type="button" class="deg-chip is-on" data-degree="">همه</button>
+            {% for value, label in degree_filters %}
+            <button type="button" class="deg-chip" data-degree="{{ value }}">{{ label }}</button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% for block in major_blocks %}
+    <section class="mj-group" data-major-group>
+        <header class="mj-group-head">
+            {% if block.group %}
+            <h3 class="mj-group-name">
+                <a href="{{ block.group.get_absolute_url }}">{{ block.group.name }}</a>
+            </h3>
+            {% else %}
+            <h3 class="mj-group-name mj-group-loose">بدون گروه</h3>
+            {% endif %}
+            <span class="mj-group-count">{{ block.majors|length }} رشته</span>
+        </header>
+
+        <div class="mj-list">
+            {% for major in block.majors %}
+            <a href="{{ major.get_absolute_url }}" class="mj-card" data-degree="{{ major.degree }}">
+                <span class="mj-name">{{ major.name }}</span>
+                <span class="mj-meta">
+                    <span class="mj-degree">{{ major.get_degree_display }}</span>
+                    {% if major.total_credits %}
+                    <span class="mj-credits">{{ major.total_credits }} واحد</span>
+                    {% endif %}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+
+        <p class="mj-empty" data-empty-note hidden>در این گروه رشته‌ای با این مقطع نیست.</p>
+    </section>
+    {% endfor %}
+</div>
+{% endif %}
+
 {% if professors %}
 <div class="mb-5"><h4 class="section-title">اعضای هیئت علمی</h4>
 <div class="row g-3 mt-3">

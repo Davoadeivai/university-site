@@ -13,14 +13,52 @@ def departments_list(request):
 
 def department_detail(request, slug):
     department = get_object_or_404(Department, slug=slug, is_active=True)
-    majors = department.majors.filter(is_active=True)
-    professors = department.professors.filter(is_active=True)
-    labs = department.labs.filter(is_active=True)
+    majors = list(
+        department.majors.filter(is_active=True)
+        .select_related('group').order_by('group__order', 'group__name',
+                                          'degree', 'name')
+    )
+
+    # ── رشته‌ها زیر گروهِ خودشان ──
+    # دانشکدهٔ مدیریت ۲۷ رشته دارد؛ ریختنشان در یک شبکه یعنی دیواری
+    # از کارت که معلوم نیست کدام مال کدام گروه است. گروه‌بندی همان
+    # ساختاری است که در دیتابیس هست و فقط روی صفحه دیده نمی‌شد.
+    buckets = {}
+    for major in majors:
+        key = major.group_id
+        if key not in buckets:
+            buckets[key] = {'group': major.group, 'majors': []}
+        buckets[key]['majors'].append(major)
+
+    groups = list(department.groups.filter(is_active=True)
+                  .order_by('order', 'name'))
+    blocks = []
+    for group in groups:
+        bucket = buckets.pop(group.id, None)
+        if bucket:
+            blocks.append(bucket)
+    # رشته‌ای که گروه ندارد نباید ناپدید شود
+    orphans = buckets.pop(None, None)
+    for leftover in buckets.values():
+        blocks.append(leftover)
+    if orphans:
+        orphans['group'] = None
+        blocks.append(orphans)
+
+    # مقطع‌هایی که واقعاً در این دانشکده هستند — نه همهٔ گزینه‌های مدل
+    seen = []
+    for major in majors:
+        label = major.get_degree_display()
+        if (major.degree, label) not in seen:
+            seen.append((major.degree, label))
+
     context = {
         'department': department,
         'majors': majors,
-        'professors': professors,
-        'labs': labs,
+        'major_blocks': blocks,
+        'degree_filters': seen,
+        'professors': department.professors.filter(is_active=True),
+        'labs': department.labs.filter(is_active=True),
         'page_title': department.name,
     }
     return render(request, 'academics/department_detail.html', context)

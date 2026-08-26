@@ -1133,3 +1133,60 @@ function appendMsg(text, type) {
         });
     });
 })();
+
+
+// ============================================================
+//  فیلتر مقطع در صفحهٔ دانشکده
+// ============================================================
+// فهرست رشته‌ها از قبل روی صفحه است؛ رفت‌وبرگشت به سرور برای
+// پنهان‌کردن چند کارت، انتظار بی‌دلیل می‌سازد.
+//
+// بهبود تدریجی: بدون این فایل، همهٔ رشته‌ها دیده می‌شوند و چیزی
+// از دست نمی‌رود — فقط دکمه‌های فیلتر کاری نمی‌کنند.
+(function () {
+    'use strict';
+
+    var bar = document.querySelector('[data-degree-filter]');
+    if (!bar) return;
+
+    var groups = Array.prototype.slice.call(
+        document.querySelectorAll('[data-major-group]'));
+
+    function apply(degree) {
+        groups.forEach(function (group) {
+            var shown = 0;
+            group.querySelectorAll('.mj-card').forEach(function (card) {
+                var match = !degree || card.getAttribute('data-degree') === degree;
+                card.hidden = !match;
+                if (match) shown += 1;
+            });
+
+            // گروهی که هیچ رشتهٔ منطبقی ندارد پنهان می‌شود، ولی
+            // پیامش می‌ماند تا معلوم باشد گروه هست و خالی نیست
+            var note = group.querySelector('[data-empty-note]');
+            if (note) note.hidden = shown !== 0;
+
+            var count = group.querySelector('.mj-group-count');
+            if (count) {
+                count.textContent = shown + ' رشته';
+            }
+        });
+    }
+
+    bar.addEventListener('click', function (event) {
+        var chip = event.target.closest
+            ? event.target.closest('.deg-chip') : null;
+        if (!chip) return;
+
+        bar.querySelectorAll('.deg-chip').forEach(function (other) {
+            other.classList.toggle('is-on', other === chip);
+            other.setAttribute('aria-pressed', String(other === chip));
+        });
+        apply(chip.getAttribute('data-degree') || '');
+    });
+
+    bar.querySelectorAll('.deg-chip').forEach(function (chip) {
+        chip.setAttribute('aria-pressed',
+                          String(chip.classList.contains('is-on')));
+    });
+})();
