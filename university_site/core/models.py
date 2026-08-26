@@ -385,6 +385,14 @@ class PresidencyOffice(models.Model):
     president_website_label = models.CharField(
         _('عنوان وب‌سایت'), max_length=120, blank=True,
         help_text=_('متنی که روی دکمه دیده می‌شود؛ خالی بماند نام دامنه می‌آید.'))
+    # ── لوح کلاس جهانی، زیر نشان WCU در صفحهٔ ریاست ──
+    wcu_title = models.CharField(
+        _('عنوان سایت تخصصی'), max_length=200, blank=True,
+        help_text=_('یک خط، درشت و رنگی زیر نشان کلاس جهانی.'))
+    wcu_motto = models.TextField(
+        _('شعار سایت تخصصی'), blank=True,
+        help_text=_('زیر عنوان، داخل گیومه نمایش داده می‌شود.'))
+
     president_scholar = models.URLField(_('گوگل اسکولار'), blank=True)
     president_orcid = models.CharField(
         _('شناسهٔ ORCID'), max_length=40, blank=True,

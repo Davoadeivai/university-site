@@ -61,22 +61,51 @@
         <div class="pres-split">
 
             <aside class="pres-side">
-                {% if site_settings.world_class_logo %}
-                <div class="pres-wcu-cell">
-                    {% comment %}
-                    اندازه روی خود تگ است، نه فقط در CSS: سه بار
-                    اصلاح CSS به سرور نرسید و تصویر ۱۰۲۴ پیکسلی هر
-                    بار قاب را ترکاند. صفت style به هیچ فایلی وابسته
-                    نیست و حتی با شیوه‌نامهٔ کهنه هم درست می‌ماند.
-                    {% endcomment %}
+                {% comment %}
+                لوح کلاس جهانی — نشان، عنوان، شعار و نشانی در یک قاب.
+                چهار تکهٔ پراکنده کنار هم یک چیز واحد به‌نظر نمی‌رسیدند؛
+                یک قاب با حاشیهٔ طلایی همان چیزی است که هستند: یک
+                گواهی.
+                {% endcomment %}
+                {% comment %}
+شرط شامل نشانی هم هست: اگر موسسه عنوان و نشان را خالی
+بگذارد، نشانی سایت نباید با آن‌ها ناپدید شود.
+{% endcomment %}
+                {% if site_settings.world_class_logo or office.wcu_title or office.wcu_motto or office.president_website %}
+                <section class="wcu-plaque" aria-labelledby="wcuTitle">
+                    {% if site_settings.world_class_logo %}
                     <img src="{{ site_settings.world_class_logo.url }}"
                          alt="نشان دانشگاه‌ها و مؤسسات آموزش عالی در کلاس جهانی"
                          class="pres-wcu" decoding="async"
                          style="max-width:290px;max-height:290px;object-fit:contain;border-radius:50%;">
-                </div>
+                    {% endif %}
+
+                    {% if office.wcu_title %}
+                    <h2 class="wcu-title" id="wcuTitle">{{ office.wcu_title }}</h2>
+                    {% endif %}
+
+                    {% if office.wcu_motto %}
+                    <p class="wcu-motto">{{ office.wcu_motto }}</p>
+                    {% endif %}
+
+                    {% if office.president_website %}
+                    {% comment %}
+                    نشانی کامل و لاتین نوشته می‌شود، نه پشت برچسب
+                    فارسی: کسی که می‌خواهد آن را یادداشت کند باید
+                    خودِ نشانی را ببیند.
+                    {% endcomment %}
+                    <a class="wcu-link" dir="ltr"
+                       href="{{ office.president_website }}"
+                       target="_blank" rel="noopener noreferrer">
+                        <span class="wcu-link-rule" aria-hidden="true"></span>
+                        <span class="wcu-link-text">{{ office.president_website }}</span>
+                        <span class="wcu-link-rule" aria-hidden="true"></span>
+                    </a>
+                    {% endif %}
+                </section>
                 {% endif %}
 
-                {% if office.highlight_items or office.cv_sections %}
+                {% if office.cv_sections %}
                 <div class="pres-cv" id="cv">
 
                     <header class="pres-cv-head">
@@ -86,17 +115,6 @@
                         <p class="pres-cv-sub">{{ office.president_title }}</p>
                         {% endif %}
                     </header>
-
-                    {% if office.highlight_items %}
-                    <div class="pres-stats">
-                        {% for stat in office.highlight_items %}
-                        <div class="pres-stat pres-stat-{{ forloop.counter }}">
-                            <span class="pres-stat-num">{{ stat.number }}</span>
-                            <span class="pres-stat-label">{{ stat.label }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
 
                     {% comment %}
                     هر بخش رنگ خودش را دارد؛ رنگ روی تیتر، آیکون و
@@ -118,25 +136,6 @@
                         </article>
                         {% endfor %}
                     </div>
-
-                    {% if office.president_website %}
-                    {% comment %}
-                    نشانی کامل و لاتین نوشته می‌شود، نه پشت برچسب
-                    فارسی: کسی که می‌خواهد آن را یادداشت کند باید
-                    خودِ نشانی را ببیند.
-                    {% endcomment %}
-                    <div class="pres-site">
-                        <span class="pres-site-rule" aria-hidden="true"></span>
-                        <a class="pres-site-link" dir="ltr"
-                           href="{{ office.president_website }}"
-                           target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-globe" aria-hidden="true"></i>
-                            <span class="pres-site-url">{{ office.president_website }}</span>
-                            <i class="fas fa-arrow-up-right-from-square pres-site-out" aria-hidden="true"></i>
-                        </a>
-                        <span class="pres-site-rule" aria-hidden="true"></span>
-                    </div>
-                    {% endif %}
 
                 </div>
                 {% endif %}

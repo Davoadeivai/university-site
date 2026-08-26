@@ -332,6 +332,7 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'president_email', 'president_phone',
                 'president_website', 'president_website_label',
                 'president_scholar', 'president_orcid',
+                'wcu_title', 'wcu_motto',
             ),
             'description': (
                 'نشانی وب‌سایت را کامل با https بنویسید. عنوان اگر خالی '

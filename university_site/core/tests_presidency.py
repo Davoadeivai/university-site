@@ -241,13 +241,13 @@ class PresidencyCvOnThePageTests(TestCase):
         self.office.president_highlights = 'بدون جداکننده'
         self.assertEqual(self.office.highlight_items, [])
 
-    def test_the_website_sits_below_the_cv(self):
+    def test_the_website_sits_inside_the_plaque(self):
+        """موسسه خواست نشانی زیر شعار بیاید، پیش از رزومه."""
         html = self._html()
-        self.assertIn('pres-site-link', html)
+        self.assertIn('wcu-link', html)
         self.assertIn('https://WCM-Society.Com', html)
-        cv_at = html.index('pres-cv-grid')
-        site_at = html.index('pres-site-link')
-        self.assertLess(cv_at, site_at, 'نشانی بالای رزومه افتاده است')
+        self.assertLess(html.index('wcu-link'), html.index('pres-cv-grid'),
+                        'نشانی زیر رزومه افتاده است')
 
     def test_the_download_button_is_gone(self):
         html = self._html()
@@ -271,10 +271,13 @@ class PresidencyCvOnThePageTests(TestCase):
         self.assertLess(html.index('pres-side'), html.index('pres-portrait'))
 
     def test_the_emblem_sits_above_the_resume(self):
+        from django.core.cache import cache
         SiteSettings.objects.all().delete()
         SiteSettings.objects.create(world_class_logo='site/wcu.png')
+        # context_processor تنظیمات را ۶۰ ثانیه کش می‌کند
+        cache.clear()
         html = self._html()
-        self.assertLess(html.index('pres-wcu-cell'), html.index('pres-cv-head'))
+        self.assertLess(html.index('wcu-plaque'), html.index('pres-cv-head'))
 
     def test_the_portrait_sticks_on_desktop_only(self):
         from pathlib import Path
@@ -292,3 +295,104 @@ class PresidencyCvOnThePageTests(TestCase):
         html = self.client.get(reverse('core:presidency')).content.decode()
         self.assertNotIn('pres-cv-grid', html)
         self.assertNotIn('pres-stats', html)
+
+
+class WcuPlaqueTests(TestCase):
+    """لوح کلاس جهانی — نشان، عنوان، شعار و نشانی، به همین ترتیب."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.office = PresidencyOffice.objects.create(
+            president_name='دکتر حسن فارسیجانی',
+            president_title='استاد گروه مدیریت صنعتی و فناوری اطلاعات',
+            president_education='دکتری برادفورد',
+            wcu_title='سایت تخصصی مدیریت کلاس جهانی',
+            wcu_motto='چگونگی تبدیل دانشگاه‌ها به سازمان در کلاس جهانی',
+            president_website='https://WCM-Society.Com',
+        )
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+
+    def _html(self):
+        from django.core.cache import cache
+        # نشان از site_settings می‌آید و آن ۶۰ ثانیه کش می‌شود
+        cache.clear()
+        return self.client.get(reverse('core:presidency')).content.decode()
+
+    def test_the_order_is_emblem_title_motto_address(self):
+        html = self._html()
+        for earlier, later in (('pres-wcu', 'wcu-title'),
+                               ('wcu-title', 'wcu-motto'),
+                               ('wcu-motto', 'wcu-link')):
+            self.assertLess(html.index(earlier), html.index(later),
+                            '%s باید پیش از %s بیاید' % (earlier, later))
+
+    def test_the_resume_comes_after_the_plaque(self):
+        html = self._html()
+        self.assertLess(html.index('wcu-plaque'), html.index('pres-cv-head'))
+
+    def test_the_motto_is_quoted_by_css_not_by_hand(self):
+        """اگر ادمین گیومه بگذارد، دو تا می‌شود."""
+        html = self._html()
+        self.assertNotIn('«چگونگی تبدیل', html)
+        css = _css_text()
+        start = css.index(chr(10) + '.wcu-motto::before') + 1
+        self.assertIn('«', css[start:start + 60])
+
+    def test_an_empty_plaque_is_not_drawn(self):
+        PresidencyOffice.objects.all().delete()
+        SiteSettings.objects.all().delete()
+        PresidencyOffice.objects.create(president_name='رئیس')
+        SiteSettings.objects.create()
+        self.assertNotIn('wcu-plaque', self._html())
+
+    def test_the_stat_cards_are_gone(self):
+        """موسسه خواست سه کارت عددی برداشته شود."""
+        html = self._html()
+        self.assertNotIn('pres-stats', html)
+        self.assertNotIn('pres-stat-num', html)
+
+    def test_the_stat_styling_left_with_them(self):
+        css = _css_text()
+        self.assertNotIn('.pres-stat', css)
+        self.assertNotIn('.pres-site', css)
+
+    def test_the_name_outweighs_the_section_titles(self):
+        """چشم باید از نام شروع کند، نه از تیتر بخش‌ها."""
+        css = _css_text()
+        title = _rule(css, '.pres-cv-title')
+        card = _rule(css, '.pres-cv-card-title')
+        self.assertIn('clamp(26px', title)
+        self.assertIn('font-size: 16.5px', card)
+
+    def test_the_title_and_subtitle_carry_their_own_colour(self):
+        css = _css_text()
+        self.assertIn('color: #0d2144', _rule(css, '.pres-cv-title'))
+        self.assertIn('color: #8a1f2b', _rule(css, '.pres-cv-sub'))
+
+    def test_both_themes_are_covered(self):
+        css = _css_text()
+        for selector in ('.wcu-title', '.wcu-motto', '.pres-cv-title'):
+            self.assertIn('[data-theme="dark"] %s' % selector, css,
+                          '%s نسخهٔ تیره ندارد' % selector)
+
+
+class PresidencyMenuLabelTests(TestCase):
+    """در حوزهٔ ریاست، «ریاست موسسه» باید فقط «ریاست» باشد."""
+
+    def test_the_menu_item_is_shortened(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('>ریاست</a>', html)
+        self.assertNotIn('>ریاست موسسه</a>', html)
+
+
+def _css_text():
+    from pathlib import Path
+    from django.conf import settings
+    return (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+        encoding='utf-8')
+
+
+def _rule(css, selector):
+    start = css.index(chr(10) + selector + ' {') + 1
+    return css[start:css.index('}', start)]
