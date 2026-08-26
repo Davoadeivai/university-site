@@ -109,6 +109,8 @@ FIELDS = {
     'president_website': 'https://WCM-Society.Com',
     'president_website_label': '',
     'office_hours': 'شنبه تا پنج‌شنبه',
+    # سند اصلاحات موسسه «طبقه سوم» نوشته است
+    'office_floor': 'طبقهٔ سوم',
 }
 
 

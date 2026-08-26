@@ -443,6 +443,17 @@ class PresidencyOffice(models.Model):
     office_fax = models.CharField(_('فکس'), max_length=100, blank=True)
     office_email = models.EmailField(_('ایمیل دفتر'), blank=True)
     office_hours = models.CharField(_('ساعات کاری'), max_length=200, blank=True)
+    office_floor = models.CharField(
+        _('طبقهٔ دفتر ریاست'), max_length=60, blank=True,
+        help_text=_(
+            'مثلاً «طبقهٔ سوم». پیش از این در قالب ثابت نوشته شده بود و '
+            'با نشانیِ ثبت‌شده نمی‌خواند — یکی سوم می‌گفت و دیگری دوم.'))
+    president_cv = models.FileField(
+        _('فایل رزومه'), upload_to='presidency/cv/', blank=True, null=True,
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'doc', 'docx'])],
+        help_text=_('PDF یا Word. دکمهٔ «رزومه» در صفحهٔ ریاست به همین فایل می‌رود.'))
+
 
     class Meta:
         verbose_name = _('دفتر ریاست')

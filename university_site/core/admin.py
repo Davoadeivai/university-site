@@ -316,12 +316,16 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         }),
         ('رزومه', {
             'fields': (
+                'president_cv',
                 'president_highlights',
                 'president_education', 'president_resume',
                 'president_teaching', 'president_awards',
                 'president_memberships', 'president_research',
             ),
             'description': (
+                '<b>فایل رزومه</b> تنها چیزی است که روی صفحهٔ ریاست '
+                'دیده می‌شود؛ کادرهای متنی زیر آن در پنل می‌مانند ولی '
+                'فعلاً نمایش داده نمی‌شوند.<br>'
                 'در هر سه کادر، <b>هر مورد را در یک خط جدا</b> بنویسید — '
                 'صفحه آن‌ها را فهرست‌وار نشان می‌دهد. اگر همه را در یک '
                 'پاراگراف بنویسید، همان یک پاراگراف چاپ می‌شود.'
@@ -342,7 +346,8 @@ class PresidencyOfficeAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         ('دفتر ریاست', {
             'fields': (
                 'office_manager_name', 'office_duties',
-                'office_address', 'office_phone', 'office_fax',
+                'office_address', 'office_floor',
+                'office_phone', 'office_fax',
                 'office_email', 'office_hours',
             ),
         }),

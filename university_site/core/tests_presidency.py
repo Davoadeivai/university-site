@@ -62,6 +62,8 @@ class PresidencyPageTests(TestCase):
             self.assertIn(tile, html)
 
     def test_visiting_days_and_floor_are_shown(self):
+        self.office.office_floor = 'طبقهٔ سوم'
+        self.office.save(update_fields=['office_floor'])
         html = self._html()
         self.assertIn('روزهای مراجعه', html)
         self.assertIn('شنبه تا پنج‌شنبه', html)
@@ -188,8 +190,8 @@ class PresidencyAdminTests(TestCase):
         self.assertIn('world_class_logo', listed)
 
 
-class PresidencyCvOnThePageTests(TestCase):
-    """رزومه باید متنی و چندرنگ روی صفحه باشد، نه یک فایل برای دانلود."""
+class PresidencyResumeTests(TestCase):
+    """رزومه فقط یک فایل قابل دانلود است، نه شش کارت روی صفحه."""
 
     @classmethod
     def setUpTestData(cls):
@@ -197,104 +199,91 @@ class PresidencyCvOnThePageTests(TestCase):
         cls.office = PresidencyOffice.objects.create(
             president_name='دکتر حسن فارسیجانی',
             president_title='استاد گروه مدیریت صنعتی',
-            president_education=NL.join(['دکتری برادفورد', 'کارشناسی ارشد تربیت مدرس']),
+            president_education=NL.join(['دکتری برادفورد', 'ارشد تربیت مدرس']),
             president_resume=NL.join(['رئیس موسسه', 'مشاور ایران‌خودرو']),
-            president_teaching=NL.join(['مدیریت تولید', 'زنجیره تأمین']),
-            president_awards=NL.join(['استاد نمونه']),
-            president_memberships=NL.join(['سردبیر چشم‌انداز مدیریت صنعتی']),
-            president_research=NL.join(['مدیریت در کلاس جهانی']),
-            president_highlights=NL.join(['۳۱ | جلد کتاب', '۲۵۰ | مقاله']),
+            president_teaching='مدیریت تولید',
+            president_awards='استاد نمونه',
+            president_memberships='سردبیر چشم‌انداز',
+            president_research='مدیریت در کلاس جهانی',
+            president_highlights='۳۱ | جلد کتاب',
             president_website='https://WCM-Society.Com',
+            president_cv='presidency/cv/farsijani.pdf',
+            office_floor='طبقهٔ سوم',
+            office_hours='شنبه تا پنج‌شنبه',
         )
+
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
 
     def _html(self):
         return self.client.get(reverse('core:presidency')).content.decode()
 
-    def test_every_section_is_rendered(self):
+    def test_the_six_cards_are_gone(self):
+        """موسسه خواست سوابق از صفحه برداشته شود."""
         html = self._html()
-        for text in ('دکتری برادفورد', 'مشاور ایران‌خودرو', 'زنجیره تأمین',
-                     'استاد نمونه', 'سردبیر چشم‌انداز مدیریت صنعتی',
-                     'مدیریت در کلاس جهانی'):
-            self.assertIn(text, html)
+        self.assertNotIn('pres-cv-grid', html)
+        for tone in range(1, 7):
+            self.assertNotIn('pres-tone-%d' % tone, html)
 
-    def test_sections_each_get_their_own_colour(self):
-        """سند اصلاحات «چند رنگ مختلف» خواسته بود."""
+    def test_none_of_the_section_text_leaks_onto_the_page(self):
         html = self._html()
-        tones = {'pres-tone-%d' % n for n in range(1, 7)}
-        found = {tone for tone in tones if tone in html}
-        self.assertEqual(len(found), 6, 'شش بخش شش رنگ ندارند')
+        for text in ('دکتری برادفورد', 'مشاور ایران‌خودرو', 'مدیریت تولید',
+                     'استاد نمونه', 'سردبیر چشم‌انداز'):
+            self.assertNotIn(text, html)
 
-    def test_an_empty_section_is_skipped_not_left_blank(self):
-        self.office.president_awards = ''
-        self.office.save(update_fields=['president_awards'])
-        keys = [s['key'] for s in self.office.cv_sections]
-        self.assertNotIn('awards', keys)
-        self.assertIn('education', keys)
+    def test_the_statistics_are_gone_too(self):
+        self.assertNotIn('pres-stat', self._html())
 
-    def test_highlights_split_on_the_pipe(self):
-        items = self.office.highlight_items
-        self.assertEqual(len(items), 2)
-        self.assertEqual(items[0], {'number': '۳۱', 'label': 'جلد کتاب'})
-
-    def test_a_highlight_without_a_separator_is_dropped(self):
-        """کارت با عدد خالی بدتر از نبودن کارت است."""
-        self.office.president_highlights = 'بدون جداکننده'
-        self.assertEqual(self.office.highlight_items, [])
-
-    def test_the_website_sits_inside_the_plaque(self):
-        """موسسه خواست نشانی زیر شعار بیاید، پیش از رزومه."""
+    def test_the_download_button_is_offered(self):
         html = self._html()
-        self.assertIn('wcu-link', html)
-        self.assertIn('https://WCM-Society.Com', html)
-        self.assertLess(html.index('wcu-link'), html.index('pres-cv-grid'),
-                        'نشانی زیر رزومه افتاده است')
+        self.assertIn('pres-cv-btn', html)
+        self.assertIn('farsijani.pdf', html)
+        self.assertIn('دانلود رزومه', html)
 
-    def test_the_download_button_is_gone(self):
+    def test_the_button_actually_downloads(self):
+        """بدون download، PDF در تب باز می‌شود و کاربر فایل را نمی‌گیرد."""
         html = self._html()
-        self.assertNotIn('pres-cv-btn', html)
-        self.assertNotIn('fa-file-pdf', html)
+        button = html.split('pres-cv-btn')[1].split('</a>')[0]
+        self.assertIn('download', button)
 
-    def test_the_cv_file_field_no_longer_exists(self):
-        names = [f.name for f in PresidencyOffice._meta.fields]
-        self.assertNotIn('president_cv', names)
+    def test_no_file_means_no_button(self):
+        self.office.president_cv = ''
+        self.office.save(update_fields=['president_cv'])
+        self.assertNotIn('pres-cv-btn', self._html())
 
-    def test_the_resume_column_comes_before_the_portrait(self):
-        """در RTL اولی سمت راست می‌نشیند، پس ستون رزومه باید دوم…
+    def test_word_files_are_accepted(self):
+        """موسسه خواست PDF یا Word."""
+        field = PresidencyOffice._meta.get_field('president_cv')
+        allowed = set()
+        for validator in field.validators:
+            allowed |= set(getattr(validator, 'allowed_extensions', []))
+        self.assertTrue({'pdf', 'doc', 'docx'} <= allowed)
 
-        …نه: عکس باید راست باشد و رزومه چپ، پس ستون رزومه اول
-        نوشته می‌شود و عکس بعدش. اگر جای این دو عوض شود، صفحه
-        آینه‌ای می‌شود بدون اینکه چیزی بشکند.
-        """
-        SiteSettings.objects.all().delete()
-        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+    def test_the_fields_are_kept_for_the_panel(self):
+        """برداشتن از صفحه نباید یعنی پاک‌کردن از پنل."""
+        office = PresidencyOffice.objects.first()
+        self.assertTrue(office.education_list)
+        self.assertTrue(office.resume_list)
+
+    def test_the_floor_comes_from_the_record(self):
+        """قالب «طبقهٔ سوم» را ثابت نوشته بود و نشانی «دوم» می‌گفت."""
         html = self._html()
-        self.assertLess(html.index('pres-side'), html.index('pres-portrait'))
+        self.assertIn('طبقهٔ سوم', html)
 
-    def test_the_emblem_sits_above_the_resume(self):
+        self.office.office_floor = 'طبقهٔ چهارم'
+        self.office.save(update_fields=['office_floor'])
         from django.core.cache import cache
-        SiteSettings.objects.all().delete()
-        SiteSettings.objects.create(world_class_logo='site/wcu.png')
-        # context_processor تنظیمات را ۶۰ ثانیه کش می‌کند
         cache.clear()
         html = self._html()
-        self.assertLess(html.index('wcu-plaque'), html.index('pres-cv-head'))
+        self.assertIn('طبقهٔ چهارم', html)
+        self.assertNotIn('طبقهٔ سوم', html)
 
-    def test_the_portrait_sticks_on_desktop_only(self):
-        from pathlib import Path
-        from django.conf import settings
-        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
-            encoding='utf-8')
-        start = css.index(chr(10) + '.pres-portrait {') + 1
-        self.assertIn('position: sticky', css[start:css.index('}', start)])
-        # روی موبایل چسبیدن یعنی نصف صفحه همیشه اشغال است
-        self.assertIn('.pres-portrait { position: static; order: -1; }', css)
-
-    def test_a_record_without_a_cv_renders_nothing_extra(self):
-        PresidencyOffice.objects.all().delete()
-        PresidencyOffice.objects.create(president_name='رئیس')
-        html = self.client.get(reverse('core:presidency')).content.decode()
-        self.assertNotIn('pres-cv-grid', html)
-        self.assertNotIn('pres-stats', html)
+    def test_an_empty_floor_does_not_print_a_lie(self):
+        self.office.office_floor = ''
+        self.office.save(update_fields=['office_floor'])
+        html = self._html()
+        self.assertNotIn('طبقهٔ سوم', html)
 
 
 class WcuPlaqueTests(TestCase):
@@ -329,7 +318,7 @@ class WcuPlaqueTests(TestCase):
 
     def test_the_resume_comes_after_the_plaque(self):
         html = self._html()
-        self.assertLess(html.index('wcu-plaque'), html.index('pres-cv-head'))
+        self.assertLess(html.index('wcu-plaque'), html.index('pres-tile'))
 
     def test_the_motto_is_quoted_by_css_not_by_hand(self):
         """اگر ادمین گیومه بگذارد، دو تا می‌شود."""

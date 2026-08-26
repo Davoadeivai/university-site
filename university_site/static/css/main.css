@@ -3729,3 +3729,35 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 [data-theme="dark"] .deg-chip.is-on { background: var(--primary-light, #9c2c3d); }
 [data-theme="dark"] .mj-degree { background: rgba(242, 160, 171, .14); color: #f2a0ab; }
 [data-theme="dark"] .mj-group-name a { color: #f2a0ab; }
+
+/* ── دکمهٔ دانلود رزومه ─────────────────────────────────────
+   شش کارت سوابق برداشته شدند و جایشان یک دکمه نشست. */
+.pres-cv-download { text-align: center; margin-block-start: clamp(20px, 3vw, 34px); }
+
+.pres-cv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    border-radius: 12px;
+    background: var(--gradient-primary, linear-gradient(135deg, #4e1220, #9c2c3d));
+    border: 1px solid var(--primary-deep, #4e1220);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 10px 26px -18px rgba(78, 18, 32, .8);
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+.pres-cv-btn:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -18px rgba(78, 18, 32, .9);
+}
+.pres-cv-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+.pres-cv-note {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    color: var(--text-muted, #6b5b5e);
+}

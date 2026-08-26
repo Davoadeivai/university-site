@@ -105,40 +105,25 @@
                 </section>
                 {% endif %}
 
-                {% if office.cv_sections %}
-                <div class="pres-cv" id="cv">
-
-                    <header class="pres-cv-head">
-                        <span class="pres-cv-kicker">رزومه</span>
-                        <h2 class="pres-cv-title">{{ office.president_name }}</h2>
-                        {% if office.president_title %}
-                        <p class="pres-cv-sub">{{ office.president_title }}</p>
-                        {% endif %}
-                    </header>
-
-                    {% comment %}
-                    هر بخش رنگ خودش را دارد؛ رنگ روی تیتر، آیکون و
-                    نوار کناری می‌نشیند نه روی متن، چون متن تیره روی
-                    شش زمینهٔ رنگی شش مسئلهٔ کنتراست است.
-                    {% endcomment %}
-                    <div class="pres-cv-grid">
-                        {% for section in office.cv_sections %}
-                        <article class="pres-cv-card pres-tone-{{ section.tone }}" id="{{ section.key }}">
-                            <h3 class="pres-cv-card-title">
-                                <i class="fas {{ section.icon }}" aria-hidden="true"></i>
-                                {{ section.title }}
-                            </h3>
-                            <ul class="pres-cv-list">
-                                {% for item in section.items %}
-                                <li>{{ item }}</li>
-                                {% endfor %}
-                            </ul>
-                        </article>
-                        {% endfor %}
-                    </div>
-
+                {% comment %}
+                موسسه خواست شش کارت سوابق از صفحه برداشته شود و
+                رزومه فقط به‌صورت فایل قابل دانلود باشد. متن‌ها در
+                پنل سر جای خود می‌مانند، پس اگر روزی خواستند برگردند
+                داده‌ای از دست نرفته.
+                {% endcomment %}
+                {% if office.president_cv %}
+                <div class="pres-cv-download">
+                    <a href="{{ office.president_cv.url }}" class="pres-cv-btn"
+                       target="_blank" rel="noopener" download>
+                        <i class="fas fa-file-arrow-down" aria-hidden="true"></i>
+                        دانلود رزومه
+                    </a>
+                    <p class="pres-cv-note">
+                        رزومهٔ کامل {{ office.president_name }}
+                    </p>
                 </div>
                 {% endif %}
+
             </aside>
 
             <figure class="pres-portrait">
@@ -198,7 +183,7 @@
             <div class="pres-tile pres-tile-4">
                 <i class="fas fa-building" aria-hidden="true"></i>
                 <span class="pres-tile-label">دفتر ریاست</span>
-                <span class="pres-tile-value">طبقهٔ سوم</span>
+                <span class="pres-tile-value">{{ office.office_floor|default:"—" }}</span>
             </div>
 
             {% if office.office_address %}

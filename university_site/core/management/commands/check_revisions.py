@@ -65,14 +65,15 @@ class Command(BaseCommand):
                      'تصاویر و متن‌ها را موسسه باید بدهد'))
 
         photo = bool(office and office.president_photo)
-        resume = bool(office and office.cv_sections)
+        # رزومه حالا یک فایل قابل دانلود است، نه شش کارت روی صفحه
+        resume = bool(office and office.president_cv)
         website = bool(office and office.president_website)
         rows.append((
             2, 'صفحهٔ ریاست: عکس، نشان، رزومه، نشانی',
             DONE if (photo and resume and website) else MISSING,
             'عکس=%s رزومه=%s نشانی=%s' % (
                 'دارد' if photo else 'ندارد',
-                '%d بخش' % len(office.cv_sections) if resume else 'خالی',
+                'فایل دارد' if resume else 'فایل آپلود نشده — پنل ← دفتر ریاست',
                 'دارد' if website else 'ندارد')))
 
         rows.append((3, 'فونت Arial و درشت‌تر در سربرگ',
