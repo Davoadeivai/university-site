@@ -208,6 +208,8 @@ def seed_content() -> None:
     run('set_org_chart')
     run('set_contact_email', '--replace')
     run('set_president_links')
+    # سه دانشکده و چیدن گروه‌ها و رشته‌ها زیرشان
+    run('set_faculties')
     run('seed_president_cv')
     run('prefix_doctor_titles')
     run('set_graduate_groups')

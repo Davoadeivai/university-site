@@ -3508,3 +3508,114 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     }
     .vice-card-head { flex-direction: column; text-align: center; }
 }
+
+/* ── چارت سازمانی ───────────────────────────────────────────
+   تمام پهنای ظرف، بدون قاب و بدون padding. متن چارت ریز است و هر
+   پیکسلی که به آن برسد خواناترش می‌کند؛ پیش از این داخل یک کارت با
+   ۲۴ پیکسل حاشیه می‌نشست. */
+.org-chart-img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    cursor: zoom-in;
+    /* مرورگر تصویر بزرگ را با کیفیت بهتری کوچک می‌کند وقتی بداند
+       قرار است نرم شود؛ روی خطوط نازک چارت تفاوتش دیده می‌شود. */
+    image-rendering: auto;
+}
+
+.org-chart-bar {
+    display: flex;
+    justify-content: center;
+    padding: 14px;
+    background: var(--bg-light, #faf6f1);
+    border-block-start: 1px solid var(--border, #e8dcd0);
+}
+
+/* ── دانشکده‌ها در صفحهٔ اصلی ────────────────────────────────
+   سه کارت، هر کدام با گروه‌هایش. عدد بالای کارت شمار گروه است، نه
+   شمارهٔ ردیف — یعنی داده است، نه تزئین. */
+.fac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: clamp(14px, 2vw, 22px);
+}
+
+.fac-card {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(20px, 2.6vw, 28px);
+    border-radius: 16px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    border-block-start: 4px solid var(--tone, #7a1f2e);
+    box-shadow: 0 8px 26px -22px rgba(78, 18, 32, .5);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+.fac-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px -24px rgba(78, 18, 32, .6);
+}
+
+.fac-icon {
+    inline-size: 46px;
+    block-size: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--tone) 12%, transparent);
+    color: var(--tone, #7a1f2e);
+    font-size: 20px;
+    margin-block-end: 14px;
+}
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+    .fac-icon { background: rgba(122, 31, 46, .1); }
+}
+
+.fac-name { margin: 0 0 6px; font-size: clamp(16px, 1.8vw, 19px); font-weight: 800; }
+.fac-name a { color: var(--tone, #7a1f2e); text-decoration: none; }
+.fac-name a:hover { text-decoration: underline; }
+
+.fac-count {
+    font-size: 12.5px;
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: 12px;
+}
+
+.fac-groups { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.fac-groups li a,
+.fac-groups li span {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--bg-light, #faf6f1);
+    border: 1px solid var(--border, #e8dcd0);
+    font-size: 12px;
+    color: var(--text-dark, #241a1c);
+    text-decoration: none;
+}
+.fac-groups li a:hover { border-color: var(--tone); color: var(--tone); }
+
+.fac-more {
+    margin-block-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--tone, #7a1f2e);
+    text-decoration: none;
+}
+.fac-more:hover { gap: 11px; }
+.fac-more i { font-size: 11px; }
+
+.fac-card-1 { --tone: #7a1f2e; }
+.fac-card-2 { --tone: #8a6412; }
+.fac-card-3 { --tone: #1f5c4a; }
+
+[data-theme="dark"] .fac-card { background: var(--bg-white); }
+[data-theme="dark"] .fac-groups li a,
+[data-theme="dark"] .fac-groups li span { background: rgba(255, 255, 255, .05); }
+[data-theme="dark"] .fac-card-1 { --tone: #f2a0ab; }
+[data-theme="dark"] .fac-card-2 { --tone: #e5c77a; }
+[data-theme="dark"] .fac-card-3 { --tone: #6fd1b0; }

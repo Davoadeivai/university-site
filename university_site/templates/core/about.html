@@ -79,22 +79,23 @@
                 هر تصویر دیگری هم با همین یک صفت همین رفتار را
                 می‌گیرد.
                 {% endcomment %}
-                <div class="p-3 p-md-4 text-center">
-                    <img loading="lazy" decoding="async" src="{{ settings.org_chart_file.url }}"
-                         alt="چارت سازمانی"
-                         class="img-fluid org-chart-img"
-                         data-zoomable
-                         style="max-width:100%;height:auto;border-radius:8px;cursor:zoom-in;">
-                </div>
-                <div class="px-3 pb-3 text-center">
+                {% comment %}
+                چارت بدون قاب و بدون padding تمام پهنای بخش را می‌گیرد؛
+                متنش ریز است و هر پیکسلی که به آن برسد خواناترش می‌کند.
+
+                lazy برداشته شد: چارت هدفِ لینکِ #chart است و کسی که
+                مستقیم به آن می‌آید نباید منتظر بارگذاری تأخیری بماند.
+                {% endcomment %}
+                <img decoding="async" fetchpriority="high"
+                     src="{{ settings.org_chart_file.url }}"
+                     alt="چارت سازمانی موسسه آموزش عالی علامه امینی"
+                     class="org-chart-img" data-zoomable
+                     {% if settings.org_chart_size %}width="{{ settings.org_chart_size.0 }}" height="{{ settings.org_chart_size.1 }}"{% endif %}>
+                <div class="org-chart-bar">
                     <button type="button" class="btn btn-outline-primary btn-sm"
                             data-zoom-open=".org-chart-img">
                         <i class="fas fa-expand me-1"></i> مشاهده تمام‌صفحه
                     </button>
-                    <a href="{{ settings.org_chart_file.url }}" class="btn btn-outline-secondary btn-sm"
-                       download>
-                        <i class="fas fa-download me-1"></i> دانلود
-                    </a>
                 </div>
                 {% elif settings.org_chart_file_kind == 'pdf' %}
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-bottom bg-light">

@@ -391,8 +391,25 @@ class OrgChartFullScreenTests(TestCase):
         chart = html.split('org-chart-file')[1].split('</div>')[0]
         self.assertNotIn('target="_blank"', chart)
 
-    def test_downloading_is_still_offered(self):
-        self.assertIn('دانلود', self._about())
+    def test_downloading_is_no_longer_offered(self):
+        """موسسه خواست دکمهٔ دانلود از این صفحه برداشته شود."""
+        chart = self._about().split('org-chart-file')[1].split('</div>')[0]
+        self.assertNotIn('دانلود', chart)
+
+    def test_the_chart_spans_the_section(self):
+        """متن چارت ریز است؛ هر پیکسلی که به آن برسد خواناترش می‌کند."""
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        start = css.index(chr(10) + '.org-chart-img {') + 1
+        rule = css[start:css.index('}', start)]
+        self.assertIn('inline-size: 100%', rule)
+
+    def test_the_chart_is_not_lazy_loaded(self):
+        """چارت مقصد لینک #chart است؛ تأخیر در بارگذاری یعنی صفحهٔ خالی."""
+        chart = self._about().split('org-chart-img')[0][-300:]
+        self.assertNotIn('loading="lazy"', chart)
 
     def test_the_viewer_asks_for_real_full_screen(self):
         js = self._asset('js/main.js')

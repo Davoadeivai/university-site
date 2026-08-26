@@ -132,6 +132,26 @@ class SiteSettings(models.Model):
         return found
 
     @property
+    def org_chart_size(self):
+        """ابعاد واقعی تصویر چارت، برای width/height تگ img.
+
+        چارت تمام‌عرض است و ارتفاعش از نسبت خودش می‌آید؛ بدون این دو
+        عدد، مرورگر تا رسیدن فایل ارتفاع را نمی‌داند و صفحه هنگام
+        بارگذاری یک تکان بزرگ می‌خورد.
+
+        خواندن ابعاد یعنی باز کردن فایل — اگر PDF یا Word باشد یا
+        روی دیسک نباشد، None برمی‌گردد و دو صفت نوشته نمی‌شوند.
+        """
+        if not self.org_chart_file or self.org_chart_file_kind != 'image':
+            return None
+        try:
+            from PIL import Image
+            with Image.open(self.org_chart_file.path) as image:
+                return image.size
+        except Exception:                      # noqa: BLE001
+            return None
+
+    @property
     def org_chart_file_kind(self):
         """نوع فایل چارت: image | pdf | word | other | None"""
         if not self.org_chart_file:
