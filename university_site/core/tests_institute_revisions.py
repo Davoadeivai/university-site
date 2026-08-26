@@ -555,3 +555,47 @@ class RevisionInspectorTests(TestCase):
             self.assertTrue(line, 'بند %d گزارش نشد' % number)
             self.assertTrue(line[0].lstrip().startswith('✓'),
                             'بند %d انجام‌نشده گزارش شد: %s' % (number, line[0]))
+
+
+class VacuousPassTests(TestCase):
+    """تیک‌خوردنِ چیزی که وجود ندارد، بدتر از گزارش نکردنش است."""
+
+    def _report(self):
+        from io import StringIO
+        from django.core.management import call_command
+        out = StringIO()
+        call_command('check_revisions', stdout=out)
+        return out.getvalue()
+
+    def _line(self, number):
+        for line in self._report().splitlines():
+            if line.strip().startswith(('✓ %d.' % number, '✗ %d.' % number,
+                                        '✓ %2d.' % number, '✗ %2d.' % number)):
+                return line.strip()
+        return ''
+
+    def test_no_group_heads_is_not_a_pass(self):
+        """سند نام مدیران گروه را خواسته؛ نبودِ نام یعنی انجام نشده."""
+        from academics.models import AcademicGroup, Department
+        department = Department.objects.create(name='دانشکده', slug='d1')
+        AcademicGroup.objects.create(
+            name='گروه بی‌مدیر', slug='g1', department=department,
+            is_active=True, head='')
+        self.assertTrue(self._line(18).startswith('✗'))
+        self.assertIn('ثبت نشده', self._report())
+
+    def test_a_head_with_the_title_passes(self):
+        from academics.models import AcademicGroup, Department
+        department = Department.objects.create(name='دانشکده', slug='d2')
+        AcademicGroup.objects.create(
+            name='گروه دارای مدیر', slug='g2', department=department,
+            is_active=True, head='دکتر رضایی')
+        self.assertTrue(self._line(18).startswith('✓'))
+
+    def test_a_head_without_the_title_fails(self):
+        from academics.models import AcademicGroup, Department
+        department = Department.objects.create(name='دانشکده', slug='d3')
+        AcademicGroup.objects.create(
+            name='گروه', slug='g3', department=department,
+            is_active=True, head='رضایی')
+        self.assertTrue(self._line(18).startswith('✗'))

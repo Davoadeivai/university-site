@@ -176,9 +176,16 @@ class Command(BaseCommand):
         vices = VicePresidency.objects.exclude(full_name='').count()
         vice_gap = VicePresidency.objects.exclude(full_name='').exclude(
             full_name__startswith='دکتر').count()
+        total_groups = AcademicGroup.objects.filter(is_active=True).count()
+        # «۰ مدیر گروه، ۰ بدون عنوان» یک ✓ توخالی است: سند نام مدیران
+        # را خواسته و اینجا اصلاً نامی ثبت نشده. تیک‌خوردنِ چیزی که
+        # وجود ندارد، بدتر از گزارش نکردنش است.
+        empty = total_groups and not heads
         rows.append((
             18, '«دکتر» پیش از نام مدیران و معاونان',
-            DONE if (heads or vices) and not (head_gap + vice_gap) else MISSING,
+            MISSING if (empty or head_gap + vice_gap) else DONE,
+            ('نام هیچ‌یک از %d مدیر گروه ثبت نشده — پنل ← گروه‌های آموزشی'
+             % total_groups) if empty else
             '%d مدیر گروه (%d بدون عنوان)، %d معاون (%d بدون عنوان)' % (
                 heads, head_gap, vices, vice_gap)))
 
