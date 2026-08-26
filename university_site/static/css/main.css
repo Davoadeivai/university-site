@@ -3,44 +3,58 @@
    ============================================================ */
 
 /* ── پالت ──────────────────────────────────────────────────────────────
-   سرمه‌ای و طلا، هم‌خانواده با بنر بالای صفحه. قبلاً صفحه از آبی #2563eb
-   و کهربایی #f59e0b استفاده می‌کرد که با سرمه‌ای/طلای بنر یکی نبود و
-   دو هویت رنگی جدا می‌ساخت؛ حالا هر دو از یک خانواده‌اند.
-   زمینهٔ صفحه روشن و کمی مایل به آبی است تا سفیدِ کارت‌ها روی آن بنشیند.
+   عنابی و طلا روی کاغذ گرم.
+
+   چرا عنابی و نه سرمه‌ای: نشان «کلاس جهانی» که موسسه به آن می‌بالد
+   دقیقاً همین دو رنگ است — حلقهٔ عنابی با نوشتهٔ طلایی. سایت با
+   سرمه‌ای، هویتی جدا از نشان خودش می‌ساخت. به‌علاوه تقریباً همهٔ
+   سایت‌های دانشگاهی ایران آبی‌اند؛ عنابی همان اعتبار را می‌رساند و
+   از میان آن‌ها بیرون می‌زند.
+
+   زمینه عمداً کاغذِ گرم است نه سفیدِ خالص: طلا روی سفیدِ سرد کدر
+   می‌شود، و روی این کرم روشن جان می‌گیرد.
+
+   پیش از این --primary یک خاکستری (#8d9393) بود و --primary-light
+   یک سبز زیتونی، در حالی که کامنت بالای‌شان از «سرمه‌ای» می‌گفت —
+   یعنی هیچ‌کدام دیگر با هم و با بنر جور نبودند.
    ─────────────────────────────────────────────────────────────────────*/
 :root {
-    --primary: #8d9393;        /* سرمه‌ای موسسه — همان سرمه‌ای بنر */
-    --primary-light: #6d824a;  /* آبی روشن‌تر برای هاور و گرادیان */
-    --secondary: #c9922b;      /* طلای موسسه — روی سفید هم خوانا */
-    --gold-light: #e3ba58;     /* طلای روشن — فقط سر گرادیان و درخشش */
-    --accent: #0f9d78;         /* سبز موفقیت */
-    --danger: #d92d20;         /* قرمز خطا */
-    --text-dark: #152534;      /* مرکب سرمه‌ای — مشکی خالص چشم را خسته می‌کند */
-    --text-muted: #2c639e;
-    --bg-light: #f3f7fc;       /* کاغذ سرد — زمینهٔ کلی صفحه */
+    --primary: #7a1f2e;        /* عنابی موسسه — همان حلقهٔ نشان کلاس جهانی */
+    --primary-light: #9c2c3d;  /* عنابی روشن‌تر برای هاور و گرادیان */
+    --primary-deep: #4e1220;   /* عنابی سیر — سربرگ و فوتر */
+    --secondary: #a67c1f;      /* طلای کهن — روی کاغذ گرم هم خوانا */
+    --gold-light: #c9a34e;     /* طلای روشن — گرادیان، خط، حاشیه */
+    /* طلای متنی — تیره‌تر از --secondary چون آن روی کاغذ گرم
+       فقط ۳٫۵:۱ کنتراست دارد و برای نوشته کافی نیست. */
+    --gold-ink: #8a6412;
+    --accent: #1f7a5c;         /* سبز موفقیت */
+    --danger: #b3261e;         /* قرمز خطا */
+    --text-dark: #241a1c;      /* مرکب گرم — مشکی خالص چشم را خسته می‌کند */
+    --text-muted: #6b5b5e;
+    --bg-light: #faf6f1;       /* کاغذ گرم — زمینهٔ کلی صفحه */
     --bg-white: #ffffff;
-    --border: #dbe4ef;
-    --shadow: 0 4px 24px rgba(16, 54, 90, 0.09);
-    --shadow-lg: 0 8px 40px rgba(16, 54, 90, 0.16);
+    --border: #e8dcd0;
+    --shadow: 0 4px 24px rgba(78, 18, 32, 0.08);
+    --shadow-lg: 0 8px 40px rgba(78, 18, 32, 0.15);
     --radius: 14px;
     --radius-sm: 8px;
     --duration-fast: 160ms;
     --duration-base: 240ms;
     --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --transition: color var(--duration-base) var(--easing-standard), background-color var(--duration-base) var(--easing-standard), border-color var(--duration-base) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard), opacity var(--duration-base) var(--easing-standard);
-    --transition-motion: transform var(--duration-base) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard), border-color var(--duration-base) var(--easing-standard), background-color var(--duration-base) var(--easing-standard), color var(--duration-base) var(--easing-standard), opacity var(--duration-base) var(--easing-standard); 
+    --transition-motion: transform var(--duration-base) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard), border-color var(--duration-base) var(--easing-standard), background-color var(--duration-base) var(--easing-standard), color var(--duration-base) var(--easing-standard), opacity var(--duration-base) var(--easing-standard);
     --space-1: 0.25rem;
     --space-2: 0.5rem;
     --space-3: 0.75rem;
     --space-4: 1rem;
     --space-5: 1.5rem;
     --space-6: 2rem;
-    --focus-ring: 0 0 0 3px rgba(201, 146, 43, 0.45);
-    --gradient-primary: linear-gradient(135deg, #10365a 0%, #2b6ca8 100%);
-    --gradient-gold: linear-gradient(135deg, #e3ba58 0%, #b07d1e 100%);
-    /* سرمه‌ای به طلا — امضای رنگی موسسه. زیر تیتر هر بخش تکرار می‌شود و
-       همان دو رنگ بنر را در طول صفحه به هم گره می‌زند. */
-    --gradient-brand: linear-gradient(90deg, #10365a 0%, #2b6ca8 45%, #c9922b 100%);
+    --focus-ring: 0 0 0 3px rgba(166, 124, 31, 0.45);
+    --gradient-primary: linear-gradient(135deg, #4e1220 0%, #9c2c3d 100%);
+    --gradient-gold: linear-gradient(135deg, #c9a34e 0%, #8a6412 100%);
+    /* عنابی به طلا — امضای رنگی موسسه. زیر تیتر هر بخش تکرار می‌شود و
+       همان دو رنگ نشان کلاس جهانی را در طول صفحه به هم گره می‌زند. */
+    --gradient-brand: linear-gradient(90deg, #4e1220 0%, #9c2c3d 45%, #c9a34e 100%);
 }
 
 * { box-sizing: border-box; }
@@ -3121,53 +3135,33 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    یک چیز واحد به‌نظر نمی‌رسیدند؛ قاب با حاشیهٔ طلایی همان چیزی است
    که هستند — یک گواهی. */
 .wcu-plaque {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(14px, 2vw, 22px);
-    padding: clamp(24px, 3.4vw, 42px) clamp(18px, 3vw, 38px);
-    margin-block-end: clamp(26px, 3.4vw, 44px);
-    border-radius: 18px;
-    background:
-        radial-gradient(120% 80% at 50% 0%, rgba(240, 208, 128, .16), transparent 62%),
-        linear-gradient(170deg, var(--bg-white, #fff) 0%, #fbf7ec 100%);
-    border: 1px solid rgba(196, 154, 58, .42);
-    box-shadow: 0 18px 44px -32px rgba(59, 42, 9, .55);
+    gap: clamp(16px, 2.2vw, 26px);
+    margin-block-end: clamp(28px, 3.6vw, 48px);
     text-align: center;
-    overflow: hidden;
 }
-
-/* دو خط طلایی نازک در بالا و پایین قاب — زبان بصری سربرگ سایت،
-   تکرارشده در کوچک. */
-.wcu-plaque::before,
-.wcu-plaque::after {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    block-size: 3px;
-    background: linear-gradient(to left,
-        transparent, var(--bnr-gold-300, #f0d080), transparent);
-}
-.wcu-plaque::before { inset-block-start: 0; }
-.wcu-plaque::after { inset-block-end: 0; }
 
 .wcu-title {
     margin: 0;
-    font-size: clamp(19px, 2.3vw, 29px);
+    font-size: clamp(20px, 2.4vw, 31px);
     font-weight: 800;
     line-height: 1.5;
-    /* رنگ متمایز و گرم، جدا از سرمه‌ای بقیهٔ صفحه */
-    color: #8a1f2b;
+    color: var(--primary-deep, #4e1220);
     text-wrap: balance;
 }
 
+/* شعار: خط شاخصِ صفحه. کج و طلاییِ سیر، با فاصلهٔ سطر باز — از
+   متن معمولی جدا می‌شود بدون اینکه با تیتر بالای خودش رقابت کند. */
 .wcu-motto {
     margin: 0;
-    max-inline-size: 46ch;
-    font-size: clamp(13.5px, 1.5vw, 16px);
-    line-height: 2.1;
-    color: var(--gray-700, #495057);
+    max-inline-size: 44ch;
+    font-size: clamp(15px, 1.75vw, 19.5px);
+    font-weight: 600;
+    font-style: italic;
+    line-height: 2.15;
+    color: var(--gold-ink, #8a6412);
     text-wrap: balance;
 }
 /* گیومه‌های فارسی از خودِ CSS می‌آیند، نه از متن: اگر ادمین
@@ -3182,10 +3176,11 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     gap: clamp(10px, 1.6vw, 18px);
     inline-size: 100%;
     text-decoration: none;
-    color: #0d2144;
+    color: var(--primary, #7a1f2e);
 }
-.wcu-link:hover { color: #8a1f2b; }
-.wcu-link:focus-visible { outline: 2px solid #8a1f2b; outline-offset: 4px; }
+.wcu-link:hover { color: var(--secondary, #a67c1f); }
+.wcu-link:hover .wcu-link-text { border-block-end-color: currentColor; }
+.wcu-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
 
 .wcu-link-rule {
     flex: 1 1 auto;
@@ -3194,12 +3189,18 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
         transparent, rgba(196, 154, 58, .85), transparent);
 }
 
+/* نشانی: زیرخطِ نازکِ محو، تا از دور هم پیدا باشد که لینک است.
+   text-decoration نازک‌شدنی نیست؛ border همان کار را با کنترل
+   کامل روی ضخامت و فاصله انجام می‌دهد. */
 .wcu-link-text {
     flex: 0 0 auto;
     font-family: Arial, "Segoe UI", Roboto, sans-serif;
-    font-size: clamp(16px, 2.1vw, 25px);
+    font-size: clamp(17px, 2.3vw, 27px);
     font-weight: 700;
-    letter-spacing: .6px;
+    letter-spacing: .8px;
+    padding-block-end: 4px;
+    border-block-end: 2px solid rgba(166, 124, 31, .5);
+    transition: border-color .18s ease, color .18s ease;
     overflow-wrap: anywhere;
 }
 
@@ -3252,15 +3253,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     text-wrap: balance;
 }
 
-[data-theme="dark"] .wcu-plaque {
-    background:
-        radial-gradient(120% 80% at 50% 0%, rgba(240, 208, 128, .12), transparent 62%),
-        linear-gradient(170deg, var(--bg-white) 0%, rgba(255, 255, 255, .03) 100%);
-    border-color: rgba(240, 208, 128, .3);
-}
-[data-theme="dark"] .wcu-title { color: #f0a0a8; }
-[data-theme="dark"] .wcu-motto { color: #c2d3e4; }
-[data-theme="dark"] .wcu-link { color: #dfe9f3; }
+[data-theme="dark"] .wcu-title { color: #f2c9cf; }
+[data-theme="dark"] .wcu-motto { color: #e5c77a; }
+[data-theme="dark"] .wcu-link { color: #f2c9cf; }
 [data-theme="dark"] .wcu-link:hover { color: var(--bnr-gold-300, #f0d080); }
 [data-theme="dark"] .pres-cv-title { color: #f2f7fc; }
 [data-theme="dark"] .pres-cv-sub { color: #f0a0a8; }
