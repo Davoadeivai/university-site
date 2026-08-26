@@ -2719,7 +2719,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    را می‌خواند. */
 .pres-split {
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
     gap: clamp(20px, 3vw, 46px);
     align-items: start;
 }
@@ -2735,6 +2735,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     block-size: auto;
     object-fit: contain;
     border-radius: 50%;
+    /* یک خط فاصله تا عنوان زیرش — gap لوح برای همهٔ اجزا یکی است
+       و اینجا کم بود. */
+    margin-block-end: 1.6rem;
     filter: drop-shadow(0 12px 30px rgba(15, 23, 42, .24));
 }
 

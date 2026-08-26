@@ -385,3 +385,36 @@ def _css_text():
 def _rule(css, selector):
     start = css.index(chr(10) + selector + ' {') + 1
     return css[start:css.index('}', start)]
+
+
+class PresidencyProportionTests(TestCase):
+    """اندازهٔ عکس و فاصلهٔ زیر نشان."""
+
+    def _rule(self, selector):
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        start = css.index(chr(10) + selector + ' {') + 1
+        return css[start:css.index('}', start)]
+
+    def test_the_portrait_column_is_the_wider_one(self):
+        """شش کارت سوابق از ستون چپ رفتند؛ عکس باید جای بیشتری بگیرد."""
+        rule = self._rule('.pres-split')
+        line = [ln for ln in rule.splitlines()
+                if 'grid-template-columns' in ln][0]
+        left, right = line.split('minmax(0, ')[1:]
+        left_fr = int(left.split('fr')[0])
+        right_fr = int(right.split('fr')[0])
+        self.assertGreater(right_fr, left_fr,
+                           'ستون عکس باریک‌تر از ستون رزومه است')
+
+    def test_the_emblem_has_a_line_below_it(self):
+        rule = self._rule('.pres-wcu')
+        self.assertIn('margin-block-end', rule)
+
+    def test_the_emblem_is_still_capped(self):
+        """بزرگ‌کردن نباید سقف ارتفاع را بردارد."""
+        rule = self._rule('.pres-wcu')
+        self.assertIn('max-block-size', rule)
+        self.assertIn('object-fit: contain', rule)
