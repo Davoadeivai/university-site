@@ -13,12 +13,13 @@ cPanel ← Setup Python App ← اپ ← بخش «Execute python script»:
 
     /home/cp29524/repositories/university-site/deploy.py
 
-پیش از آن یک بار «Update from Remote» را در صفحهٔ گیت بزنید تا آخرین
-کد روی سرور بیاید. این اسکریپت فقط همان کد را سر جایش می‌گذارد.
+اسکریپت خودش اول کد تازه را از گیت می‌کشد، پس نه ترمینال لازم است
+نه دکمهٔ «Update from Remote». اگر گیت روی سرور در دسترس نباشد، پیام
+می‌دهد و با همان کدی که هست ادامه می‌دهد.
 
 چه کاری انجام می‌دهد
 ────────────────────
-کد را سر جایش می‌گذارد، migrate و collectstatic می‌زند، محتوای سند
+کد تازه را می‌کشد، سر جایش می‌گذارد، migrate و collectstatic می‌زند، محتوای سند
 رسمی را بارگذاری می‌کند (افراد، هیات‌ها، اساتید، سرفصل‌ها) و اپ را
 ری‌استارت می‌کند. یک اجرا، همه‌چیز — دیگر لازم نیست اسکریپت دومی
 پشت سرش زده شود.
@@ -143,6 +144,41 @@ def run(*args: str) -> bool:
     return True
 
 
+def pull() -> None:
+    """کشیدن آخرین کد از گیت، پیش از کپی.
+
+    ترمینال cPanel روی هر هاستی فعال نیست و دکمهٔ «Update from Remote»
+    هم گاهی چیزی ثبت نمی‌کند؛ پس همان کار اینجا انجام می‌شود تا یک
+    اجرای این فایل کافی باشد.
+
+    شکست اینجا کشنده نیست: اگر گیت نباشد، یا مخزن تغییر محلی داشته
+    باشد، دیپلوی با همان کدی که روی دیسک است ادامه می‌دهد — فقط
+    باید بداند که کد تازه نیامده.
+    """
+    repo = os.path.dirname(os.path.abspath(__file__))
+    if not os.path.isdir(os.path.join(repo, '.git')):
+        log('گیت: اینجا مخزن گیت نیست — از همین کد موجود استفاده می‌شود.')
+        return
+
+    log('')
+    log('کشیدن آخرین کد از گیت …')
+    try:
+        result = subprocess.run(
+            ['git', '-C', repo, 'pull', '--ff-only'],
+            capture_output=True, text=True, timeout=180)
+    except (OSError, subprocess.SubprocessError) as exc:
+        log('گیت در دسترس نیست (%s) — با کد موجود ادامه می‌دهیم.' % exc)
+        return
+
+    output = (result.stdout + result.stderr).strip()
+    for line in output.splitlines():
+        log('  %s' % line)
+    if result.returncode:
+        log('!! کشیدن کد نشد. دیپلوی با کد موجود ادامه می‌دهد.')
+        log('   اگر مخزن تغییر محلی دارد، از صفحهٔ Git Version Control')
+        log('   دکمهٔ «Update from Remote» را بزنید.')
+
+
 def check_media() -> None:
     """پوشهٔ آپلود را می‌سازد و واقعاً در آن می‌نویسد.
 
@@ -231,8 +267,10 @@ def main() -> int:
     log('مقصد : %s' % TARGET)
     log('=' * 60)
 
+    pull()
+
     if not os.path.isdir(SOURCE):
-        log('!! پوشهٔ مبدأ پیدا نشد. اول «Update from Remote» را بزنید.')
+        log('!! پوشهٔ مبدأ پیدا نشد: %s' % SOURCE)
         return 1
     if not os.path.isdir(TARGET):
         log('!! پوشهٔ مقصد پیدا نشد: %s' % TARGET)
