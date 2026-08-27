@@ -1,0 +1,27 @@
+{% comment %}
+مسیر سلسله‌مراتبی: صفحه اصلی ← دانشکده‌ها ← دانشکده ← گروه ← اینجا.
+
+هر صفحهٔ رشته و گروه تا پیش از این فقط «صفحه اصلی» را داشت، پس
+بازدیدکننده نمی‌دانست این رشته زیر کدام گروه و کدام دانشکده است و
+راهی هم برای بالا رفتن نداشت.
+
+پارامترها: department، group، current — هرکدام که نباشد، حلقه‌اش
+از مسیر می‌افتد، نه اینکه جای خالی بگذارد.
+{% endcomment %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'academics:departments' %}">دانشکده‌ها</a></li>
+        {% if department %}
+        <li class="breadcrumb-item">
+            <a href="{{ department.get_absolute_url }}">{{ department.name }}</a>
+        </li>
+        {% endif %}
+        {% if group %}
+        <li class="breadcrumb-item">
+            <a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
+        </li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-current="page">{{ current }}</li>
+    </ol>
+</nav>

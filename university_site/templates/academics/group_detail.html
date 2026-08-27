@@ -2,13 +2,7 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'academics:groups_list' %}">گروه‌های آموزشی</a></li>
-                <li class="breadcrumb-item active">{{ group.name }}</li>
-            </ol>
-        </nav>
+        {% include 'academics/_crumbs.html' with department=group.department current=group.name %}
         <h1 class="page-header-title">{{ group.name }}</h1>
         <p class="text-white-50 mb-0">{{ group.department.name }}</p>
     </div>

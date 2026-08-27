@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-header"><div class="container"><h1 class="page-header-title">{{ department.name }}</h1></div></div>
+<div class="page-header">
+    <div class="container">
+        {% include 'academics/_crumbs.html' with current=department.name %}
+        <h1 class="page-header-title">{{ department.name }}</h1>
+    </div>
+</div>
 <section class="section"><div class="container">
 <div class="row g-5">
 <div class="col-lg-8">
@@ -77,9 +82,31 @@
 {% endfor %}</div></div>{% endif %}
 </div>
 <div class="col-lg-4">
+{% if department.head %}
+{% comment %}
+رئیس دانشکده، بالای کارت اطلاعات. عکس اختیاری است؛ نبودش نباید
+قاب خالی بگذارد.
+{% endcomment %}
+<div class="uni-card p-4 mb-4 tree-dean" style="margin-block-start:0;">
+    {% if department.head_photo %}
+    <img class="tree-dean-photo" src="{{ department.head_photo.url }}"
+         alt="{{ department.head }}" loading="lazy" width="44" height="44">
+    {% else %}
+    <span class="tree-dean-photo tree-dean-blank" aria-hidden="true">
+        <i class="fas fa-user-tie"></i>
+    </span>
+    {% endif %}
+    <span class="tree-dean-text">
+        <span class="tree-dean-role">رئیس دانشکده</span>
+        <strong class="tree-dean-name">{{ department.head }}</strong>
+        {% if department.head_title %}
+        <span class="tree-dean-title">{{ department.head_title }}</span>
+        {% endif %}
+    </span>
+</div>
+{% endif %}
 <div class="uni-card p-4">
 <h5 class="fw-bold text-primary-uni mb-3">اطلاعات دانشکده</h5>
-{% if department.head %}<div class="mb-2"><i class="fas fa-user-tie text-primary"></i> <strong>رئیس:</strong> {{ department.head }}</div>{% endif %}
 {% if department.email %}<div class="mb-2"><i class="fas fa-envelope text-primary"></i> <a href="mailto:{{ department.email }}">{{ department.email }}</a></div>{% endif %}
 {% if department.phone %}<div class="mb-2"><i class="fas fa-phone text-primary"></i> {{ department.phone }}</div>{% endif %}
 {% if department.location %}<div class="mb-2"><i class="fas fa-map-marker-alt text-primary"></i> {{ department.location }}</div>{% endif %}

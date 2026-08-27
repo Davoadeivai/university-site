@@ -54,6 +54,30 @@
                 <p class="tree-dept-blurb">{{ node.department.short_description }}</p>
                 {% endif %}
 
+                {% comment %}
+                رئیس دانشکده. عکس اختیاری است؛ بدون آن فقط نام و سمت
+                می‌آید، نه یک قاب خالی.
+                {% endcomment %}
+                {% if node.department.head %}
+                <div class="tree-dean">
+                    {% if node.department.head_photo %}
+                    <img class="tree-dean-photo" src="{{ node.department.head_photo.url }}"
+                         alt="{{ node.department.head }}" loading="lazy" width="44" height="44">
+                    {% else %}
+                    <span class="tree-dean-photo tree-dean-blank" aria-hidden="true">
+                        <i class="fas fa-user-tie"></i>
+                    </span>
+                    {% endif %}
+                    <span class="tree-dean-text">
+                        <span class="tree-dean-role">رئیس دانشکده</span>
+                        <strong class="tree-dean-name">{{ node.department.head }}</strong>
+                        {% if node.department.head_title %}
+                        <span class="tree-dean-title">{{ node.department.head_title }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
                 <ul class="tree-branches">
                     {% for branch in node.branches %}
                     <li class="tree-branch">

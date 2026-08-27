@@ -3960,3 +3960,33 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     .tree-branch::before { inset-inline-start: -14px; inline-size: 10px; }
     .tree-majors { padding-inline-start: 12px; }
 }
+
+/* ── رئیس دانشکده، کنار نام دانشکده در درخت ───────────────── */
+.tree-dean {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-block-start: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--bg-light, #faf6f1);
+}
+.tree-dean-photo {
+    inline-size: 44px;
+    block-size: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: none;
+}
+.tree-dean-blank {
+    display: grid;
+    place-items: center;
+    background: var(--bg-white, #fff);
+    border: 1px dashed var(--border, #e8dcd0);
+    color: var(--text-muted, #6b5b5e);
+}
+.tree-dean-text { display: flex; flex-direction: column; gap: 1px; min-inline-size: 0; }
+.tree-dean-role { font-size: 11px; color: var(--text-muted, #6b5b5e); }
+.tree-dean-name { font-size: 14px; color: var(--tone, #7a1f2e); }
+.tree-dean-title { font-size: 12px; color: var(--text-muted, #6b5b5e); }
+[data-theme="dark"] .tree-dean { background: rgba(255, 255, 255, .04); }

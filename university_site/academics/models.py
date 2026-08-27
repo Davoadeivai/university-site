@@ -12,6 +12,12 @@ class Department(models.Model):
     description = models.TextField(_('توضیحات کامل'), blank=True)
     image = models.ImageField(_('تصویر'), upload_to='departments/', blank=True, null=True)
     head = models.CharField(_('رئیس دانشکده'), max_length=200, blank=True)
+    head_title = models.CharField(
+        _('سمت رئیس دانشکده'), max_length=120, blank=True,
+        help_text=_('مثلاً: دانشیار گروه مدیریت صنعتی'))
+    head_photo = models.ImageField(
+        _('عکس رئیس دانشکده'), upload_to='departments/heads/',
+        blank=True, null=True)
     established_year = models.CharField(_('سال تأسیس'), max_length=10, blank=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)

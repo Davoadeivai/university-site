@@ -219,10 +219,18 @@ class AcademicStructureTests(TestCase):
         self.assertIsNone(major.group)
 
     def test_the_major_page_shows_the_group_not_the_department(self):
+        """نشان کنار نام رشته باید گروه باشد، نه دانشکده.
+
+        مسیر بالای صفحه دانشکده را می‌آورد — آنجا جای درستش است و
+        راهی به بالا می‌دهد؛ چیزی که اینجا سنجیده می‌شود خودِ کارت
+        رشته است.
+        """
         group = self._group('گروه کامپیوتر')
         major = Major.objects.create(
             name='مهندسی کامپیوتر', slug='mk-1', degree='bachelor_cont',
             department=self.dept, group=group, is_active=True)
         body = self.client.get(major.get_absolute_url()).content.decode()
-        self.assertIn('گروه کامپیوتر', body)
-        self.assertNotIn('دانشکده آزمون', body)
+        card = body.split('<span class="uni-card-badge">')[1].split(
+            '<div class="row')[0]
+        self.assertIn('گروه کامپیوتر', card)
+        self.assertNotIn('دانشکده آزمون', card)
