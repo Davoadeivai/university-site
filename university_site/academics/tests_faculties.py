@@ -48,7 +48,7 @@ class FacultyStructureTests(TestCase):
         self.assertEqual(names, {
             'دانشکده فنی و مهندسی',
             'دانشکده مدیریت و حسابداری',
-            'دانشکده علوم انسانی',
+            'دانشکده علوم تربیتی و روان‌شناسی',
         })
 
     def test_every_group_lands_somewhere(self):
@@ -66,15 +66,56 @@ class FacultyStructureTests(TestCase):
         self.assertIn('گروه کامپیوتر', names)
         self.assertIn('گروه مکانیک', names)
 
-    def test_management_and_humanities_are_separated(self):
+    def test_management_and_education_are_separated(self):
+        """سند موسسه جامعه‌شناسی را زیر مدیریت گذاشته، نه علوم تربیتی."""
         _run()
         management = Department.objects.get(slug='modiriat-hesabdari')
-        humanities = Department.objects.get(slug='olum-ensani')
-        self.assertEqual(management.groups.count(), 3)
-        self.assertEqual(humanities.groups.count(), 4)
-        # «مدیریت آموزشی» باید در علوم انسانی بماند، نه در مدیریت
-        self.assertIn('گروه علوم تربیتی - مدیریت آموزشی',
-                      humanities.groups.values_list('name', flat=True))
+        education = Department.objects.get(slug='olum-tarbiati-ravanshenasi')
+        self.assertEqual(management.groups.count(), 4)
+        self.assertEqual(education.groups.count(), 3)
+
+        managed = set(management.groups.values_list('name', flat=True))
+        taught = set(education.groups.values_list('name', flat=True))
+        self.assertIn('گروه علوم اجتماعی', managed)
+        self.assertIn('گروه علوم تربیتی - مدیریت آموزشی', taught)
+        self.assertIn('گروه روانشناسی', taught)
+        self.assertNotIn('گروه علوم تربیتی - مدیریت آموزشی', managed)
+
+    def test_the_third_faculty_carries_the_name_from_the_document(self):
+        """پیش از رسیدن سند، نامش «علوم انسانی» بود — حدس ما."""
+        _run()
+        self.assertFalse(Department.objects.filter(slug='olum-ensani').exists())
+        self.assertFalse(
+            Department.objects.filter(name='دانشکده علوم انسانی').exists())
+
+    def test_the_old_row_is_renamed_not_duplicated(self):
+        """ساختن ردیف تازه، ردیف قدیمی را با گروه‌هایش رها می‌کرد."""
+        _run()
+        old = Department.objects.create(
+            name='دانشکده علوم انسانی', slug='olum-ensani')
+        moved = AcademicGroup.objects.get(name='گروه روانشناسی')
+        moved.department = old
+        moved.save(update_fields=['department'])
+        Department.objects.filter(
+            slug='olum-tarbiati-ravanshenasi').delete()
+
+        _run()
+        self.assertEqual(
+            Department.objects.filter(
+                name__contains='علوم تربیتی').count(), 1)
+        self.assertFalse(Department.objects.filter(slug='olum-ensani').exists())
+
+    def test_a_group_in_the_wrong_managed_faculty_is_corrected(self):
+        """گروهی که زیر یکی از همین سه دانشکده اشتباه نشسته، اصلاح شود."""
+        _run()
+        social = AcademicGroup.objects.get(name='گروه علوم اجتماعی')
+        social.department = Department.objects.get(
+            slug='olum-tarbiati-ravanshenasi')
+        social.save(update_fields=['department'])
+
+        _run()
+        social.refresh_from_db()
+        self.assertEqual(social.department.slug, 'modiriat-hesabdari')
 
     def test_the_placeholder_is_removed_once_empty(self):
         _run()
@@ -159,7 +200,7 @@ class FacultiesOnTheHomePageTests(TestCase):
         html = self._html()
         for name in ('دانشکده فنی و مهندسی',
                      'دانشکده مدیریت و حسابداری',
-                     'دانشکده علوم انسانی'):
+                     'دانشکده علوم تربیتی و روان‌شناسی'):
             self.assertIn(name, html)
 
     def test_each_card_lists_its_groups(self):

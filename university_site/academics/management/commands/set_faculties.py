@@ -11,9 +11,17 @@
 هر یازده گروه زیرش جمع شده بودند. «تحصیلات تکمیلی» یک مقطع است،
 نه دانشکده؛ پس عملاً ساختار دانشکده‌ای وجود نداشت.
 
-چیدمان زیر از روی همان گروه‌هایی است که موسسه واقعاً دارد، نه از
-روی الگوی دانشگاهی دیگری: مهندسی، مدیریت و حسابداری، و علوم
-انسانی. همان سه حوزه‌ای که یازده گروه در آن‌ها می‌گنجند.
+چیدمان از سند «رشته‌های دانشکده‌ها»ی خود موسسه گرفته شده — سه
+دانشکده با همان نام‌هایی که آنجا آمده:
+
+    دانشکده فنی و مهندسی
+    دانشکده مدیریت و حسابداری
+    دانشکده علوم تربیتی و روان‌شناسی
+
+چارت سازمانی سایت به این کار نمی‌آید: آن چارت اداری است و پایین‌ترین
+لایهٔ آموزشی‌اش «گروه‌های آموزشی» است — اصلاً دانشکده‌ای در آن تعریف
+نشده. پیش از رسیدن سند، دانشکدهٔ سوم «علوم انسانی» نام داشت که حدس
+بود، نه نام رسمی.
 
 دستور بارها قابل اجراست: دانشکدهٔ موجود را دوباره نمی‌سازد و
 گروهی را که ادمین دستی جابه‌جا کرده، جز با ‎--force‎ برنمی‌گرداند.
@@ -30,24 +38,33 @@ from academics.models import AcademicGroup, Department
 FACULTIES = [
     (
         'fanni-mohandesi', 'دانشکده فنی و مهندسی', 1,
-        'گروه‌های مهندسی موسسه — از برق و کامپیوتر تا مکانیک و معماری.',
+        'برق و الکترونیک، کامپیوتر، مکانیک، و معماری و نقشه‌کشی — از '
+        'کاردانی پیوسته تا کارشناسی پیوسته.',
         ['برق', 'کامپیوتر', 'مکانیک', 'معماری'],
     ),
     (
         'modiriat-hesabdari', 'دانشکده مدیریت و حسابداری', 2,
-        'مدیریت صنعتی، بازرگانی و حسابداری — حوزه‌ای که ریاست موسسه '
-        'خود از آن برخاسته است.',
-        ['حسابداری', 'مدیریتصنعتی', 'مدیریتبازرگانی'],
+        'حسابداری، مدیریت بازرگانی و مدیریت صنعتی و مالی، همراه با '
+        'جامعه‌شناسی — تنها دانشکده‌ای که کارشناسی ارشد دارد.',
+        ['حسابداری', 'مدیریتصنعتی', 'مدیریتبازرگانی', 'علوماجتماعی'],
     ),
     (
-        'olum-ensani', 'دانشکده علوم انسانی', 3,
-        'علوم اجتماعی، روان‌شناسی، علوم تربیتی و علوم پایه و معارف.',
-        ['علوماجتماعی', 'روانشناسی', 'علومتربیتی', 'علومپایه'],
+        'olum-tarbiati-ravanshenasi', 'دانشکده علوم تربیتی و روان‌شناسی', 3,
+        'علوم تربیتی با گرایش‌های مدیریت آموزشی و آموزش و پرورش ابتدایی، '
+        'و روان‌شناسی.',
+        ['روانشناسی', 'علومتربیتی', 'علومپایه'],
     ),
 ]
 
 # ردیف‌هایی که دانشکده نیستند و باید برداشته شوند
 PLACEHOLDERS = ['bargh', 'تحصیلات تکمیلی']
+
+# اسلاگ قدیمی → اسلاگ تازه.
+#
+# «علوم انسانی» حدس ما بود؛ سند موسسه آن را «علوم تربیتی و
+# روان‌شناسی» می‌نامد. بدون این نگاشت، دستور یک دانشکدهٔ تازه
+# می‌ساخت و ردیف قدیمی با همهٔ گروه‌هایش کنارش می‌ماند.
+RENAMES = {'olum-ensani': 'olum-tarbiati-ravanshenasi'}
 
 
 def key(text: str) -> str:
@@ -106,6 +123,8 @@ class Command(BaseCommand):
         found = {}
         for slug, name, order, blurb, _keys in FACULTIES:
             existing = Department.objects.filter(slug=slug).first()
+            if existing is None:
+                existing = self._renamed(slug, name, dry)
             if existing:
                 found[slug] = existing
                 continue
@@ -147,9 +166,14 @@ class Command(BaseCommand):
                 continue
             if group.department_id == target.id:
                 continue
-            # گروهی که ادمین جای دیگری برده، جز با --force دست نمی‌خورد
+            # گروهی که ادمین به دانشکده‌ای بیرون از این سند برده، جز
+            # با ‎--force‎ دست نمی‌خورد. اما گروهی که در یکی از همین سه
+            # دانشکده نشسته و سند جای دیگری برایش گفته، اصلاح می‌شود —
+            # وگرنه «علوم اجتماعی» تا ابد زیر دانشکدهٔ اشتباه می‌ماند.
+            managed_ids = {f.id for f in faculties.values()}
             settled = (group.department_id
-                       and group.department_id not in placeholder_ids)
+                       and group.department_id not in placeholder_ids
+                       and group.department_id not in managed_ids)
             if settled and not force:
                 continue
             group.department = target
@@ -180,6 +204,26 @@ class Command(BaseCommand):
                 major.save(update_fields=['department'])
             changed += 1
         return changed
+
+    def _renamed(self, slug: str, name: str, dry: bool):
+        """ردیف قدیمیِ همین دانشکده را پیدا کن و نامش را درست کن.
+
+        برمی‌گرداند None اگر ردیف قدیمی هم نباشد — آن وقت فراخوان
+        دانشکده را از نو می‌سازد.
+        """
+        old_slug = next((old for old, new in RENAMES.items() if new == slug),
+                        None)
+        if not old_slug:
+            return None
+        existing = Department.objects.filter(slug=old_slug).first()
+        if existing is None:
+            return None
+        self.stdout.write('  ~ %s ← %s' % (name, existing.name))
+        existing.slug = slug
+        existing.name = name
+        if not dry:
+            existing.save(update_fields=['slug', 'name'])
+        return existing
 
     def _drop_placeholders(self, dry: bool) -> list:
         names = {key(p) for p in PLACEHOLDERS}
