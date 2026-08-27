@@ -1190,3 +1190,110 @@ function appendMsg(text, type) {
                           String(chip.classList.contains('is-on')));
     });
 })();
+
+/* ── درخت ساختار آموزشی: جست‌وجو و باز کردن همه ──────────────────
+   افزودنی است، نه ستون صفحه. قالب همه‌چیز را رندر می‌کند و شاخه‌ها با
+   details باز و بسته می‌شوند؛ این کد فقط دو ابزار روی آن می‌گذارد و
+   اگر جاوااسکریپت نباشد، خود نوار ابزار هم اصلاً دیده نمی‌شود. */
+(function () {
+    'use strict';
+
+    var tools = document.querySelector('[data-tree-tools]');
+    var trunk = document.querySelector('.trunk');
+    if (!tools || !trunk) { return; }
+
+    tools.hidden = false;
+
+    var input = tools.querySelector('[data-tree-filter]');
+    var expand = tools.querySelector('[data-tree-expand]');
+    var count = tools.querySelector('[data-tree-count]');
+    var faculties = Array.prototype.slice.call(
+        trunk.querySelectorAll('[data-tree-faculty]'));
+    var branches = Array.prototype.slice.call(
+        trunk.querySelectorAll('[data-tree-branch]'));
+    var leaves = Array.prototype.slice.call(
+        trunk.querySelectorAll('[data-tree-leaf]'));
+
+    /* «ي» عربی و «ك» عربی روی صفحه‌کلیدهای مختلف فرق می‌کنند و
+       نیم‌فاصله دیده نمی‌شود — کسی که «مهندسي» می‌نویسد باید
+       «مهندسی» را پیدا کند. */
+    function fold(text) {
+        return (text || '')
+            .replace(/ي/g, 'ی')
+            .replace(/ك/g, 'ک')
+            .replace(/\u200c/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+    }
+
+    function show(node, visible) {
+        node.classList.toggle('is-hidden', !visible);
+    }
+
+    function filter(term) {
+        var needle = fold(term);
+        trunk.classList.toggle('is-filtered', needle !== '');
+
+        if (!needle) {
+            leaves.concat(branches, faculties).forEach(function (node) {
+                show(node, true);
+            });
+            branches.forEach(function (branch, index) {
+                branch.querySelector('details').open = index === 0
+                    || branch.closest('[data-tree-faculty]')
+                        .querySelector('[data-tree-branch]') === branch;
+            });
+            count.textContent = '';
+            return;
+        }
+
+        var hits = 0;
+        branches.forEach(function (branch) {
+            var own = fold(branch.getAttribute('data-search')).indexOf(needle) >= 0;
+            var kept = 0;
+            branch.querySelectorAll('[data-tree-leaf]').forEach(function (leaf) {
+                var match = own
+                    || fold(leaf.getAttribute('data-search')).indexOf(needle) >= 0;
+                show(leaf, match);
+                if (match) { kept += 1; }
+            });
+            show(branch, own || kept > 0);
+            if (own || kept > 0) {
+                branch.querySelector('details').open = true;
+            }
+            hits += kept;
+        });
+
+        faculties.forEach(function (faculty) {
+            var alive = faculty.querySelectorAll(
+                '[data-tree-branch]:not(.is-hidden)').length;
+            show(faculty, alive > 0);
+        });
+
+        count.textContent = hits
+            ? hits + ' رشته پیدا شد'
+            : 'رشته‌ای با این نام پیدا نشد';
+    }
+
+    var timer = null;
+    if (input) {
+        input.addEventListener('input', function () {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(function () {
+                filter(input.value);
+            }, 140);
+        });
+    }
+
+    if (expand) {
+        expand.addEventListener('click', function () {
+            var opening = expand.getAttribute('data-open') !== 'yes';
+            branches.forEach(function (branch) {
+                branch.querySelector('details').open = opening;
+            });
+            expand.setAttribute('data-open', opening ? 'yes' : 'no');
+            expand.textContent = opening ? 'بستن همه' : 'باز کردن همه';
+        });
+    }
+})();

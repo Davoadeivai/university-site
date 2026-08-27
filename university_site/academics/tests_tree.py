@@ -46,7 +46,12 @@ class StructureTreeTests(TestCase):
         نوار بالای سایت همهٔ گروه‌ها را فهرست می‌کند، پس جست‌وجوی نام
         گروه در کل صفحه اول به منو می‌خورد، نه به درخت.
         """
-        return self._html().split('<div class="tree">')[1]
+        return self._html().split('<div class="trunk">')[1]
+
+    def _branch(self, group_name):
+        """یک شاخه، از نامش تا بسته‌شدنش."""
+        marker = 'data-search="%s"' % group_name
+        return self._tree().split(marker)[1].split('</details>')[0]
 
     def test_the_page_opens(self):
         self.assertEqual(
@@ -60,17 +65,20 @@ class StructureTreeTests(TestCase):
 
     def test_the_summary_counts_everything(self):
         html = self._html()
-        summary = html.split('tree-summary')[1].split('</div>')[0]
-        self.assertIn('>2</strong> دانشکده', summary.replace('<strong', '>'))
+        summary = html.split('trunk-figures')[1].split('</div>')[0]
+        self.assertIn('2', summary)
+        self.assertIn('دانشکده', summary)
         self.assertIn('3', summary)
+        self.assertIn('رشته', summary)
 
     def test_each_faculty_reports_its_own_totals(self):
-        block = self._tree().split('دانشکده فنی')[1].split('tree-dept ')[0]
-        self.assertIn('1 گروه', block)
-        self.assertIn('2 رشته', block)
+        block = self._tree().split('دانشکده فنی')[1].split('class="bough ')[0]
+        tally = block.split('bough-tally')[1].split('</p>')[0]
+        self.assertIn('>1</strong> گروه', tally)
+        self.assertIn('>2</strong> رشته', tally)
 
     def test_a_major_sits_under_its_own_group(self):
-        block = self._tree().split('گروه حسابداری')[1].split('</section>')[0]
+        block = self._branch('گروه حسابداری')
         self.assertIn('حسابداری', block)
         self.assertNotIn('مهندسی کامپیوتر', block)
 
@@ -102,8 +110,7 @@ class StructureTreeTests(TestCase):
         AcademicGroup.objects.create(
             name='گروه خالی', slug='khali', department=self.engineering,
             order=9, is_active=True)
-        block = self._tree().split('گروه خالی')[1][:400]
-        self.assertIn('ثبت نشده', block)
+        self.assertIn('ثبت نشده', self._branch('گروه خالی'))
 
     def test_an_inactive_major_is_left_out(self):
         Major.objects.create(

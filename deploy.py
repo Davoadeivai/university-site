@@ -244,6 +244,9 @@ def seed_content() -> None:
     run('set_org_chart')
     run('set_contact_email', '--replace')
     run('set_president_links')
+    # رشته‌های دوبار ثبت‌شده، پیش از چیدن دانشکده‌ها — تا شمارش
+    # هر گروه عدد درست را بدهد
+    run('merge_duplicate_majors')
     # سه دانشکده و چیدن گروه‌ها و رشته‌ها زیرشان
     run('set_faculties')
     run('seed_president_cv')

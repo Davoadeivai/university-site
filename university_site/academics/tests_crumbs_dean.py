@@ -90,7 +90,7 @@ class FacultyDeanTests(TestCase):
     def _tree(self):
         html = self.client.get(
             reverse('academics:departments')).content.decode()
-        return html.split('<div class="tree">')[1]
+        return html.split('<div class="trunk">')[1]
 
     def test_the_dean_appears_on_the_tree(self):
         tree = self._tree()
@@ -101,12 +101,12 @@ class FacultyDeanTests(TestCase):
     def test_the_dean_appears_on_the_faculty_page(self):
         html = self.client.get(self.faculty.get_absolute_url()).content.decode()
         self.assertIn('دکتر مریم رضایی', html)
-        self.assertIn('tree-dean', html)
+        self.assertIn('bough-dean', html)
 
     def test_no_photo_leaves_a_placeholder_not_a_broken_image(self):
         tree = self._tree()
-        self.assertIn('tree-dean-blank', tree)
-        self.assertNotIn('<img class="tree-dean-photo"', tree)
+        self.assertIn('is-blank', tree)
+        self.assertNotIn('<img class="bough-dean-photo"', tree)
 
     def test_a_photo_is_used_when_there_is_one(self):
         self.faculty.head_photo = 'departments/heads/rezaee.jpg'
@@ -114,14 +114,14 @@ class FacultyDeanTests(TestCase):
         cache.clear()
         tree = self._tree()
         self.assertIn('rezaee.jpg', tree)
-        self.assertNotIn('tree-dean-blank', tree)
+        self.assertNotIn('is-blank', tree)
 
     def test_a_photo_declares_its_size(self):
         """بدون width/height صفحه پس از رسیدن عکس یک تکان می‌خورد."""
         self.faculty.head_photo = 'departments/heads/rezaee.jpg'
         self.faculty.save(update_fields=['head_photo'])
         cache.clear()
-        img = self._tree().split('<img class="tree-dean-photo"')[1].split('>')[0]
+        img = self._tree().split('<img class="bough-dean-photo"')[1].split('>')[0]
         self.assertIn('width="44"', img)
         self.assertIn('height="44"', img)
 
@@ -129,7 +129,7 @@ class FacultyDeanTests(TestCase):
         self.faculty.head = ''
         self.faculty.save(update_fields=['head'])
         cache.clear()
-        self.assertNotIn('tree-dean', self._tree())
+        self.assertNotIn('bough-dean', self._tree())
 
     def test_a_dean_without_a_title_still_shows(self):
         self.faculty.head_title = ''
@@ -137,7 +137,7 @@ class FacultyDeanTests(TestCase):
         cache.clear()
         tree = self._tree()
         self.assertIn('دکتر مریم رضایی', tree)
-        self.assertNotIn('tree-dean-title', tree)
+        self.assertNotIn('bough-dean-title', tree)
 
     def test_the_panel_offers_both_new_fields(self):
         from academics.admin import DepartmentAdmin

@@ -48,6 +48,13 @@ def departments_list(request):
     tree = []
     for department in departments:
         branches = groups_by_department.get(department.id, [])
+        # هر گروه، مقطع‌هایی که واقعاً دارد — نه همهٔ مقطع‌های موسسه
+        for branch in branches:
+            seen = []
+            for major in branch['majors']:
+                if major['degree_label'] not in seen:
+                    seen.append(major['degree_label'])
+            branch['degrees'] = seen
         tree.append({
             'department': department,
             'branches': branches,
@@ -56,6 +63,12 @@ def departments_list(request):
             'major_count': sum(len(b['majors']) for b in branches)
                            + len(loose.get(department.id, [])),
         })
+
+    # سهم هر دانشکده از کل رشته‌ها، برای نوار نسبت بالای صفحه. عددی
+    # است که خودِ صفحه می‌گوید، نه تزئین: پهنای هر تکه یعنی چند رشته.
+    for node in tree:
+        node['share'] = round(
+            100 * node['major_count'] / len(majors), 1) if majors else 0
 
     return render(request, 'academics/departments.html', {
         'departments': departments,

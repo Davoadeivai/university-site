@@ -87,20 +87,20 @@
 رئیس دانشکده، بالای کارت اطلاعات. عکس اختیاری است؛ نبودش نباید
 قاب خالی بگذارد.
 {% endcomment %}
-<div class="uni-card p-4 mb-4 tree-dean" style="margin-block-start:0;">
+<div class="uni-card p-4 mb-4 bough-dean" style="margin-block-start:0;">
     {% if department.head_photo %}
-    <img class="tree-dean-photo" src="{{ department.head_photo.url }}"
+    <img class="bough-dean-photo" src="{{ department.head_photo.url }}"
          alt="{{ department.head }}" loading="lazy" width="44" height="44">
     {% else %}
-    <span class="tree-dean-photo tree-dean-blank" aria-hidden="true">
+    <span class="bough-dean-photo is-blank" aria-hidden="true">
         <i class="fas fa-user-tie"></i>
     </span>
     {% endif %}
-    <span class="tree-dean-text">
-        <span class="tree-dean-role">رئیس دانشکده</span>
-        <strong class="tree-dean-name">{{ department.head }}</strong>
+    <span class="bough-dean-text">
+        <span class="bough-dean-role">رئیس دانشکده</span>
+        <strong class="bough-dean-name">{{ department.head }}</strong>
         {% if department.head_title %}
-        <span class="tree-dean-title">{{ department.head_title }}</span>
+        <span class="bough-dean-title">{{ department.head_title }}</span>
         {% endif %}
     </span>
 </div>

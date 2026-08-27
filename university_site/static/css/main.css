@@ -2888,15 +2888,6 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .pres-tone-5 { --tone: #6b3f8f; }
 .pres-tone-6 { --tone: #a33b4e; }
 
-/* ── نشانی سایت، زیر رزومه، میان دو خط ────────────────────── */
-
-
-    background: linear-gradient(135deg, rgba(240, 208, 128, .36), rgba(240, 208, 128, .18));
-    color: #5d460a;
-    transform: translateY(-1px);
-}
-
-
 
 [data-theme="dark"] .pres-cv-card,
 [data-theme="dark"] .pres-cv-list li { color: #dfe9f3; }
@@ -3767,226 +3758,492 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     color: var(--text-muted, #6b5b5e);
 }
 
-/* ── درخت ساختار آموزشی ─────────────────────────────────────
-   دانشکده ← گروه ← رشته. باز و بسته‌شدن از details می‌آید، نه از
-   جاوااسکریپت: رفتار خودِ مرورگر است، با صفحه‌کلید کار می‌کند، و
-   بدون اسکریپت هم همهٔ رشته‌ها در HTML هستند. */
-.tree-summary {
+/* ══ درخت ساختار آموزشی ══════════════════════════════════════════
+   موسسه ← دانشکده ← گروه ← رشته.
+
+   تنه از راست پایین می‌آید و شاخه‌ها به چپ می‌روند: صفحه راست‌چین
+   است و چشم فارسی‌زبان از راست شروع می‌کند. همهٔ خط‌ها با خصوصیت‌های
+   منطقی (inline-start) نوشته شده‌اند تا اگر روزی صفحه چپ‌چین شد،
+   درخت هم بچرخد و وارونه نماند.
+
+   رنگ‌ها از همان سه‌گانهٔ موسسه‌اند — عنابی، طلای کهن، سبز — نه
+   رنگ تازه‌ای که با نشان موسسه بیگانه باشد. هر دانشکده یک tone
+   می‌گیرد و هرچه داخلش است از همان می‌نوشد.
+
+   یک قید فارسی: روی متن فارسی letter-spacing گذاشته نمی‌شود، چون
+   حروف را از هم می‌کَند و کلمه را می‌شکند. سلسله‌مراتب اینجا از
+   اندازه، وزن و رنگ می‌آید، نه از فاصلهٔ حروف.
+   ════════════════════════════════════════════════════════════════ */
+
+.tone-1 { --tone: var(--primary, #7a1f2e); --tone-soft: rgba(122, 31, 46, .10); }
+.tone-2 { --tone: var(--gold-ink, #8a6412); --tone-soft: rgba(138, 100, 18, .12); }
+.tone-3 { --tone: #1f5c4a;                  --tone-soft: rgba(31, 92, 74, .12); }
+.tone-4 { --tone: #4a3b8a;                  --tone-soft: rgba(74, 59, 138, .12); }
+
+/* ── سرصفحه: عددها و نوار نسبت ─────────────────────────────── */
+.trunk-lede {
+    display: grid;
+    gap: var(--space-5, 1.5rem);
+    margin-block-end: clamp(28px, 4vw, 52px);
+}
+
+.trunk-figures {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: clamp(16px, 3vw, 40px);
-    margin-block-end: clamp(26px, 3.4vw, 44px);
-    padding: 16px 22px;
-    border-radius: 14px;
-    background: var(--bg-light, #faf6f1);
-    border: 1px solid var(--border, #e8dcd0);
-    font-size: 14px;
-    color: var(--text-muted, #6b5b5e);
+    gap: clamp(18px, 4vw, 52px);
 }
-.tree-summary strong {
-    font-size: 19px;
+
+.trunk-figure { display: flex; align-items: baseline; gap: 8px; }
+
+.trunk-figure strong {
+    font-size: clamp(30px, 5vw, 48px);
+    font-weight: 800;
+    line-height: 1;
     color: var(--primary, #7a1f2e);
     font-variant-numeric: tabular-nums;
 }
 
-.tree { display: grid; gap: clamp(18px, 2.4vw, 28px); }
+.trunk-figure span {
+    font-size: 13px;
+    color: var(--text-muted, #6b5b5e);
+}
 
-.tree-dept {
-    padding: clamp(18px, 2.4vw, 26px);
-    border-radius: 16px;
+/* نوار نسبت — پهنای هر تکه، سهم آن دانشکده از رشته‌هاست */
+.trunk-bar {
+    display: flex;
+    block-size: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--border, #e8dcd0);
+}
+
+.trunk-slice { background: var(--tone); min-inline-size: 4px; }
+
+.trunk-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+}
+
+.trunk-key li { display: flex; align-items: center; gap: 7px; }
+
+.trunk-key li::before {
+    content: "";
+    inline-size: 9px;
+    block-size: 9px;
+    border-radius: 3px;
+    background: var(--tone);
+    flex: none;
+}
+
+.trunk-key a { color: var(--text-dark, #241a1c); text-decoration: none; }
+.trunk-key a:hover { color: var(--tone); text-decoration: underline; }
+
+.trunk-share {
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── ابزارها: جست‌وجو و باز کردن همه ───────────────────────── */
+.trunk-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-block-end: clamp(22px, 3vw, 34px);
+}
+
+.trunk-search {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: 1 1 260px;
+    max-inline-size: 420px;
+    padding: 10px 15px;
+    border-radius: 999px;
     background: var(--bg-white, #fff);
     border: 1px solid var(--border, #e8dcd0);
-    border-inline-start: 5px solid var(--tone, #7a1f2e);
-    box-shadow: 0 8px 26px -22px rgba(78, 18, 32, .5);
+    color: var(--text-muted, #6b5b5e);
 }
 
-.tree-dept-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.trunk-search:focus-within {
+    border-color: var(--secondary, #a67c1f);
+    box-shadow: var(--focus-ring, 0 0 0 3px rgba(166, 124, 31, .45));
+}
 
-.tree-dept-icon {
-    inline-size: 40px;
-    block-size: 40px;
+.trunk-search input {
+    flex: 1;
+    min-inline-size: 0;
+    border: 0;
+    background: none;
+    outline: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-dark, #241a1c);
+}
+
+.trunk-toggle {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--border, #e8dcd0);
+    background: var(--bg-white, #fff);
+    color: var(--primary, #7a1f2e);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.trunk-toggle:hover {
+    border-color: var(--primary, #7a1f2e);
+    background: rgba(122, 31, 46, .06);
+}
+
+.trunk-toggle:focus-visible {
+    outline: 2px solid var(--secondary, #a67c1f);
+    outline-offset: 2px;
+}
+
+.trunk-count {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted, #6b5b5e);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── تنه ────────────────────────────────────────────────────── */
+.trunk {
     display: grid;
-    place-items: center;
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--tone) 12%, transparent);
-    color: var(--tone, #7a1f2e);
-    font-size: 17px;
-}
-@supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .tree-dept-icon { background: rgba(122, 31, 46, .1); }
+    gap: clamp(22px, 3vw, 34px);
+    position: relative;
+    padding-inline-start: 0;
+    padding-inline-end: 26px;
 }
 
-.tree-dept-name { margin: 0; font-size: clamp(16px, 1.9vw, 20px); font-weight: 800; }
-.tree-dept-name a { color: var(--tone, #7a1f2e); text-decoration: none; }
-.tree-dept-name a:hover { text-decoration: underline; }
+/* خط عمودی تنه — از اولین دانشکده تا آخرین، نه فراتر */
+.trunk::before {
+    content: "";
+    position: absolute;
+    inset-block: 26px;
+    inset-inline-end: 8px;
+    inline-size: 2px;
+    background: linear-gradient(
+        180deg,
+        var(--border, #e8dcd0) 0%,
+        var(--border, #e8dcd0) 88%,
+        transparent 100%);
+}
 
-.tree-dept-count {
+/* ── دانشکده ────────────────────────────────────────────────── */
+.bough {
+    position: relative;
+    padding: clamp(20px, 2.6vw, 30px);
+    border-radius: var(--radius, 14px);
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    box-shadow: 0 10px 30px -26px rgba(78, 18, 32, .55);
+    transition: box-shadow var(--duration-base, 240ms) var(--easing-standard, ease);
+    scroll-margin-block-start: 90px;
+}
+
+.bough:hover { box-shadow: 0 16px 40px -28px rgba(78, 18, 32, .7); }
+
+/* گرهٔ روی تنه، هم‌تراز نام دانشکده */
+.bough-node {
+    position: absolute;
+    inset-inline-end: -22px;
+    inset-block-start: clamp(28px, 3vw, 38px);
+    inline-size: 11px;
+    block-size: 11px;
+    border-radius: 50%;
+    background: var(--tone);
+    box-shadow: 0 0 0 4px var(--bg-light, #faf6f1);
+}
+
+/* بازوی افقی از تنه تا کارت دانشکده */
+.bough::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: -17px;
+    inset-block-start: calc(clamp(28px, 3vw, 38px) + 5px);
+    inline-size: 17px;
+    block-size: 2px;
+    background: var(--border, #e8dcd0);
+}
+
+.bough-head {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    padding-block-end: 14px;
+    border-block-end: 1px solid var(--border, #e8dcd0);
+}
+
+.bough-title { min-inline-size: 0; flex: 1 1 240px; }
+
+.bough-eyebrow {
+    margin: 0 0 2px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tone);
+    opacity: .75;
+}
+
+.bough-name {
+    margin: 0;
+    font-size: clamp(19px, 2.4vw, 28px);
+    font-weight: 800;
+    line-height: 1.4;
+    text-wrap: balance;
+}
+
+.bough-name a { color: var(--tone); text-decoration: none; }
+.bough-name a:hover { text-decoration: underline; }
+
+.bough-tally {
+    display: flex;
+    gap: 16px;
+    margin: 0;
     margin-inline-start: auto;
     font-size: 12.5px;
     color: var(--text-muted, #6b5b5e);
-    font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
-.tree-dept-blurb {
-    margin: 12px 0 0;
+.bough-tally strong {
+    font-size: 17px;
+    color: var(--tone);
+    font-variant-numeric: tabular-nums;
+}
+
+.bough-blurb {
+    margin: 14px 0 0;
+    max-inline-size: 62ch;
     font-size: 13.5px;
     line-height: 2;
     color: var(--text-muted, #6b5b5e);
 }
 
-/* شاخه‌ها: خط عمودی از دانشکده به هر گروه */
-.tree-branches {
-    list-style: none;
-    margin: 16px 0 0;
-    padding: 0;
-    padding-inline-start: 22px;
-    border-inline-start: 2px solid color-mix(in srgb, var(--tone) 25%, transparent);
-}
-@supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .tree-branches { border-inline-start-color: rgba(122, 31, 46, .25); }
-}
-
-.tree-branch { position: relative; margin-block-end: 8px; }
-.tree-branch:last-child { margin-block-end: 0; }
-
-/* بازوی افقی از خط عمودی به هر گروه */
-.tree-branch::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: -22px;
-    inset-block-start: 19px;
-    inline-size: 16px;
-    block-size: 2px;
-    background: color-mix(in srgb, var(--tone) 25%, transparent);
-}
-@supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .tree-branch::before { background: rgba(122, 31, 46, .25); }
-}
-
-.tree-branch summary {
+/* ── رئیس دانشکده ───────────────────────────────────────────── */
+.bough-dean {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    background: var(--bg-light, #faf6f1);
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 700;
-    list-style: none;
-}
-.tree-branch summary::-webkit-details-marker { display: none; }
-.tree-branch summary:hover { background: color-mix(in srgb, var(--tone) 7%, var(--bg-light)); }
-.tree-branch summary:focus-visible { outline: 2px solid var(--tone); outline-offset: 2px; }
-
-/* مثلث باز/بسته — چرخش به‌جای دو آیکون جدا */
-.tree-branch summary::before {
-    content: "\f0da";
-    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 12px;
-    color: var(--tone, #7a1f2e);
-    transition: transform .18s ease;
-}
-.tree-branch details[open] > summary::before { transform: rotate(-90deg); }
-
-.tree-group-name { min-inline-size: 0; }
-.tree-group-loose { color: var(--text-muted, #6b5b5e); font-weight: 600; }
-
-.tree-group-count {
-    margin-inline-start: auto;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted, #6b5b5e);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
-
-.tree-majors {
-    list-style: none;
-    margin: 8px 0 12px;
-    padding: 0;
-    padding-inline-start: 26px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-    gap: 6px;
-}
-
-.tree-majors li {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border, #e8dcd0);
-    font-size: 13px;
-}
-.tree-majors li a { color: var(--text-dark, #241a1c); text-decoration: none; }
-.tree-majors li a:hover { color: var(--tone, #7a1f2e); text-decoration: underline; }
-
-.tree-degree {
-    margin-inline-start: auto;
-    font-size: 11px;
-    color: var(--text-muted, #6b5b5e);
-    white-space: nowrap;
-}
-
-.tree-empty {
-    margin: 8px 0 12px 26px;
-    font-size: 13px;
-    color: var(--text-muted, #6b5b5e);
-}
-
-.tree-dept-1 { --tone: #7a1f2e; }
-.tree-dept-2 { --tone: #8a6412; }
-.tree-dept-3 { --tone: #1f5c4a; }
-.tree-dept-4 { --tone: #4a3b8a; }
-
-[data-theme="dark"] .tree-dept,
-[data-theme="dark"] .tree-majors li { background: var(--bg-white); }
-[data-theme="dark"] .tree-summary,
-[data-theme="dark"] .tree-branch summary { background: rgba(255, 255, 255, .04); }
-[data-theme="dark"] .tree-summary strong { color: #f2a0ab; }
-[data-theme="dark"] .tree-dept-1 { --tone: #f2a0ab; }
-[data-theme="dark"] .tree-dept-2 { --tone: #e5c77a; }
-[data-theme="dark"] .tree-dept-3 { --tone: #6fd1b0; }
-[data-theme="dark"] .tree-dept-4 { --tone: #b0a4ef; }
-[data-theme="dark"] .tree-majors li a { color: #dfe9f3; }
-
-@media (max-width: 575.98px) {
-    .tree-branches { padding-inline-start: 14px; }
-    .tree-branch::before { inset-inline-start: -14px; inline-size: 10px; }
-    .tree-majors { padding-inline-start: 12px; }
-}
-
-/* ── رئیس دانشکده، کنار نام دانشکده در درخت ───────────────── */
-.tree-dean {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-block-start: 12px;
-    padding: 8px 12px;
+    gap: 11px;
+    margin-block-start: 14px;
+    padding: 9px 13px;
     border-radius: 12px;
-    background: var(--bg-light, #faf6f1);
+    background: var(--tone-soft);
 }
-.tree-dean-photo {
+
+.bough-dean-photo {
     inline-size: 44px;
     block-size: 44px;
     border-radius: 50%;
     object-fit: cover;
     flex: none;
 }
-.tree-dean-blank {
+
+.bough-dean-photo.is-blank {
     display: grid;
     place-items: center;
     background: var(--bg-white, #fff);
     border: 1px dashed var(--border, #e8dcd0);
+    color: var(--tone);
+}
+
+.bough-dean-text { display: flex; flex-direction: column; gap: 1px; min-inline-size: 0; }
+.bough-dean-role { font-size: 11px; color: var(--text-muted, #6b5b5e); }
+.bough-dean-name { font-size: 14px; color: var(--tone); }
+.bough-dean-title { font-size: 12px; color: var(--text-muted, #6b5b5e); }
+
+/* ── شاخه‌ها (گروه‌ها) ───────────────────────────────────────── */
+.branches {
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+    padding-inline-start: 20px;
+    border-inline-start: 2px solid var(--tone-soft);
+}
+
+.branch { position: relative; }
+.branch + .branch { margin-block-start: 8px; }
+
+/* بازوی افقی از شاخهٔ عمودی به هر گروه */
+.branch::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -20px;
+    inset-block-start: 21px;
+    inline-size: 14px;
+    block-size: 2px;
+    background: var(--tone-soft);
+}
+
+.branch summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 15px;
+    border-radius: 11px;
+    background: var(--bg-light, #faf6f1);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    list-style: none;
+    transition: var(--transition);
+}
+
+.branch summary::-webkit-details-marker { display: none; }
+.branch summary:hover { background: var(--tone-soft); }
+
+.branch summary:focus-visible {
+    outline: 2px solid var(--tone);
+    outline-offset: 2px;
+}
+
+/* مثلث باز/بسته — یک آیکون که می‌چرخد، نه دو آیکون جدا */
+.branch summary::before {
+    content: "\f0da";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 12px;
+    color: var(--tone);
+    flex: none;
+    transition: transform var(--duration-fast, 160ms) var(--easing-standard, ease);
+}
+
+.branch details[open] > summary::before { transform: rotate(-90deg); }
+
+.branch-name { min-inline-size: 0; }
+.branch-name.is-loose { color: var(--text-muted, #6b5b5e); font-weight: 600; }
+
+/* مقطع‌هایی که این گروه واقعاً دارد */
+.branch-degrees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-inline-start: 4px;
+}
+
+.branch-degree {
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #6b5b5e);
+    white-space: nowrap;
+}
+
+.branch-tally {
+    margin-inline-start: auto;
+    min-inline-size: 26px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--tone);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    flex: none;
+}
+
+/* ── برگ‌ها (رشته‌ها) ────────────────────────────────────────── */
+.leaves {
+    list-style: none;
+    margin: 9px 0 13px;
+    padding: 0;
+    padding-inline-start: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+    gap: 7px;
+}
+
+.leaf a {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    padding: 8px 13px;
+    border-radius: 9px;
+    border: 1px solid var(--border, #e8dcd0);
+    background: var(--bg-white, #fff);
+    color: var(--text-dark, #241a1c);
+    font-size: 13px;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.leaf a:hover {
+    border-color: var(--tone);
+    background: var(--tone-soft);
+    color: var(--tone);
+}
+
+.leaf a:focus-visible {
+    outline: 2px solid var(--tone);
+    outline-offset: 2px;
+}
+
+.leaf-name { min-inline-size: 0; }
+
+.leaf-degree {
+    margin-inline-start: auto;
+    font-size: 12px;
+    color: var(--text-muted, #6b5b5e);
+    white-space: nowrap;
+}
+
+.leaves-empty {
+    margin: 9px 0 13px;
+    padding-inline-start: 24px;
+    font-size: 13px;
     color: var(--text-muted, #6b5b5e);
 }
-.tree-dean-text { display: flex; flex-direction: column; gap: 1px; min-inline-size: 0; }
-.tree-dean-role { font-size: 11px; color: var(--text-muted, #6b5b5e); }
-.tree-dean-name { font-size: 14px; color: var(--tone, #7a1f2e); }
-.tree-dean-title { font-size: 12px; color: var(--text-muted, #6b5b5e); }
-[data-theme="dark"] .tree-dean { background: rgba(255, 255, 255, .04); }
+
+/* ── جست‌وجو: آنچه نمی‌خواند، محو می‌شود ──────────────────── */
+.leaf.is-hidden,
+.branch.is-hidden,
+.bough.is-hidden { display: none; }
+
+.trunk.is-filtered .branch summary { background: var(--tone-soft); }
+
+/* ── حالت تیره ──────────────────────────────────────────────── */
+[data-theme="dark"] .tone-1 { --tone: #f2a0ab; --tone-soft: rgba(242, 160, 171, .12); }
+[data-theme="dark"] .tone-2 { --tone: #e5c77a; --tone-soft: rgba(229, 199, 122, .12); }
+[data-theme="dark"] .tone-3 { --tone: #6fd1b0; --tone-soft: rgba(111, 209, 176, .12); }
+[data-theme="dark"] .tone-4 { --tone: #b0a4ef; --tone-soft: rgba(176, 164, 239, .12); }
+
+[data-theme="dark"] .trunk-figure strong { color: #f2a0ab; }
+[data-theme="dark"] .branch summary,
+[data-theme="dark"] .branch-degree,
+[data-theme="dark"] .trunk-search,
+[data-theme="dark"] .trunk-toggle { background: rgba(255, 255, 255, .05); }
+[data-theme="dark"] .branch-tally { color: #12202c; }
+[data-theme="dark"] .bough-node { box-shadow: 0 0 0 4px var(--bg-light); }
+
+/* ── حرکت ───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .branch summary::before,
+    .bough,
+    .leaf a { transition: none; }
+}
+
+/* ── موبایل ─────────────────────────────────────────────────── */
+@media (max-width: 575.98px) {
+    .trunk { padding-inline-end: 16px; }
+    .trunk::before { inset-inline-end: 4px; }
+    .bough-node { inset-inline-end: -17px; }
+    .bough::after { inset-inline-end: -13px; inline-size: 13px; }
+    .branches { padding-inline-start: 13px; }
+    .branch::before { inset-inline-start: -13px; inline-size: 9px; }
+    .leaves { padding-inline-start: 11px; }
+    .bough-tally { margin-inline-start: 0; }
+}
