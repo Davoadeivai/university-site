@@ -1,27 +1,14 @@
 {% extends 'base.html' %}
 
 {% comment %}
-ساختار آموزشی موسسه، به‌صورت درخت.
+صفحهٔ دانشکده‌ها — فقط سند رسمی موسسه.
 
-موسسه ← دانشکده ← گروه ← رشته. پیش از این هر لایه صفحهٔ جدا داشت و
-برای دیدن کل ساختار باید یازده بار رفت‌وبرگشت می‌شد؛ اینجا همه‌اش در
-یک نگاه است و هر شاخه تاشو.
+پیش از این ساختار از دیتابیس ساخته می‌شد و به‌صورت درخت می‌آمد.
+موسسه خواست به‌جایش همان فایلی دیده شود که خودش تهیه کرده.
 
-سه انتخاب که پشتشان دلیل هست، نه سلیقه:
-
-۱. تنه از سمت راست پایین می‌آید و شاخه‌ها به چپ می‌روند — چون صفحه
-   راست‌چین است و چشم فارسی‌زبان از راست شروع می‌کند.
-
-۲. نوار نسبت بالای صفحه تزئین نیست: پهنای هر تکه یعنی سهم آن
-   دانشکده از رشته‌ها. یعنی پیش از باز کردن هیچ شاخه‌ای می‌دانید
-   موسسه کجا سنگین است.
-
-۳. باز و بسته‌شدن از details می‌آید، نه از جاوااسکریپت: رفتار خودِ
-   مرورگر است، با صفحه‌کلید کار می‌کند، و بدون اسکریپت هم همهٔ
-   رشته‌ها در HTML هستند — پس موتور جست‌وجو می‌بیندشان.
-
-جست‌وجو و «باز کردن همه» افزودنی‌اند؛ بدون جاوااسکریپت صفحه کامل
-کار می‌کند و آن دو ابزار اصلاً نمایش داده نمی‌شوند.
+فایل در قاب صفحه باز می‌شود تا بازدیدکننده لازم نباشد اول دانلودش
+کند؛ و دکمهٔ دانلود هم هست، چون بعضی مرورگرهای موبایل PDF را داخل
+صفحه نشان نمی‌دهند. اگر قاب کار نکرد، همان دکمه در دسترس است.
 {% endcomment %}
 
 {% block content %}
@@ -33,168 +20,54 @@
                 <li class="breadcrumb-item active" aria-current="page">دانشکده‌ها</li>
             </ol>
         </nav>
-        <h1 class="page-header-title">ساختار آموزشی موسسه</h1>
+        <h1 class="page-header-title">رشته‌های دانشکده‌ها</h1>
     </div>
 </div>
 
 <section class="section">
     <div class="container">
-
-        {% if tree %}
-        {% comment %}نوار نسبت: پهنای هر تکه، سهم آن دانشکده از رشته‌هاست{% endcomment %}
-        <div class="trunk-lede">
-            <div class="trunk-figures">
-                <span class="trunk-figure">
-                    <strong>{{ tree|length }}</strong>
-                    <span>دانشکده</span>
+        {% if document %}
+        <div class="doc-sheet">
+            <div class="doc-bar">
+                <span class="doc-name">
+                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                    رشته‌های دانشکده‌ها
                 </span>
-                <span class="trunk-figure">
-                    <strong>{{ total_groups }}</strong>
-                    <span>گروه آموزشی</span>
-                </span>
-                <span class="trunk-figure">
-                    <strong>{{ total_majors }}</strong>
-                    <span>رشته</span>
+                <span class="doc-actions">
+                    <a class="doc-btn" href="{{ document.url }}" download>
+                        <i class="fas fa-download" aria-hidden="true"></i> دانلود فایل
+                    </a>
+                    <a class="doc-btn" href="{{ document.url }}" target="_blank" rel="noopener">
+                        <i class="fas fa-up-right-from-square" aria-hidden="true"></i> تمام‌صفحه
+                    </a>
                 </span>
             </div>
 
-            <div class="trunk-bar" role="img"
-                 aria-label="سهم هر دانشکده از رشته‌های موسسه">
-                {% for node in tree %}
-                <span class="trunk-slice tone-{{ forloop.counter }}"
-                      style="flex-grow:{{ node.major_count }}"
-                      title="{{ node.department.name }} — {{ node.major_count }} رشته"></span>
-                {% endfor %}
-            </div>
+            <iframe class="doc-frame" src="{{ document.url }}#view=FitH"
+                    title="رشته‌های دانشکده‌ها"></iframe>
 
-            <ul class="trunk-key">
-                {% for node in tree %}
-                <li class="tone-{{ forloop.counter }}">
-                    <a href="#{{ node.department.slug }}">{{ node.department.name }}</a>
-                    <span class="trunk-share">{{ node.share }}٪</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        {% comment %}ابزارها فقط با جاوااسکریپت معنا دارند؛ خودش نشانشان می‌دهد{% endcomment %}
-        <div class="trunk-tools" data-tree-tools hidden>
-            <label class="trunk-search">
-                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-                <input type="search" data-tree-filter autocomplete="off"
-                       placeholder="نام رشته یا گروه را بنویسید…"
-                       aria-label="جست‌وجو در رشته‌ها و گروه‌ها">
-            </label>
-            <button type="button" class="trunk-toggle" data-tree-expand>
-                باز کردن همه
-            </button>
-            <p class="trunk-count" data-tree-count role="status" aria-live="polite"></p>
-        </div>
-
-        <div class="trunk">
-            {% for node in tree %}
-            <section class="bough tone-{{ forloop.counter }}"
-                     id="{{ node.department.slug }}" data-tree-faculty>
-                <header class="bough-head">
-                    <span class="bough-node" aria-hidden="true"></span>
-                    <div class="bough-title">
-                        <p class="bough-eyebrow">دانشکده</p>
-                        <h2 class="bough-name">
-                            <a href="{{ node.department.get_absolute_url }}">{{ node.department.name }}</a>
-                        </h2>
-                    </div>
-                    <p class="bough-tally">
-                        <span><strong>{{ node.group_count }}</strong> گروه</span>
-                        <span><strong>{{ node.major_count }}</strong> رشته</span>
-                    </p>
-                </header>
-
-                {% if node.department.short_description %}
-                <p class="bough-blurb">{{ node.department.short_description }}</p>
-                {% endif %}
-
-                {% if node.department.head %}
-                <div class="bough-dean">
-                    {% if node.department.head_photo %}
-                    <img class="bough-dean-photo" src="{{ node.department.head_photo.url }}"
-                         alt="{{ node.department.head }}" loading="lazy" width="44" height="44">
-                    {% else %}
-                    <span class="bough-dean-photo is-blank" aria-hidden="true">
-                        <i class="fas fa-user-tie"></i>
-                    </span>
-                    {% endif %}
-                    <span class="bough-dean-text">
-                        <span class="bough-dean-role">رئیس دانشکده</span>
-                        <strong class="bough-dean-name">{{ node.department.head }}</strong>
-                        {% if node.department.head_title %}
-                        <span class="bough-dean-title">{{ node.department.head_title }}</span>
-                        {% endif %}
-                    </span>
-                </div>
-                {% endif %}
-
-                <ul class="branches">
-                    {% for branch in node.branches %}
-                    <li class="branch" data-tree-branch data-search="{{ branch.group.name }}">
-                        <details{% if forloop.first %} open{% endif %}>
-                            <summary>
-                                <span class="branch-name">{{ branch.group.name }}</span>
-                                {% if branch.degrees %}
-                                <span class="branch-degrees">
-                                    {% for label in branch.degrees %}
-                                    <span class="branch-degree">{{ label }}</span>
-                                    {% endfor %}
-                                </span>
-                                {% endif %}
-                                <span class="branch-tally">{{ branch.majors|length }}</span>
-                            </summary>
-                            {% if branch.majors %}
-                            <ul class="leaves">
-                                {% for major in branch.majors %}
-                                <li class="leaf" data-tree-leaf
-                                    data-search="{{ major.name }} {{ branch.group.name }}">
-                                    <a href="{% url 'academics:major_detail' major.slug %}">
-                                        <span class="leaf-name">{{ major.name }}</span>
-                                        <span class="leaf-degree">{{ major.degree_label }}</span>
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                            {% else %}
-                            <p class="leaves-empty">رشته‌ای برای این گروه ثبت نشده است.</p>
-                            {% endif %}
-                        </details>
-                    </li>
-                    {% endfor %}
-
-                    {% if node.loose %}
-                    <li class="branch" data-tree-branch data-search="بدون گروه">
-                        <details>
-                            <summary>
-                                <span class="branch-name is-loose">بدون گروه</span>
-                                <span class="branch-tally">{{ node.loose|length }}</span>
-                            </summary>
-                            <ul class="leaves">
-                                {% for major in node.loose %}
-                                <li class="leaf" data-tree-leaf data-search="{{ major.name }}">
-                                    <a href="{% url 'academics:major_detail' major.slug %}">
-                                        <span class="leaf-name">{{ major.name }}</span>
-                                        <span class="leaf-degree">{{ major.degree_label }}</span>
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </details>
-                    </li>
-                    {% endif %}
-                </ul>
-            </section>
-            {% endfor %}
+            <p class="doc-fallback">
+                اگر فایل در این قاب دیده نمی‌شود،
+                <a href="{{ document.url }}" download>آن را دانلود کنید</a>.
+            </p>
         </div>
         {% else %}
-        {% include 'core/_empty_state.html' with label='دانشکده‌ای' add_url='/admin/academics/department/add/' hint='دانشکده‌ها و گروه‌هایشان در همین صفحه به‌صورت درختی نمایش داده می‌شوند.' %}
+        {% comment %}
+        قالب حالت خالی فقط برای همکاران موسسه دیده می‌شود؛ بازدیدکننده
+        نباید به صفحهٔ سفید برسد، پس یک جملهٔ روشن هم برای او هست.
+        {% endcomment %}
+        <div class="doc-sheet">
+            <p class="doc-fallback" style="border-block-start:0;">
+                فهرست رشته‌های دانشکده‌ها هنوز روی سایت قرار نگرفته است.
+                می‌توانید
+                <a href="{% url 'academics:majors' %}">فهرست رشته‌های پذیرش</a>
+                را ببینید.
+            </p>
+        </div>
+        <div class="row mt-3">
+        {% include 'core/_empty_state.html' with label='فایلی' add_url='/admin/core/sitesettings/' hint='فایل رشته‌های دانشکده‌ها را در تنظیمات سایت آپلود کنید تا در همین صفحه نمایش داده شود.' %}
+        </div>
         {% endif %}
-
     </div>
 </section>
 {% endblock %}

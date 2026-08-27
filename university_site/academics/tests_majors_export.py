@@ -252,6 +252,37 @@ class SlideCallToActionTests(TestCase):
         Slider.objects.all().delete()
         self.assertIn('اسلایدی ثبت نشده', self._run())
 
+    def test_the_button_sits_on_the_left(self):
+        """موسسه خواست سمت چپ باشد؛ در RTL آن ‎inline-end‎ است."""
+        self._run()
+        cache.clear()
+        html = self.client.get(reverse('core:home')).content.decode()
+        block = html.split('.slide-cta {')[1].split('}')[0]
+        self.assertIn('inset-inline-end', block)
+        self.assertNotIn('margin-inline: auto', block)
+
+    def test_it_is_big_enough_to_be_seen_on_a_photograph(self):
+        self._run()
+        cache.clear()
+        html = self.client.get(reverse('core:home')).content.decode()
+        block = html.split('.slide-cta {')[1].split('}')[0]
+        self.assertIn('clamp(15px, 1.7vw, 19px)', block)
+
+    def test_it_carries_the_institute_gradient_not_a_flat_colour(self):
+        """رنگ تخت روی عکس گم می‌شد."""
+        self._run()
+        cache.clear()
+        html = self.client.get(reverse('core:home')).content.decode()
+        block = html.split('.slide-cta {')[1].split('}')[0]
+        self.assertIn('linear-gradient', block)
+        self.assertIn('#a67c1f', block)
+
+    def test_keyboard_focus_is_visible_on_any_photograph(self):
+        self._run()
+        cache.clear()
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('.slide-cta:focus-visible', html)
+
     def test_the_wording_can_be_changed(self):
         self._run('--label', 'رشته‌های موسسه')
         cache.clear()

@@ -155,44 +155,51 @@
 .uni-hero-arrow.prev { left:  20px; }
 
 /* ─── dots ─── */
-/* ─── تنها دکمهٔ روی اسلاید ───────────────────────────────────
+/* ─── تنها دکمهٔ روی اسلاید ──────────────────────────────
    اسلایدها بی‌نوشته‌اند؛ این فقط وقتی می‌آید که مدیر «متن دکمه» و
-   «لینک» را پر کرده باشد. پایین و وسط می‌نشیند تا نه صورت کسی در
-   عکس را بپوشاند و نه با فلش‌های ناوبری تصادف کند. */
+   «لینک» را پر کرده باشد.
+
+   سمت چپ می‌نشیند، نه وسط: در صفحهٔ راست‌چین، چپ همان جایی است که
+   چشم آخر به آن می‌رسد، و وسطِ عکس معمولاً همان‌جاست که سوژه است.
+   ‎inset-inline-end‎ در RTL یعنی «چپ». */
 .slide-cta {
     position: absolute;
-    inset-block-end: 64px;
-    inset-inline: 0;
+    inset-block-end: 70px;
+    inset-inline-end: clamp(20px, 5vw, 64px);
     z-index: 9;
-    inline-size: fit-content;
-    margin-inline: auto;
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    padding: 13px 30px;
+    gap: 12px;
+    padding: 17px 38px;
     border-radius: 999px;
-    background: rgba(122, 31, 46, .92);
-    border: 1px solid rgba(255, 255, 255, .28);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    /* امضای رنگی موسسه: عنابی سیر به طلا. رنگ تخت قبلی روی عکس
+       گم می‌شد؛ گرادیان هم دیده می‌شود و هم به نشان موسسه می‌خورد. */
+    background: linear-gradient(135deg, #4e1220 0%, #7a1f2e 55%, #a67c1f 100%);
+    border: 1px solid rgba(240, 208, 128, .55);
     color: #fff;
-    font-size: 15px;
-    font-weight: 700;
+    font-size: clamp(15px, 1.7vw, 19px);
+    font-weight: 800;
     text-decoration: none;
-    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, .55);
-    transition: background .25s, transform .25s, box-shadow .25s;
+    box-shadow: 0 14px 34px -12px rgba(0, 0, 0, .6);
+    transition: transform .25s, box-shadow .25s, filter .25s;
 }
 .slide-cta:hover {
-    background: rgba(122, 31, 46, 1);
     color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 16px 38px -14px rgba(0, 0, 0, .6);
+    filter: brightness(1.12);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 44px -14px rgba(0, 0, 0, .65);
 }
-.slide-cta:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-.slide-cta i { font-size: 13px; }
+.slide-cta:focus-visible { outline: 3px solid #f0d080; outline-offset: 4px; }
+.slide-cta i { font-size: 15px; color: #f0d080; }
 
 @media (max-width: 575.98px) {
-    .slide-cta { inset-block-end: 52px; padding: 11px 22px; font-size: 13.5px; }
+    .slide-cta {
+        inset-block-end: 56px;
+        inset-inline-end: 16px;
+        padding: 13px 24px;
+        gap: 9px;
+    }
+    .slide-cta i { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .slide-cta { transition: none; }

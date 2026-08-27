@@ -131,6 +131,14 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'فیلد را بزنید و ذخیره کنید — بقیه دست‌نخورده می‌مانند.'
             ),
         }),
+        ('صفحهٔ دانشکده‌ها', {
+            'fields': ('faculties_pdf',),
+            'description': (
+                'صفحهٔ «دانشکده‌ها» فقط همین فایل را نشان می‌دهد — '
+                'در قاب صفحه، با دکمهٔ دانلود. برای جایگزینی، فایل '
+                'تازه را آپلود کنید.'
+            ),
+        }),
         ('صفحهٔ اصلی', {
             'fields': ('home_slider_count',),
             'description': (

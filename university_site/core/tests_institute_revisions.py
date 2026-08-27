@@ -34,12 +34,28 @@ class HeaderRevisionTests(TestCase):
         # اندازهٔ بیشینه باید از نسخهٔ قبلی (1.9rem) بزرگ‌تر باشد
         self.assertIn('2.45rem', block)
 
-    def test_world_class_logo_on_both_sides(self):
-        """بند ۵: لوگوی کلاس جهانی در دو سوی عنوان."""
+    def test_the_header_carries_only_the_name(self):
+        """نشان کلاس جهانی از سربرگ برداشته شد.
+
+        بند ۵ سند، نشان را در دو سوی عنوان خواسته بود؛ موسسه بعداً
+        خواست از سربرگ برداشته شود. جایش روی صفحهٔ ریاست است، همان‌جا
+        که لوح خودش را دارد.
+        """
         SiteSettings.objects.all().delete()
         SiteSettings.objects.create(world_class_logo='site/wcu.png')
         banner = self._home().split('bnr-name')[1].split('bnr-state')[0]
-        self.assertEqual(banner.count('bnr-wcu'), 2)
+        self.assertEqual(banner.count('bnr-wcu'), 0)
+        self.assertIn('موسسه آموزش عالی', banner)
+
+    def test_the_emblem_still_has_a_home_on_the_presidency_page(self):
+        """برداشتن از سربرگ نباید یعنی برداشتن از همه‌جا."""
+        from pathlib import Path
+
+        from django.conf import settings
+
+        page = (Path(settings.BASE_DIR) / 'templates' / 'core' /
+                'presidency.html').read_text(encoding='utf-8')
+        self.assertIn('world_class_logo', page)
 
 
 
@@ -310,10 +326,10 @@ class EmblemSizeIsPinnedOnTheTagTests(TestCase):
         return (Path(settings.BASE_DIR) / 'templates' / name).read_text(
             encoding='utf-8')
 
-    def test_the_header_emblem_carries_its_own_size(self):
+    def test_no_emblem_is_left_in_the_header_to_size(self):
+        """نشان از سربرگ رفت، پس دیگر اندازه‌ای هم لازم ندارد."""
         html = self._template('base.html')
-        pinned = html.count('style="width:64px;height:64px;object-fit:contain;')
-        self.assertEqual(pinned, 2, 'هر دو نشان سربرگ اندازهٔ خودشان را ندارند')
+        self.assertNotIn('bnr-wcu', html)
 
     def test_the_page_emblem_carries_its_own_ceiling(self):
         html = self._template('core/presidency.html')

@@ -282,14 +282,18 @@ class HomeSectionTests(TestCase):
         block = css[start:css.index('}', start)]
         self.assertIn('font-family: Arial', block)
 
-    def test_the_world_class_logo_flanks_the_name(self):
-        """نشان کلاس جهانی باید در هر دو سوی نام بیاید، نه یک سو."""
+    def test_the_header_shows_the_name_alone(self):
+        """نشان کلاس جهانی از سربرگ برداشته شد.
+
+        زمانی در هر دو سوی نام می‌آمد؛ موسسه بعداً خواست از سربرگ
+        برود و فقط روی صفحهٔ ریاست بماند.
+        """
         from core.models import SiteSettings
         SiteSettings.objects.all().delete()
         SiteSettings.objects.create(world_class_logo='site/wcu.png')
         body = self.client.get(reverse('core:home')).content.decode()
         banner = body.split('bnr-name')[1].split('bnr-state')[0]
-        self.assertEqual(banner.count('bnr-wcu'), 2)
+        self.assertEqual(banner.count('bnr-wcu'), 0)
 
     def test_floating_buttons_do_not_overlap_on_mobile(self):
         """دکمهٔ «برو بالا» و دکمهٔ گفت‌وگو نباید روی هم بیفتند."""

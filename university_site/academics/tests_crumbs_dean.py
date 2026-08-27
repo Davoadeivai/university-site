@@ -88,15 +88,20 @@ class FacultyDeanTests(TestCase):
         cache.clear()
 
     def _tree(self):
-        html = self.client.get(
-            reverse('academics:departments')).content.decode()
-        return html.split('<div class="trunk">')[1]
+        """صفحهٔ خودِ دانشکده.
 
-    def test_the_dean_appears_on_the_tree(self):
-        tree = self._tree()
-        self.assertIn('دکتر مریم رضایی', tree)
-        self.assertIn('دانشیار گروه کامپیوتر', tree)
-        self.assertIn('رئیس دانشکده', tree)
+        نام قدیمی مانده چون کل کلاس به آن اشاره می‌کند؛ آنچه عوض شد
+        مقصد است: صفحهٔ فهرست دانشکده‌ها حالا فقط سند PDF است، و
+        معرفی رئیس روی صفحهٔ هر دانشکده می‌آید.
+        """
+        return self.client.get(
+            self.faculty.get_absolute_url()).content.decode()
+
+    def test_the_dean_appears_on_the_faculty_page_body(self):
+        page = self._tree()
+        self.assertIn('دکتر مریم رضایی', page)
+        self.assertIn('دانشیار گروه کامپیوتر', page)
+        self.assertIn('رئیس دانشکده', page)
 
     def test_the_dean_appears_on_the_faculty_page(self):
         html = self.client.get(self.faculty.get_absolute_url()).content.decode()

@@ -3,78 +3,24 @@ from .models import Department, Major, AcademicCalendar, Laboratory, AcademicGro
 
 
 def departments_list(request):
-    """ساختار آموزشی موسسه — دانشکده، گروه، رشته، در یک درخت.
+    """صفحهٔ دانشکده‌ها — فقط سند رسمی موسسه.
 
-    سه پرس‌وجو برای کل درخت: دانشکده‌ها، گروه‌ها، رشته‌ها. حلقه‌زدن
-    روی روابط در قالب، برای یازده گروه و پنجاه‌وهشت رشته ده‌ها
-    پرس‌وجوی جدا می‌ساخت.
+    پیش از این این صفحه ساختار را از دیتابیس می‌ساخت و به‌صورت درخت
+    نشان می‌داد. موسسه خواست به‌جایش همان فایلی دیده شود که خودش
+    تهیه کرده، پس اینجا فقط همان PDF می‌آید — روی صفحه قابل خواندن،
+    و قابل دانلود.
+
+    خودِ داده‌ها دست‌نخورده‌اند: صفحهٔ هر دانشکده، فهرست رشته‌ها و
+    خروجی اکسل همچنان از دیتابیس می‌خوانند.
     """
-    from academics.models import AcademicGroup
+    from core.filecheck import file_present
+    from core.models import SiteSettings
 
-    departments = list(
-        Department.objects.filter(is_active=True).order_by('order', 'name'))
-    groups = list(
-        AcademicGroup.objects.filter(is_active=True)
-        .order_by('order', 'name'))
-    majors = list(
-        Major.objects.filter(is_active=True)
-        .order_by('degree', 'name')
-        .values('name', 'slug', 'degree', 'group_id', 'department_id'))
-
-    degree_label = dict(Major.DEGREE_CHOICES)
-
-    by_group = {}
-    loose = {}
-    for major in majors:
-        row = {
-            'name': major['name'],
-            'slug': major['slug'],
-            'degree': major['degree'],
-            'degree_label': degree_label.get(major['degree'], ''),
-        }
-        if major['group_id']:
-            by_group.setdefault(major['group_id'], []).append(row)
-        else:
-            # رشتهٔ بی‌گروه نباید از درخت بیفتد
-            loose.setdefault(major['department_id'], []).append(row)
-
-    groups_by_department = {}
-    for group in groups:
-        groups_by_department.setdefault(group.department_id, []).append({
-            'group': group,
-            'majors': by_group.get(group.id, []),
-        })
-
-    tree = []
-    for department in departments:
-        branches = groups_by_department.get(department.id, [])
-        # هر گروه، مقطع‌هایی که واقعاً دارد — نه همهٔ مقطع‌های موسسه
-        for branch in branches:
-            seen = []
-            for major in branch['majors']:
-                if major['degree_label'] not in seen:
-                    seen.append(major['degree_label'])
-            branch['degrees'] = seen
-        tree.append({
-            'department': department,
-            'branches': branches,
-            'loose': loose.get(department.id, []),
-            'group_count': len(branches),
-            'major_count': sum(len(b['majors']) for b in branches)
-                           + len(loose.get(department.id, [])),
-        })
-
-    # سهم هر دانشکده از کل رشته‌ها، برای نوار نسبت بالای صفحه. عددی
-    # است که خودِ صفحه می‌گوید، نه تزئین: پهنای هر تکه یعنی چند رشته.
-    for node in tree:
-        node['share'] = round(
-            100 * node['major_count'] / len(majors), 1) if majors else 0
+    settings_row = SiteSettings.objects.first()
+    document = getattr(settings_row, 'faculties_pdf', None)
 
     return render(request, 'academics/departments.html', {
-        'departments': departments,
-        'tree': tree,
-        'total_groups': len(groups),
-        'total_majors': len(majors),
+        'document': document if file_present(document) else None,
         'page_title': 'دانشکده‌ها',
     })
 

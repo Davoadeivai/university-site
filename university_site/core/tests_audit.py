@@ -83,16 +83,16 @@ class HomeFacultyListTests(TestCase):
         for index in range(7):
             self.assertIn('دانشکده %d' % index, html)
 
-    def test_the_order_matches_the_faculties_page(self):
+    def test_the_order_follows_the_field_the_admin_sets(self):
+        """پیش از این با ترتیب صفحهٔ دانشکده‌ها سنجیده می‌شد؛ آن صفحه
+        حالا فقط یک PDF است و ترتیبی برای مقایسه ندارد. مبنا همان
+        فیلد «ترتیب» در پنل است."""
         home = self._home().split('fac-grid')[1].split('</section>')[0]
-        page = self.client.get(
-            reverse('academics:departments')).content.decode()
-        tree = page.split('<div class="trunk">')[1]
-        first = [n for n in range(7) if 'دانشکده %d' % n in home]
+        present = [n for n in range(7) if 'دانشکده %d' % n in home]
         self.assertEqual(
-            first, sorted(first, key=lambda n: home.index('دانشکده %d' % n)))
-        self.assertEqual(
-            first, sorted(first, key=lambda n: tree.index('دانشکده %d' % n)))
+            present,
+            sorted(present, key=lambda n: home.index('دانشکده %d' % n)))
+        self.assertEqual(present, sorted(present))
 
     def test_an_inactive_faculty_is_on_neither(self):
         Department.objects.filter(order=0).update(is_active=False)

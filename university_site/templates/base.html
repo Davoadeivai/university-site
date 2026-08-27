@@ -162,21 +162,11 @@
         </span>
 
         {% comment %}
-        نشان کلاس جهانی در دو سوی نام موسسه. اگر در پنل آپلود نشده
-        باشد، هیچ جای خالی‌ای نمی‌ماند — دو span اصلاً رندر نمی‌شوند.
+        نشان کلاس جهانی از سربرگ برداشته شد؛ جایش روی صفحهٔ ریاست
+        است، همان‌جا که لوح خودش را دارد. اینجا فقط نام موسسه می‌ماند.
         {% endcomment %}
         <span class="bnr-name">
-            {% if site_settings.world_class_logo %}
-            <img class="bnr-wcu" src="{{ site_settings.world_class_logo.url }}"
-                 alt="" aria-hidden="true" width="64" height="64"
-                 style="width:64px;height:64px;object-fit:contain;border-radius:50%;">
-            {% endif %}
             <span class="bnr-fa">{{ site_settings.university_name_fa|default:"موسسه آموزش عالی علامه امینی" }}</span>
-            {% if site_settings.world_class_logo %}
-            <img class="bnr-wcu" src="{{ site_settings.world_class_logo.url }}"
-                 alt="" aria-hidden="true" width="64" height="64"
-                 style="width:64px;height:64px;object-fit:contain;border-radius:50%;">
-            {% endif %}
         </span>
 
         <span class="bnr-state">

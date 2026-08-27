@@ -41,6 +41,13 @@ class SiteSettings(models.Model):
         _('نام دانشگاه (انگلیسی)'), max_length=200,
         default='Allameh Amini Higher Education Institute',
     )
+    faculties_pdf = models.FileField(
+        _('فایل رشته‌های دانشکده‌ها (PDF)'),
+        upload_to='site/faculties/', blank=True, null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
+        help_text=_(
+            'صفحهٔ «دانشکده‌ها» همین فایل را نشان می‌دهد. '
+            'برای جایگزینی، فایل تازه را آپلود کنید.'))
     home_slider_count = models.PositiveSmallIntegerField(
         _('تعداد اسلاید صفحهٔ اصلی'), default=7,
         validators=[MinValueValidator(1), MaxValueValidator(MAX_HOME_SLIDES)],

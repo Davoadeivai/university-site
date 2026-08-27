@@ -235,6 +235,33 @@ class NestedDeputyMenuTests(TestCase):
         toggle = nav.split('vice-toggle')[1].split('</button>')[0]
         self.assertIn('fa-chevron-left', toggle)
 
+    def test_the_submenu_has_its_own_ground(self):
+        """اگر زیرمنو و منو یک رنگ باشند، لایهٔ تازه دیده نمی‌شود."""
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        desktop = css.split('.vice-group.has-sub { position: relative; }')[1]
+        block = desktop.split('.vice-sub {')[1].split('}')[0]
+        self.assertIn('background: var(--primary,', block)
+        # فقط اعلان background سنجیده می‌شود، نه کامنتی که تاریخچهٔ
+        # همین تغییر را شرح می‌دهد و خودش نام رنگ قدیمی را می‌برد.
+        declared = [line.strip() for line in block.splitlines()
+                    if line.strip().startswith('background:')]
+        self.assertEqual(len(declared), 1)
+        self.assertNotIn('--primary-deep', declared[0])
+
+    def test_the_submenu_rows_use_the_institute_palette(self):
+        """‎#b8cce4‎ از تم سرمه‌ای قدیمی مانده بود و بیگانه بود."""
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        block = css.split('.vice-sub .nav-dd-sub {')[1].split('}')[0]
+        self.assertIn('--bnr-gold-300', block)
+        self.assertNotIn('#b8cce4', block)
+
+    def test_hovering_a_submenu_row_is_visible(self):
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        self.assertIn('.vice-sub .nav-dd-sub:hover', css)
+
     def test_desktop_opens_on_focus_not_only_hover(self):
         """کاربر صفحه‌کلید با هاورِ تنها هیچ‌وقت به زیرشاخه نمی‌رسد."""
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
