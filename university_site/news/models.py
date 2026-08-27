@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify
+from core.imaging import ShrinkImagesMixin
 
 
 class Category(models.Model):
@@ -34,7 +35,9 @@ class Category(models.Model):
         return reverse('news:list') + f'?category={self.slug}'
 
 
-class News(models.Model):
+class News(ShrinkImagesMixin, models.Model):
+    shrink_images = {'image': 1600}
+
     TYPE_CHOICES = [
         ('news', 'خبر'),
         ('announcement', 'اطلاعیه'),
@@ -72,7 +75,9 @@ class News(models.Model):
         return reverse('news:detail', args=[self.slug])
 
 
-class Gallery(models.Model):
+class Gallery(ShrinkImagesMixin, models.Model):
+    shrink_images = {'image': 1600}
+
     MEDIA_TYPES = [('image', 'تصویر'), ('video', 'ویدئو')]
     title = models.CharField(_('عنوان'), max_length=200)
     media_type = models.CharField(_('نوع'), max_length=10, choices=MEDIA_TYPES, default='image')

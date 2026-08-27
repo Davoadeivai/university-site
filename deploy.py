@@ -244,6 +244,9 @@ def seed_content() -> None:
     run('set_org_chart')
     run('set_contact_email', '--replace')
     run('set_president_links')
+    # عکس‌های بادکرده — چهار اسلاید صفحهٔ اصلی روی سرور ۲۲٫۵ مگابایت
+    # بودند و همان‌ها صفحه را روی خط کند سفید نگه می‌داشتند
+    run('shrink_media')
     # رشته‌های دوبار ثبت‌شده، پیش از چیدن دانشکده‌ها — تا شمارش
     # هر گروه عدد درست را بدهد
     run('merge_duplicate_majors')

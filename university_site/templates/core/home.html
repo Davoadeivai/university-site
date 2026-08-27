@@ -223,7 +223,16 @@
 
             <!-- background image -->
             {% if slide.image %}
-            <img class="slide-bg" src="{{ slide.image.url }}" alt="{{ slide.title }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+            {% comment %}
+            اسلاید اول تنها تصویری است که پیش از دیده‌شدن صفحه لازم
+            است؛ fetchpriority به مرورگر می‌گوید آن را جلوی صف
+            بگذارد و بقیه را تا وقت خودشان عقب بیندازد. decoding
+            هم رشتهٔ اصلی را برای رمزگشایی تصویر نگه نمی‌دارد.
+            {% endcomment %}
+            <img class="slide-bg" src="{{ slide.image.url }}" alt="{{ slide.title }}"
+                 loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                 fetchpriority="{% if forloop.first %}high{% else %}low{% endif %}"
+                 decoding="async">
             {% else %}
             <img class="slide-bg"
                  src="{% static 'images/hero-campus-01.jpg' %}"

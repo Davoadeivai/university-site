@@ -6,6 +6,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.translation import gettext_lazy as _
+from core.imaging import ShrinkImagesMixin
 
 
 def _safe_upload_filename(filename):
@@ -166,7 +167,11 @@ class SiteSettings(models.Model):
         return 'other'
 
 
-class Slider(models.Model):
+class Slider(ShrinkImagesMixin, models.Model):
+    # اسلاید تمام‌عرض است و اولینش eager بار می‌شود؛ ۲۰۰۰ پیکسل
+    # روی بزرگ‌ترین نمایشگر هم کافی است و بیش از آن فقط وزن است.
+    shrink_images = {'image': 2000}
+
     BADGE_COLOR_CHOICES = [
         ('danger',  'قرمز (فوری)'),
         ('warning', 'زرد (هشدار)'),
@@ -241,7 +246,9 @@ class QuickLink(models.Model):
         return self.title
 
 
-class Event(models.Model):
+class Event(ShrinkImagesMixin, models.Model):
+    shrink_images = {'image': 1400}
+
     title = models.CharField(_('عنوان رویداد'), max_length=200)
     description = models.TextField(_('توضیحات'))
     date = models.DateField(_('تاریخ'))
@@ -320,7 +327,9 @@ class InstitutionGoal(models.Model):
         return self.title
 
 
-class BoardMember(models.Model):
+class BoardMember(ShrinkImagesMixin, models.Model):
+    shrink_images = {'photo': 800}
+
     BOARD_TYPE_CHOICES = [
         ('founder', _('هیات موسس')),
         ('trustee', _('هیات امنا')),
@@ -345,7 +354,9 @@ class BoardMember(models.Model):
         return f"{self.get_board_type_display()} - {self.full_name}"
 
 
-class CityInfo(models.Model):
+class CityInfo(ShrinkImagesMixin, models.Model):
+    shrink_images = {'image': 1400}
+
     title = models.CharField(_('عنوان بخش'), max_length=200)
     content = models.TextField(_('محتوا'))
     image = models.ImageField(_('تصویر'), upload_to='city/', blank=True, null=True)
@@ -362,7 +373,9 @@ class CityInfo(models.Model):
         return self.title
 
 
-class CityAttraction(models.Model):
+class CityAttraction(ShrinkImagesMixin, models.Model):
+    shrink_images = {'image': 1200}
+
     name = models.CharField(_('نام جاذبه'), max_length=200)
     description = models.TextField(_('توضیحات'), blank=True)
     image = models.ImageField(_('تصویر'), upload_to='city/attractions/', blank=True, null=True)
