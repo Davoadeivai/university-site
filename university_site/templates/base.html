@@ -305,17 +305,7 @@
                                 {% endif %}
                             </div>
                             {% if row.children %}
-                            <ul class="vice-sub">
-                                {% for child in row.children %}
-                                <li>
-                                    {% if child.url %}
-                                    <a class="dropdown-item nav-dd-sub" href="{{ child.url }}">{{ child.title }}</a>
-                                    {% else %}
-                                    <span class="dropdown-item nav-dd-sub is-plain">{{ child.title }}</span>
-                                    {% endif %}
-                                </li>
-                                {% endfor %}
-                            </ul>
+                            {% include '_vice_units.html' with units=row.children level=1 %}
                             {% endif %}
                         </li>
                         {% endfor %}

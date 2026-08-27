@@ -149,9 +149,13 @@ class Command(BaseCommand):
                      DONE if 'international_office' in research_block else MISSING,
                      'و برداشته‌شده از حوزهٔ ریاست'))
 
+        # لنگر روی خودِ ساختار، نه روی قالب: نشانه‌گذاری زیرمجموعه‌ها
+        # به قالب جداگانه‌ای منتقل شد و جست‌وجو در base.html آن را
+        # «انجام‌نشده» گزارش می‌کرد، در حالی که منو سالم بود.
+        filled = sum(1 for units in STATIC_UNITS.values() if units)
         rows.append((15, 'زیرمجموعهٔ هر معاونت در منو',
-                     has('nav-dd-sub'),
-                     'بر اساس چارت سازمانی'))
+                     DONE if filled >= 4 else MISSING,
+                     'بر اساس چارت سازمانی — %d معاونت' % filled))
 
         top_level = base.count('nav-link-flat') and 'تحصیلات تکمیلی' in base
         education_block = str(STATIC_UNITS.get('education', []))

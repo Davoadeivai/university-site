@@ -1,0 +1,21 @@
+{% comment %}
+زیرمجموعه‌های یک معاونت، تودرتو.
+
+چارت سازمانی سه سطح دارد (معاونت ← مدیر ← اداره)، پس این قالب
+خودش را صدا می‌زند تا هر عمقی را بکشد. عمق فعلی در `level` است و
+فقط برای تورفتگی به کار می‌رود.
+{% endcomment %}
+<ul class="vice-sub{% if level > 1 %} vice-sub-deep{% endif %}">
+    {% for child in units %}
+    <li>
+        {% if child.url %}
+        <a class="dropdown-item nav-dd-sub" href="{{ child.url }}">{{ child.title }}</a>
+        {% else %}
+        <span class="dropdown-item nav-dd-sub is-plain">{{ child.title }}</span>
+        {% endif %}
+        {% if child.children %}
+        {% include '_vice_units.html' with units=child.children level=level|add:1 %}
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>

@@ -326,10 +326,13 @@ class NestedDeputyMenuTests(TestCase):
         """چارت سازمانی زیرمجموعه‌های هر معاونت را تعیین می‌کند."""
         from core.vices import STATIC_UNITS
 
-        for key in ('education', 'research', 'admin_finance',
-                    'student', 'construction'):
+        # «فنی و عمرانی» عمداً خالی است: چارت چنین معاونتی ندارد و
+        # موسسه خواست در فهرست بماند، پس چیزی از خودمان به آن
+        # اضافه نشده.
+        for key in ('education', 'research', 'admin_finance', 'student'):
             self.assertIn(key, STATIC_UNITS)
             self.assertGreater(len(STATIC_UNITS[key]), 1, key)
+        self.assertEqual(STATIC_UNITS['construction'], [])
 
     def test_a_unit_without_a_page_is_plain_text_not_a_dead_link(self):
         """لینکی که به ۴۰۴ برسد بدتر از نبودن لینک است."""
