@@ -149,41 +149,109 @@
     background: rgba(255,255,255,.35);
     transform: translateY(-50%) scale(1.08);
 }
-.uni-hero-arrow.prev { right: 20px; }
-.uni-hero-arrow.next { left:  20px; }
+/* در صفحهٔ راست‌چین، اسلاید بعدی از سمت راست وارد می‌شود، پس
+   دکمهٔ راست «بعدی» است و دکمهٔ چپ «قبلی». */
+.uni-hero-arrow.next { right: 20px; }
+.uni-hero-arrow.prev { left:  20px; }
 
 /* ─── dots ─── */
-.uni-hero-dots {
+/* ─── نوارهای پیشرفت، به‌جای نقطه‌ها ───────────────────────────
+   هفت نقطهٔ کوچک نه می‌گفتند چندتاست و نه اینکه چقدر تا بعدی مانده.
+   هر اسلاید یک خط دارد؛ خطِ فعال در طول زمانِ نمایش پر می‌شود، پس
+   بازدیدکننده هم شمار کل را می‌بیند و هم می‌فهمد صفحه زنده است و
+   ارزش صبر کردن دارد. */
+.uni-hero-bars {
     position: absolute;
-    bottom: 20px;
+    bottom: 18px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
     display: flex;
-    gap: 8px;
+    gap: 7px;
+    max-inline-size: min(420px, 78vw);
+    inline-size: min(420px, 78vw);
 }
-.uni-hero-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.45);
-    cursor: pointer;
-    transition: background .3s, transform .3s;
-    border: 0;
+.uni-hero-bar {
+    flex: 1 1 0;
+    block-size: 4px;
     padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .32);
+    cursor: pointer;
+    overflow: hidden;
+    /* سطح لمسی بزرگ‌تر از خط باریک، بدون به‌هم‌ریختن چیدمان */
+    position: relative;
 }
-.uni-hero-dot.active {
+.uni-hero-bar::after {
+    content: "";
+    position: absolute;
+    inset: -10px 0;
+}
+.uni-hero-bar-fill {
+    display: block;
+    block-size: 100%;
+    inline-size: 0;
+    border-radius: 999px;
     background: #fff;
-    transform: scale(1.35);
+}
+.uni-hero-bar.is-done .uni-hero-bar-fill { inline-size: 100%; }
+.uni-hero-bar:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
 }
 
-/* ─── progress bar ─── */
+/* ─── پیش‌نمایش اسلاید بعدی ───────────────────────────────────
+   «بعدی چیست؟» همان چیزی است که کاربر را نگه می‌دارد. روی موبایل
+   نمایش داده نمی‌شود: آنجا جا تنگ است و جای انگشت را می‌گیرد. */
+.uni-hero-next {
+    position: absolute;
+    inset-block-end: 34px;
+    inset-inline-start: 22px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px 7px 7px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .42);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, .18);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    transition: background .25s, transform .25s;
+}
+.uni-hero-next:hover {
+    background: rgba(0, 0, 0, .6);
+    transform: translateY(-2px);
+}
+.uni-hero-next:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.uni-hero-next img {
+    inline-size: 46px;
+    block-size: 32px;
+    object-fit: cover;
+    border-radius: 999px;
+    flex: none;
+}
+.uni-hero-next-label { opacity: .85; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+    .uni-hero-bar-fill,
+    .uni-hero-progress { transition: none; }
+    .uni-hero-slide img.slide-bg { transition: none; transform: none; }
+}
+
+/* ─── نوار پیشرفت باریک زیر اسلاید ─── */
 .uni-hero-progress {
     position: absolute;
     bottom: 0;
     left: 0;
     height: 3px;
     width: 0%;
-    background: linear-gradient(90deg,#2b6ca8,#c9922b);
+    background: linear-gradient(90deg, #7a1f2e, #c9a34e);
     z-index: 11;
     transition: width linear;
 }
@@ -210,6 +278,10 @@
     .uni-hero-wrap { height: 60svh; min-height: 360px; }
     .uni-slide-body { padding: 0 0 44px; }
     .uni-hero-arrow { width: 38px; height: 38px; font-size: 14px; }
+    /* پیش‌نمایش بعدی روی موبایل جا تنگ می‌کند و جای انگشت را
+       می‌گیرد — همان‌جایی که کاربر برای کشیدن لمس می‌کند. */
+    .uni-hero-next { display: none; }
+    .uni-hero-bars { inline-size: min(320px, 86vw); gap: 5px; }
 }
 @media (max-width: 480px) {
     .uni-hero-wrap { height: 52svh; min-height: 300px; }
@@ -274,16 +346,28 @@
 
     </div><!-- /track -->
 
-    <!-- ── arrows ── -->
-    <button class="uni-hero-arrow prev" id="heroPrev" aria-label="اسلاید بعدی">
+    {% comment %}
+    در صفحهٔ راست‌چین اسلاید بعدی از سمت راست وارد می‌شود، پس دکمهٔ
+    راست «بعدی» است. پیش از این برچسب همین را می‌گفت ولی دکمه یک
+    اسلاید عقب می‌رفت — کاربر صفحه‌خوان «بعدی» را می‌زد و به قبلی
+    می‌رسید.
+    {% endcomment %}
+    <button class="uni-hero-arrow next" id="heroNext" aria-label="اسلاید بعدی">
         <i class="fas fa-chevron-right"></i>
     </button>
-    <button class="uni-hero-arrow next" id="heroNext" aria-label="اسلاید قبلی">
+    <button class="uni-hero-arrow prev" id="heroPrev" aria-label="اسلاید قبلی">
         <i class="fas fa-chevron-left"></i>
     </button>
 
-    <!-- ── dots ── -->
-    <div class="uni-hero-dots" id="heroDots"></div>
+    {% comment %}هر اسلاید یک خط؛ خطِ فعال در طول نمایش پر می‌شود{% endcomment %}
+    <div class="uni-hero-bars" id="heroBars" role="tablist"
+         aria-label="اسلایدهای صفحهٔ اصلی"></div>
+
+    {% comment %}پیش‌نمایش اسلاید بعدی — اسکریپت پرش می‌کند{% endcomment %}
+    <button class="uni-hero-next" id="heroPeek" type="button" hidden>
+        <img alt="" aria-hidden="true">
+        <span class="uni-hero-next-label">اسلاید بعدی</span>
+    </button>
 
     <!-- ── counter ── -->
     <div class="uni-slide-counter" id="heroCounter">۱ / ۲</div>
@@ -294,108 +378,217 @@
 </div><!-- /uni-hero-wrap -->
 
 <script>
+/* اسلایدر صفحهٔ اصلی.
+
+   با هفت اسلاید، مشکل تازه‌ای پیدا می‌شود: بازدیدکننده معمولاً دو
+   تای اول را می‌بیند و می‌رود. چهار چیز اینجا دقیقاً همین را هدف
+   گرفته‌اند — نوارهای پیشرفت (چندتاست و چقدر مانده)، کشیدن با
+   انگشت، پیش‌نمایش بعدی، و توقف وقتی کسی نگاه نمی‌کند. */
 (function () {
     'use strict';
 
     var track    = document.getElementById('heroTrack');
     var slides   = track ? track.querySelectorAll('.uni-hero-slide') : [];
-    var dotsWrap = document.getElementById('heroDots');
+    if (!slides.length) { return; }
+
+    var barsWrap = document.getElementById('heroBars');
     var counter  = document.getElementById('heroCounter');
     var progress = document.getElementById('heroProgress');
+    var peek     = document.getElementById('heroPeek');
     var prevBtn  = document.getElementById('heroPrev');
     var nextBtn  = document.getElementById('heroNext');
+    var heroWrap = document.getElementById('uniHero');
 
-    if (!slides.length) return;
+    var total   = slides.length;
+    var current = 0;
+    var autoMs  = 6000;
+    var timer   = null;
 
-    var total    = slides.length;
-    var current  = 0;
-    var autoMs   = 5000;
-    var timer    = null;
+    /* کسی که حرکت را کم کرده، چرخش خودکار هم نمی‌خواهد. اسلایدها
+       می‌مانند و با دکمه و انگشت کار می‌کنند، فقط خودشان نمی‌روند. */
+    var stillness = window.matchMedia
+        ? window.matchMedia('(prefers-reduced-motion: reduce)')
+        : { matches: false };
 
-    /* ── تبدیل عدد به فارسی ── */
     function toPersian(n) {
-        return String(n).replace(/[0-9]/g, function(d) {
+        return String(n).replace(/[0-9]/g, function (d) {
             return '۰۱۲۳۴۵۶۷۸۹'[d];
         });
     }
 
-    /* ── ساخت dots ── */
+    /* ── نوارها، به‌جای نقطه‌ها ── */
+    var bars = [];
     for (var i = 0; i < total; i++) {
-        var dot = document.createElement('button');
-        dot.className = 'uni-hero-dot' + (i === 0 ? ' active' : '');
-        dot.setAttribute('aria-label', 'اسلاید ' + (i + 1));
-        dot.dataset.idx = i;
-        dotsWrap.appendChild(dot);
-    }
-    var dots = dotsWrap.querySelectorAll('.uni-hero-dot');
-
-    /* ── رفتن به اسلاید ── */
-    function goTo(idx) {
-        slides[current].classList.remove('is-active');
-        dots[current].classList.remove('active');
-
-        current = (idx + total) % total;
-
-        slides[current].classList.add('is-active');
-        dots[current].classList.add('active');
-        track.style.transform = 'translateX(' + (current * -100) + '%)';
-        counter.textContent = toPersian(current + 1) + ' / ' + toPersian(total);
-        restartProgress();
+        var bar = document.createElement('button');
+        bar.type = 'button';
+        bar.className = 'uni-hero-bar';
+        bar.setAttribute('role', 'tab');
+        bar.setAttribute('aria-label', 'اسلاید ' + toPersian(i + 1));
+        bar.dataset.idx = i;
+        bar.appendChild(document.createElement('span')).className =
+            'uni-hero-bar-fill';
+        barsWrap.appendChild(bar);
+        bars.push(bar);
     }
 
-    /* ── progress bar ── */
-    function restartProgress() {
-        if (progress) {
-            progress.style.transition = 'none';
-            progress.style.width = '0%';
-            requestAnimationFrame(function () {
+    function paintBars() {
+        bars.forEach(function (bar, index) {
+            var fill = bar.firstChild;
+            bar.setAttribute('aria-selected', String(index === current));
+            bar.classList.toggle('is-done', index < current);
+            if (index === current) {
+                // پر شدن همگام با زمان نمایش
+                fill.style.transition = 'none';
+                fill.style.width = '0%';
                 requestAnimationFrame(function () {
-                    progress.style.transition = 'width ' + autoMs + 'ms linear';
-                    progress.style.width = '100%';
+                    requestAnimationFrame(function () {
+                        if (stillness.matches || !timer) { return; }
+                        fill.style.transition = 'width ' + autoMs + 'ms linear';
+                        fill.style.width = '100%';
+                    });
                 });
+            } else if (index > current) {
+                fill.style.transition = 'none';
+                fill.style.width = '0%';
+            }
+        });
+    }
+
+    /* ── پیش‌نمایش اسلاید بعدی ── */
+    function paintPeek() {
+        if (!peek || total < 2) { return; }
+        var image = slides[(current + 1) % total].querySelector('img');
+        if (!image) { return; }
+        peek.hidden = false;
+        peek.querySelector('img').src = image.currentSrc || image.src;
+    }
+
+    function paintProgress() {
+        if (!progress) { return; }
+        progress.style.transition = 'none';
+        progress.style.width = '0%';
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (stillness.matches || !timer) { return; }
+                progress.style.transition = 'width ' + autoMs + 'ms linear';
+                progress.style.width = '100%';
             });
+        });
+    }
+
+    function goTo(index) {
+        slides[current].classList.remove('is-active');
+        current = (index + total) % total;
+        slides[current].classList.add('is-active');
+        track.style.transform = 'translateX(' + (current * -100) + '%)';
+        if (counter) {
+            counter.textContent =
+                toPersian(current + 1) + ' / ' + toPersian(total);
         }
+        paintBars();
+        paintPeek();
+        paintProgress();
     }
 
-    /* ── auto play ── */
     function startAuto() {
-        clearInterval(timer);
+        stopAuto();
+        if (stillness.matches || total < 2) { return; }
         timer = setInterval(function () { goTo(current + 1); }, autoMs);
+        paintBars();
+        paintProgress();
     }
 
-    /* ── pause on hover ── */
-    var heroWrap = document.getElementById('uniHero');
-    heroWrap.addEventListener('mouseenter', function () { clearInterval(timer); });
-    heroWrap.addEventListener('mouseleave', startAuto);
+    function stopAuto() {
+        clearInterval(timer);
+        timer = null;
+    }
 
-    /* ── touch swipe ── */
-    var touchStartX = 0;
-    heroWrap.addEventListener('touchstart', function (e) {
-        touchStartX = e.touches[0].clientX;
+    /* ── توقف وقتی کسی نگاه نمی‌کند ──
+       تا امروز اسلایدها در تب پنهان و پایین صفحه هم می‌چرخیدند؛
+       کاربر برمی‌گشت و اسلاید پنجم را می‌دید بی‌آنکه دوم تا چهارم
+       را دیده باشد. باتری موبایل هم بی‌جهت می‌رفت. */
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { stopAuto(); } else { startAuto(); }
+    });
+
+    var watching = true;
+    if ('IntersectionObserver' in window) {
+        watching = false;
+        new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    if (!document.hidden) { startAuto(); }
+                } else {
+                    stopAuto();
+                }
+            });
+        }, { threshold: 0.35 }).observe(heroWrap);
+    }
+
+    /* ── ایستادن روی اسلاید، با موس ── */
+    heroWrap.addEventListener('mouseenter', stopAuto);
+    heroWrap.addEventListener('mouseleave', function () {
+        if (!document.hidden) { startAuto(); }
+    });
+
+    /* ── کشیدن با انگشت ──
+       اگر حرکت بیشتر عمودی بود، کاربر دارد صفحه را اسکرول می‌کند نه
+       اسلاید را عوض؛ دست‌زدن به آن، اسکرول را از دستش می‌گیرد. */
+    var startX = 0;
+    var startY = 0;
+    heroWrap.addEventListener('touchstart', function (event) {
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+        stopAuto();
     }, { passive: true });
-    heroWrap.addEventListener('touchend', function (e) {
-        var dx = e.changedTouches[0].clientX - touchStartX;
-        if (Math.abs(dx) > 40) { dx < 0 ? goTo(current + 1) : goTo(current - 1); }
+
+    heroWrap.addEventListener('touchend', function (event) {
+        var dx = event.changedTouches[0].clientX - startX;
+        var dy = event.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            // صفحه راست‌چین است: کشیدن به راست یعنی اسلاید بعدی
+            goTo(current + (dx > 0 ? 1 : -1));
+        }
+        startAuto();
     }, { passive: true });
 
-    /* ── buttons ── */
-    prevBtn.addEventListener('click', function () { goTo(current - 1); startAuto(); });
-    nextBtn.addEventListener('click', function () { goTo(current + 1); startAuto(); });
+    /* ── دکمه‌ها ── */
+    function jump(step) {
+        goTo(current + step);
+        startAuto();
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function () { jump(1); });
+    }
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function () { jump(-1); });
+    }
+    if (peek) {
+        peek.addEventListener('click', function () { jump(1); });
+    }
 
-    /* ── dots click ── */
-    dots.forEach(function (dot) {
-        dot.addEventListener('click', function () {
-            goTo(parseInt(this.dataset.idx));
+    bars.forEach(function (bar) {
+        bar.addEventListener('click', function () {
+            goTo(parseInt(this.dataset.idx, 10));
             startAuto();
         });
     });
 
-    /* ── init ── */
+    /* ── کلید چپ و راست ── */
+    heroWrap.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowRight') { jump(1); }
+        if (event.key === 'ArrowLeft') { jump(-1); }
+    });
+
+    /* ── راه‌اندازی ── */
     track.style.transform = 'translateX(0%)';
-    /* اطمینان از سمت چپ به راست برای track (RTL-safe) */
-    track.style.direction = 'ltr';
-    restartProgress();
-    startAuto();
+    track.style.direction = 'ltr';   // ریل همیشه چپ‌به‌راست می‌لغزد
+    slides[0].classList.add('is-active');
+    if (counter) {
+        counter.textContent = toPersian(1) + ' / ' + toPersian(total);
+    }
+    paintPeek();
+    if (watching) { startAuto(); }
 })();
 </script>
 
