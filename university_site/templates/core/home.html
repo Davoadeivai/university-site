@@ -9,10 +9,20 @@
 .uni-hero-wrap {
     position: relative;
     width: 100%;
-    height: 100vh;
-    min-height: 520px;
+    /* اسلاید تمام‌ارتفاع بود و کل صفحهٔ اول را می‌گرفت؛ بازدیدکننده
+       باید اسکرول می‌کرد تا بفهمد زیرش چیزی هست. کمی کوتاه‌تر شد تا
+       لبهٔ بخش بعدی دیده شود و معلوم باشد صفحه ادامه دارد.
+
+       svh نه vh: روی موبایل نوار نشانی مرورگر داخل vh حساب می‌شود،
+       پس اسلاید بلندتر از صفحه می‌افتد و با هر اسکرول می‌پرد. */
+    height: 78svh;
+    max-height: 720px;
+    min-height: 440px;
     overflow: hidden;
     background: #08243d;
+}
+@supports not (height: 1svh) {
+    .uni-hero-wrap { height: 78vh; }
 }
 
 /* ─── track ─── */
@@ -197,12 +207,12 @@
 
 /* ─── responsive ─── */
 @media (max-width: 768px) {
-    .uni-hero-wrap { height: 70vh; min-height: 400px; }
+    .uni-hero-wrap { height: 60svh; min-height: 360px; }
     .uni-slide-body { padding: 0 0 44px; }
     .uni-hero-arrow { width: 38px; height: 38px; font-size: 14px; }
 }
 @media (max-width: 480px) {
-    .uni-hero-wrap { height: 60vh; min-height: 340px; }
+    .uni-hero-wrap { height: 52svh; min-height: 300px; }
 }
 </style>
 {% endblock %}

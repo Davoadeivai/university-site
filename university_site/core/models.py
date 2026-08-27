@@ -2,7 +2,8 @@ import os
 import re
 import uuid
 
-from django.core.validators import FileExtensionValidator
+from django.core.validators import (FileExtensionValidator,
+                                    MaxValueValidator, MinValueValidator)
 from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.translation import gettext_lazy as _
@@ -24,12 +25,29 @@ def _org_chart_file_upload_to(instance, filename):
     return f'site/org_chart/{_safe_upload_filename(filename)}'
 
 
+# سقف اسلایدهای صفحهٔ اصلی.
+#
+# پیش از این عدد ۵ داخل ویو نوشته شده بود و مدیر هرچه اسلاید ششم و
+# هفتم می‌ساخت، در پنل ثبت می‌شد ولی روی صفحه نمی‌آمد و هیچ‌جا هم
+# نمی‌گفت چرا. حالا خودِ مدیر تعیینش می‌کند؛ این عدد فقط سقف است،
+# چون هر اسلاید یک عکس است و صفحه را سنگین می‌کند.
+MAX_HOME_SLIDES = 12
+
+
 class SiteSettings(models.Model):
     university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی')
     university_name_en = models.CharField(
         _('نام دانشگاه (انگلیسی)'), max_length=200,
         default='Allameh Amini Higher Education Institute',
     )
+    home_slider_count = models.PositiveSmallIntegerField(
+        _('تعداد اسلاید صفحهٔ اصلی'), default=7,
+        validators=[MinValueValidator(1), MaxValueValidator(MAX_HOME_SLIDES)],
+        help_text=_(
+            'چند اسلاید از فهرست اسلایدها روی صفحهٔ اصلی بیاید. '
+            'اسلایدهای بیشتر از این عدد ثبت می‌مانند ولی نمایش داده '
+            'نمی‌شوند. هر اسلاید یک عکس است و وزن صفحه را بالا '
+            'می‌برد، پس سقف %d گذاشته شده.' % MAX_HOME_SLIDES))
     logo = models.ImageField(_('لوگو'), upload_to='site/', blank=True, null=True)
     favicon = models.ImageField(_('فاویکون'), upload_to='site/', blank=True, null=True)
     world_class_logo = models.ImageField(

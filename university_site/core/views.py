@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.db.models import Q
 
 from core.models import (
-    SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    MAX_HOME_SLIDES, SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     CityInfo, CityAttraction,
     PresidencyOffice, PresidencyOfficeUnit, DeputyVice,
     InternationalOffice, InternationalActivity,
@@ -30,8 +30,14 @@ from research.models import ResearchProject, Conference
 def home(request):
     """صفحه اصلی یکپارچه سایت (جایگزین landing + home قبلی)."""
     # site_settings از global_context می‌آید؛ کوئری تکراری حذف شد
+    # چند اسلاید نمایش داده شود را مدیر از پنل تعیین می‌کند. پیش از
+    # این عدد ۵ همین‌جا نوشته شده بود و اسلاید ششم به بعد بی‌صدا
+    # کنار گذاشته می‌شد — مدیر آپلود می‌کرد و هیچ‌وقت نمی‌دیدشان.
+    settings_row = SiteSettings.objects.first()
+    limit = getattr(settings_row, 'home_slider_count', None) or MAX_HOME_SLIDES
     sliders = list(
-        Slider.objects.filter(is_active=True).order_by('order')[:5]
+        Slider.objects.filter(is_active=True)
+        .order_by('order')[:min(limit, MAX_HOME_SLIDES)]
     )
     quick_links = QuickLink.objects.filter(is_active=True, category='home')[:8]
     if not quick_links.exists():

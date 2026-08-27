@@ -131,6 +131,13 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'فیلد را بزنید و ذخیره کنید — بقیه دست‌نخورده می‌مانند.'
             ),
         }),
+        ('صفحهٔ اصلی', {
+            'fields': ('home_slider_count',),
+            'description': (
+                'اسلایدهای بیشتر از این عدد در فهرست اسلایدها می‌مانند '
+                'ولی روی صفحه نمی‌آیند.'
+            ),
+        }),
         ('اطلاعات تماس', {
             'fields': ('address', 'phone', 'fax', 'email', 'postal_code')
         }),

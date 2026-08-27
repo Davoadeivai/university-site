@@ -1,0 +1,109 @@
+"""چند اسلاید روی صفحهٔ اصلی بیاید — تصمیم مدیر، نه عددی در کد."""
+from django.core.cache import cache
+from django.test import TestCase
+from django.urls import reverse
+
+from core.models import MAX_HOME_SLIDES, SiteSettings, Slider
+
+
+class HomeSliderCountTests(TestCase):
+    """مدیر هفت اسلاید ساخته بود و فقط پنج‌تا دیده می‌شد."""
+
+    def setUp(self):
+        cache.clear()
+        for index in range(7):
+            Slider.objects.create(
+                title='اسلاید %d' % index, order=index, is_active=True,
+                image='sliders/s%d.jpg' % index)
+
+    def _shown(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        hero = html.split('id="heroTrack"')[1].split('/track')[0]
+        return hero.count('uni-hero-slide')
+
+    def test_seven_slides_are_all_shown_by_default(self):
+        self.assertEqual(self._shown(), 7)
+
+    def test_the_panel_decides_how_many(self):
+        SiteSettings.objects.create(home_slider_count=3)
+        cache.clear()
+        self.assertEqual(self._shown(), 3)
+
+    def test_a_bigger_number_than_there_are_slides_is_harmless(self):
+        SiteSettings.objects.create(home_slider_count=MAX_HOME_SLIDES)
+        cache.clear()
+        self.assertEqual(self._shown(), 7)
+
+    def test_the_ceiling_still_holds(self):
+        """سقف از وزن صفحه محافظت می‌کند؛ هر اسلاید یک عکس است."""
+        for index in range(7, 20):
+            Slider.objects.create(
+                title='اسلاید %d' % index, order=index, is_active=True,
+                image='sliders/s%d.jpg' % index)
+        SiteSettings.objects.create(home_slider_count=MAX_HOME_SLIDES)
+        cache.clear()
+        self.assertEqual(self._shown(), MAX_HOME_SLIDES)
+
+    def test_no_settings_row_still_renders(self):
+        """دیتابیس تازه هنوز ردیف تنظیمات ندارد."""
+        self.assertFalse(SiteSettings.objects.exists())
+        self.assertEqual(
+            self.client.get(reverse('core:home')).status_code, 200)
+
+    def test_an_inactive_slide_is_left_out(self):
+        Slider.objects.filter(order=0).update(is_active=False)
+        cache.clear()
+        self.assertEqual(self._shown(), 6)
+
+    def test_the_order_is_honoured(self):
+        SiteSettings.objects.create(home_slider_count=2)
+        cache.clear()
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('اسلاید 0', html)
+        self.assertNotIn('اسلاید 6', html)
+
+    def test_the_panel_offers_the_field(self):
+        from core.admin import SiteSettingsAdmin
+
+        self.assertIn('home_slider_count', str(SiteSettingsAdmin.fieldsets))
+
+    def test_the_field_refuses_a_number_over_the_ceiling(self):
+        from django.core.exceptions import ValidationError
+
+        row = SiteSettings(home_slider_count=MAX_HOME_SLIDES + 1)
+        with self.assertRaises(ValidationError):
+            row.full_clean()
+
+    def test_the_field_refuses_zero(self):
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError):
+            SiteSettings(home_slider_count=0).full_clean()
+
+
+class HeroHeightTests(TestCase):
+    """اسلاید تمام‌ارتفاع بود و معلوم نبود صفحه ادامه دارد."""
+
+    def _css(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        return html.split('.uni-hero-wrap {')[1].split('}')[0]
+
+    def setUp(self):
+        cache.clear()
+
+    def test_the_hero_no_longer_fills_the_whole_screen(self):
+        css = self._css()
+        self.assertNotIn('height: 100vh', css)
+        self.assertNotIn('height: 100svh', css)
+
+    def test_it_uses_small_viewport_units(self):
+        """نوار نشانی موبایل داخل vh حساب می‌شود و اسلاید می‌پرد."""
+        self.assertIn('svh', self._css())
+
+    def test_an_old_browser_still_gets_a_height(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('@supports not (height: 1svh)', html)
+
+    def test_it_never_grows_past_a_sensible_ceiling(self):
+        """روی نمایشگر بلند، اسلاید نباید یک دیوار عکس شود."""
+        self.assertIn('max-height', self._css())
