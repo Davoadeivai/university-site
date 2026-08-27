@@ -931,12 +931,16 @@
                             <a href="{{ dept.get_absolute_url }}">{{ dept.name }}</a>
                         </h3>
                         <p class="fac-count">
-                            {{ dept.groups.count }} گروه آموزشی · {{ dept.majors.count }} رشته
+                            {{ dept.group_total }} گروه آموزشی · {{ dept.major_total }} رشته
                         </p>
 
-                        {% if dept.groups.exists %}
+                        {% comment %}
+                        active_groups از prefetch می‌آید؛ groups.all
+                        برای هر کارت یک پرس‌وجوی تازه می‌زد.
+                        {% endcomment %}
+                        {% if dept.active_groups %}
                         <ul class="fac-groups">
-                            {% for group in dept.groups.all %}
+                            {% for group in dept.active_groups %}
                             <li><a href="{{ group.get_absolute_url }}">{{ group.name }}</a></li>
                             {% endfor %}
                         </ul>

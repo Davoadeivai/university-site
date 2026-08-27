@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.utils import timezone
 from django.db.models import Q
 
@@ -21,7 +21,8 @@ from core.models import (
 )
 from core.academic_timeline import build_timeline
 from news.models import News, Category, Gallery
-from academics.models import Department, Major, AcademicCalendar
+from academics.models import (AcademicCalendar, AcademicGroup,
+                              Department, Major)
 from faculty.models import Professor
 from contact.models import Alumni
 from research.models import ResearchProject, Conference
@@ -82,8 +83,23 @@ def home(request):
     # سقف هم برداشته شد: با ۶ تا، دانشکدهٔ هفتم در منو می‌آمد و در
     # صفحهٔ اصلی بی‌صدا غایب می‌شد — همان دامی که اسلاید ششم در آن
     # افتاده بود.
-    departments = Department.objects.filter(is_active=True).order_by(
-        'order', 'name')
+    # هر کارت دانشکده در قالب چهار بار به دیتابیس می‌زد — شمارش
+    # گروه، شمارش رشته، exists، و خودِ گروه‌ها — یعنی برای سه دانشکده
+    # دوازده پرس‌وجو. حالا شمارش‌ها با annotate و گروه‌ها با prefetch
+    # در همان یک رفت‌وبرگشت می‌آیند.
+    departments = (
+        Department.objects.filter(is_active=True)
+        .annotate(
+            group_total=Count('groups', filter=Q(groups__is_active=True),
+                              distinct=True),
+            major_total=Count('majors', filter=Q(majors__is_active=True),
+                              distinct=True))
+        .prefetch_related(
+            Prefetch('groups',
+                     queryset=AcademicGroup.objects.filter(is_active=True)
+                     .order_by('order', 'name'),
+                     to_attr='active_groups'))
+        .order_by('order', 'name'))
     calendar_items = AcademicCalendar.objects.filter(
         start_date__gte=timezone.now().date()
     ).order_by('start_date')[:5]

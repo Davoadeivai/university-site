@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.shortcuts import render, get_object_or_404
 from .models import News, Category, Gallery
 
@@ -5,7 +6,9 @@ from .models import News, Category, Gallery
 def news_list(request):
     category_slug = request.GET.get('category')
     news_type = request.GET.get('type')
-    news = News.objects.filter(is_published=True)
+    # بدون select_related، قالب برای هر خبر یک پرس‌وجوی جدا برای
+    # دسته‌بندی می‌زد: بیست خبر یعنی بیست کوئری اضافه.
+    news = News.objects.filter(is_published=True).select_related('category')
 
     if category_slug:
         category = get_object_or_404(Category, slug=category_slug)
@@ -17,7 +20,8 @@ def news_list(request):
         news = news.filter(news_type=news_type)
 
     categories = Category.objects.all()
-    featured_news = News.objects.filter(is_published=True, is_featured=True)[:3]
+    featured_news = News.objects.filter(
+        is_published=True, is_featured=True).select_related('category')[:3]
 
     context = {
         'news': news,
@@ -31,13 +35,19 @@ def news_list(request):
 
 
 def news_detail(request, slug):
-    article = get_object_or_404(News, slug=slug, is_published=True)
+    article = get_object_or_404(
+        News.objects.select_related('category'), slug=slug, is_published=True)
+
+    # شمارنده با F: دو بازدید همزمان، مقدار قدیمی را می‌خواندند و
+    # هر دو همان عدد + ۱ را می‌نوشتند، پس یکی از بازدیدها گم می‌شد.
+    News.objects.filter(pk=article.pk).update(
+        views_count=F('views_count') + 1)
     article.views_count += 1
-    article.save(update_fields=['views_count'])
+
     related_news = News.objects.filter(
         is_published=True,
         category=article.category
-    ).exclude(pk=article.pk)[:3]
+    ).exclude(pk=article.pk).select_related('category')[:3]
     context = {
         'article': article,
         'related_news': related_news,

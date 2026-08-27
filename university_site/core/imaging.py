@@ -81,6 +81,14 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
         # فایل روی دیسک نیست — بعد از انتقال مدیا پیش می‌آید
         logger.warning('عکس خوانده نشد (%s): %s', name, exc)
         return False
+    finally:
+        # بستنِ صریح لازم است: پایین‌تر روی همین فایل می‌نویسیم، و
+        # ویندوز اجازهٔ پاک‌کردن فایلِ باز را نمی‌دهد. روی لینوکس هم
+        # رها کردنش یعنی نشت توصیف‌گر فایل در حلقه‌های طولانی.
+        try:
+            field_file.close()
+        except Exception:                          # noqa: BLE001
+            pass
 
     try:
         image = Image.open(io.BytesIO(original))
@@ -127,9 +135,27 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
 
     from django.core.files.base import ContentFile
 
+    # جای همان فایل نوشته می‌شود، نه کنارش.
+    #
+    # ‎FieldFile.save‎ همیشه نام تازه می‌گیرد و اگر نام اشغال باشد هفت
+    # نویسهٔ تصادفی ته آن می‌چسباند. چون همین‌جا داریم روی فایلِ خودمان
+    # می‌نویسیم، آن نام همیشه اشغال است: هر ذخیره یک دنبالهٔ تازه
+    # اضافه می‌کرد («1.jpg» → «1_aB3.jpg» → «1_aB3_xY9.jpg») و نسخهٔ
+    # قبلی را یتیم روی دیسک جا می‌گذاشت.
+    folder = name.rsplit('/', 1)[0] + '/' if '/' in name else ''
     stem = name.rsplit('/', 1)[-1]
     stem = stem[:stem.rfind('.')] if '.' in stem else stem
-    field_file.save(stem + suffix, ContentFile(shrunk), save=False)
+    target = folder + stem + suffix
+
+    storage = field_file.storage
+    previous = field_file.name
+    if storage.exists(target):
+        storage.delete(target)
+    field_file.name = storage.save(target, ContentFile(shrunk))
+
+    # فایل قبلی اگر پسوندش عوض شده باشد (PNG که JPEG شد) هنوز هست
+    if previous != field_file.name and storage.exists(previous):
+        storage.delete(previous)
     return True
 
 

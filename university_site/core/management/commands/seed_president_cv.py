@@ -122,6 +122,39 @@ class Command(BaseCommand):
         parser.add_argument(
             '--replace', action='store_true',
             help='مقدار فعلی را هم بازنویسی کن (پیش‌فرض: فقط جای خالی)')
+        parser.add_argument(
+            '--cv', metavar='FILE',
+            help='فایل رزومه (PDF یا Word) را هم از این مسیر بگذار')
+
+    def _attach_cv(self, office, path_text: str) -> bool:
+        """فایل رزومه را از دیسک بردار و روی رکورد بگذار.
+
+        صفحهٔ ریاست دکمهٔ دانلود را فقط وقتی نشان می‌دهد که این فیلد
+        پر باشد؛ تا امروز باید دستی از پنل آپلود می‌شد.
+        """
+        from pathlib import Path
+
+        from django.core.files.base import ContentFile
+
+        source = Path(path_text)
+        if not source.is_file():
+            self.stdout.write(self.style.WARNING(
+                'فایل رزومه پیدا نشد: %s' % source))
+            return False
+
+        allowed = {'.pdf', '.doc', '.docx'}
+        if source.suffix.lower() not in allowed:
+            self.stdout.write(self.style.WARNING(
+                'فقط PDF یا Word پذیرفته می‌شود: %s' % source.name))
+            return False
+
+        # نام تمیز و ثابت — نشانی دانلود نباید هر بار عوض شود
+        target = 'CV-Dr-Farsijani' + source.suffix.lower()
+        office.president_cv.save(
+            target, ContentFile(source.read_bytes()), save=False)
+        self.stdout.write('  رزومه: %s (%.0f کیلوبایت)'
+                          % (target, source.stat().st_size / 1024))
+        return True
 
     @staticmethod
     def _align_floor(office) -> bool:
@@ -167,6 +200,9 @@ class Command(BaseCommand):
 
         if self._align_floor(office):
             changed.append('office_address')
+
+        if options.get('cv') and self._attach_cv(office, options['cv']):
+            changed.append('president_cv')
 
         if not changed:
             self.stdout.write('چیزی برای تغییر نبود.')
