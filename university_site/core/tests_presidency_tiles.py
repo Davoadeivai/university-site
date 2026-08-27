@@ -133,3 +133,49 @@ class PresidencyPortraitSpacingTests(TestCase):
         self.assertIn('gap:', block)
         # مقدار پیشین ۲۰ تا ۴۶ پیکسل بود و عکس به ارم می‌چسبید.
         self.assertIn('clamp(28px, 5vw, 76px)', block)
+
+
+class WcuTitleTests(TestCase):
+    """موسسه خواست «مدیریت کلاس جهانی» برداشته شود."""
+
+    def setUp(self):
+        cache.clear()
+        self.office = PresidencyOffice.objects.create(
+            president_name='دکتر حسن فارسیجانی',
+            wcu_title='سایت تخصصی کلینیک',
+            wcu_motto='چگونگی تبدیل دانشگاه‌ها به سازمان در کلاس جهانی',
+            president_website='https://WCM-Society.Com')
+
+    def _html(self):
+        return self.client.get(reverse('core:presidency')).content.decode()
+
+    def test_the_new_wording_is_on_the_page(self):
+        self.assertIn('سایت تخصصی کلینیک', self._html())
+
+    def test_the_old_wording_is_gone(self):
+        self.assertNotIn('سایت تخصصی مدیریت کلاس جهانی', self._html())
+
+    def test_the_seeder_writes_the_new_wording(self):
+        """اگر seeder عبارت قدیمی را نگه دارد، دیپلوی برش می‌گرداند."""
+        from core.management.commands.seed_president_cv import FIELDS
+
+        self.assertEqual(FIELDS['wcu_title'], 'سایت تخصصی کلینیک')
+
+    def test_the_seeder_does_not_overwrite_an_edit(self):
+        """مدیر باید بتواند از پنل عوضش کند بی‌آنکه دیپلوی برگرداند."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        self.office.wcu_title = 'عنوان دست‌نویس مدیر'
+        self.office.save(update_fields=['wcu_title'])
+        call_command('seed_president_cv', stdout=StringIO())
+        self.office.refresh_from_db()
+        self.assertEqual(self.office.wcu_title, 'عنوان دست‌نویس مدیر')
+
+    def test_an_empty_title_does_not_leave_a_stray_heading(self):
+        self.office.wcu_title = ''
+        self.office.save(update_fields=['wcu_title'])
+        cache.clear()
+        plaque = self._html().split('wcu-plaque')[1].split('</aside>')[0]
+        self.assertNotIn('wcu-title', plaque)

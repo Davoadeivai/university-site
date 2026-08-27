@@ -103,7 +103,7 @@ FIELDS = {
     'president_memberships': NEWLINE.join(MEMBERSHIPS),
     'president_research': NEWLINE.join(RESEARCH),
     'president_highlights': NEWLINE.join(HIGHLIGHTS),
-    'wcu_title': 'سایت تخصصی مدیریت کلاس جهانی',
+    'wcu_title': 'سایت تخصصی کلینیک',
     'wcu_motto': ('چگونگی تبدیل دانشگاه‌ها و مؤسسات آموزش عالی و '
                   'صنایع به سازمان در کلاس جهانی'),
     'president_website': 'https://WCM-Society.Com',

@@ -4293,8 +4293,11 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
     .vice-sub {
         position: absolute;
-        /* صفحه راست‌چین است: زیرمنو به سمت چپِ منوی مادر باز می‌شود */
-        inset-inline-end: 100%;
+        /* زیرمنو از سمت چپِ منوی مادر باز می‌شود.
+           در صفحهٔ راست‌چین، inline-start همان «راست» است، پس
+           ‎inset-inline-start: 100%‎ یعنی لبهٔ راستِ زیرمنو به لبهٔ
+           چپِ منو می‌چسبد و زیرمنو به چپ باز می‌شود. */
+        inset-inline-start: 100%;
         inset-block-start: 0;
         min-inline-size: 250px;
         padding: 8px 0;
@@ -4303,7 +4306,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
         box-shadow: var(--shadow-lg, 0 8px 40px rgba(78, 18, 32, .15));
         opacity: 0;
         visibility: hidden;
-        transform: translateX(6px);
+        transform: translateX(8px);
         transition: opacity var(--duration-fast, 160ms) ease,
                     transform var(--duration-fast, 160ms) ease,
                     visibility var(--duration-fast, 160ms);

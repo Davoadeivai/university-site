@@ -211,6 +211,30 @@ class NestedDeputyMenuTests(TestCase):
         self.assertIn('.vice-toggle', js)
         self.assertIn('stopPropagation', js)
 
+    def test_the_submenu_opens_towards_the_left(self):
+        """موسسه خواست کشویی از سمت چپ باز شود.
+
+        در صفحهٔ راست‌چین، inline-start همان «راست» است؛ پس
+        ‎inset-inline-start: 100%‎ لبهٔ راستِ زیرمنو را به لبهٔ چپِ منو
+        می‌چسباند و زیرمنو به چپ باز می‌شود. مقدار ‎inline-end‎ دقیقاً
+        برعکسش را می‌کند و یک بار همین اشتباه رخ داد.
+        """
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        # قاعدهٔ دسکتاپ، نه قاعدهٔ پایه: اولین ‎.vice-sub‎ در فایل فقط
+        # فهرست را صاف می‌کند و جای‌گذاری در بلوک ‎min-width: 992px‎ است.
+        desktop = css.split('.vice-group.has-sub { position: relative; }')[1]
+        block = desktop.split('.vice-sub {')[1].split('}')[0]
+        self.assertIn('inset-inline-start: 100%', block)
+        self.assertNotIn('inset-inline-end', block)
+
+    def test_the_arrow_points_the_way_the_menu_opens(self):
+        """فلشی که به راست اشاره کند و منو به چپ باز شود، دروغ است."""
+        html = self.client.get(reverse('core:home')).content.decode()
+        nav = html.split('id="mainNav"')[1].split('</nav>')[0]
+        toggle = nav.split('vice-toggle')[1].split('</button>')[0]
+        self.assertIn('fa-chevron-left', toggle)
+
     def test_desktop_opens_on_focus_not_only_hover(self):
         """کاربر صفحه‌کلید با هاورِ تنها هیچ‌وقت به زیرشاخه نمی‌رسد."""
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
