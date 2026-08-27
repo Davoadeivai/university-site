@@ -255,6 +255,10 @@ def seed_content() -> None:
     run('merge_duplicate_majors')
     # سه دانشکده و چیدن گروه‌ها و رشته‌ها زیرشان
     run('set_faculties')
+    # رشته‌ها را با سند رسمی «رشته‌های دانشکده‌ها» هم‌خوان می‌کند
+    run('set_majors_from_document')
+    # چهار شورای چارت سازمانی
+    run('seed_councils')
     run('seed_president_cv')
     run('prefix_doctor_titles')
     run('set_graduate_groups')

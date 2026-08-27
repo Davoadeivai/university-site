@@ -4254,3 +4254,174 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-style: dashed;
     cursor: default;
 }
+
+/* ══ منوی معاونت‌ها: زیرشاخهٔ تودرتو ═════════════════════════════
+   پیش از این زیرشاخه‌های هر پنج معاونت با هم باز بودند و منو یک
+   ستون سی‌ردیفه می‌شد که ته آن از صفحه بیرون می‌زد. حالا هر معاونت
+   زیرمنوی خودش را دارد.
+
+   روی دسکتاپ با هاور و فوکوس باز می‌شود — فوکوس هم لازم است، وگرنه
+   کاربر صفحه‌کلید هیچ‌وقت به زیرشاخه‌ها نمی‌رسد. روی موبایل هاوری در
+   کار نیست، پس دکمهٔ فلش بازش می‌کند. */
+.vice-lead-row { display: flex; align-items: stretch; }
+.vice-lead-row .vice-lead { flex: 1 1 auto; min-inline-size: 0; }
+
+.vice-toggle {
+    flex: none;
+    inline-size: 36px;
+    border: 0;
+    background: none;
+    color: var(--gold-light, #c9a34e);
+    font-size: 12px;
+    cursor: pointer;
+    transition: transform var(--duration-fast, 160ms) var(--easing-standard, ease),
+                color var(--duration-fast, 160ms) var(--easing-standard, ease);
+}
+.vice-toggle:hover { color: #fff; }
+.vice-toggle:focus-visible { outline: 2px solid var(--gold-light); outline-offset: -2px; }
+.vice-toggle[aria-expanded="true"] { transform: rotate(-90deg); }
+
+.vice-sub {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── دسکتاپ: زیرمنو از کنار باز می‌شود ── */
+@media (min-width: 992px) {
+    .vice-group.has-sub { position: relative; }
+
+    .vice-sub {
+        position: absolute;
+        /* صفحه راست‌چین است: زیرمنو به سمت چپِ منوی مادر باز می‌شود */
+        inset-inline-end: 100%;
+        inset-block-start: 0;
+        min-inline-size: 250px;
+        padding: 8px 0;
+        border-radius: 10px;
+        background: var(--primary-deep, #4e1220);
+        box-shadow: var(--shadow-lg, 0 8px 40px rgba(78, 18, 32, .15));
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(6px);
+        transition: opacity var(--duration-fast, 160ms) ease,
+                    transform var(--duration-fast, 160ms) ease,
+                    visibility var(--duration-fast, 160ms);
+        z-index: 5;
+    }
+
+    .vice-group.has-sub:hover > .vice-sub,
+    .vice-group.has-sub:focus-within > .vice-sub,
+    .vice-group.has-sub.is-open > .vice-sub {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    /* روی دسکتاپ دکمه لازم نیست — هاور و فوکوس کار را می‌کنند */
+    .vice-toggle { pointer-events: none; opacity: .7; }
+}
+
+/* ── موبایل: زیرمنو تاشو، با دکمه ── */
+@media (max-width: 991.98px) {
+    .vice-sub {
+        display: none;
+        padding-inline-start: 14px;
+        border-inline-start: 2px solid rgba(201, 163, 78, .3);
+        margin-block: 4px;
+    }
+    .vice-group.is-open > .vice-sub { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vice-sub, .vice-toggle { transition: none; }
+}
+
+/* ══ شوراها ══════════════════════════════════════════════════════ */
+.council-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: clamp(16px, 2.4vw, 26px);
+}
+
+.council-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: clamp(20px, 2.4vw, 28px);
+    border-radius: var(--radius, 14px);
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    border-block-start: 4px solid var(--tone, #7a1f2e);
+    box-shadow: 0 10px 30px -26px rgba(78, 18, 32, .5);
+    transition: var(--transition-motion);
+}
+.council-card:hover { transform: translateY(-3px); }
+
+.council-icon {
+    inline-size: 46px;
+    block-size: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: var(--tone-soft, rgba(122, 31, 46, .1));
+    color: var(--tone, #7a1f2e);
+    font-size: 19px;
+}
+
+.council-name { margin: 0; font-size: 17px; font-weight: 800; }
+.council-name a { color: var(--tone, #7a1f2e); text-decoration: none; }
+.council-name a:hover { text-decoration: underline; }
+
+.council-blurb {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 2;
+    color: var(--text-muted, #6b5b5e);
+}
+
+.council-head {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-dark, #241a1c);
+}
+.council-head i { color: var(--tone, #7a1f2e); margin-inline-end: 5px; }
+
+.council-more {
+    margin-block-start: auto;
+    padding-block-start: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tone, #7a1f2e);
+    text-decoration: none;
+}
+.council-more:hover { text-decoration: underline; }
+
+.council-duties, .council-members, .council-side {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 9px;
+}
+.council-duties li, .council-members li {
+    position: relative;
+    padding-inline-start: 20px;
+    font-size: 14px;
+    line-height: 2;
+}
+.council-duties li::before, .council-members li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 13px;
+    inline-size: 7px;
+    block-size: 7px;
+    border-radius: 50%;
+    background: var(--primary, #7a1f2e);
+}
+.council-side li a { color: var(--text-dark, #241a1c); text-decoration: none; font-size: 14px; }
+.council-side li a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
+
+[data-theme="dark"] .council-card { background: var(--bg-white); }
+[data-theme="dark"] .council-side li a { color: #dfe9f3; }

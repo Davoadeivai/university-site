@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.db.models import Q
 
 from core.models import (
-    MAX_HOME_SLIDES, SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    MAX_HOME_SLIDES, Council, SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     CityInfo, CityAttraction,
     PresidencyOffice, PresidencyOfficeUnit, DeputyVice,
     InternationalOffice, InternationalActivity,
@@ -463,6 +463,23 @@ def gallery_view(request):
 
 
 # ─── حوزه ریاست ───────────────────────────────────────────────
+
+def councils(request):
+    """شوراها و کمیته‌های موسسه."""
+    return render(request, 'core/councils.html', {
+        'councils': Council.objects.filter(is_active=True),
+        'page_title': 'شوراها',
+    })
+
+
+def council_detail(request, slug):
+    council = get_object_or_404(Council, slug=slug, is_active=True)
+    return render(request, 'core/council_detail.html', {
+        'council': council,
+        'councils': Council.objects.filter(is_active=True),
+        'page_title': council.name,
+    })
+
 
 def presidency(request):
     """ریاست موسسه — رئیس، دفتر، و هیئت رئیسه.

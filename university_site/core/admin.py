@@ -10,7 +10,7 @@ from core.jalali import format_jalali_date, format_jalali_datetime
 # ثبت لاگ فعالیت ادمین (LogEntry) — فقط‌خواندنی، مخصوص superuser
 from core import admin_logentry  # noqa: F401
 from .models import (
-    SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
+    Council, SiteSettings, Slider, QuickLink, Event, FAQ, PageView,
     InstitutionGoal, BoardMember, CityInfo, CityAttraction,
     PresidencyOffice, PresidencyOfficeUnit, DeputyVice,
     InternationalOffice, InternationalActivity,
@@ -826,3 +826,27 @@ class QueuedSMSAdmin(admin.ModelAdmin):
         n = queryset.filter(status='failed').update(
             status='pending', attempts=0, last_error='')
         self.message_user(request, '%d پیام به صف بازگشت.' % n)
+
+
+@admin.register(Council)
+class CouncilAdmin(admin.ModelAdmin):
+    """شوراها و کمیته‌های موسسه."""
+
+    list_display = ['name', 'head', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    list_filter = ['is_active']
+    search_fields = ['name', 'head', 'duties', 'members']
+    prepopulated_fields = {'slug': ('name',)}
+    fieldsets = (
+        ('معرفی', {
+            'fields': ('name', 'slug', 'short_description', 'head', 'icon'),
+        }),
+        ('محتوا', {
+            'fields': ('duties', 'members'),
+            'description': (
+                'هر وظیفه و هر عضو را در یک خط جدا بنویسید؛ '
+                'صفحهٔ شورا خودش آن‌ها را فهرست می‌کند.'
+            ),
+        }),
+        ('نمایش', {'fields': ('order', 'is_active')}),
+    )

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% comment %}
+شوراها و کمیته‌های موسسه.
+
+چارت سازمانی چهار رکن مشورتی دارد و هیچ‌کدام تا امروز روی سایت
+نبودند. فهرست از دیتابیس می‌آید، پس افزودن شورای تازه از پنل است
+نه از کد.
+{% endcomment %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item active" aria-current="page">شوراها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">شوراها و کمیته‌ها</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if councils %}
+        <div class="council-grid">
+            {% for council in councils %}
+            <article class="council-card tone-{{ forloop.counter }}">
+                <span class="council-icon" aria-hidden="true">
+                    <i class="fas {{ council.icon }}"></i>
+                </span>
+                <h2 class="council-name">
+                    <a href="{{ council.get_absolute_url }}">{{ council.name }}</a>
+                </h2>
+                {% if council.short_description %}
+                <p class="council-blurb">{{ council.short_description }}</p>
+                {% endif %}
+                {% if council.head %}
+                <p class="council-head">
+                    <i class="fas fa-user-tie" aria-hidden="true"></i>
+                    {{ council.head }}
+                </p>
+                {% endif %}
+                <a href="{{ council.get_absolute_url }}" class="council-more">
+                    شرح وظایف و اعضا
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% include 'core/_empty_state.html' with label='شورایی' add_url='/admin/core/council/add/' hint='شوراها و کمیته‌های موسسه در این صفحه فهرست می‌شوند.' %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

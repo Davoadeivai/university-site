@@ -1,6 +1,6 @@
 from django.core.cache import cache
 
-from core.models import SiteSettings, QuickLink, HomeSection
+from core.models import Council, SiteSettings, QuickLink, HomeSection
 from news.models import News
 from accounts.models import Announcement
 from academics.models import AcademicGroup, Department
@@ -56,6 +56,7 @@ def global_context(request):
         # با هم اختلاف پیدا نکنند.
         from core import vices as vices_structure
         nav_vices = vices_structure.build(vices_by_type, nav_graduate_groups)
+        nav_councils = list(Council.objects.filter(is_active=True))
 
         cached = {
             'site_settings': settings,
@@ -66,6 +67,7 @@ def global_context(request):
             'nav_groups': nav_groups,
             'nav_departments': nav_departments,
             'nav_vices': nav_vices,
+            'nav_councils': nav_councils,
             'nav_graduate_groups': nav_graduate_groups,
         }
         cache.set(CACHE_KEY, cached, _CACHE_TTL)

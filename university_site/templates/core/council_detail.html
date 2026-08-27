@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:councils' %}">شوراها</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ council.name }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">{{ council.name }}</h1>
+        {% if council.short_description %}
+        <p class="text-white-50 mb-0">{{ council.short_description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                {% if council.duty_list %}
+                <div class="uni-card p-4 mb-4">
+                    <h2 class="section-title mb-3">شرح وظایف</h2>
+                    <ul class="council-duties">
+                        {% for duty in council.duty_list %}
+                        <li>{{ duty }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if council.member_list %}
+                <div class="uni-card p-4">
+                    <h2 class="section-title mb-3">اعضا</h2>
+                    <ul class="council-members">
+                        {% for member in council.member_list %}
+                        <li>{{ member }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if not council.duty_list and not council.member_list %}
+                <div class="uni-card p-4">
+                    <p class="text-muted mb-0">
+                        شرح وظایف و اعضای این شورا هنوز ثبت نشده است.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+                <div class="uni-card p-4">
+                    <h5 class="fw-bold text-primary-uni mb-3">شوراهای دیگر</h5>
+                    <ul class="council-side">
+                        {% for other in councils %}
+                        {% if other.pk != council.pk %}
+                        <li><a href="{{ other.get_absolute_url }}">{{ other.name }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

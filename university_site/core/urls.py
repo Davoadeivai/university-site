@@ -54,6 +54,8 @@ urlpatterns = [
         RedirectView.as_view(pattern_name='core:graduate_regulations', permanent=False, query_string=True),
     ),
     # حوزه ریاست
+    path('شوراها/', views.councils, name='councils'),
+    path('شوراها/<str:slug>/', views.council_detail, name='council_detail'),
     path('ریاست/', views.presidency, name='presidency'),
     path('دفتر-ریاست/', views.presidency_office, name='presidency_office'),
     path('دفتر-ریاست/<path:slug>/', views.presidency_office_unit, name='presidency_office_unit'),

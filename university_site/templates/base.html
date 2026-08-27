@@ -272,20 +272,60 @@
                     صفحه می‌رود، پس تکرارش فقط یک ردیف اضافه بود.
                     {% endcomment %}
                     <ul class="dropdown-menu nav-dd nav-dd-vices">
+                        {% comment %}
+                        هر معاونت یک زیرمنوی تودرتوست: زیرشاخه‌هایش تا
+                        وقتی روی آن نرفته‌اید بسته‌اند. پیش از این همهٔ
+                        زیرشاخه‌های پنج معاونت با هم باز بودند و منو یک
+                        ستون بلندِ سی‌ردیفه می‌شد.
+
+                        روی دسکتاپ با هاور یا فوکوس باز می‌شود، روی
+                        موبایل با زدن دکمهٔ فلش — چون آنجا هاوری در کار
+                        نیست. خودِ نام معاونت همیشه لینک است، پس بدون
+                        جاوااسکریپت هم هر پنج صفحه در دسترس‌اند.
+                        {% endcomment %}
                         {% for row in nav_vices %}
-                        <li class="vice-group">
-                            <a class="dropdown-item nav-dd-item vice-lead" href="{{ row.url }}">
-                                <span class="vice-num" aria-hidden="true">{{ row.number }}</span>
-                                <span class="vice-lead-text">{{ row.label }}</span>
-                            </a>
-                            {% for child in row.children %}
-                            {% if child.url %}
-                            <a class="dropdown-item nav-dd-sub" href="{{ child.url }}">{{ child.title }}</a>
-                            {% else %}
-                            <span class="dropdown-item nav-dd-sub is-plain">{{ child.title }}</span>
+                        <li class="vice-group{% if row.children %} has-sub{% endif %}">
+                            <div class="vice-lead-row">
+                                <a class="dropdown-item nav-dd-item vice-lead" href="{{ row.url }}">
+                                    <span class="vice-num" aria-hidden="true">{{ row.number }}</span>
+                                    <span class="vice-lead-text">{{ row.label }}</span>
+                                </a>
+                                {% if row.children %}
+                                <button type="button" class="vice-toggle"
+                                        aria-expanded="false"
+                                        aria-label="زیرشاخه‌های {{ row.label }}">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% if row.children %}
+                            <ul class="vice-sub">
+                                {% for child in row.children %}
+                                <li>
+                                    {% if child.url %}
+                                    <a class="dropdown-item nav-dd-sub" href="{{ child.url }}">{{ child.title }}</a>
+                                    {% else %}
+                                    <span class="dropdown-item nav-dd-sub is-plain">{{ child.title }}</span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
                             {% endif %}
-                            {% endfor %}
                         </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'core:councils' %}"
+                       data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fas fa-users-rectangle" style="font-size:13px;margin-left:3px;"></i> شوراها
+                    </a>
+                    <ul class="dropdown-menu nav-dd">
+                        {% for council in nav_councils %}
+                        <li><a class="dropdown-item nav-dd-item" href="{{ council.get_absolute_url }}">{{ council.name }}</a></li>
+                        {% empty %}
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:councils' %}">فهرست شوراها</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -399,13 +439,6 @@
                     </ul>
                 </li>
 
-                <!-- گالری تصاویر — لینک ساده مطابق سایت رسمی -->
-                <li class="nav-item">
-                    <a class="nav-link-flat" href="{% url 'core:gallery' %}">
-                        <i class="fas fa-images" style="font-size:13px;margin-left:3px;"></i> گالری تصاویر
-                    </a>
-                </li>
-
                 <!-- تماس با ما -->
                 <li class="nav-item">
                     <a class="nav-link-flat" href="{% url 'contact:contact' %}">
@@ -489,12 +522,19 @@
                                 {% for link in footer_quick_access %}
                                 <li><a href="{{ link.url }}"{% if link.open_in_new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}><i class="fas fa-angle-left"></i> {{ link.title }}</a></li>
                                 {% endfor %}
+                                {% comment %}
+                                گالری از نوار بالا برداشته شد و تنها راه
+                                رسیدن به آن همین‌جاست؛ پس حتی وقتی مدیر
+                                لینک‌های خودش را گذاشته هم باید بماند.
+                                {% endcomment %}
+                                <li><a href="{% url 'core:gallery' %}"><i class="fas fa-angle-left"></i> گالری تصاویر</a></li>
                             {% else %}
                             <li><a href="http://www.leader.ir/langs/fa" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> دفتر مقام معظم رهبری</a></li>
                             <li><a href="http://www.president.ir/fa" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> پایگاه اینترنتی ریاست جمهوری</a></li>
                             <li><a href="http://www.msrt.ir/fa/pages/Home.aspx" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> وزارت علوم</a></li>
                             <li><a href="http://www.sanjesh.org" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> سازمان سنجش</a></li>
                             <li><a href="http://www.mjazb.ir" target="_blank" rel="noopener"><i class="fas fa-angle-left"></i> مرکز جذب هیأت علمی</a></li>
+                            <li><a href="{% url 'core:gallery' %}"><i class="fas fa-angle-left"></i> گالری تصاویر</a></li>
                             <li><a href="{% url 'contact:contact' %}"><i class="fas fa-angle-left"></i> تماس با ما</a></li>
                             {% endif %}
                         </ul>

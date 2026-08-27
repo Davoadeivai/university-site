@@ -706,6 +706,57 @@ class GraduateStudiesInfo(models.Model):
         return self.manager_name or 'تحصیلات تکمیلی'
 
 
+class Council(models.Model):
+    """شوراها و کمیته‌های موسسه.
+
+    چارت سازمانی موسسه چهار رکن مشورتی دارد — شورای موسسه، شورای
+    فرهنگی، شورای دانشجویی و کمیتهٔ انضباطی — و هیچ‌کدام تا امروز
+    روی سایت نبودند. مثل بقیهٔ محتوا، از پنل قابل ویرایش است تا
+    افزودن شورای تازه نیازی به دست‌زدن به کد نداشته باشد.
+    """
+
+    name = models.CharField(_('نام شورا'), max_length=200)
+    slug = models.SlugField(_('نشانی'), unique=True, allow_unicode=True)
+    short_description = models.CharField(
+        _('معرفی کوتاه'), max_length=300, blank=True,
+        help_text=_('یک جمله؛ زیر نام شورا در فهرست دیده می‌شود.'))
+    duties = models.TextField(
+        _('شرح وظایف'), blank=True,
+        help_text=_('هر وظیفه در یک خط.'))
+    members = models.TextField(
+        _('اعضا'), blank=True,
+        help_text=_('هر عضو در یک خط؛ مثلاً «دکتر … — رئیس شورا».'))
+    head = models.CharField(_('رئیس شورا'), max_length=200, blank=True)
+    icon = models.CharField(
+        _('آیکون'), max_length=50, default='fa-users-rectangle',
+        help_text=_('نام آیکون Font Awesome، بدون پیشوند fas.'))
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('شورا')
+        verbose_name_plural = _('شوراها')
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+
+        return reverse('core:council_detail', args=[self.slug])
+
+    @property
+    def duty_list(self) -> list:
+        return [line.strip() for line in self.duties.splitlines()
+                if line.strip()]
+
+    @property
+    def member_list(self) -> list:
+        return [line.strip() for line in self.members.splitlines()
+                if line.strip()]
+
+
 class DeputyVice(models.Model):
     """معاونین دانشگاه"""
     VICE_TYPE_CHOICES = [

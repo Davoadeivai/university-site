@@ -1297,3 +1297,41 @@ function appendMsg(text, type) {
         });
     }
 })();
+
+/* ── زیرمنوی تودرتوی معاونت‌ها ───────────────────────────────────
+   روی دسکتاپ هاور و فوکوس کار را می‌کنند و این کد لازم نیست؛ روی
+   موبایل هاوری در کار نیست، پس دکمهٔ فلش زیرشاخه را باز می‌کند.
+
+   بدون جاوااسکریپت هم نام هر معاونت لینک است و صفحه‌اش باز می‌شود؛
+   آنچه از دست می‌رود فقط میان‌بُر به زیرشاخه‌هاست. */
+(function () {
+    'use strict';
+
+    var toggles = document.querySelectorAll('.vice-toggle');
+    if (!toggles.length) { return; }
+
+    Array.prototype.forEach.call(toggles, function (button) {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();   // منوی مادر نباید بسته شود
+
+            var group = button.closest('.vice-group');
+            if (!group) { return; }
+
+            var opening = !group.classList.contains('is-open');
+
+            // یک زیرمنو در هر لحظه: پنج‌تای باز، همان ستون بلندی
+            // می‌شود که می‌خواستیم از آن خلاص شویم.
+            var siblings = group.parentNode.querySelectorAll('.vice-group.is-open');
+            Array.prototype.forEach.call(siblings, function (other) {
+                if (other === group) { return; }
+                other.classList.remove('is-open');
+                var mate = other.querySelector('.vice-toggle');
+                if (mate) { mate.setAttribute('aria-expanded', 'false'); }
+            });
+
+            group.classList.toggle('is-open', opening);
+            button.setAttribute('aria-expanded', String(opening));
+        });
+    });
+})();

@@ -83,8 +83,28 @@ class DeputiesMenuTests(TestCase):
         cache.clear()
 
     def _nav(self):
+        """کل منوی معاونت‌ها، با زیرمنوهای تودرتویش.
+
+        بریدن تا اولین ‎</ul>‎ دیگر کار نمی‌کند: هر معاونت زیرمنوی
+        خودش را دارد و آن زودتر بسته می‌شود، پس منو از معاونت دوم
+        به بعد بریده می‌شد.
+        """
         html = self.client.get(reverse('core:home')).content.decode()
-        return html.split('fa-users-cog')[1].split('</ul>')[0]
+        rest = html.split('nav-dd-vices')[1]
+        depth = 1
+        cursor = 0
+        while depth and cursor < len(rest):
+            opening = rest.find('<ul', cursor)
+            closing = rest.find('</ul>', cursor)
+            if closing < 0:
+                break
+            if 0 <= opening < closing:
+                depth += 1
+                cursor = opening + 3
+            else:
+                depth -= 1
+                cursor = closing + 5
+        return rest[:cursor]
 
     def test_the_menu_is_called_deputyships(self):
         """موسسه خواست «معاونین» به «معاونت‌ها» تغییر کند."""
@@ -161,8 +181,19 @@ class VicesPageTests(TestCase):
         self.assertIn('دانشیار', html)
 
     def test_units_appear_under_their_deputy(self):
-        html = self._html()
-        block = html.split('معاونت آموزشی')[1].split('vice-item')[0]
+        """فقط بدنهٔ صفحه سنجیده می‌شود، نه نوار بالا.
+
+        پیش از این جست‌وجو از اولین «معاونت آموزشی» شروع می‌شد و آن
+        در منوی بالای سایت بود، نه در صفحه — یعنی این آزمون چیزی را
+        که ادعا می‌کرد نمی‌سنجید.
+        """
+        html = self._html().split('<main')[1]
+        # از کارت معاونت آموزشی تا کارت بعدی — نشانهٔ شروع هر کارت،
+        # شمارهٔ روی ستون است، نه نام کلاسی که جای دیگری هم بیاید.
+        # maxsplit=1 لازم است: «معاونت آموزشی» در شرح خودِ معاونت هم
+        # تکرار شده، و بدون آن، بلوک همان‌جا بریده می‌شد — پیش از
+        # رسیدن به زیرمجموعه‌ها.
+        block = html.split('معاونت آموزشی', 1)[1].split('vice-marker')[0]
         self.assertIn('ادارهٔ آموزش', block)
 
     def test_a_missing_record_is_reported_to_staff_only(self):
