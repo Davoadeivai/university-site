@@ -4151,3 +4151,146 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 [data-theme="dark"] .doc-btn { background: rgba(255, 255, 255, .05); }
+
+/* ══ باکس رشته‌های پذیرش، میان آمار و تقویم ═══════════════════════
+   داوطلبی که تا اینجا آمده دنبال یک چیز است: چه رشته‌هایی هست.
+   رنگش عمداً از باکس‌های دور و برش جدا است — سبز عمیق میان آمارِ
+   عنابی و تقویمِ کاغذی — تا در میانهٔ صفحه گم نشود. */
+.admit-band { padding-block: clamp(18px, 2.4vw, 30px); }
+
+.admit-card {
+    display: flex;
+    align-items: center;
+    gap: clamp(14px, 2.4vw, 26px);
+    inline-size: 100%;
+    padding: clamp(18px, 2.6vw, 28px) clamp(20px, 3vw, 36px);
+    border: 0;
+    border-radius: var(--radius, 14px);
+    background: linear-gradient(135deg, #14453a 0%, #1f5c4a 55%, #2f7d63 100%);
+    color: #fff;
+    text-align: start;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: 0 14px 36px -20px rgba(20, 69, 58, .8);
+    transition: transform .25s, box-shadow .25s, filter .25s;
+}
+.admit-card:hover {
+    filter: brightness(1.08);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 46px -20px rgba(20, 69, 58, .9);
+}
+.admit-card:focus-visible {
+    outline: 3px solid var(--gold-light, #c9a34e);
+    outline-offset: 3px;
+}
+
+.admit-icon {
+    flex: none;
+    inline-size: clamp(48px, 6vw, 62px);
+    block-size: clamp(48px, 6vw, 62px);
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .14);
+    font-size: clamp(20px, 2.4vw, 26px);
+    color: #ffe9a8;
+}
+
+.admit-text { display: flex; flex-direction: column; gap: 5px; min-inline-size: 0; }
+
+.admit-title {
+    font-size: clamp(17px, 2.1vw, 24px);
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.admit-sub {
+    font-size: clamp(12.5px, 1.3vw, 15px);
+    line-height: 1.9;
+    color: rgba(255, 255, 255, .82);
+}
+
+.admit-go {
+    flex: none;
+    margin-inline-start: auto;
+    inline-size: 42px;
+    block-size: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .12);
+    font-size: 15px;
+    color: #ffe9a8;
+}
+
+@media (max-width: 575.98px) {
+    .admit-go { display: none; }   /* جا تنگ است؛ خودِ کارت کلیک‌پذیر است */
+}
+@media (prefers-reduced-motion: reduce) {
+    .admit-card { transition: none; }
+}
+
+/* نشان کلاس جهانی در نوار بالا — میان نشانی پشتیبانی و کلید زبان */
+.topbar-wcu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 34px;
+    block-size: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .2);
+    flex: none;
+    transition: background var(--duration-fast, 160ms) ease,
+                transform var(--duration-fast, 160ms) ease;
+}
+.topbar-wcu:hover {
+    background: rgba(255, 255, 255, .22);
+    transform: scale(1.08);
+}
+.topbar-wcu:focus-visible {
+    outline: 2px solid var(--gold-light, #c9a34e);
+    outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .topbar-wcu { transition: none; }
+}
+
+/* ── هر معاونت، رنگ خودش ─────────────────────────────────────
+   پنج زیرمنو با یک رنگ، از هم قابل تشخیص نبودند: کاربر بعد از دو
+   بار باز و بسته کردن نمی‌دانست کدام شاخه را باز کرده. حالا خط
+   کنارهٔ پنل، نقطهٔ هر ردیف و رنگ هاور، از تُن همان معاونت می‌آیند.
+
+   پنج تُن از پالت موسسه و هم‌خانواده‌هایش‌اند، نه پنج رنگ تصادفی،
+   و هر پنج روی پنل کرم بالای ۷:۱ کنتراست دارند. طلا از ‎#8a6412‎
+   تیره‌تر شد چون آنجا ۵٫۱:۱ می‌داد و از بقیه ضعیف‌تر بود. */
+.vice-hue-1 { --hue: #7a1f2e; --hue-soft: rgba(122, 31, 46, .09); }
+.vice-hue-2 { --hue: #1f5c4a; --hue-soft: rgba(31, 92, 74, .09); }
+.vice-hue-3 { --hue: #6b4d0e; --hue-soft: rgba(107, 77, 14, .10); }
+.vice-hue-4 { --hue: #4a3b8a; --hue-soft: rgba(74, 59, 138, .09); }
+.vice-hue-5 { --hue: #1a5570; --hue-soft: rgba(26, 85, 112, .09); }
+
+.vice-group .vice-sub { border-inline-start-color: var(--hue, #c9a34e); }
+.vice-group .vice-sub .nav-dd-sub::before { background: var(--hue, #8a6412); }
+.vice-group .vice-sub .nav-dd-sub:hover,
+.vice-group .vice-sub .nav-dd-sub:focus {
+    background: var(--hue-soft, rgba(122, 31, 46, .08)) !important;
+    color: var(--hue, #7a1f2e) !important;
+}
+.vice-group .vice-sub .nav-dd-sub:hover::before,
+.vice-group .vice-sub .nav-dd-sub:focus::before {
+    background: var(--hue, #7a1f2e);
+}
+.vice-group .vice-toggle { color: var(--hue, #c9a34e); }
+
+/* در حالت تیره رنگ‌های سیر خوانده نمی‌شوند؛ روشن‌ترشان می‌کنیم */
+[data-theme="dark"] .vice-hue-1 { --hue: #f2a0ab; }
+[data-theme="dark"] .vice-hue-2 { --hue: #6fd1b0; }
+[data-theme="dark"] .vice-hue-3 { --hue: #e5c77a; }
+[data-theme="dark"] .vice-hue-4 { --hue: #b0a4ef; }
+[data-theme="dark"] .vice-hue-5 { --hue: #7fc4e8; }
+[data-theme="dark"] .vice-group .vice-sub .nav-dd-sub:hover,
+[data-theme="dark"] .vice-group .vice-sub .nav-dd-sub:focus {
+    background: rgba(255, 255, 255, .08) !important;
+    color: var(--hue) !important;
+}

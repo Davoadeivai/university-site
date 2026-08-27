@@ -41,6 +41,17 @@ class SiteSettings(models.Model):
         _('نام دانشگاه (انگلیسی)'), max_length=200,
         default='Allameh Amini Higher Education Institute',
     )
+    world_class_url = models.URLField(
+        _('نشانی سایت کلاس جهانی'), blank=True,
+        default='https://WCM-Society.Com',
+        help_text=_(
+            'نشان کلاس جهانی در نوار بالای سایت به این نشانی می‌رود.'))
+    admission_poster = models.ImageField(
+        _('پوستر رشته‌های پذیرش دانشجو'),
+        upload_to='site/admission/', blank=True, null=True,
+        help_text=_(
+            'روی صفحهٔ اصلی یک باکس با همین عنوان می‌آید و با کلیک، '
+            'این تصویر تمام‌صفحه نشان داده می‌شود.'))
     faculties_pdf = models.FileField(
         _('فایل رشته‌های دانشکده‌ها (PDF)'),
         upload_to='site/faculties/', blank=True, null=True,

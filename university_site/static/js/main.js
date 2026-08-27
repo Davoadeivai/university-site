@@ -1109,6 +1109,16 @@ function appendMsg(text, type) {
         var target = e.target.closest ? e.target.closest('[data-zoomable]') : null;
         if (target && target.tagName === 'IMG') { show(target); return; }
 
+        // دکمه‌ای که خودش تصویر نیست و نشانی تصویر را در همان صفت
+        // دارد — مثل باکس «رشته‌های پذیرش دانشجو» روی صفحهٔ اصلی.
+        if (target) {
+            var href = target.getAttribute('data-zoomable');
+            if (href) {
+                show({ src: href, alt: target.textContent.trim() });
+                return;
+            }
+        }
+
         var opener = e.target.closest ? e.target.closest('[data-zoom-open]') : null;
         if (opener) {
             var picture = document.querySelector(

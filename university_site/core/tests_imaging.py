@@ -243,3 +243,92 @@ class SlidePriorityTests(TestCase):
     def test_decoding_does_not_block_the_page(self):
         for slide in self._slides():
             self.assertIn('decoding="async"', slide)
+
+
+@override_settings(MEDIA_ROOT=MEDIA)
+class UploadThroughTheAdminTests(TestCase):
+    """افزودن اسلاید در پنل، خطای ۵۰۰ می‌داد.
+
+    آزمون‌های پیشین همیشه ‎field.save(name, ContentFile(...))‎ را صدا
+    می‌زدند، که فایل را همان لحظه روی دیسک می‌نشاند. مسیری که پنل
+    می‌رود فرق دارد: فایل آپلودشده هنوز جایی ننشسته و جنگو آن را
+    داخل ‎Model.save()‎ می‌نویسد — بعد از کدِ کوچک‌کردن. بستن فایل
+    در آن لحظه، همان نوشتن را با «I/O operation on closed file»
+    می‌شکست.
+    """
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(MEDIA, ignore_errors=True)
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+
+        self.admin = get_user_model().objects.create_superuser(
+            username='modir', email='m@aab.ac.ir', password='x')
+        self.client.force_login(self.admin)
+
+    @staticmethod
+    def _upload(name='slide.jpg', width=3000, height=2000):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        return SimpleUploadedFile(name, photo(width, height), 'image/jpeg')
+
+    def test_adding_a_slide_in_the_panel_does_not_error(self):
+        response = self.client.post(
+            '/admin/core/slider/add/',
+            {'title': 'اسلاید تازه', 'subtitle': '', 'order': 1,
+             'is_active': 'on', 'image': self._upload(),
+             'link_text': '', 'link': '', 'btn2_text': '', 'btn2_url': '',
+             'badge_text': '', 'badge_color': 'primary', 'badge_icon': ''},
+            follow=True)
+        self.assertNotEqual(response.status_code, 500)
+        self.assertTrue(Slider.objects.filter(title='اسلاید تازه').exists())
+
+    def test_the_uploaded_slide_is_shrunk(self):
+        self.client.post(
+            '/admin/core/slider/add/',
+            {'title': 'اسلاید بزرگ', 'subtitle': '', 'order': 2,
+             'is_active': 'on', 'image': self._upload(),
+             'link_text': '', 'link': '', 'btn2_text': '', 'btn2_url': '',
+             'badge_text': '', 'badge_color': 'primary', 'badge_icon': ''},
+            follow=True)
+        slider = Slider.objects.get(title='اسلاید بزرگ')
+        self.assertEqual(slider.image.width, 2000)
+
+    def test_a_fresh_upload_survives_a_plain_model_save(self):
+        """همان مسیر، بدون پنل — مبادا فقط فرم را درست کرده باشیم."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        slider = Slider(title='مستقیم', order=3, is_active=True)
+        slider.image = SimpleUploadedFile(
+            'direct.jpg', photo(2600, 1700), 'image/jpeg')
+        slider.save()
+        slider.refresh_from_db()
+        self.assertTrue(slider.image.name)
+        self.assertLessEqual(slider.image.width, 2000)
+
+    def test_editing_an_existing_slide_still_works(self):
+        """مسیر دوم: فایلی که از قبل روی دیسک نشسته."""
+        slider = Slider(title='قدیمی', order=4, is_active=True)
+        slider.image.save('old.jpg', ContentFile(photo(2600, 1700)),
+                          save=False)
+        slider.save()
+        before = slider.image.name
+
+        slider.title = 'ویرایش‌شده'
+        slider.save()
+        slider.refresh_from_db()
+        self.assertEqual(slider.title, 'ویرایش‌شده')
+        self.assertEqual(slider.image.name, before)
+
+    def test_a_small_upload_is_not_mangled(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        raw = photo(600, 400)
+        slider = Slider(title='کوچک', order=5, is_active=True)
+        slider.image = SimpleUploadedFile('small.jpg', raw, 'image/jpeg')
+        slider.save()
+        slider.refresh_from_db()
+        self.assertEqual(slider.image.width, 600)

@@ -108,6 +108,22 @@
                     {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" target="_blank" rel="noopener noreferrer" aria-label="یوتیوب"><i class="fab fa-youtube"></i></a>{% endif %}
                     {% endif %}
                 </div>
+                {% comment %}
+                نشان کلاس جهانی، میان نشانی پشتیبانی و کلید زبان.
+                لینک بیرونی است، پس ‎rel="noopener"‎ لازم دارد — بدون
+                آن صفحهٔ مقصد می‌تواند به تب ما دست بزند.
+                {% endcomment %}
+                {% if site_settings.world_class_logo %}
+                <a class="topbar-wcu"
+                   href="{{ site_settings.world_class_url|default:'https://WCM-Society.Com' }}"
+                   target="_blank" rel="noopener noreferrer"
+                   title="سایت دانشگاه‌ها و مؤسسات در کلاس جهانی">
+                    <img src="{{ site_settings.world_class_logo.url }}"
+                         alt="کلاس جهانی" width="30" height="30"
+                         style="width:30px;height:30px;object-fit:contain;">
+                </a>
+                {% endif %}
+
                 <div class="lang-switch" aria-hidden="true" title="نسخه چندزبانه به‌زودی">
                     <span class="btn btn-sm btn-outline-light disabled">FA</span>
                 </div>
@@ -274,7 +290,7 @@
                         جاوااسکریپت هم هر پنج صفحه در دسترس‌اند.
                         {% endcomment %}
                         {% for row in nav_vices %}
-                        <li class="vice-group{% if row.children %} has-sub{% endif %}">
+                        <li class="vice-group vice-hue-{{ forloop.counter }}{% if row.children %} has-sub{% endif %}">
                             <div class="vice-lead-row">
                                 <a class="dropdown-item nav-dd-item vice-lead" href="{{ row.url }}">
                                     <span class="vice-num" aria-hidden="true">{{ row.number }}</span>

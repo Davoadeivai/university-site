@@ -74,6 +74,14 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
         logger.warning('Pillow نصب نیست — تصویرها کوچک نمی‌شوند.')
         return False
 
+    # آیا این فایل از قبل روی استوریج نشسته، یا تازه آپلود شده؟
+    #
+    # فرقش سرنوشت‌ساز است: فایل تازه‌آپلودشده را جنگو بعداً — داخل
+    # ‎Model.save()‎ و در ‎FileField.pre_save‎ — روی دیسک می‌نویسد.
+    # اگر اینجا ببندیمش، آن نوشتن با «I/O operation on closed file»
+    # می‌شکند و افزودن اسلاید در پنل خطای ۵۰۰ می‌دهد.
+    committed = getattr(field_file, '_committed', True)
+
     try:
         field_file.open('rb')
         original = field_file.read()
@@ -82,13 +90,21 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
         logger.warning('عکس خوانده نشد (%s): %s', name, exc)
         return False
     finally:
-        # بستنِ صریح لازم است: پایین‌تر روی همین فایل می‌نویسیم، و
-        # ویندوز اجازهٔ پاک‌کردن فایلِ باز را نمی‌دهد. روی لینوکس هم
-        # رها کردنش یعنی نشت توصیف‌گر فایل در حلقه‌های طولانی.
-        try:
-            field_file.close()
-        except Exception:                          # noqa: BLE001
-            pass
+        if committed:
+            # پایین‌تر روی همین فایل می‌نویسیم و ویندوز اجازهٔ
+            # پاک‌کردن فایلِ باز را نمی‌دهد؛ روی لینوکس هم رها
+            # کردنش یعنی نشت توصیف‌گر در حلقه‌های طولانی.
+            try:
+                field_file.close()
+            except Exception:                      # noqa: BLE001
+                pass
+        else:
+            # آپلود تازه: بستن ممنوع، فقط سر جای اول برگردان تا
+            # ذخیرهٔ بعدی جنگو بتواند از ابتدا بخواندش.
+            try:
+                field_file.seek(0)
+            except Exception:                      # noqa: BLE001
+                pass
 
     try:
         image = Image.open(io.BytesIO(original))
@@ -134,6 +150,17 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
         return False
 
     from django.core.files.base import ContentFile
+
+    stem_only = name.rsplit('/', 1)[-1]
+    stem_only = (stem_only[:stem_only.rfind('.')]
+                 if '.' in stem_only else stem_only)
+
+    if not committed:
+        # آپلود تازه: هنوز چیزی روی دیسک نیست، پس بازنویسیِ درجا
+        # معنا ندارد. همین‌جا نسخهٔ کوچک ذخیره می‌شود و جنگو بعداً
+        # می‌بیند که فایل نشسته و دوباره نمی‌نویسدش.
+        field_file.save(stem_only + suffix, ContentFile(shrunk), save=False)
+        return True
 
     # جای همان فایل نوشته می‌شود، نه کنارش.
     #

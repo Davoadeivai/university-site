@@ -257,10 +257,13 @@ def seed_content() -> None:
     run('set_faculties')
     # رشته‌ها را با سند رسمی «رشته‌های دانشکده‌ها» هم‌خوان می‌کند
     run('set_majors_from_document')
+    # ترتیب گروه‌ها در منو، طبق خواستهٔ موسسه
+    run('set_group_order')
     # چهار شورای چارت سازمانی
     run('seed_councils')
-    # دکمهٔ «رشته‌های پذیرش دانشجو» روی اسلاید اول
-    run('set_slide_cta')
+    # دکمهٔ روی اسلاید برداشته شد — موسسه خواست به‌جایش باکسی روی
+    # صفحهٔ اصلی باشد. دستور می‌ماند تا اگر روزی خواستند برگردد.
+    run('set_slide_cta', '--clear')
     run('seed_president_cv')
     run('prefix_doctor_titles')
     run('set_graduate_groups')

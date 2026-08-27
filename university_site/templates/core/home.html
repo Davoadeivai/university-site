@@ -698,6 +698,38 @@
 {% endif %}
 {% endwith %}
 
+{% comment %}
+پوستر رشته‌های پذیرش — میان آمار و تقویم.
+
+داوطلبی که تا اینجا آمده، تصمیمش را تقریباً گرفته و دنبال یک چیز
+است: چه رشته‌هایی هست. رنگش عمداً از باکس‌های دور و برش جدا است تا
+میان آمار عنابی و تقویم کاغذی گم نشود.
+
+تصویر با همان نمایشگر تمام‌صفحه‌ای باز می‌شود که چارت سازمانی از آن
+استفاده می‌کند — بدون خروج از سایت.
+{% endcomment %}
+{% if site_settings.admission_poster %}
+<section class="section admit-band">
+    <div class="container">
+        <button type="button" class="admit-card"
+                data-zoomable="{{ site_settings.admission_poster.url }}">
+            <span class="admit-icon" aria-hidden="true">
+                <i class="fas fa-graduation-cap"></i>
+            </span>
+            <span class="admit-text">
+                <span class="admit-title">رشته‌های پذیرش دانشجو</span>
+                <span class="admit-sub">
+                    برای دیدن فهرست کامل رشته‌ها و مقاطع، اینجا بزنید
+                </span>
+            </span>
+            <span class="admit-go" aria-hidden="true">
+                <i class="fas fa-up-right-and-down-left-from-center"></i>
+            </span>
+        </button>
+    </div>
+</section>
+{% endif %}
+
 <!-- ===== تقویم آموزشی — مراحل نیمسال با وضعیت زنده ===== -->
 {% include 'core/_academic_timeline.html' %}
 

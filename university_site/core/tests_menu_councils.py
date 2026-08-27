@@ -82,10 +82,20 @@ class CouncilMenuTests(TestCase):
         for name in ('شورای موسسه', 'شورای فرهنگی', 'کمیته انضباطی'):
             self.assertIn(name, nav)
 
+    def _councils_menu(self):
+        """فقط زیرمنوی شوراها.
+
+        نام بعضی شوراها در زیرمنوی معاونت دانشجویی هم می‌آید — چارت
+        سازمانی آن‌ها را همان‌جا گذاشته — پس جست‌وجو در کل نوار،
+        غیرفعال‌شدنشان را نشان نمی‌دهد.
+        """
+        nav = self._nav()
+        return nav.split(reverse('core:councils'))[1].split('</ul>')[0]
+
     def test_an_inactive_council_is_left_out(self):
         Council.objects.filter(slug='c2').update(is_active=False)
         cache.clear()
-        self.assertNotIn('شورای فرهنگی', self._nav())
+        self.assertNotIn('شورای فرهنگی', self._councils_menu())
 
     def test_no_councils_still_leaves_a_usable_item(self):
         Council.objects.all().delete()
@@ -279,6 +289,52 @@ class NestedDeputyMenuTests(TestCase):
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
         self.assertIn('.vice-sub .nav-dd-sub:hover', css)
+
+    def test_each_deputy_gets_its_own_hue(self):
+        """پنج زیرمنو با یک رنگ، از هم قابل تشخیص نبودند."""
+        import re
+
+        nav = self._nav()
+        hues = set(re.findall(r'vice-hue-[0-9]', nav))
+        self.assertEqual(len(hues), 5)
+
+    def test_every_hue_stays_legible_on_the_panel(self):
+        """رنگِ متمایز نباید به بهای خوانایی تمام شود."""
+        import re
+
+        def luminance(value):
+            value = value.lstrip('#')
+            parts = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+            parts = [c / 12.92 if c <= .03928 else ((c + .055) / 1.055) ** 2.4
+                     for c in parts]
+            return .2126 * parts[0] + .7152 * parts[1] + .0722 * parts[2]
+
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        block = css.split('.vice-hue-1 {')[0][-200:] + css.split(
+            '/* ── هر معاونت، رنگ خودش')[1][:900]
+        colours = re.findall(r'--hue: (#[0-9a-f]{6})', block)
+        self.assertGreaterEqual(len(colours), 5)
+
+        paper = luminance('#fbf8f4')
+        for colour in colours[:5]:
+            ink = luminance(colour)
+            ratio = (max(ink, paper) + .05) / (min(ink, paper) + .05)
+            self.assertGreater(ratio, 6.5, colour)
+
+    def test_the_deputies_carry_the_units_from_the_chart(self):
+        """چارت سازمانی زیرمجموعه‌های هر معاونت را تعیین می‌کند."""
+        from core.vices import STATIC_UNITS
+
+        for key in ('education', 'research', 'admin_finance',
+                    'student', 'construction'):
+            self.assertIn(key, STATIC_UNITS)
+            self.assertGreater(len(STATIC_UNITS[key]), 1, key)
+
+    def test_a_unit_without_a_page_is_plain_text_not_a_dead_link(self):
+        """لینکی که به ۴۰۴ برسد بدتر از نبودن لینک است."""
+        nav = self._nav()
+        self.assertIn('is-plain', nav)
 
     def test_desktop_opens_on_focus_not_only_hover(self):
         """کاربر صفحه‌کلید با هاورِ تنها هیچ‌وقت به زیرشاخه نمی‌رسد."""
