@@ -567,3 +567,48 @@ else:
             'LOCATION': 'university-otp',
         }
     }
+
+
+# ══ امنیت انتقال ═══════════════════════════════════════════════════
+#
+# سایت فقط روی HTTPS سرو می‌شود — وب‌سرور خودش http را با 301 به
+# https می‌فرستد. با این حال هیچ‌کدام از این تنظیم‌ها گذاشته نشده
+# بود، یعنی کوکی نشست و کوکی CSRF روی درخواست‌های http هم فرستاده
+# می‌شدند و در مسیر قابل شنود بودند.
+#
+# همه فقط وقتی روشن می‌شوند که DEBUG خاموش است، تا توسعهٔ محلی روی
+# http بی‌دردسر بماند.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    # جاوااسکریپت این پروژه توکن CSRF را از کوکی نمی‌خواند؛ از
+    # {% csrf_token %} داخل فرم می‌آید. پس بستنش چیزی را نمی‌شکند.
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+
+# پشت Passenger، خودِ جنگو نمی‌داند درخواست از https آمده؛ بدون این
+# سرآیند هر بررسی امنیتی فکر می‌کند اتصال ناامن است.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# ریدایرکت به https عمداً پیش‌فرض خاموش است.
+#
+# وب‌سرور همین کار را از قبل انجام می‌دهد، و اگر روزی سرآیند بالا
+# نرسد، روشن‌بودن این گزینه یک حلقهٔ بی‌پایان ریدایرکت می‌سازد و کل
+# سایت را می‌خواباند. با SECURE_SSL_REDIRECT=True در .env روشن شود.
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+
+# HSTS به مرورگر می‌گوید تا مدتی هرگز سراغ http این دامنه نرود.
+#
+# پیش‌فرض صفر (خاموش) است چون برگشت‌پذیر نیست: اگر گواهی منقضی شود
+# یا دامنه جابه‌جا شود، مرورگرهایی که این سرآیند را دیده‌اند تا پایان
+# مدت راه دیگری ندارند. وقتی از پایداری گواهی مطمئن شدید، در .env
+# با HSTS_SECONDS=31536000 روشنش کنید.
+SECURE_HSTS_SECONDS = config('HSTS_SECONDS', default=0, cast=int)
+if SECURE_HSTS_SECONDS:
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+        'HSTS_SUBDOMAINS', default=False, cast=bool)
+    SECURE_HSTS_PRELOAD = False

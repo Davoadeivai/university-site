@@ -244,6 +244,9 @@ def seed_content() -> None:
     run('set_org_chart')
     run('set_contact_email', '--replace')
     run('set_president_links')
+    # فایل‌هایی که در دیتابیس‌اند و روی سرور نیستند — گزارش، نه اصلاح:
+    # دیپلوی عمداً media را دست نمی‌زند تا آپلودهای پنل پاک نشوند
+    run('check_media_files')
     # عکس‌های بادکرده — چهار اسلاید صفحهٔ اصلی روی سرور ۲۲٫۵ مگابایت
     # بودند و همان‌ها صفحه را روی خط کند سفید نگه می‌داشتند
     run('shrink_media')

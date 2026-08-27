@@ -56,25 +56,51 @@
                     <span class="badge bg-primary rounded-pill">{{ group.items|length }}</span>
                 </h2>
 
+                {% comment %}
+                کارتی که فایلش روی سرور نیست، لینک دانلود نمی‌گیرد —
+                پیش از این کلیک روی آن به صفحهٔ ۴۰۴ می‌رسید.
+                {% endcomment %}
                 <div class="row g-3">
-                    {% for doc in group.items %}
+                    {% for item in group.items %}
                     <div class="col-12 col-md-6 col-xl-4">
-                        <a href="{% url 'directory:curriculum_download' doc.pk %}"
+                        {% if item.ready %}
+                        <a href="{% url 'directory:curriculum_download' item.doc.pk %}"
                            class="uni-card p-3 h-100 d-flex gap-3 align-items-center text-decoration-none cur-card">
                             <span class="cur-icon" aria-hidden="true"><i class="fas fa-file-pdf"></i></span>
                             <span class="min-w-0 flex-grow-1">
-                                <span class="d-block fw-semibold cur-title">{{ doc.title }}</span>
+                                <span class="d-block fw-semibold cur-title">{{ item.doc.title }}</span>
                                 <span class="d-block text-muted small mt-1">
-                                    {% if doc.approved_on %}مصوب {{ doc.approved_on }}{% endif %}
-                                    {% if doc.approved_on and doc.size_display %} · {% endif %}
-                                    {{ doc.size_display }}
+                                    {% if item.doc.approved_on %}مصوب {{ item.doc.approved_on }}{% endif %}
+                                    {% if item.doc.approved_on and item.doc.size_display %} · {% endif %}
+                                    {{ item.doc.size_display }}
                                 </span>
                             </span>
                             <i class="fas fa-download cur-dl" aria-hidden="true"></i>
                         </a>
+                        {% else %}
+                        <div class="uni-card p-3 h-100 d-flex gap-3 align-items-center cur-card is-pending">
+                            <span class="cur-icon" aria-hidden="true"><i class="fas fa-file-circle-question"></i></span>
+                            <span class="min-w-0 flex-grow-1">
+                                <span class="d-block fw-semibold cur-title">{{ item.doc.title }}</span>
+                                <span class="d-block text-muted small mt-1">فایل هنوز بارگذاری نشده</span>
+                            </span>
+                        </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
+
+                {% if group.missing and user.is_staff %}
+                {% comment %}
+                فقط برای مدیر: بازدیدکننده کاری با این عدد ندارد، ولی
+                کسی که می‌تواند فایل را بگذارد باید بداند چندتا مانده.
+                {% endcomment %}
+                <p class="small text-muted mt-2">
+                    <i class="fas fa-circle-info"></i>
+                    فایل {{ group.missing }} سند از این مقطع روی سرور نیست —
+                    <a href="/admin/directory/curriculumdocument/">بارگذاری در پنل</a>
+                </p>
+                {% endif %}
             </div>
             {% endfor %}
         {% else %}

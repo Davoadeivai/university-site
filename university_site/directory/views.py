@@ -68,11 +68,29 @@ def curriculum_list(request):
         .annotate(n=Count('id'))
     )
 
+    # آیا فایل واقعاً روی دیسک هست؟
+    #
+    # هر ۷۵ سند در دیتابیس نام فایل دارند ولی فایلشان روی سرور نیست،
+    # و کارت هرکدام یک لینک دانلود بود: بازدیدکننده کلیک می‌کرد و به
+    # صفحهٔ ۴۰۴ می‌رسید. کارتی که فایلش نیست، دیگر لینک نمی‌شود.
+    #
+    # یک stat به‌ازای هر سند است، نه یک کوئری؛ برای این تعداد ناچیز
+    # است و جای درستش همین‌جاست تا قالب تصمیم نگیرد.
+    def has_file(doc):
+        if not doc.file:
+            return False
+        try:
+            return doc.file.storage.exists(doc.file.name)
+        except (OSError, ValueError, NotImplementedError):
+            return False
+
     grouped = []
     for key, label in CurriculumDocument.LEVEL_CHOICES:
-        items = [d for d in docs if d.level == key]
+        items = [{'doc': d, 'ready': has_file(d)}
+                 for d in docs if d.level == key]
         if items:
-            grouped.append({'key': key, 'label': label, 'items': items})
+            grouped.append({'key': key, 'label': label, 'items': items,
+                            'missing': sum(1 for i in items if not i['ready'])})
 
     # فقط مقطع‌هایی که واقعاً سندی دارند دکمهٔ فیلتر می‌گیرند — وگرنه
     # کاربر روی «کاردانی ناپیوسته» می‌زند و به صفحهٔ خالی می‌رسد.

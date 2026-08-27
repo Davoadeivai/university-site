@@ -4247,3 +4247,10 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     .leaves { padding-inline-start: 11px; }
     .bough-tally { margin-inline-start: 0; }
 }
+
+/* سند سرفصلی که فایلش روی سرور نیست — کارت هست، لینک نیست */
+.cur-card.is-pending {
+    opacity: .62;
+    border-style: dashed;
+    cursor: default;
+}

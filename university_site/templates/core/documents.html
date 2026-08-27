@@ -84,9 +84,9 @@
                     <h5 class="fw-bold mb-2" style="font-size:15px;">{{ doc.title }}</h5>
                     {% if doc.description %}<p class="text-muted flex-grow-1 mb-3" style="font-size:13px;">{{ doc.description|truncatewords:25 }}</p>{% else %}<div class="flex-grow-1"></div>{% endif %}
                     <div class="d-flex flex-wrap gap-2 align-items-center" style="font-size:12px;">
-                        {% if doc.file %}<span class="text-danger"><i class="fas fa-file-pdf me-1"></i>PDF</span>{% endif %}
-                        {% if doc.word_file %}<span class="text-primary"><i class="fas fa-file-word me-1"></i>Word</span>{% endif %}
-                        {% if not doc.file and not doc.word_file and doc.external_url %}<span class="text-muted"><i class="fas fa-link me-1"></i>لینک</span>{% endif %}
+                        {% if doc.has_file %}<span class="text-danger"><i class="fas fa-file-pdf me-1"></i>PDF</span>{% endif %}
+                        {% if doc.has_word %}<span class="text-primary"><i class="fas fa-file-word me-1"></i>Word</span>{% endif %}
+                        {% if not doc.has_file and not doc.has_word and doc.external_url %}<span class="text-muted"><i class="fas fa-link me-1"></i>لینک</span>{% endif %}
                         <span class="text-primary ms-auto"><i class="fas fa-eye me-1"></i> مشاهده در سایت</span>
                     </div>
                 </a>

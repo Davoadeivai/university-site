@@ -76,7 +76,14 @@ def home(request):
     upcoming_events = Event.objects.filter(
         is_active=True, date__gte=timezone.now().date()
     ).order_by('date')[:4]
-    departments = Department.objects.filter(is_active=True)[:6]
+    # بدون ترتیب صریح، به ترتیب پیش‌فرض مدل تکیه می‌کرد و با صفحهٔ
+    # دانشکده‌ها هم‌خوان نبود؛ حالا هر دو یک ترتیب دارند.
+    #
+    # سقف هم برداشته شد: با ۶ تا، دانشکدهٔ هفتم در منو می‌آمد و در
+    # صفحهٔ اصلی بی‌صدا غایب می‌شد — همان دامی که اسلاید ششم در آن
+    # افتاده بود.
+    departments = Department.objects.filter(is_active=True).order_by(
+        'order', 'name')
     calendar_items = AcademicCalendar.objects.filter(
         start_date__gte=timezone.now().date()
     ).order_by('start_date')[:5]
@@ -330,8 +337,11 @@ def document_detail(request, pk):
     """صفحه مشاهده آیین‌نامه/فرم — اولویت با نمایش داخل سایت، سپس انتخاب PDF یا Word."""
     doc = get_object_or_404(DownloadableDocument, pk=pk, is_active=True)
     fmt = (request.GET.get('view') or '').lower()
-    has_pdf = bool(doc.file)
-    has_word = bool(doc.word_file)
+    # bool(doc.file) فقط می‌گوید نامی در دیتابیس هست، نه اینکه فایل
+    # روی دیسک باشد. صفحه با همان، iframe و دکمهٔ دانلود می‌ساخت و
+    # هر دو به ۴۰۴ می‌رسیدند.
+    has_pdf = doc.has_file
+    has_word = doc.has_word
     has_external = bool(doc.external_url) and not has_pdf and not has_word
 
     if fmt not in ('pdf', 'word', 'link'):

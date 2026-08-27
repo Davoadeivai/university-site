@@ -7,6 +7,7 @@ from django.core.validators import (FileExtensionValidator,
 from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.translation import gettext_lazy as _
+from core.filecheck import file_present
 from core.imaging import ShrinkImagesMixin
 
 
@@ -1094,8 +1095,23 @@ class DownloadableDocument(models.Model):
         return self.title
 
     @property
+    def has_file(self) -> bool:
+        """PDF واقعاً روی سرور هست؟
+
+        نام فایل در دیتابیس بودن کافی نیست — ده‌ها سند روی سایت زنده
+        نام داشتند و فایلشان نبود، و دکمهٔ دانلودشان به ۴۰۴ می‌رسید.
+        """
+        return file_present(self.file)
+
+    @property
+    def has_word(self) -> bool:
+        return file_present(self.word_file)
+
+    @property
     def download_url(self):
-        if self.file:
+        # فایلی که روی دیسک نیست، نشانی دانلود هم ندارد؛ اگر لینک
+        # بیرونی داشته باشد، همان بهتر از یک ۴۰۴ است.
+        if self.has_file:
             return self.file.url
         return self.external_url or ''
 
