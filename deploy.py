@@ -259,6 +259,8 @@ def seed_content() -> None:
     run('set_majors_from_document')
     # چهار شورای چارت سازمانی
     run('seed_councils')
+    # دکمهٔ «رشته‌های پذیرش دانشجو» روی اسلاید اول
+    run('set_slide_cta')
     run('seed_president_cv')
     run('prefix_doctor_titles')
     run('set_graduate_groups')

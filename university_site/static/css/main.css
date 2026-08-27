@@ -4428,3 +4428,39 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 [data-theme="dark"] .council-card { background: var(--bg-white); }
 [data-theme="dark"] .council-side li a { color: #dfe9f3; }
+
+/* ── نوار بالای فهرست رشته‌ها: فیلتر در یک سو، برداشتن در سوی دیگر ── */
+.majors-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.majors-take { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.majors-take-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border, #e8dcd0);
+    background: var(--bg-white, #fff);
+    color: var(--primary, #7a1f2e);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.majors-take-btn:hover {
+    border-color: var(--primary, #7a1f2e);
+    background: rgba(122, 31, 46, .06);
+    color: var(--primary-deep, #4e1220);
+}
+.majors-take-btn:focus-visible {
+    outline: 2px solid var(--secondary, #a67c1f);
+    outline-offset: 2px;
+}
+[data-theme="dark"] .majors-take-btn { background: rgba(255, 255, 255, .05); }

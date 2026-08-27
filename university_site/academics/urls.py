@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import majors_export, views
 
 app_name = 'academics'
 
@@ -7,6 +7,8 @@ urlpatterns = [
     path('دانشکده‌ها/', views.departments_list, name='departments'),
     path('دانشکده‌ها/<path:slug>/', views.department_detail, name='department_detail'),
     path('رشته‌ها/', views.majors_list, name='majors'),
+    path('رشته‌ها/خروجی-اکسل/', majors_export.majors_excel, name='majors_excel'),
+    path('رشته‌ها/نسخه-چاپی/', majors_export.majors_print, name='majors_print'),
     path('رشته‌ها/<path:slug>/', views.major_detail, name='major_detail'),
     path('تقویم-آموزشی/', views.academic_calendar, name='calendar'),
     path('پنل-دانشجویی/', views.students_panel, name='students_panel'),

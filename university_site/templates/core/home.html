@@ -155,6 +155,49 @@
 .uni-hero-arrow.prev { left:  20px; }
 
 /* ─── dots ─── */
+/* ─── تنها دکمهٔ روی اسلاید ───────────────────────────────────
+   اسلایدها بی‌نوشته‌اند؛ این فقط وقتی می‌آید که مدیر «متن دکمه» و
+   «لینک» را پر کرده باشد. پایین و وسط می‌نشیند تا نه صورت کسی در
+   عکس را بپوشاند و نه با فلش‌های ناوبری تصادف کند. */
+.slide-cta {
+    position: absolute;
+    inset-block-end: 64px;
+    inset-inline: 0;
+    z-index: 9;
+    inline-size: fit-content;
+    margin-inline: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 30px;
+    border-radius: 999px;
+    background: rgba(122, 31, 46, .92);
+    border: 1px solid rgba(255, 255, 255, .28);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, .55);
+    transition: background .25s, transform .25s, box-shadow .25s;
+}
+.slide-cta:hover {
+    background: rgba(122, 31, 46, 1);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 38px -14px rgba(0, 0, 0, .6);
+}
+.slide-cta:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.slide-cta i { font-size: 13px; }
+
+@media (max-width: 575.98px) {
+    .slide-cta { inset-block-end: 52px; padding: 11px 22px; font-size: 13.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .slide-cta { transition: none; }
+}
+
 /* ─── نوارهای پیشرفت، به‌جای نقطه‌ها ───────────────────────────
    هفت نقطهٔ کوچک نه می‌گفتند چندتاست و نه اینکه چقدر تا بعدی مانده.
    هر اسلاید یک خط دارد؛ خطِ فعال در طول زمانِ نمایش پر می‌شود، پس
@@ -315,6 +358,21 @@
                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                  fetchpriority="{% if forloop.first %}high{% else %}low{% endif %}"
                  decoding="async">
+
+            {% comment %}
+            تنها نوشتهٔ روی اسلاید، و فقط وقتی مدیر پرش کند.
+
+            موسسه خواسته بود اسلایدها بی‌نوشته باشند و همان‌طور
+            می‌مانند؛ این یک دکمهٔ راهنماست، نه عنوان و زیرعنوانی که
+            برداشته شد. اسلایدی که «متن دکمه» و «لینک» ندارد، هیچ
+            چیز روی تصویرش نمی‌آید.
+            {% endcomment %}
+            {% if slide.link_text and slide.link %}
+            <a class="slide-cta" href="{{ slide.link }}">
+                <span>{{ slide.link_text }}</span>
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            </a>
+            {% endif %}
             {% else %}
             <img class="slide-bg"
                  src="{% static 'images/hero-campus-01.jpg' %}"

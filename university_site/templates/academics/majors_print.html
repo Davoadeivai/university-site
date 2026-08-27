@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% comment %}
+نسخهٔ چاپی فهرست رشته‌ها.
+
+داوطلب با Ctrl+P خودِ مرورگر این را PDF می‌کند؛ نیازی به کتابخانهٔ
+تولید PDF روی سرور نیست. هرچه به کار چاپ نمی‌آید — نوار بالا،
+فوتر، دکمه‌ها — در ‎@media print‎ برداشته می‌شود.
+{% endcomment %}
+
+{% block content %}
+<style>
+.print-sheet { max-inline-size: 900px; margin-inline: auto; }
+
+.print-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-block-end: 22px;
+}
+
+.print-title { margin: 0; font-size: clamp(19px, 2.4vw, 26px); font-weight: 800; }
+.print-sub { margin: 4px 0 0; font-size: 13px; color: var(--text-muted, #6b5b5e); }
+
+.print-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.print-btn {
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--border, #e8dcd0);
+    background: var(--bg-white, #fff);
+    color: var(--primary, #7a1f2e);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+}
+.print-btn:hover { border-color: var(--primary, #7a1f2e); }
+
+/* table-responsive خودِ بوت‌استرپ اسکرول افقی می‌دهد؛ این فقط
+   مطمئن می‌شود که روی کاغذ اسکرولی در کار نباشد. */
+.print-table-wrap { overflow-x: auto; }
+@media print { .print-table-wrap { overflow: visible; } }
+
+.print-table {
+    inline-size: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+.print-table th, .print-table td {
+    padding: 9px 12px;
+    border: 1px solid var(--border, #e8dcd0);
+    text-align: start;
+}
+.print-table thead th {
+    background: var(--primary, #7a1f2e);
+    color: #fff;
+    font-weight: 700;
+}
+.print-table tbody tr:nth-child(even) { background: var(--bg-light, #faf6f1); }
+.print-table td:first-child { text-align: center; font-variant-numeric: tabular-nums; }
+
+@media print {
+    /* فقط جدول روی کاغذ می‌رود */
+    header, footer, .print-actions, .breadcrumb, nav { display: none !important; }
+    .main-content { padding: 0 !important; }
+    .print-table thead { display: table-header-group; }  /* سرستون در هر صفحه */
+    .print-table tbody tr { break-inside: avoid; }
+    .print-table thead th { background: #7a1f2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a[href]::after { content: none !important; }         /* نشانی‌ها روی کاغذ نیایند */
+}
+</style>
+
+<section class="section">
+    <div class="container print-sheet">
+
+        <div class="print-head">
+            <div>
+                <h1 class="print-title">رشته‌های پذیرش دانشجو</h1>
+                <p class="print-sub">
+                    موسسه آموزش عالی علامه امینی — {{ rows|length }} رشته
+                </p>
+            </div>
+            <div class="print-actions">
+                <button type="button" class="print-btn" onclick="window.print()">
+                    <i class="fas fa-print" aria-hidden="true"></i> چاپ یا ذخیره PDF
+                </button>
+                <a class="print-btn" href="{% url 'academics:majors_excel' %}">
+                    <i class="fas fa-file-excel" aria-hidden="true"></i> دریافت اکسل
+                </a>
+                <a class="print-btn" href="{% url 'academics:majors' %}">
+                    بازگشت به فهرست
+                </a>
+            </div>
+        </div>
+
+        <div class="print-table-wrap table-responsive">
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>دانشکده</th>
+                        <th>گروه آموزشی</th>
+                        <th>رشته</th>
+                        <th>مقطع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        {% for cell in row %}<td>{{ cell }}</td>{% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">رشته‌ای ثبت نشده است.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

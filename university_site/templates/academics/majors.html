@@ -2,11 +2,26 @@
 {% block content %}
 <div class="page-header"><div class="container"><h1 class="page-header-title">رشته‌های تحصیلی</h1></div></div>
 <section class="section"><div class="container">
-<div class="d-flex gap-2 flex-wrap mb-4" data-aos="fade-up">
-<a href="{% url 'academics:majors' %}" class="tag-badge {% if not degree %}active{% endif %}">همه</a>
-{% for code, label in degree_filters %}
-<a href="?degree={{ code }}" class="tag-badge {% if degree == code %}active{% endif %}">{{ label }}</a>
-{% endfor %}
+{% comment %}
+داوطلبی که می‌خواهد رشته‌ها را با خانواده‌اش مرور کند یا کنار دستش
+داشته باشد، نباید مجبور باشد از صفحه عکس بگیرد. نسخهٔ چاپی را خودِ
+مرورگر PDF می‌کند و اکسل برای کسی است که می‌خواهد مرتبش کند.
+{% endcomment %}
+<div class="majors-bar mb-4" data-aos="fade-up">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'academics:majors' %}" class="tag-badge {% if not degree %}active{% endif %}">همه</a>
+        {% for code, label in degree_filters %}
+        <a href="?degree={{ code }}" class="tag-badge {% if degree == code %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+    <div class="majors-take">
+        <a class="majors-take-btn" href="{% url 'academics:majors_print' %}">
+            <i class="fas fa-file-pdf" aria-hidden="true"></i> مشاهده و چاپ
+        </a>
+        <a class="majors-take-btn" href="{% url 'academics:majors_excel' %}">
+            <i class="fas fa-file-excel" aria-hidden="true"></i> دریافت اکسل
+        </a>
+    </div>
 </div>
 <div class="row g-4">
 {% for major in majors %}
