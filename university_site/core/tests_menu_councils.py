@@ -241,21 +241,39 @@ class NestedDeputyMenuTests(TestCase):
                'main.css').read_text(encoding='utf-8')
         desktop = css.split('.vice-group.has-sub { position: relative; }')[1]
         block = desktop.split('.vice-sub {')[1].split('}')[0]
-        self.assertIn('background: var(--primary,', block)
-        # فقط اعلان background سنجیده می‌شود، نه کامنتی که تاریخچهٔ
-        # همین تغییر را شرح می‌دهد و خودش نام رنگ قدیمی را می‌برد.
         declared = [line.strip() for line in block.splitlines()
                     if line.strip().startswith('background:')]
         self.assertEqual(len(declared), 1)
-        self.assertNotIn('--primary-deep', declared[0])
+        # پنل روشن روی منوی تیره؛ نه عنابیِ دیگری که با آن یکی شود
+        self.assertIn('#fbf8f4', declared[0])
+        self.assertNotIn('--primary', declared[0])
 
     def test_the_submenu_rows_use_the_institute_palette(self):
         """‎#b8cce4‎ از تم سرمه‌ای قدیمی مانده بود و بیگانه بود."""
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
         block = css.split('.vice-sub .nav-dd-sub {')[1].split('}')[0]
-        self.assertIn('--bnr-gold-300', block)
+        self.assertIn('--text-dark', block)
         self.assertNotIn('#b8cce4', block)
+
+    def test_the_submenu_text_is_comfortably_legible(self):
+        """مرکب گرم روی کاغذ ۱۶:۱ می‌دهد؛ طلا روی عنابی ۶٫۸:۱ می‌داد."""
+        def luminance(value):
+            value = value.lstrip('#')
+            parts = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+            parts = [c / 12.92 if c <= .03928 else ((c + .055) / 1.055) ** 2.4
+                     for c in parts]
+            return .2126 * parts[0] + .7152 * parts[1] + .0722 * parts[2]
+
+        ink, paper = luminance('#241a1c'), luminance('#fbf8f4')
+        ratio = (max(ink, paper) + .05) / (min(ink, paper) + .05)
+        self.assertGreater(ratio, 7)
+
+    def test_the_dark_theme_panel_is_not_a_glaring_white(self):
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        block = css.split('[data-theme="dark"] .vice-sub {')[1].split('}')[0]
+        self.assertIn('#2a1a1e', block)
 
     def test_hovering_a_submenu_row_is_visible(self):
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /

@@ -179,3 +179,82 @@ class WcuTitleTests(TestCase):
         cache.clear()
         plaque = self._html().split('wcu-plaque')[1].split('</aside>')[0]
         self.assertNotIn('wcu-title', plaque)
+
+
+class PresidencyCaptionTests(TestCase):
+    """سه خط زیر عکس رئیس — اندازه و رنگ."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from pathlib import Path
+
+        from django.conf import settings
+
+        cls.css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+                   'main.css').read_text(encoding='utf-8')
+
+    @staticmethod
+    def _contrast(one, two):
+        def luminance(value):
+            value = value.lstrip('#')
+            parts = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+            parts = [c / 12.92 if c <= .03928 else ((c + .055) / 1.055) ** 2.4
+                     for c in parts]
+            return .2126 * parts[0] + .7152 * parts[1] + .0722 * parts[2]
+
+        first, second = luminance(one), luminance(two)
+        return (max(first, second) + .05) / (min(first, second) + .05)
+
+    def _block(self, selector):
+        return self.css.split(selector + ' {')[1].split('}')[0]
+
+    def test_the_word_riyasat_is_no_longer_a_tiny_label(self):
+        """موسسه خواست درشت‌تر باشد؛ ۱۲ پیکسل ثابت بود."""
+        block = self._block('.pres-eyebrow')
+        self.assertIn('clamp(18px, 2vw, 25px)', block)
+        self.assertNotIn('font-size: 12px', block)
+
+    def test_each_of_the_three_lines_has_its_own_colour(self):
+        colours = {self._colour('.pres-eyebrow'),
+                   self._colour('.pres-name'),
+                   self._colour('.pres-title')}
+        self.assertEqual(len(colours), 3)
+
+    def _colour(self, selector):
+        for line in self._block(selector).splitlines():
+            line = line.strip()
+            if line.startswith('color:'):
+                return line.split(':')[1].split(';')[0].strip()
+        self.fail('%s رنگی ندارد' % selector)
+
+    def test_all_three_stay_legible_on_the_card(self):
+        """تمایز رنگی نباید به بهای خوانایی تمام شود."""
+        ground = '#3a0f1a'
+        for selector in ('.pres-eyebrow', '.pres-name', '.pres-title'):
+            ratio = self._contrast(self._colour(selector), ground)
+            self.assertGreater(ratio, 7, selector)
+
+    def test_the_card_is_maroon_not_navy(self):
+        """‎#0d2144‎ از تم قدیمی مانده بود و کنار لوح عنابی می‌زد."""
+        block = self.css.split('.pres-portrait figcaption {')[1].split('}')[0]
+        # فقط اعلان background سنجیده می‌شود؛ کامنت بالای آن نام رنگ
+        # قدیمی را می‌برد تا معلوم باشد چه چیزی عوض شده.
+        declared = next(line.strip() for line in block.splitlines()
+                        if line.strip().startswith('background:'))
+        self.assertNotIn('#0d2144', declared)
+        self.assertIn('#4e1220', declared)
+
+    def test_persian_letters_are_not_pulled_apart(self):
+        self.assertNotIn('letter-spacing', self._block('.pres-eyebrow'))
+
+    def test_the_caption_still_renders(self):
+        cache.clear()
+        PresidencyOffice.objects.create(
+            president_name='دکتر حسن فارسیجانی',
+            president_title='استاد گروه مدیریت صنعتی')
+        html = self.client.get(reverse('core:presidency')).content.decode()
+        block = html.split('<figcaption>')[1].split('</figcaption>')[0]
+        self.assertIn('ریاست', block)
+        self.assertIn('دکتر حسن فارسیجانی', block)
+        self.assertIn('استاد گروه مدیریت صنعتی', block)

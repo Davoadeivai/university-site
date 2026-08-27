@@ -232,3 +232,63 @@ class FacultiesOnTheHomePageTests(TestCase):
         self.client.login(username='kar4', password='Str0ng!Pass2026')
         cache.clear()
         self.assertIn('دانشکده‌ای', self._html())
+
+
+class GeneralFacultyIsNotAFacultyTests(TestCase):
+    """وضعیت واقعی سرور: «دانشکده عمومی» همهٔ گروه‌ها را گرفته بود.
+
+    سه دانشکدهٔ واقعی صفر گروه نشان می‌دادند و یک «دانشکده عمومی»
+    که موسسه اصلاً ندارد، یازده گروه زیرش بود. دستور دست نمی‌زد،
+    چون آن ردیف را یک انتخاب عمدی مدیر می‌دید.
+    """
+
+    def setUp(self):
+        cache.clear()
+        self.general = Department.objects.create(
+            name='دانشکده عمومی', slug='omoomi', order=1, is_active=True)
+        for name in GROUP_NAMES:
+            AcademicGroup.objects.create(
+                name=name, slug=slugify(name, allow_unicode=True),
+                department=self.general, is_active=True)
+
+    def test_the_groups_are_taken_out_of_it(self):
+        _run()
+        self.assertEqual(self.general.groups.count(), 0)
+
+    def test_it_is_removed_once_it_is_empty(self):
+        _run()
+        self.assertFalse(
+            Department.objects.filter(name='دانشکده عمومی').exists())
+
+    def test_every_group_lands_in_a_real_faculty(self):
+        _run()
+        for name in GROUP_NAMES:
+            group = AcademicGroup.objects.get(name=name)
+            self.assertIsNotNone(group.department, name)
+            self.assertNotEqual(group.department.name, 'دانشکده عمومی', name)
+
+    def test_the_real_faculties_stop_showing_zero_groups(self):
+        """روی سرور هر سه، صفر گروه نشان می‌دادند."""
+        _run()
+        for slug in ('fanni-mohandesi', 'modiriat-hesabdari',
+                     'olum-tarbiati-ravanshenasi'):
+            faculty = Department.objects.get(slug=slug)
+            self.assertGreater(faculty.groups.count(), 0, slug)
+
+    def test_a_faculty_the_document_names_is_never_treated_as_a_placeholder(self):
+        """«عمومی» نباید با «دانشکده فنی و مهندسی» اشتباه گرفته شود."""
+        _run()
+        self.assertEqual(Department.objects.filter(is_active=True).count(), 3)
+
+    def test_a_group_an_admin_moved_elsewhere_is_still_respected(self):
+        """محافظِ تصمیم مدیر نباید با این اصلاح از بین برود."""
+        _run()
+        elsewhere = Department.objects.create(
+            name='دانشکده تازه', slug='new-one')
+        group = AcademicGroup.objects.get(name='گروه کامپیوتر')
+        group.department = elsewhere
+        group.save(update_fields=['department'])
+
+        _run()
+        group.refresh_from_db()
+        self.assertEqual(group.department, elsewhere)
