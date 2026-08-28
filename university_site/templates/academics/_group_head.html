@@ -1,0 +1,36 @@
+{% comment %}
+کارت مدیر گروه.
+
+یک قالب، هر جا که لازم است — فهرست گروه‌ها، صفحهٔ خود گروه، و هر
+جای دیگری که بعداً اضافه شود. اگر سه بار کپی می‌شد، سه‌تا با هم
+اختلاف پیدا می‌کردند.
+
+داده از `head_*` می‌آید، نه از فیلدهای خام: آن ویژگی‌ها اول سراغ
+پروندهٔ عضو هیئت علمی می‌روند و اگر نبود، به متن دستی برمی‌گردند.
+
+پارامترها: group، و link (اگر True باشد نام به صفحهٔ استاد می‌رود)
+{% endcomment %}
+{% if group.head_name %}
+<div class="grp-head">
+    {% if group.head_image %}
+    <img loading="lazy" decoding="async"
+         src="{{ group.head_image.url }}" alt="{{ group.head_name }}"
+         class="grp-head-photo" width="52" height="52">
+    {% else %}
+    <span class="grp-head-photo grp-head-empty" aria-hidden="true">
+        <i class="fas fa-user-tie"></i>
+    </span>
+    {% endif %}
+    <span class="grp-head-text">
+        <span class="grp-head-role">مدیر گروه</span>
+        {% if link and group.head_page %}
+        <a class="grp-head-name" href="{{ group.head_page }}">{{ group.head_name }}</a>
+        {% else %}
+        <span class="grp-head-name">{{ group.head_name }}</span>
+        {% endif %}
+        {% if group.head_rank %}
+        <span class="grp-head-rank">{{ group.head_rank }}</span>
+        {% endif %}
+    </span>
+</div>
+{% endif %}

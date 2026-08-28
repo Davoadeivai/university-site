@@ -14,8 +14,13 @@
         <!-- سربرگ گروه -->
         <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
             <div class="col-lg-4 text-center">
-                {% if group.head_photo %}
-                <img loading="lazy" decoding="async" src="{{ group.head_photo.url }}" alt="{{ group.head }}"
+                {% comment %}
+                عکس و نام از ویژگی‌های head_* می‌آیند، نه از فیلد خام:
+                اگر مدیر گروه به پروندهٔ هیئت علمی وصل باشد، همه‌چیز
+                از همان‌جا می‌آید و همیشه تازه است.
+                {% endcomment %}
+                {% if group.head_image %}
+                <img loading="lazy" decoding="async" src="{{ group.head_image.url }}" alt="{{ group.head_name }}"
                      class="rounded-circle border border-4 border-primary shadow"
                      style="width:180px;height:180px;object-fit:cover;">
                 {% else %}
@@ -24,22 +29,34 @@
                     <i class="fas fa-user-tie text-white" style="font-size:5rem;"></i>
                 </div>
                 {% endif %}
-                {% if group.head %}
-                <h4 class="mt-3 mb-1">{{ group.head }}</h4>
-                <p class="text-primary fw-semibold">مدیر گروه {{ group.name }}</p>
+                {% if group.head_name %}
+                <h4 class="mt-3 mb-1">
+                    {% if group.head_page %}
+                    <a href="{{ group.head_page }}" class="text-decoration-none">{{ group.head_name }}</a>
+                    {% else %}{{ group.head_name }}{% endif %}
+                </h4>
+                <p class="text-primary fw-semibold mb-1">مدیر گروه {{ group.name }}</p>
+                {% if group.head_rank %}
+                <p class="text-muted" style="font-size:13px;">{{ group.head_rank }}</p>
+                {% endif %}
+                {% if group.head_page %}
+                <a href="{{ group.head_page }}" class="btn btn-sm btn-outline-secondary mt-1">
+                    <i class="fas fa-id-card"></i> پروندهٔ علمی
+                </a>
+                {% endif %}
                 {% endif %}
                 {% if group.established_year %}
                 <span class="badge bg-success mt-2">تأسیس {{ group.established_year }}</span>
                 {% endif %}
                 <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
-                    {% if group.head_email %}
-                    <a href="mailto:{{ group.head_email }}" class="btn btn-sm btn-outline-primary">
+                    {% if group.head_contact_email %}
+                    <a href="mailto:{{ group.head_contact_email }}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-envelope"></i> ایمیل
                     </a>
                     {% endif %}
-                    {% if group.head_phone %}
-                    <a href="tel:{{ group.head_phone }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-phone"></i> {{ group.head_phone }}
+                    {% if group.head_contact_phone %}
+                    <a href="tel:{{ group.head_contact_phone }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-phone"></i> {{ group.head_contact_phone }}
                     </a>
                     {% endif %}
                 </div>

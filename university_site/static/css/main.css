@@ -4324,3 +4324,32 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     block-size: 4px;
     margin-block-start: -2px;
 }
+
+/* مرتبهٔ علمی مدیر گروه، زیر نامش */
+.grp-head-rank {
+    font-size: 11.5px;
+    color: var(--text-muted, #6b5b5e);
+}
+.grp-head-name { color: var(--primary, #7a1f2e); text-decoration: none; }
+a.grp-head-name:hover { text-decoration: underline; }
+
+/* نشان «مدیر گروه» روی صفحهٔ استاد */
+.prof-head-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-block-start: 8px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--gradient-gold, linear-gradient(135deg, #c9a34e, #8a6412));
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.prof-head-badge:hover { color: #fff; filter: brightness(1.1); }
+.prof-head-badge:focus-visible {
+    outline: 2px solid var(--secondary, #a67c1f);
+    outline-offset: 2px;
+}

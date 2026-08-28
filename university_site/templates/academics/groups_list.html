@@ -56,23 +56,7 @@
                     عکس مدیر گروه کنار نامش — طرحی که سند اصلاحات
                     موسسه برای این بخش کشیده است.
                     {% endcomment %}
-                    {% if group.head %}
-                    <div class="grp-head">
-                        {% if group.head_photo %}
-                        <img loading="lazy" decoding="async"
-                             src="{{ group.head_photo.url }}" alt="{{ group.head }}"
-                             class="grp-head-photo" width="52" height="52">
-                        {% else %}
-                        <span class="grp-head-photo grp-head-empty" aria-hidden="true">
-                            <i class="fas fa-user-tie"></i>
-                        </span>
-                        {% endif %}
-                        <span class="grp-head-text">
-                            <span class="grp-head-role">مدیر گروه</span>
-                            <span class="grp-head-name">{{ group.head }}</span>
-                        </span>
-                    </div>
-                    {% endif %}
+                    {% include 'academics/_group_head.html' with group=group link=True %}
 
                     {% if group.description %}
                     <p class="text-muted" style="font-size:13px;line-height:1.8;">

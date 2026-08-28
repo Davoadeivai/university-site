@@ -26,6 +26,19 @@
                     <h2 class="prof-name mt-3" style="font-size:20px;">{{ professor.get_full_name }}</h2>
                     <div class="prof-rank">{{ professor.get_rank_display }}</div>
                     {% if professor.department %}<div class="prof-dept mt-1">{{ professor.department.name }}</div>{% endif %}
+                    {% comment %}
+                    اگر این استاد مدیر گروهی است، همین‌جا گفته می‌شود —
+                    پیش از این فقط از سمت گروه دیده می‌شد و کسی که از
+                    صفحهٔ استاد وارد شده بود، خبر نداشت.
+                    {% endcomment %}
+                    {% for group in professor.heads_groups.all %}
+                    {% if group.is_active %}
+                    <a class="prof-head-badge" href="{{ group.get_absolute_url }}">
+                        <i class="fas fa-user-tie" aria-hidden="true"></i>
+                        مدیر {{ group.name }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
                     <div class="divider"></div>
                     {% if professor.email %}
                     <div class="d-flex align-items-center gap-2 mb-2 justify-content-center">

@@ -295,21 +295,49 @@ class LaboratoryAdmin(admin.ModelAdmin):
 
 @admin.register(AcademicGroup)
 class AcademicGroupAdmin(admin.ModelAdmin):
-    list_display        = ['name', 'department', 'head', 'majors_count',
+    list_display        = ['name', 'department', 'head_display', 'majors_count',
                            'has_graduate', 'order', 'is_active']
     list_editable       = ['has_graduate', 'order', 'is_active']
     list_filter         = ['department', 'is_active', 'has_graduate']
-    search_fields       = ['name', 'head', 'description', 'research_areas']
-    list_select_related = ('department',)
+    search_fields       = ['name', 'head', 'head_professor__first_name',
+                           'head_professor__last_name', 'description',
+                           'research_areas']
+    autocomplete_fields = ['head_professor']
+    list_select_related = ('department', 'head_professor')
     prepopulated_fields = {'slug': ('name',)}
     inlines             = [GroupMajorInline]
+
+    @admin.display(description='مدیر گروه', ordering='head')
+    def head_display(self, obj):
+        """نام مدیر، از هر جا که آمده — با نشانهٔ اینکه پیوند خورده یا نه."""
+        from django.utils.html import format_html
+
+        if obj.head_professor_id:
+            return format_html(
+                '<span style="color:#1f7a5c;font-weight:600;">{}</span>',
+                obj.head_professor.get_full_name())
+        if obj.head:
+            return format_html(
+                '<span style="color:#8a6412;" title="دستی نوشته شده، به '
+                'پروندهٔ هیئت علمی وصل نیست">{}</span>', obj.head)
+        return format_html('<span style="color:#b3261e;">— ثبت نشده</span>')
+
     fieldsets = (
         ('اطلاعات اصلی', {
             'fields': ('department', 'name', 'slug', 'order', 'is_active', 'image'),
             'description': 'برای ویرایش رشته‌های هر مقطع، از جدول پایین صفحه («رشته‌ها و مقاطع این گروه») استفاده کنید.',
         }),
         ('مدیر گروه', {
-            'fields': ('head', 'head_photo', 'head_email', 'head_phone')
+            'fields': ('head_professor', 'head', 'head_photo',
+                       'head_email', 'head_phone'),
+            'description': (
+                '<b>روش درست:</b> استاد را از فهرست «مدیر گروه (از اعضای '
+                'هیئت علمی)» انتخاب کنید — نام، عکس، مرتبهٔ علمی و راه '
+                'تماسش خودکار روی صفحهٔ گروه می‌آید و با هر تغییر در '
+                'پروندهٔ استاد، اینجا هم تازه می‌شود.<br>'
+                'چهار فیلد بعدی فقط برای وقتی است که مدیر گروه عضو هیئت '
+                'علمی نیست.'
+            ),
         }),
         ('محتوا', {
             'fields': ('description', 'goals', 'research_areas', 'facilities')

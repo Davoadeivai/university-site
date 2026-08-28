@@ -411,7 +411,25 @@ class AcademicGroup(models.Model):
     )
     name = models.CharField(_('نام گروه'), max_length=200)
     slug = models.SlugField(unique=True, allow_unicode=True, blank=True)
-    head = models.CharField(_('مدیر گروه'), max_length=200, blank=True)
+    # مدیر گروه، از میان اعضای هیئت علمی.
+    #
+    # پیش از این فقط چهار فیلد متنی بود — نام، عکس، ایمیل، تلفن —
+    # یعنی همان استاد دو بار در دیتابیس می‌نشست: یک بار در «اعضای
+    # هیئت علمی» و یک بار اینجا. با هر تغییر (ارتقای مرتبه، عکس
+    # تازه، ایمیل جدید) یکی به‌روز می‌شد و دیگری کهنه می‌ماند.
+    #
+    # حالا یک ارجاع است: اطلاعات یک جا ثبت می‌شود و همه‌جا تازه است.
+    # فیلدهای متنی می‌مانند تا هم داده‌های قبلی از بین نرود، هم اگر
+    # مدیر گروه عضو هیئت علمی نبود بشود دستی نوشتش.
+    head_professor = models.ForeignKey(
+        'faculty.Professor', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='heads_groups',
+        verbose_name=_('مدیر گروه (از اعضای هیئت علمی)'),
+        help_text=_(
+            'با انتخاب استاد، نام و عکس و مرتبه و راه تماسش خودکار '
+            'روی صفحهٔ گروه می‌آید. اگر مدیر گروه عضو هیئت علمی نیست، '
+            'این را خالی بگذارید و فیلدهای زیر را دستی پر کنید.'))
+    head = models.CharField(_('مدیر گروه (دستی)'), max_length=200, blank=True)
     head_photo = models.ImageField(_('تصویر مدیر گروه'), upload_to='groups/', blank=True, null=True)
     head_email = models.EmailField(_('ایمیل مدیر گروه'), blank=True)
     head_phone = models.CharField(_('تلفن مدیر گروه'), max_length=50, blank=True)
@@ -434,6 +452,51 @@ class AcademicGroup(models.Model):
 
     order = models.PositiveIntegerField(_('ترتیب'), default=0)
     is_active = models.BooleanField(_('فعال'), default=True)
+
+    # ── مدیر گروه: یک منبع، چند نما ────────────────────────────
+    # هر ویژگی اول سراغ عضو هیئت علمی می‌رود و اگر نبود، به همان
+    # فیلد متنیِ قدیمی برمی‌گردد. پس صفحه‌ها یک چیز صدا می‌زنند و
+    # لازم نیست هرکدام خودشان تصمیم بگیرند.
+    @property
+    def head_name(self) -> str:
+        if self.head_professor_id:
+            return self.head_professor.get_full_name()
+        return self.head or ''
+
+    @property
+    def head_image(self):
+        if self.head_professor_id and self.head_professor.photo:
+            return self.head_professor.photo
+        return self.head_photo or None
+
+    @property
+    def head_rank(self) -> str:
+        """مرتبهٔ علمی — فقط وقتی از رکورد استاد می‌آید."""
+        if self.head_professor_id:
+            return self.head_professor.get_rank_display()
+        return ''
+
+    @property
+    def head_page(self) -> str:
+        """نشانی صفحهٔ استاد، اگر مدیر گروه عضو هیئت علمی باشد."""
+        if not self.head_professor_id:
+            return ''
+        try:
+            return self.head_professor.get_absolute_url()
+        except Exception:                          # noqa: BLE001
+            return ''
+
+    @property
+    def head_contact_email(self) -> str:
+        if self.head_professor_id and self.head_professor.email:
+            return self.head_professor.email
+        return self.head_email or ''
+
+    @property
+    def head_contact_phone(self) -> str:
+        if self.head_professor_id and self.head_professor.phone:
+            return self.head_professor.phone
+        return self.head_phone or ''
 
     class Meta:
         verbose_name = _('گروه آموزشی')

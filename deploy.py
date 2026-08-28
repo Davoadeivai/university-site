@@ -259,6 +259,8 @@ def seed_content() -> None:
     run('set_majors_from_document')
     # ترتیب گروه‌ها در منو، طبق خواستهٔ موسسه
     run('set_group_order')
+    # گزارش، نه اصلاح: «مدیر گروه کیست» را فقط موسسه می‌داند
+    run('check_group_heads')
     # چهار شورای چارت سازمانی
     run('seed_councils')
     # دکمهٔ روی اسلاید برداشته شد — موسسه خواست به‌جایش باکسی روی
