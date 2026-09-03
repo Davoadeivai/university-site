@@ -140,6 +140,12 @@ class CouncilPageTests(TestCase):
         block = html.split('council-members')[1].split('</ul>')[0]
         self.assertIn('دکتر الف', block)
 
+    def test_the_stacked_cards_do_not_take_the_whole_column(self):
+        """uni-card سراسری height:100% دارد و کارت اعضا روی فوتر می‌افتاد."""
+        html = self.client.get(self.council.get_absolute_url()).content.decode()
+        self.assertNotIn('class="uni-card p-4', html)
+        self.assertEqual(html.count('uni-card council-panel'), 3)
+
     def test_an_empty_council_says_so_instead_of_showing_nothing(self):
         bare = Council.objects.create(
             name='شورای خالی', slug='khali', order=2, is_active=True)

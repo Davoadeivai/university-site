@@ -4030,6 +4030,12 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-radius: 50%;
     background: var(--primary, #7a1f2e);
 }
+/* uni-card سراسری height:100% دارد. در ستونی که دو کارت روی هم دارد —
+   شرح وظایف و اعضا — هر کارت قد کل ستون را می‌گرفت، مجموعشان دو برابر
+   بخش می‌شد و کارت پایینی روی فوتر می‌افتاد. اینجا قد کارت به اندازهٔ
+   محتوای خودش است. */
+.council-panel { block-size: auto; }
+
 .council-side li a { color: var(--text-dark, #241a1c); text-decoration: none; font-size: 14px; }
 .council-side li a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
 

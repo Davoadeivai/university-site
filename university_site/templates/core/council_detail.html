@@ -22,7 +22,7 @@
         <div class="row g-4">
             <div class="col-lg-8">
                 {% if council.duty_list %}
-                <div class="uni-card p-4 mb-4">
+                <div class="uni-card council-panel p-4 mb-4">
                     <h2 class="section-title mb-3">شرح وظایف</h2>
                     <ul class="council-duties">
                         {% for duty in council.duty_list %}
@@ -33,7 +33,7 @@
                 {% endif %}
 
                 {% if council.member_list %}
-                <div class="uni-card p-4">
+                <div class="uni-card council-panel p-4">
                     <h2 class="section-title mb-3">اعضا</h2>
                     <ul class="council-members">
                         {% for member in council.member_list %}
@@ -44,7 +44,7 @@
                 {% endif %}
 
                 {% if not council.duty_list and not council.member_list %}
-                <div class="uni-card p-4">
+                <div class="uni-card council-panel p-4">
                     <p class="text-muted mb-0">
                         شرح وظایف و اعضای این شورا هنوز ثبت نشده است.
                     </p>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="uni-card p-4">
+                <div class="uni-card council-panel p-4">
                     <h5 class="fw-bold text-primary-uni mb-3">شوراهای دیگر</h5>
                     <ul class="council-side">
                         {% for other in councils %}
