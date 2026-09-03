@@ -157,6 +157,14 @@ class CouncilPageTests(TestCase):
         crumbs = html.split('<ol class="breadcrumb">')[1].split('</ol>')[0]
         self.assertIn(reverse('core:councils'), crumbs)
 
+    def test_the_migration_brings_the_councils_along(self):
+        """سرور ترمینال ندارد؛ خود migrate باید شوراها را ثبت کند."""
+        seeded = set(Council.objects.values_list('slug', flat=True))
+        self.assertIn('shoraye-daneshgah', seeded)
+        self.assertIn('hayat-raeise', seeded)
+        self.assertTrue(
+            Council.objects.get(slug='hayat-raeise').member_list)
+
     def test_the_seeder_records_the_councils_of_the_document(self):
         from io import StringIO
 
