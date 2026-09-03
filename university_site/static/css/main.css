@@ -3929,14 +3929,20 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 /* ══ شوراها ══════════════════════════════════════════════════════ */
 .council-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    grid-template-columns:
+        repeat(auto-fill, minmax(min(100%, var(--council-card-w, 280px)), 1fr));
+    align-items: stretch;            /* هر ردیف، کارت‌های هم‌قد */
     gap: clamp(16px, 2.4vw, 26px);
+    /* فاصله تا فوتر، تا کارتِ بلندِ ردیف آخر به پایین سایت نچسبد */
+    margin-block-end: clamp(24px, 4vw, 48px);
 }
 
 .council-card {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    block-size: 100%;
+    min-block-size: var(--council-card-h, 220px);
     padding: clamp(20px, 2.4vw, 28px);
     border-radius: var(--radius, 14px);
     background: var(--bg-white, #fff);
@@ -3967,7 +3973,17 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     font-size: 13.5px;
     line-height: 2;
     color: var(--text-muted, #6b5b5e);
+    /* دو خط ثابت؛ معرفی‌های کوتاه و بلند، کارت‌ها را نامیزان نکنند */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    min-block-size: 4em;
+    overflow: hidden;
 }
+
+/* نام شورا هم دو خطی می‌شود؛ جا برایش باز نگه می‌داریم */
+.council-name { min-block-size: 2.6em; }
 
 .council-head {
     margin: 0;
@@ -3992,6 +4008,11 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     padding: 0;
     display: grid;
     gap: 9px;
+}
+/* فهرست اعضا گاهی هشت‌نه نفر است؛ دو ستونه می‌شود تا کارت دراز نشود */
+.council-members {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    column-gap: 18px;
 }
 .council-duties li, .council-members li {
     position: relative;

@@ -24,7 +24,13 @@
 <section class="section">
     <div class="container">
         {% if councils %}
-        <div class="council-grid">
+        {% comment %}
+        کف عرض و ارتفاع کارت‌ها از تنظیمات سایت می‌آید؛ هم‌قدی کارت‌های
+        هر ردیف کار خود گرید است و به این دو عدد ربطی ندارد.
+        {% endcomment %}
+        <div class="council-grid"
+             style="--council-card-w: {{ site_settings.council_card_min_width|default:260 }}px;
+                    --council-card-h: {{ site_settings.council_card_min_height|default:220 }}px;">
             {% for council in councils %}
             <article class="council-card tone-{{ forloop.counter }}">
                 <span class="council-icon" aria-hidden="true">

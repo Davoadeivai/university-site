@@ -67,6 +67,18 @@ class SiteSettings(models.Model):
             'اسلایدهای بیشتر از این عدد ثبت می‌مانند ولی نمایش داده '
             'نمی‌شوند. هر اسلاید یک عکس است و وزن صفحه را بالا '
             'می‌برد، پس سقف %d گذاشته شده.' % MAX_HOME_SLIDES))
+    council_card_min_width = models.PositiveSmallIntegerField(
+        _('حداقل عرض کارت شورا'), default=260,
+        validators=[MinValueValidator(180), MaxValueValidator(420)],
+        help_text=_(
+            'کارت‌های صفحهٔ شوراها حداقل این عرض را می‌گیرند؛ با این مقدار '
+            'می‌توانید اندازهٔ باکس‌ها را در فهرست شوراها تنظیم کنید.'))
+    council_card_min_height = models.PositiveSmallIntegerField(
+        _('حداقل ارتفاع کارت شورا'), default=220,
+        validators=[MinValueValidator(150), MaxValueValidator(500)],
+        help_text=_(
+            'ارتفاع حداقل هر کارت در صفحهٔ شوراها. اگر محتوای یک کارت طولانی‌تر شد، '
+            'بلندتر نیز می‌تواند رشد کند.'))
     logo = models.ImageField(_('لوگو'), upload_to='site/', blank=True, null=True)
     favicon = models.ImageField(_('فاویکون'), upload_to='site/', blank=True, null=True)
     world_class_logo = models.ImageField(
@@ -727,10 +739,11 @@ class GraduateStudiesInfo(models.Model):
 class Council(models.Model):
     """شوراها و کمیته‌های موسسه.
 
-    چارت سازمانی موسسه چهار رکن مشورتی دارد — شورای موسسه، شورای
-    فرهنگی، شورای دانشجویی و کمیتهٔ انضباطی — و هیچ‌کدام تا امروز
-    روی سایت نبودند. مثل بقیهٔ محتوا، از پنل قابل ویرایش است تا
-    افزودن شورای تازه نیازی به دست‌زدن به کد نداشته باشد.
+    ساختار شوراها از سند رسمی «اعضای شورا»ی موسسه می‌آید — هیات
+    رئیسه، شورای دانشگاه، شورای آموزشی و تحصیلات تکمیلی، شورای
+    پژوهش و فناوری، و شورای دانشجویی و فرهنگی و اجتماعی؛ متن اولیه
+    را دستور seed_councils می‌ریزد. مثل بقیهٔ محتوا از پنل قابل
+    ویرایش است تا تغییر ترکیب اعضا نیازی به دست‌زدن به کد نداشته باشد.
     """
 
     name = models.CharField(_('نام شورا'), max_length=200)

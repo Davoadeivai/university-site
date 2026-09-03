@@ -157,7 +157,7 @@ class CouncilPageTests(TestCase):
         crumbs = html.split('<ol class="breadcrumb">')[1].split('</ol>')[0]
         self.assertIn(reverse('core:councils'), crumbs)
 
-    def test_the_seeder_records_the_chart_councils(self):
+    def test_the_seeder_records_the_councils_of_the_document(self):
         from io import StringIO
 
         from django.core.management import call_command
@@ -165,8 +165,27 @@ class CouncilPageTests(TestCase):
         Council.objects.all().delete()
         call_command('seed_councils', stdout=StringIO())
         names = set(Council.objects.values_list('name', flat=True))
-        self.assertEqual(names, {'شورای موسسه', 'شورای فرهنگی',
-                                 'شورای دانشجویی', 'کمیته انضباطی'})
+        self.assertEqual(names, {
+            'هیات رئیسه',
+            'شورای دانشگاه',
+            'شورای آموزشی و تحصیلات تکمیلی',
+            'شورای پژوهش و فناوری',
+            'شورای دانشجویی و فرهنگی و اجتماعی',
+        })
+
+    def test_the_seeder_records_the_members_of_each_council(self):
+        """اسم اعضا از سند می‌آید؛ صفحهٔ شورا نباید خالی بماند."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        Council.objects.all().delete()
+        call_command('seed_councils', stdout=StringIO())
+        research = Council.objects.get(slug='shoraye-pazhoohesh')
+        self.assertEqual(len(research.member_list), 5)
+        self.assertIn('مهندس فاطمه نمازی', research.member_list)
+        for council in Council.objects.all():
+            self.assertTrue(council.member_list, council.name)
 
     def test_the_seeder_does_not_overwrite_edits(self):
         from io import StringIO
@@ -174,12 +193,26 @@ class CouncilPageTests(TestCase):
         from django.core.management import call_command
 
         call_command('seed_councils', stdout=StringIO())
-        target = Council.objects.get(slug='shoraye-farhangi')
+        target = Council.objects.get(slug='shoraye-daneshgah')
         target.short_description = 'متن دست‌نویس مدیر'
         target.save(update_fields=['short_description'])
         call_command('seed_councils', stdout=StringIO())
         target.refresh_from_db()
         self.assertEqual(target.short_description, 'متن دست‌نویس مدیر')
+
+    def test_replace_retires_councils_outside_the_document(self):
+        """شورایی که در سند نیست، با --replace از فهرست بیرون می‌رود."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        old = Council.objects.create(
+            name='شورای قدیمی', slug='ghadimi', order=9, is_active=True)
+        call_command('seed_councils', '--replace', stdout=StringIO())
+        old.refresh_from_db()
+        self.assertFalse(old.is_active)
+        self.assertTrue(
+            Council.objects.get(slug='shoraye-daneshgah').is_active)
 
 
 class NestedDeputyMenuTests(TestCase):

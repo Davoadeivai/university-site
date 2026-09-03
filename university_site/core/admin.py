@@ -156,6 +156,13 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'ولی روی صفحه نمی‌آیند.'
             ),
         }),
+        ('اندازهٔ کارت‌های صفحهٔ شوراها', {
+            'fields': ('council_card_min_width', 'council_card_min_height'),
+            'description': (
+                'کارت‌های یک ردیف همیشه هم‌قد هستند؛ این دو عدد فقط '
+                'کف عرض و ارتفاع آن‌ها را تعیین می‌کند.'
+            ),
+        }),
         ('اطلاعات تماس', {
             'fields': ('address', 'phone', 'fax', 'email', 'postal_code')
         }),
