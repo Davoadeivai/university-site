@@ -64,7 +64,12 @@ class FacultyMenuTests(TestCase):
     def test_the_faculty_itself_is_still_one_click_away(self):
         block = self._nav().split('nav-dd-faculties')[1]
         self.assertIn(self.fanni.get_absolute_url(), block)
-        self.assertIn(reverse('academics:departments'), block)
+
+    def test_the_menu_does_not_repeat_its_own_title(self):
+        """«فهرست دانشکده‌ها» همان جایی می‌رفت که خودِ عنوان منو."""
+        block = self._nav().split('nav-dd-faculties')[1]
+        self.assertNotIn('فهرست دانشکده‌ها', block)
+        self.assertIn(reverse('academics:majors'), block)
 
     def test_an_inactive_major_is_left_out(self):
         Major.objects.filter(slug='mohandesi-computer').update(is_active=False)
