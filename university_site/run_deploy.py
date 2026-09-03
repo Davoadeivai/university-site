@@ -39,6 +39,7 @@ SKIP_FILES = {'.env', 'db.sqlite3'}
 CONTENT_COMMANDS = [
     'set_faculties',            # سه دانشکده و گروه‌هایشان
     'set_majors_from_document',  # ۴۱ رشتهٔ سند «رشته‌های دانشکده‌ها»
+    'set_group_heads',          # مدیر هر گروه، از فهرست افراد موسسه
     'seed_councils',            # شوراهای سند «اعضای شورا»
 ]
 
