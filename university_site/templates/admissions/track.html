@@ -8,7 +8,7 @@
     background: var(--bg-white, #fff);
     border: 1px solid var(--border, #e5e7eb);
     border-radius: var(--radius, 12px);
-    box-shadow: var(--shadow, 0 4px 16px rgba(15, 23, 42, .08));
+    box-shadow: var(--shadow, 0 4px 16px rgba(83, 30, 40, .08));
     height: auto !important;
     overflow: visible !important;
     position: relative;
@@ -33,7 +33,7 @@
 }
 .track-step-hint {
     font-size: 13px;
-    color: #64748b;
+    color: #925d69;
     margin-top: 4px;
     line-height: 1.7;
 }
@@ -44,7 +44,7 @@
     color: #b45309;
 }
 .track-missing li { margin-bottom: 2px; }
-[data-theme="dark"] .track-step-hint { color: #94a3b8; }
+[data-theme="dark"] .track-step-hint { color: #b38992; }
 .track-info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -105,7 +105,7 @@
             {% elif s == 'incomplete' %}
             <span class="badge fs-6" style="background:#f97316;">{{ app.get_status_display }}</span>
             {% elif s == 'interview' %}
-            <span class="badge fs-6" style="background:#8b5cf6;">{{ app.get_status_display }}</span>
+            <span class="badge fs-6" style="background:#d36971;">{{ app.get_status_display }}</span>
             {% elif s == 'accepted' %}
             <span class="badge bg-success fs-6">{{ app.get_status_display }}</span>
             {% elif s == 'rejected' %}
@@ -121,14 +121,14 @@
             {% for step in timeline %}
             <div class="track-timeline-item">
                 <div class="track-timeline-dot"
-                    style="{% if step.state == 'current' %}background:#3b82d4;box-shadow:0 0 0 4px rgba(59,130,212,.25);{% elif step.state == 'done' %}background:#16a34a;{% else %}background:#e5e7eb;{% endif %}">
+                    style="{% if step.state == 'current' %}background:#c94664;box-shadow:0 0 0 4px rgba(201, 70, 100,.25);{% elif step.state == 'done' %}background:#16a34a;{% else %}background:#e5e7eb;{% endif %}">
                     {% if step.state == 'done' %}
                     <i class="fas fa-check" style="font-size:8px;color:#fff;"></i>
                     {% elif step.state == 'current' %}
                     <i class="fas fa-circle" style="font-size:6px;color:#fff;"></i>
                     {% endif %}
                 </div>
-                <div style="font-size:14px;{% if step.state == 'current' %}font-weight:700;color:#1e293b;{% elif step.state == 'done' %}color:#16a34a;{% else %}color:#94a3b8;{% endif %}">
+                <div style="font-size:14px;{% if step.state == 'current' %}font-weight:700;color:#4a262d;{% elif step.state == 'done' %}color:#16a34a;{% else %}color:#b38992;{% endif %}">
                     {{ step.label }}
                 </div>
                 {% comment %}

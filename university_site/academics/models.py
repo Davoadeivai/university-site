@@ -457,6 +457,48 @@ class AcademicGroup(models.Model):
     order = models.PositiveIntegerField(_('ترتیب'), default=0)
     is_active = models.BooleanField(_('فعال'), default=True)
 
+    @property
+    def blurb(self) -> str:
+        """معرفی گروه، بدون تکرار نامش در آغاز.
+
+        روی کارت، نام گروه بالای معرفی است و تقریباً همهٔ معرفی‌ها با
+        «گروه آموزشی فلان …» شروع می‌شدند — یعنی همان چند کلمه دو بار
+        پشت سر هم. متن در پنل دست‌نخورده می‌ماند؛ فقط اینجا سرِ تکراری
+        بریده می‌شود.
+        """
+        text = (self.description or '').strip()
+        if not text:
+            return ''
+
+        def fold(value: str) -> str:
+            cleaned = value.replace('ي', 'ی').replace('ك', 'ک')
+            for ch in ('‌', '‏', '،', '-', '–', '—'):
+                cleaned = cleaned.replace(ch, '')
+            # فاصله هم برداشته می‌شود: نام «نقشه کشی» است و متن
+            # «نقشه‌کشی» می‌نویسد.
+            return ''.join(cleaned.split())
+
+        name_folded = fold(self.name)
+        words = text.split()
+        cut = 0
+        # فقط سرِ جمله بریده می‌شود، نه بیشتر: نامِ بلندترین گروه
+        # هفت کلمه است («گروه آموزشی برق، الکترونیک و مخابرات»).
+        for word in words[:7]:
+            folded = fold(word)
+            if not folded:
+                cut += 1
+                continue
+            if folded in ('گروه', 'آموزشی', 'و'):
+                cut += 1
+                continue
+            # واژهٔ کوتاه ممکن است تصادفی درون نام پیدا شود
+            if len(folded) >= 3 and folded in name_folded:
+                cut += 1
+                continue
+            break
+        # اگر کل متن همان نام بوده، چیزی نمی‌بریم — بهتر از خالی‌ماندن
+        return ' '.join(words[cut:]).lstrip('،-–— ') or text
+
     # ── مدیر گروه: یک منبع، چند نما ────────────────────────────
     # هر ویژگی اول سراغ عضو هیئت علمی می‌رود و اگر نبود، به همان
     # فیلد متنیِ قدیمی برمی‌گردد. پس صفحه‌ها یک چیز صدا می‌زنند و

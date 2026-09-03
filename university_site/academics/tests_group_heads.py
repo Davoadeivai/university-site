@@ -78,19 +78,22 @@ class GroupHeadsFromDirectoryTests(TestCase):
         self.assertEqual(
             _head('گروه معماری و نقشه کشی').head_name, 'حسن عمرانی')
 
-    def test_two_heads_of_one_group_both_appear(self):
-        """موسسه برای حسابداری دو نفر نوشته؛ یکی را نباید انداخت."""
-        self.assertEqual(
-            _head('گروه حسابداری').head_name, '')
+    def test_a_group_gets_one_name_not_two(self):
+        """موسسه برای حسابداری دو نفر نوشته؛ کارت باید یک نام نشان دهد."""
         _run()
-        self.assertEqual(
-            _head('گروه حسابداری').head_name,
-            'سجاد سالاری و مسعود باباخانی')
+        self.assertEqual(_head('گروه حسابداری').head_name, 'سجاد سالاری')
+
+    def test_the_second_name_is_reported_not_dropped_silently(self):
+        out = StringIO()
+        call_command('set_group_heads', stdout=out)
+        report = out.getvalue()
+        self.assertIn('مسعود باباخانی', report)
+        self.assertIn('گروه حسابداری', report)
 
     def test_the_note_in_the_title_is_kept(self):
         _run()
-        self.assertIn('حسن فارسیجانی (ارشد)',
-                      _head('گروه مدیریت صنعتی و مالی').head_name)
+        self.assertEqual(_head('گروه مدیریت صنعتی و مالی').head_name,
+                         'حسن فارسیجانی (ارشد)')
 
     def test_a_general_title_does_not_squat_on_a_specific_group(self):
         """«مدیر گروه مدیریت» نباید کنار «مدیر گروه مدیریت بازرگانی» بنشیند."""
@@ -172,3 +175,66 @@ class GroupHeadsOnThePageTests(TestCase):
             reverse('academics:group_heads')).content.decode()
         self.assertIn('حسینعلی قربانی', html)
         self.assertNotIn('هنوز ثبت نشده', html)
+
+
+class GroupBlurbTests(TestCase):
+    """معرفی گروه، بدون تکرار نامش در آغاز.
+
+    روی کارت، نام گروه یک خط بالای معرفی است و تقریباً همهٔ معرفی‌ها
+    با «گروه آموزشی فلان …» شروع می‌شدند — همان چند کلمه، دو بار.
+    """
+
+    def setUp(self):
+        self.faculty = Department.objects.create(
+            name='دانشکده نمونه', slug='nemoone-blurb', order=1,
+            is_active=True)
+
+    def _group(self, name, description):
+        return AcademicGroup.objects.create(
+            department=self.faculty, name=name,
+            slug='b-%d' % AcademicGroup.objects.count(),
+            description=description, is_active=True)
+
+    def test_the_name_is_trimmed_from_the_front(self):
+        group = self._group(
+            'گروه کامپیوتر',
+            'گروه کامپیوتر با تمرکز بر مهندسی نرم‌افزار فعالیت می‌کند.')
+        self.assertEqual(
+            group.blurb, 'با تمرکز بر مهندسی نرم‌افزار فعالیت می‌کند.')
+
+    def test_the_word_amoozeshi_goes_too(self):
+        group = self._group(
+            'گروه برق، الکترونیک و مخابرات',
+            'گروه آموزشی برق، الکترونیک و مخابرات با هدف تربیت مهندسان.')
+        self.assertEqual(group.blurb, 'با هدف تربیت مهندسان.')
+
+    def test_a_half_space_does_not_fool_it(self):
+        """نام «نقشه کشی» است و متن «نقشه‌کشی» می‌نویسد."""
+        group = self._group(
+            'گروه معماری و نقشه کشی',
+            'گروه معماری و نقشه‌کشی با ارائه آموزش‌های تخصصی.')
+        self.assertEqual(group.blurb, 'با ارائه آموزش‌های تخصصی.')
+
+    def test_a_description_that_does_not_repeat_is_untouched(self):
+        group = self._group('گروه مکانیک', 'مبانی طراحی و ساخت و تولید.')
+        self.assertEqual(group.blurb, 'مبانی طراحی و ساخت و تولید.')
+
+    def test_an_empty_description_stays_empty(self):
+        self.assertEqual(self._group('گروه خالی', '').blurb, '')
+
+    def test_the_stored_text_is_not_changed(self):
+        """متن پنل دست‌نخورده می‌ماند؛ بریدن فقط روی صفحه است."""
+        group = self._group('گروه کامپیوتر', 'گروه کامپیوتر با تمرکز بر …')
+        group.refresh_from_db()
+        self.assertTrue(group.description.startswith('گروه کامپیوتر'))
+
+    def test_the_card_uses_it(self):
+        from django.urls import reverse
+
+        self._group('گروه کامپیوتر',
+                    'گروه کامپیوتر با تمرکز بر مهندسی نرم‌افزار.')
+        html = self.client.get(
+            reverse('academics:groups_list')).content.decode()
+        card = html.split('dept-card')[1]
+        self.assertIn('با تمرکز بر مهندسی نرم‌افزار.', card)
+        self.assertEqual(card.count('گروه کامپیوتر'), 1)

@@ -58,9 +58,13 @@
                     {% endcomment %}
                     {% include 'academics/_group_head.html' with group=group link=True %}
 
-                    {% if group.description %}
+                    {% comment %}
+                    blurb همان معرفی است، منهای تکرار نام گروه در
+                    آغازش — نام یک خط بالاتر آمده.
+                    {% endcomment %}
+                    {% if group.blurb %}
                     <p class="text-muted" style="font-size:13px;line-height:1.8;">
-                        {{ group.description|truncatewords:20 }}
+                        {{ group.blurb|truncatewords:20 }}
                     </p>
                     {% endif %}
 

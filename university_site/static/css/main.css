@@ -110,7 +110,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 
 /* ---- Navbar — طرح تیره مدرن ---- */
 .main-navbar {
-    background: linear-gradient(135deg, #0a1628 0%, #0e2340 60%, #0d1f3c 100%) !important;
+    background: linear-gradient(135deg, #2b0a11 0%, #4a1220 60%, #3a0e18 100%) !important;
     padding: 0;
     z-index: 1000;
     border-bottom: 3px solid #c0392b;
@@ -127,14 +127,14 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     position: sticky;
     top: 0;
     z-index: 1030;
-    box-shadow: 0 6px 18px rgba(2, 28, 48, 0.22);
+    box-shadow: 0 6px 18px rgba(40, 10, 16, 0.22);
 }
 .site-banner {
     position: relative;
     width: 100%;
     line-height: 0;
     /* modern blue gradient behind the banner (matches the image background) */
-    background: linear-gradient(105deg, #0a4a74 0%, #063a5c 55%, #04263f 100%);
+    background: linear-gradient(105deg, #5e1424 0%, #3a0f18 55%, #22090e 100%);
 }
 .site-banner a { display: block; width: 100%; }
 /* full-width banner: image always spans edge to edge, height follows aspect ratio,
@@ -202,7 +202,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     border-radius: 999px;
     padding: .3rem .6rem .3rem .8rem;
     width: 178px;
-    box-shadow: 0 1px 2px rgba(8, 30, 55, .12), 0 6px 16px -10px rgba(8, 30, 55, .5);
+    box-shadow: 0 1px 2px rgba(45, 12, 19, .12), 0 6px 16px -10px rgba(45, 12, 19, .5);
     transition: width .28s cubic-bezier(.22,1,.36,1), border-color .2s, box-shadow .2s, background .2s;
     cursor: text;
     margin: 0;
@@ -214,7 +214,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     border-color: var(--secondary);
     box-shadow:
         0 0 0 3px rgba(201, 146, 43, .22),
-        0 10px 26px -12px rgba(8, 30, 55, .55);
+        0 10px 26px -12px rgba(45, 12, 19, .55);
 }
 .topbar-search-icon {
     color: var(--secondary);
@@ -239,7 +239,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     appearance: none;
 }
 .topbar-search-input::-webkit-search-cancel-button { display: none; }
-.topbar-search-input::placeholder { color: #8496a8; }
+.topbar-search-input::placeholder { color: #a08b90; }
 .topbar-search-clear {
     display: inline-flex;
     align-items: center;
@@ -256,7 +256,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     transition: background .15s, transform .15s;
 }
 .topbar-search-clear:hover {
-    background: #dde5ee;
+    background: #eadfe1;
     transform: scale(1.06);
 }
 .topbar-search-results {
@@ -266,8 +266,8 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     width: min(340px, 90vw);
     background: #fff;
     border-radius: 16px;
-    box-shadow: 0 18px 40px rgba(2,28,48,0.28);
-    border: 1px solid rgba(14, 35, 64, 0.08);
+    box-shadow: 0 18px 40px rgba(40, 10, 16,0.28);
+    border: 1px solid rgba(58, 14, 24, 0.08);
     overflow: hidden;
     max-height: min(58vh, 400px);
     overflow-y: auto;
@@ -286,8 +286,8 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     width: 12px;
     height: 12px;
     background: #fff;
-    border-left: 1px solid rgba(14, 35, 64, 0.08);
-    border-top: 1px solid rgba(14, 35, 64, 0.08);
+    border-left: 1px solid rgba(58, 14, 24, 0.08);
+    border-top: 1px solid rgba(58, 14, 24, 0.08);
     transform: rotate(45deg);
 }
 .site-search-hit {
@@ -318,17 +318,17 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     border-radius: 999px;
     font-size: .65rem;
     font-weight: 700;
-    background: #eef2ff;
-    color: #334155;
+    background: #f8eef0;
+    color: #4d2a32;
 }
-.site-search-badge.is-page { background: #e8f1ff; color: #1d4ed8; }
+.site-search-badge.is-page { background: #f9eef0; color: #9c2c3d; }
 .site-search-badge.is-news { background: #fff1e8; color: #c2410c; }
 .site-search-badge.is-professor,
 .site-search-badge.is-faculty { background: #ecfdf5; color: #047857; }
 .site-search-badge.is-major,
-.site-search-badge.is-academics { background: #f5f3ff; color: #6d28d9; }
+.site-search-badge.is-academics { background: #f5f3ff; color: #8a2f4a; }
 .site-search-badge.is-faq,
-.site-search-badge.is-event { background: #f1f5f9; color: #475569; }
+.site-search-badge.is-event { background: #f1f5f9; color: #59434a; }
 .site-search-hit-title {
     font-weight: 700;
     font-size: .88rem;
@@ -345,7 +345,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 }
 .site-search-empty-title {
     font-weight: 700;
-    color: #334155;
+    color: #4d2a32;
     margin-bottom: .35rem;
     font-size: .9rem;
 }
@@ -429,16 +429,16 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 /* ── آیکون‌های navbar — هر کدام رنگ خودش ── */
 
 /* صفحه اصلی — آبی روشن */
-.nav-item:nth-child(1) .nav-link-flat i { color: #60b4ff; }
+.nav-item:nth-child(1) .nav-link-flat i { color: #f2c14e; }
 
 /* درباره موسسه — بنفش */
-.nav-item:nth-child(2) .nav-link-flat i { color: #b48bff; }
+.nav-item:nth-child(2) .nav-link-flat i { color: #e79bb0; }
 
 /* حوزه ریاست — طلایی */
 .nav-item:nth-child(3) .nav-link-flat i { color: #fbbf24; }
 
 /* معاونت‌ها — سبز نعنایی */
-.nav-item:nth-child(4) .nav-link-flat i { color: #34d399; }
+.nav-item:nth-child(4) .nav-link-flat i { color: #e0a05c; }
 
 /* گروه‌های آموزشی — نارنجی */
 .nav-item:nth-child(5) .nav-link-flat i { color: #fb923c; }
@@ -447,13 +447,13 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .nav-item:nth-child(6) .nav-link-flat i { color: #f0d080; }
 
 /* بانک اطلاعات علمی — سبز زیتونی */
-.nav-item:nth-child(7) .nav-link-flat i { color: #4ade80; }
+.nav-item:nth-child(7) .nav-link-flat i { color: #e07a5f; }
 
 /* گالری تصاویر — صورتی */
 .nav-item:nth-child(8) .nav-link-flat i { color: #f472b6; }
 
 /* تماس با ما — فیروزه‌ای */
-.nav-item:nth-child(9) .nav-link-flat i { color: #2dd4bf; }
+.nav-item:nth-child(9) .nav-link-flat i { color: #d3766f; }
 
 /* hover → آیکون‌ها سفید می‌شوند */
 .nav-link-flat:hover i,
@@ -466,14 +466,14 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 
 /* Dropdown */
 .nav-dd {
-    background: linear-gradient(180deg, #0d1f3c 0%, #0a1628 100%) !important;
+    background: linear-gradient(180deg, #3a0e18 0%, #2b0a11 100%) !important;
     border: none !important;
     border-radius: 0 0 10px 10px !important;
     box-shadow: 0 12px 32px rgba(0,0,0,0.55) !important;
     padding: 6px 0 !important;
     min-width: 240px;
     margin-top: 0 !important;
-    border-top: 2px solid rgba(96,180,255,0.25) !important;
+    border-top: 2px solid rgba(242, 193, 78,0.25) !important;
 }
 
 /* در منوی جمع‌شده، زیرمنو باید پهنای همان ستون را بگیرد — نه ۲۴۰
@@ -507,7 +507,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     }
 }
 .nav-dd-item {
-    color: #eaf3ff !important;
+    color: #fbf0f1 !important;
     font-size: 13px !important;
     font-weight: 600 !important;
     padding: 9px 20px !important;
@@ -519,18 +519,18 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .nav-dd-item:last-child { border-bottom: none !important; }
 .nav-dd-item:hover,
 .nav-dd-item:focus {
-    background: rgba(96,180,255,0.12) !important;
+    background: rgba(242, 193, 78,0.12) !important;
     color: #ffffff !important;
     padding-inline-start: 26px !important;
 }
 /* آیکون‌های داخل dropdown */
 .nav-dd-item i {
-    color: #7cc4ff;
+    color: #f3cf86;
     opacity: 1;
     transition: opacity 0.15s;
 }
 .nav-dd-item:hover i,
-.nav-dd-item:focus i { opacity: 1; color: #60b4ff; }
+.nav-dd-item:focus i { opacity: 1; color: #f2c14e; }
 
 /* ---- حالت موبایل ---- */
 @media (max-width: 1199px) {
@@ -540,7 +540,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
         position: static !important;
         box-shadow: none !important;
         background: rgba(255,255,255,0.04) !important;
-        border-right: 3px solid rgba(96,180,255,0.3) !important;
+        border-right: 3px solid rgba(242, 193, 78,0.3) !important;
         border-top: none !important;
         border-radius: 0 !important;
         margin-inline-start: 1rem;
@@ -572,7 +572,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
         position: sticky;
         top: 0;
         z-index: 2;
-        background: #0d2137 !important;
+        background: #2f0d15 !important;
     }
 }
 
@@ -673,7 +673,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .hero-slide::before {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(26,58,92,0.80) 0%, rgba(37,99,235,0.60) 100%);
+    background: linear-gradient(135deg, rgba(74, 18, 32,0.80) 0%, rgba(122, 31, 46,0.60) 100%);
 }
 .hero-content {
     position: relative; z-index: 2;
@@ -1036,13 +1036,13 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     position: absolute; inset: 0;
-    background: rgba(37, 99, 235, 0);
+    background: rgba(122, 31, 46, 0);
     display: flex; align-items: center; justify-content: center;
     color: white;
     font-size: 24px;
     transition: var(--transition);
 }
-.gallery-item:hover::after { background: rgba(37, 99, 235, 0.75); }
+.gallery-item:hover::after { background: rgba(122, 31, 46, 0.75); }
 .gallery-item:hover img { transform: scale(1.08); }
 
 /* ---- Alumni ---- */
@@ -1063,13 +1063,13 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 }
 
 /* ---- Footer ---- */
-.main-footer { background: #0f172a; color: #cbd5e1; margin-top: 60px; }
+.main-footer { background: #1e0a0f; color: #ded1d3; margin-top: 60px; }
 .footer-top { padding: 60px 0 40px; }
 .footer-logo { display: flex; align-items: center; gap: 12px; }
 .footer-logo-icon { font-size: 36px; color: var(--secondary); }
 .footer-logo h5 { color: white; font-weight: 800; }
-.footer-logo small { color: #64748b; }
-.footer-desc { font-size: 14px; line-height: 1.8; color: #94a3b8; }
+.footer-logo small { color: #7b636a; }
+.footer-desc { font-size: 14px; line-height: 1.8; color: #bda6ab; }
 .footer-title {
     color: white;
     font-weight: 800;
@@ -1089,7 +1089,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .footer-links { list-style: none; padding: 0; margin: 0; }
 .footer-links li { margin-bottom: 8px; }
 .footer-links a {
-    color: #94a3b8;
+    color: #bda6ab;
     text-decoration: none;
     font-size: 14px;
     transition: var(--transition);
@@ -1104,7 +1104,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     margin-bottom: 14px;
     align-items: flex-start;
     font-size: 14px;
-    color: #94a3b8;
+    color: #bda6ab;
 }
 .footer-contact li i { color: var(--secondary); margin-top: 3px; min-width: 16px; }
 .social-btn {
@@ -1122,25 +1122,25 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .social-btn.linkedin { background: #0077b5; }
 .social-btn.youtube { background: #ff0000; }
 .footer-bottom {
-    background: #030712;
+    background: #150609;
     padding: 16px 0;
     font-size: 13px;
-    color: #94a3b8;
+    color: #bda6ab;
 }
-.footer-bottom p { color: #94a3b8; }
-.footer-bottom-link { color: #cbd5e1; text-decoration: none; margin: 0 12px; font-size: 13px; transition: var(--transition); }
+.footer-bottom p { color: #bda6ab; }
+.footer-bottom-link { color: #ded1d3; text-decoration: none; margin: 0 12px; font-size: 13px; transition: var(--transition); }
 .footer-bottom-link:hover { color: var(--secondary); }
 
 /* ---- Footer Payment Bar ---- */
 .footer-payment-bar {
-    background: linear-gradient(90deg, #0b2540 0%, #10365a 100%);
+    background: linear-gradient(90deg, #2b0c13 0%, #54141f 100%);
     border-top: 2px solid var(--secondary);
-    color: #cbd5e1;
+    color: #ded1d3;
 }
 .payment-label {
     font-size: 13px;
     font-weight: 600;
-    color: #94a3b8;
+    color: #bda6ab;
     margin-inline-start: 8px;
 }
 .payment-label i {
@@ -1314,7 +1314,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 }
 .form-control:focus, .form-select:focus {
     border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(122, 31, 46, 0.1);
 }
 .form-label { font-weight: 600; color: var(--text-dark); margin-bottom: 6px; font-size: 14px; }
 .btn-primary-uni {
@@ -1498,7 +1498,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 /* فرم‌ها: خطا، راهنما و موفقیت در کنار کنترل قابل نمایش‌اند. */
 .form-control, .form-select { min-height: 44px; transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard), background-color var(--duration-fast) var(--easing-standard); }
-.form-control::placeholder { color: #7b8798; opacity: 1; }
+.form-control::placeholder { color: #8a7176; opacity: 1; }
 .form-control.is-invalid, .form-select.is-invalid, [aria-invalid="true"].form-control, [aria-invalid="true"].form-select { border-color: var(--danger); }
 .form-control.is-valid, .form-select.is-valid { border-color: var(--accent); }
 .invalid-feedback, .form-error { color: #b91c1c; font-size: .8125rem; font-weight: 600; margin-block-start: var(--space-1); }
@@ -1541,10 +1541,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* امکان فعال‌سازی تم تیره در آینده بدون بازنویسی کامپوننت‌ها. */
 [data-theme="dark"] {
     --text-dark: #e5e7eb;
-    --text-muted: #aab5c4;
-    --bg-light: #0f172a;
-    --bg-white: #172033;
-    --border: #334155;
+    --text-muted: #c3aeb2;
+    --bg-light: #1e0a0f;
+    --bg-white: #2a1017;
+    --border: #4d2a32;
     --shadow: 0 4px 24px rgba(0, 0, 0, .24);
     --shadow-lg: 0 8px 40px rgba(0, 0, 0, .38);
 }
@@ -1565,9 +1565,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
    سلکتور عمداً `:root[...]` است نه `[...]`: تعریف روشنِ همین متغیرها
    پایین‌تر در فایل می‌آید و با ویژگی برابر، آخری برنده می‌شد. */
 :root[data-theme="dark"] {
-    --bnr-cream-050: #16283c;
-    --bnr-cream-200: #10202f;
-    --bnr-cream-400: #0a1826;
+    --bnr-cream-050: #2a1017;
+    --bnr-cream-200: #200c12;
+    --bnr-cream-400: #180a0e;
     --bnr-ink-300: #ffeec2;
     --bnr-ink-500: #f5c95e;
     --bnr-ink-700: #d9a534;
@@ -1587,7 +1587,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 [data-theme="dark"] .acal {
     background:
         radial-gradient(120% 160% at 80% -10%, rgba(201, 146, 43, .10) 0%, transparent 58%),
-        linear-gradient(112deg, #16283c 0%, #101d2c 48%, #0a1723 100%);
+        linear-gradient(112deg, #2a1017 0%, #200d13 48%, #180a0f 100%);
 }
 [data-theme="dark"] .acal-card {
     background: var(--acal-bg,
@@ -1598,7 +1598,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
        عنوان بازنویسی می‌شدند و ماه، توضیح و دکمه رنگ حالت روشن را
        نگه می‌داشتند. */
     --acal-ink: #f2f7fc;
-    --acal-ink-soft: #c2d3e4;
+    --acal-ink-soft: #dcc9cc;
     --acal-accent: #f0d080;
 }
 /* حالت‌های مرحله دیگر زمینهٔ خودشان را ندارند، پس اینجا هم چیزی
@@ -1610,14 +1610,14 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
    همان‌قدر متن روشن را ناخوانا می‌کند که عکسِ بی‌پرده. */
 [data-theme="dark"] .acal-card.has-img::after {
     background: linear-gradient(180deg,
-        rgba(10, 22, 36, .62) 0%,
-        rgba(10, 22, 36, .88) 58%,
-        rgba(10, 22, 36, .95) 100%);
+        rgba(30, 10, 15, .62) 0%,
+        rgba(30, 10, 15, .88) 58%,
+        rgba(30, 10, 15, .95) 100%);
 }
-[data-theme="dark"] .topbar-search-box { background: #1c2b3d; border-color: #2b3f57; }
-[data-theme="dark"] .topbar-search-input { color: #e6edf5; }
-[data-theme="dark"] .topbar-search-clear { background: #24364c; color: #93a4b8; }
-[data-theme="dark"] .section-alt { background: #131f2c; }
+[data-theme="dark"] .topbar-search-box { background: #31141b; border-color: #4a2830; }
+[data-theme="dark"] .topbar-search-input { color: #f2e7e8; }
+[data-theme="dark"] .topbar-search-clear { background: #38181f; color: #b9a3a8; }
+[data-theme="dark"] .section-alt { background: #241016; }
 
 /* مرورگرهای کم‌توان و کاربرانی که حرکت کم می‌خواهند. */
 @media (prefers-reduced-motion: reduce) {
@@ -2052,8 +2052,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     padding: clamp(30px, 4.5vw, 56px) 0 clamp(26px, 3.5vw, 44px);
     background:
         radial-gradient(120% 160% at 80% -10%, rgba(201, 146, 43, .13) 0%, transparent 58%),
-        radial-gradient(90% 130% at 12% 110%, rgba(43, 108, 168, .10) 0%, transparent 60%),
-        linear-gradient(112deg, #ffffff 0%, #f3f7fc 48%, #eaf1f9 100%);
+        radial-gradient(90% 130% at 12% 110%, rgba(122, 31, 46, .10) 0%, transparent 60%),
+        linear-gradient(112deg, #ffffff 0%, #f3f7fc 48%, #f7edee 100%);
     color: var(--text-dark);
     overflow: hidden;
     isolation: isolate;
@@ -2122,7 +2122,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     position: absolute;
     top: -13px; inset-inline: -12px;
     height: 2px;
-    background: rgba(16, 54, 90, .14);
+    background: rgba(84, 20, 31, .14);
     z-index: 0;
 }
 .acal-node:first-child::before { inset-inline-start: 50%; }
@@ -2139,14 +2139,14 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
        می‌خوانند. پیش از این هر عنصر رنگ خودش را داشت و برای حالت
        تیره فقط دوتاشان بازنویسی شده بود؛ بقیه رنگ حالت روشن را
        نگه می‌داشتند و روی زمینهٔ تیره محو می‌شدند. */
-    --acal-ink: #0d2137;
-    --acal-ink-soft: #3c5470;
+    --acal-ink: #2f0d15;
+    --acal-ink-soft: #5a3038;
     /* رنگ مرحله برای متن ریز روی زمینهٔ روشن کم‌کنتراست است —
        طلایی #b8862b روی سفید حدود ۳٫۶:۱ می‌دهد، زیر حداقل ۴٫۵:۱.
        آمیختنش با سرمه‌ای، هویت رنگی مرحله را نگه می‌دارد و متن را
        خوانا می‌کند. */
     --acal-accent: var(--tone);
-    --acal-accent: color-mix(in srgb, var(--tone) 62%, #0d2137);
+    --acal-accent: color-mix(in srgb, var(--tone) 62%, #2f0d15);
     position: relative;
     z-index: 1;
     display: flex; flex-direction: column; align-items: center;
@@ -2168,7 +2168,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     /* لبهٔ نورانی طلایی */
     box-shadow:
         0 1px 0 rgba(255, 255, 255, .9) inset,
-        0 8px 22px -16px rgba(16, 54, 90, .5);
+        0 8px 22px -16px rgba(84, 20, 31, .5);
     transition: transform var(--duration-base) var(--easing-standard),
                 box-shadow var(--duration-base) var(--easing-standard),
                 border-color var(--duration-base) var(--easing-standard);
@@ -2193,7 +2193,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .acal-cap i {
     font-size: 13px;
     color: #ffffff;
-    filter: drop-shadow(0 1px 1px rgba(16, 54, 90, .45));
+    filter: drop-shadow(0 1px 1px rgba(84, 20, 31, .45));
 }
 
 .acal-day {
@@ -2263,12 +2263,12 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --tone-line: #ecdcb8; --tone-wash: #fdf8ec;
 }
 .acal-card.tone-teal {
-    --tone: #17827c; --tone-soft: rgba(23, 130, 124, .12);
+    --tone: #17827c; --tone-soft: rgba(150, 70, 50, .12);
     --tone-line: #cfe6e3; --tone-wash: #f0faf8;
 }
 .acal-card.tone-violet {
-    --tone: #6b5cc4; --tone-soft: rgba(107, 92, 196, .12);
-    --tone-line: #ddd8f2; --tone-wash: #f6f4fd;
+    --tone: #a04a63; --tone-soft: rgba(160, 74, 99, .12);
+    --tone-line: #eddadf; --tone-wash: #f6f4fd;
 }
 .acal-card.tone-rose {
     --tone: #c4566f; --tone-soft: rgba(196, 86, 111, .12);
@@ -2279,8 +2279,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --tone-line: #f0dcc4; --tone-wash: #fdf6ee;
 }
 .acal-card.tone-sky {
-    --tone: #3579b4; --tone-soft: rgba(53, 121, 180, .12);
-    --tone-line: #d3e3f1; --tone-wash: #f1f7fc;
+    --tone: #a03a4a; --tone-soft: rgba(156, 44, 61, .12);
+    --tone-line: #e9d7da; --tone-wash: #f1f7fc;
 }
 
 /* ── وضعیت مراحل ──
@@ -2295,11 +2295,11 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 /* نیم‌دایرهٔ مرحلهٔ انجام‌شده کمی روشن‌تر است تا تیک دیده شود */
 .acal-node.is-past .acal-cap {
-    background: color-mix(in srgb, var(--tone) 55%, #8fa3b8);
+    background: color-mix(in srgb, var(--tone) 55%, #b5a0a5);
     box-shadow: none;
 }
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .acal-node.is-past .acal-cap { background: #7f93a8; }
+    .acal-node.is-past .acal-cap { background: #a68e93; }
 }
 /* تیک کوچک روی نیم‌دایرهٔ مرحلهٔ انجام‌شده */
 .acal-node.is-past .acal-cap i::before { content: "\f00c"; }
@@ -2312,7 +2312,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     box-shadow:
         0 0 0 1px var(--tone),
         0 0 30px -12px var(--tone),
-        0 12px 30px -20px rgba(16, 54, 90, .4);
+        0 12px 30px -20px rgba(84, 20, 31, .4);
 }
 
 .acal-node.is-next .acal-card {
@@ -2320,7 +2320,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     box-shadow:
         0 1px 0 rgba(255, 255, 255, .9) inset,
         0 0 20px -12px var(--tone),
-        0 8px 22px -16px rgba(16, 54, 90, .5);
+        0 8px 22px -16px rgba(84, 20, 31, .5);
 }
 
 /* کارت قابل کلیک */
@@ -2331,7 +2331,7 @@ a.acal-card:focus-visible {
     box-shadow:
         0 0 0 1px var(--tone),
         0 0 28px -12px var(--tone),
-        0 18px 38px -20px rgba(16, 54, 90, .4);
+        0 18px 38px -20px rgba(84, 20, 31, .4);
     outline: none;
 }
 a.acal-card:hover .acal-go { opacity: 1; }
@@ -2432,9 +2432,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     display: grid; place-items: center;
     border: 1px solid rgba(245, 223, 160, .35);
     border-radius: 50%;
-    background: linear-gradient(140deg, var(--primary), #061a2c);
+    background: linear-gradient(140deg, var(--primary), #1a070c);
     color: var(--bnr-gold-300);
-    box-shadow: 0 6px 20px rgba(6, 26, 44, .35);
+    box-shadow: 0 6px 20px rgba(26, 7, 12, .35);
     cursor: pointer;
     opacity: 0; visibility: hidden;
     transform: translateY(10px);
@@ -2458,7 +2458,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     max-width: min(90vw, 460px);
     padding: 12px 20px;
     border-radius: 10px;
-    background: #1a3a6b;
+    background: #7a1f2e;
     color: #fff;
     font-size: 14px;
     line-height: 1.6;
@@ -2505,14 +2505,14 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border: 1px solid var(--gray-300, #dee2e6);
     border-radius: 8px;
     background: #fff;
-    color: var(--primary, #1a3a6b);
+    color: var(--primary, #7a1f2e);
     cursor: pointer;
     transition: background .18s ease, transform .18s ease;
 }
 
-.captcha-refresh:hover { background: #eef2f8; }
+.captcha-refresh:hover { background: #f8eef0; }
 .captcha-refresh:active { transform: scale(.94); }
-.captcha-refresh:focus-visible { outline: 2px solid var(--primary, #1a3a6b); outline-offset: 2px; }
+.captcha-refresh:focus-visible { outline: 2px solid var(--primary, #7a1f2e); outline-offset: 2px; }
 .captcha-refresh.is-spinning i { animation: captcha-spin .5s linear; }
 
 .captcha-input {
@@ -2543,8 +2543,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     padding: 10px 16px;
     font-size: 13px;
     font-weight: 700;
-    color: var(--primary, #1a3a6b);
-    background: rgba(26, 58, 107, .06);
+    color: var(--primary, #7a1f2e);
+    background: rgba(122, 31, 46, .06);
     border-bottom: 1px solid var(--gray-200, #e9ecef);
 }
 
@@ -2564,8 +2564,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .today-danger  { border-inline-start-color: #dc3545; }
 .today-warning { border-inline-start-color: #f59e0b; }
-.today-primary { border-inline-start-color: #1a3a6b; }
-.today-info    { border-inline-start-color: #0dcaf0; }
+.today-primary { border-inline-start-color: #7a1f2e; }
+.today-info    { border-inline-start-color: #c98a3a; }
 .today-success { border-inline-start-color: #198754; }
 
 .today-icon { flex: 0 0 auto; width: 20px; text-align: center; opacity: .75; }
@@ -2594,15 +2594,15 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     flex: 0 0 auto;
     padding: 5px 14px;
     border-radius: 8px;
-    background: var(--primary, #1a3a6b);
+    background: var(--primary, #7a1f2e);
     color: #fff;
     font-size: 13px;
     text-decoration: none;
     white-space: nowrap;
 }
 
-.today-action:hover { background: #142f57; color: #fff; }
-.today-action:focus-visible { outline: 2px solid #142f57; outline-offset: 2px; }
+.today-action:hover { background: #45121e; color: #fff; }
+.today-action:focus-visible { outline: 2px solid #45121e; outline-offset: 2px; }
 
 @media (max-width: 575px) {
     .today-item { flex-wrap: wrap; }
@@ -2757,7 +2757,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     /* یک خط فاصله تا عنوان زیرش — gap لوح برای همهٔ اجزا یکی است
        و اینجا کم بود. */
     margin-block-end: 1.6rem;
-    filter: drop-shadow(0 12px 30px rgba(15, 23, 42, .24));
+    filter: drop-shadow(0 12px 30px rgba(30, 10, 15, .24));
 }
 
 .pres-portrait {
@@ -2768,7 +2768,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     overflow: hidden;
     background: var(--bg-white, #fff);
     border: 1px solid var(--border, #e5e7eb);
-    box-shadow: 0 14px 38px -24px rgba(15, 23, 42, .55);
+    box-shadow: 0 14px 38px -24px rgba(30, 10, 15, .55);
 }
 
 /* عکس همان‌طور که آپلود شده، بدون برش: هر عدد ثابتی برای
@@ -2779,7 +2779,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     display: grid;
     place-items: center;
     aspect-ratio: 4 / 5;
-    background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
+    background: var(--gradient-primary, linear-gradient(135deg, #7a1f2e, #3a0e18));
     color: rgba(255, 255, 255, .3);
     font-size: 5rem;
 }
@@ -2790,7 +2790,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     gap: 4px;
     padding: 16px 20px 18px;
     /* عنابی موسسه، نه سرمه‌ای.
-       ‎#0d2144‎ از تم قدیمی مانده بود و این کارت تنها جای صفحه بود
+       ‎#33101a‎ از تم قدیمی مانده بود و این کارت تنها جای صفحه بود
        که آبی می‌ماند، کنار لوح عنابی و طلایی کنارش. */
     background: linear-gradient(135deg, #4e1220 0%, #3a0f1a 55%, #2a0d14 100%);
     border-block-start: 3px solid var(--bnr-gold-300, #f0d080);
@@ -2854,8 +2854,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-radius: 16px;
     background: var(--bg-white, #fff);
     border: 1px solid var(--border, #e5e7eb);
-    border-inline-start: 5px solid var(--tone, #1a3a6b);
-    box-shadow: 0 8px 26px -22px rgba(15, 23, 42, .5);
+    border-inline-start: 5px solid var(--tone, #7a1f2e);
+    box-shadow: 0 8px 26px -22px rgba(30, 10, 15, .5);
 }
 
 .pres-cv-card-title {
@@ -2867,7 +2867,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-block-end: 1px solid var(--border, #e5e7eb);
     font-size: 16.5px;
     font-weight: 800;
-    color: var(--tone, #1a3a6b);
+    color: var(--tone, #7a1f2e);
 }
 
 .pres-cv-card-title i {
@@ -2881,7 +2881,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     font-size: 15px;
 }
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .pres-cv-card-title i { background: rgba(26, 58, 107, .12); }
+    .pres-cv-card-title i { background: rgba(122, 31, 46, .12); }
 }
 
 .pres-cv-list { list-style: none; margin: 0; padding: 0; }
@@ -2904,25 +2904,25 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     inline-size: 8px;
     block-size: 8px;
     border-radius: 50%;
-    background: var(--tone, #1a3a6b);
+    background: var(--tone, #7a1f2e);
 }
 
 /* شش رنگ برای شش بخش رزومه */
 .pres-tone-1 { --tone: #1a6f5c; }
-.pres-tone-2 { --tone: #1a3a6b; }
+.pres-tone-2 { --tone: #7a1f2e; }
 .pres-tone-3 { --tone: #a3671b; }
 .pres-tone-4 { --tone: #8a5a1f; }
-.pres-tone-5 { --tone: #6b3f8f; }
+.pres-tone-5 { --tone: #7c3350; }
 .pres-tone-6 { --tone: #a33b4e; }
 
 
 [data-theme="dark"] .pres-cv-card,
-[data-theme="dark"] .pres-cv-list li { color: #dfe9f3; }
+[data-theme="dark"] .pres-cv-list li { color: #f0e6e7; }
 [data-theme="dark"] .pres-tone-1 { --tone: #4fd1ad; }
-[data-theme="dark"] .pres-tone-2 { --tone: #7fb2f0; }
+[data-theme="dark"] .pres-tone-2 { --tone: #f0b98c; }
 [data-theme="dark"] .pres-tone-3 { --tone: #eab464; }
 [data-theme="dark"] .pres-tone-4 { --tone: #e0a86b; }
-[data-theme="dark"] .pres-tone-5 { --tone: #c39ce8; }
+[data-theme="dark"] .pres-tone-5 { --tone: #e6aebd; }
 [data-theme="dark"] .pres-tone-6 { --tone: #f08a9c; }
 
 @media (max-width: 767.98px) {
@@ -2954,7 +2954,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-radius: 14px;
     background: var(--bg-white, #fff);
     border: 1px solid var(--border, #e5e7eb);
-    border-block-start: 4px solid var(--tile, #1a3a6b);
+    border-block-start: 4px solid var(--tile, #7a1f2e);
     color: inherit;
     text-align: center;
     text-decoration: none;
@@ -2962,7 +2962,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .pres-tile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 26px -18px rgba(15, 23, 42, .55);
+    box-shadow: 0 10px 26px -18px rgba(30, 10, 15, .55);
     color: inherit;
 }
 .pres-tile:focus-visible { outline: 2px solid var(--tile); outline-offset: 2px; }
@@ -2978,7 +2978,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     font-size: 17px;
 }
 @supports not (color: color-mix(in srgb, red 50%, blue)) {
-    .pres-tile i { background: rgba(26, 58, 107, .12); }
+    .pres-tile i { background: rgba(122, 31, 46, .12); }
 }
 
 .pres-tile-label { font-size: 12px; color: var(--gray-600, #6c757d); }
@@ -2990,16 +2990,16 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 .pres-tile-1 { --tile: #1a6f5c; }
-.pres-tile-2 { --tile: #1a3a6b; }
+.pres-tile-2 { --tile: #7a1f2e; }
 .pres-tile-3 { --tile: #a3671b; }
-.pres-tile-4 { --tile: #6b3f8f; }
+.pres-tile-4 { --tile: #7c3350; }
 .pres-tile-5 { --tile: #a33b4e; }
 
 [data-theme="dark"] .pres-tile { background: var(--bg-white); }
 [data-theme="dark"] .pres-tile-1 { --tile: #4fd1ad; }
-[data-theme="dark"] .pres-tile-2 { --tile: #7fb2f0; }
+[data-theme="dark"] .pres-tile-2 { --tile: #f0b98c; }
 [data-theme="dark"] .pres-tile-3 { --tile: #eab464; }
-[data-theme="dark"] .pres-tile-4 { --tile: #c39ce8; }
+[data-theme="dark"] .pres-tile-4 { --tile: #e6aebd; }
 [data-theme="dark"] .pres-tile-5 { --tile: #f08a9c; }
 
 @media print {
@@ -3058,7 +3058,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .fac-majors a { color: var(--text-dark, #241a1c); font-weight: 600; text-decoration: none; }
 .fac-majors a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
 .fac-degree { font-size: 11px; color: var(--text-muted, #6b5b5e); white-space: nowrap; }
-[data-theme="dark"] .fac-majors a { color: #e4edf6; }
+[data-theme="dark"] .fac-majors a { color: #f2e6e8; }
 
 /* ── صفحهٔ مدیران گروه‌ها ─────────────────────────────────── */
 .grp-head-grid {
@@ -3099,7 +3099,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     text-decoration: none;
 }
 .grp-head-more:hover { text-decoration: underline; }
-[data-theme="dark"] .grp-head-contact a { color: #dfe9f3; }
+[data-theme="dark"] .grp-head-contact a { color: #f0e6e7; }
 
 /* ── کارت گروه: مدیر گروه با عکس ─────────────────────────── */
 .grp-head {
@@ -3124,7 +3124,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .grp-head-empty {
     display: grid;
     place-items: center;
-    background: var(--gradient-primary, linear-gradient(135deg, #1a3a6b, #0d1f3c));
+    background: var(--gradient-primary, linear-gradient(135deg, #7a1f2e, #3a0e18));
     color: rgba(255, 255, 255, .8);
     font-size: 20px;
 }
@@ -3143,7 +3143,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     font-size: clamp(15px, 1.7vw, 18px);
     font-weight: 800;
     line-height: 1.6;
-    color: var(--primary, #1a3a6b);
+    color: var(--primary, #7a1f2e);
     text-wrap: balance;
 }
 
@@ -3160,9 +3160,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .board-meta { font-size: 13px; line-height: 1.9; color: var(--gray-700, #495057); }
 
-[data-theme="dark"] .board-name { color: #cfe0f5; }
+[data-theme="dark"] .board-name { color: #ecd9dd; }
 [data-theme="dark"] .board-role { background: rgba(240, 208, 128, .16); color: var(--bnr-gold-300, #f0d080); }
-[data-theme="dark"] .board-meta { color: #b9c9db; }
+[data-theme="dark"] .board-meta { color: #d9c2c6; }
 
 /* ── نمایش تمام‌صفحهٔ تصویر ─────────────────────────────────
    svh نه vh: روی مرورگر موبایل، vh ارتفاع نوار آدرس را هم حساب
@@ -3214,12 +3214,12 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     place-items: center;
     border: 1px solid rgba(255, 255, 255, .35);
     border-radius: 50%;
-    background: rgba(10, 22, 40, .75);
+    background: rgba(43, 10, 17, .75);
     color: #fff;
     font-size: 20px;
     cursor: pointer;
 }
-.zoom-close:hover { background: rgba(10, 22, 40, .95); }
+.zoom-close:hover { background: rgba(43, 10, 17, .95); }
 .zoom-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 .zoom-hint {
@@ -3323,7 +3323,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     display: inline-block;
     padding: 6px 22px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #0d2144, #1a3a6b);
+    background: linear-gradient(135deg, #33101a, #7a1f2e);
     color: var(--bnr-gold-300, #f0d080);
     font-size: 12.5px;
     font-weight: 700;
@@ -3335,7 +3335,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     font-size: clamp(26px, 3.6vw, 42px);
     font-weight: 800;
     line-height: 1.3;
-    color: #0d2144;
+    color: #33101a;
     text-wrap: balance;
 }
 
@@ -3745,14 +3745,14 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .fac-card-1 { --tone: #7a1f2e; }
 .fac-card-2 { --tone: #8a6412; }
-.fac-card-3 { --tone: #1f5c4a; }
+.fac-card-3 { --tone: #8a4a1f; }
 
 [data-theme="dark"] .fac-card { background: var(--bg-white); }
 [data-theme="dark"] .fac-groups li a,
 [data-theme="dark"] .fac-groups li span { background: rgba(255, 255, 255, .05); }
 [data-theme="dark"] .fac-card-1 { --tone: #f2a0ab; }
 [data-theme="dark"] .fac-card-2 { --tone: #e5c77a; }
-[data-theme="dark"] .fac-card-3 { --tone: #6fd1b0; }
+[data-theme="dark"] .fac-card-3 { --tone: #f0b98c; }
 
 /* ── رشته‌های دانشکده، دسته‌بندی‌شده زیر گروه ────────────────
    دانشکدهٔ مدیریت ۲۷ رشته دارد. ریختنشان در یک شبکه یعنی دیواری از
@@ -3973,7 +3973,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 /* ردیف‌های زیرمنو، روی پنل کاغذی.
-   ‎#b8cce4‎ از تم سرمه‌ای قدیمی مانده بود و کنار عنابی بیگانه بود؛
+   آبیِ روشنِ تم سرمه‌ای قدیمی کنار عنابی بیگانه بود؛
    طلا روی عنابی هم فقط ۶٫۸:۱ می‌داد. مرکب گرم روی کاغذ ۱۶:۱ است. */
 .vice-sub .nav-dd-sub {
     color: var(--text-dark, #241a1c) !important;
@@ -4168,7 +4168,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .council-side li a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
 
 [data-theme="dark"] .council-card { background: var(--bg-white); }
-[data-theme="dark"] .council-side li a { color: #dfe9f3; }
+[data-theme="dark"] .council-side li a { color: #f0e6e7; }
 
 /* ── نوار بالای فهرست رشته‌ها: فیلتر در یک سو، برداشتن در سوی دیگر ── */
 .majors-bar {
@@ -4210,13 +4210,13 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    می‌خواهند (کارت‌های شوراها). ── */
 .tone-1 { --tone: var(--primary, #7a1f2e);  --tone-soft: rgba(122, 31, 46, .10); }
 .tone-2 { --tone: var(--gold-ink, #8a6412); --tone-soft: rgba(138, 100, 18, .12); }
-.tone-3 { --tone: #1f5c4a;                  --tone-soft: rgba(31, 92, 74, .12); }
-.tone-4 { --tone: #4a3b8a;                  --tone-soft: rgba(74, 59, 138, .12); }
+.tone-3 { --tone: #8a4a1f;                  --tone-soft: rgba(138, 74, 31, .12); }
+.tone-4 { --tone: #6d2a44;                  --tone-soft: rgba(109, 42, 68, .12); }
 
 [data-theme="dark"] .tone-1 { --tone: #f2a0ab; --tone-soft: rgba(242, 160, 171, .12); }
 [data-theme="dark"] .tone-2 { --tone: #e5c77a; --tone-soft: rgba(229, 199, 122, .12); }
-[data-theme="dark"] .tone-3 { --tone: #6fd1b0; --tone-soft: rgba(111, 209, 176, .12); }
-[data-theme="dark"] .tone-4 { --tone: #b0a4ef; --tone-soft: rgba(176, 164, 239, .12); }
+[data-theme="dark"] .tone-3 { --tone: #f0b98c; --tone-soft: rgba(240, 185, 140, .12); }
+[data-theme="dark"] .tone-4 { --tone: #eaa9bb; --tone-soft: rgba(234, 169, 187, .12); }
 
 /* سند سرفصلی که فایلش روی سرور نیست — کارت هست، لینک نیست */
 .cur-card.is-pending {
@@ -4321,18 +4321,18 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     padding: clamp(18px, 2.6vw, 28px) clamp(20px, 3vw, 36px);
     border: 0;
     border-radius: var(--radius, 14px);
-    background: linear-gradient(135deg, #14453a 0%, #1f5c4a 55%, #2f7d63 100%);
+    background: linear-gradient(135deg, #14453a 0%, #8a4a1f 55%, #2f7d63 100%);
     color: #fff;
     text-align: start;
     font: inherit;
     cursor: pointer;
-    box-shadow: 0 14px 36px -20px rgba(20, 69, 58, .8);
+    box-shadow: 0 14px 36px -20px rgba(105, 56, 24, .8);
     transition: transform .25s, box-shadow .25s, filter .25s;
 }
 .admit-card:hover {
     filter: brightness(1.08);
     transform: translateY(-3px);
-    box-shadow: 0 20px 46px -20px rgba(20, 69, 58, .9);
+    box-shadow: 0 20px 46px -20px rgba(105, 56, 24, .9);
 }
 .admit-card:focus-visible {
     outline: 3px solid var(--gold-light, #c9a34e);
@@ -4422,10 +4422,10 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    و هر پنج روی پنل کرم بالای ۷:۱ کنتراست دارند. طلا از ‎#8a6412‎
    تیره‌تر شد چون آنجا ۵٫۱:۱ می‌داد و از بقیه ضعیف‌تر بود. */
 .vice-hue-1 { --hue: #7a1f2e; --hue-soft: rgba(122, 31, 46, .09); }
-.vice-hue-2 { --hue: #1f5c4a; --hue-soft: rgba(31, 92, 74, .09); }
+.vice-hue-2 { --hue: #7d4319; --hue-soft: rgba(125, 67, 25, .09); }
 .vice-hue-3 { --hue: #6b4d0e; --hue-soft: rgba(107, 77, 14, .10); }
-.vice-hue-4 { --hue: #4a3b8a; --hue-soft: rgba(74, 59, 138, .09); }
-.vice-hue-5 { --hue: #1a5570; --hue-soft: rgba(26, 85, 112, .09); }
+.vice-hue-4 { --hue: #6d2a44; --hue-soft: rgba(109, 42, 68, .09); }
+.vice-hue-5 { --hue: #8a3a2a; --hue-soft: rgba(138, 58, 42, .09); }
 
 .vice-group .vice-sub { border-inline-start-color: var(--hue, #c9a34e); }
 .vice-group .vice-sub .nav-dd-sub::before { background: var(--hue, #8a6412); }
@@ -4442,10 +4442,10 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 /* در حالت تیره رنگ‌های سیر خوانده نمی‌شوند؛ روشن‌ترشان می‌کنیم */
 [data-theme="dark"] .vice-hue-1 { --hue: #f2a0ab; }
-[data-theme="dark"] .vice-hue-2 { --hue: #6fd1b0; }
+[data-theme="dark"] .vice-hue-2 { --hue: #f0b98c; }
 [data-theme="dark"] .vice-hue-3 { --hue: #e5c77a; }
-[data-theme="dark"] .vice-hue-4 { --hue: #b0a4ef; }
-[data-theme="dark"] .vice-hue-5 { --hue: #7fc4e8; }
+[data-theme="dark"] .vice-hue-4 { --hue: #eaa9bb; }
+[data-theme="dark"] .vice-hue-5 { --hue: #f0a98c; }
 [data-theme="dark"] .vice-group .vice-sub .nav-dd-sub:hover,
 [data-theme="dark"] .vice-group .vice-sub .nav-dd-sub:focus {
     background: rgba(255, 255, 255, .08) !important;

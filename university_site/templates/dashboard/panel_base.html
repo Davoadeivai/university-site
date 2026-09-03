@@ -33,10 +33,10 @@
     transition: background .15s, color .15s;
 }
 .panel-nav a i { width: 18px; text-align: center; color: var(--text-muted); }
-.panel-nav a:hover { background: rgba(43,108,168,.09); color: var(--primary); }
+.panel-nav a:hover { background: rgba(164, 47, 75,.09); color: var(--primary); }
 .panel-nav a:hover i { color: var(--primary); }
 .panel-nav a.active {
-    background: rgba(43,108,168,.13);
+    background: rgba(164, 47, 75,.13);
     color: var(--primary);
     font-weight: 700;
 }
@@ -100,7 +100,7 @@
             <h1 class="page-header-title mb-0">{{ page_title }}</h1>
             <div class="d-flex align-items-center gap-2">
                 {% if role == 'professor' %}
-                <span class="badge" style="background:var(--violet,#6b5cc4);font-size:13px;padding:6px 14px;border-radius:20px;">
+                <span class="badge" style="background:var(--violet,#c45c67);font-size:13px;padding:6px 14px;border-radius:20px;">
                     <i class="fas fa-chalkboard-teacher me-1"></i> استاد
                 </span>
                 {% elif role == 'staff' %}

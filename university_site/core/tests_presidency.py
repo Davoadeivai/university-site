@@ -356,7 +356,7 @@ class WcuPlaqueTests(TestCase):
 
     def test_the_title_and_subtitle_carry_their_own_colour(self):
         css = _css_text()
-        self.assertIn('color: #0d2144', _rule(css, '.pres-cv-title'))
+        self.assertIn('color: #33101a', _rule(css, '.pres-cv-title'))
         self.assertIn('color: #8a1f2b', _rule(css, '.pres-cv-sub'))
 
     def test_both_themes_are_covered(self):

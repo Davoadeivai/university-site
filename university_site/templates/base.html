@@ -242,7 +242,39 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">معرفی و تاریخچه</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم انداز و اهداف</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:people' %}">هیئت علمی</a></li>
+                        {% comment %}
+                        ارکان موسسه — هیئت مؤسس و هیئت امنا و دبیرخانه‌هایشان.
+
+                        پیش از این یک آیتم بود به نام «هیئت علمی» که به
+                        صفحهٔ «اعضای موسسه» می‌رفت؛ آن صفحه پنج بخش دارد
+                        و هیئت علمی فقط یکی از آن‌هاست. حالا هر رکن
+                        زیرشاخهٔ خودش را دارد و هر کدام به بخش خودش در
+                        همان صفحه می‌رود.
+
+                        دبیرخانهٔ هیئت امنا از «حوزه ریاست» به اینجا آمد،
+                        چون رکنِ خودش زیر همین سرشاخه است، و دبیرخانهٔ
+                        هیئت مؤسس هم کنارش اضافه شد.
+                        {% endcomment %}
+                        <li class="vice-group vice-hue-1 has-sub">
+                            <div class="vice-lead-row">
+                                <a class="dropdown-item nav-dd-item vice-lead" href="{% url 'directory:people' %}">
+                                    <span class="vice-lead-text">ارکان موسسه</span>
+                                </a>
+                                <button type="button" class="vice-toggle" aria-expanded="false"
+                                        aria-label="ارکان موسسه">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <ul class="vice-sub">
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#founder">هیئت مؤسس</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-moases' %}">دبیرخانه هیأت مؤسس</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#trustee">هیئت امنا</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#faculty">اعضای هیئت علمی</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:group_heads' %}">مدیران گروه آموزشی</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#lecturer">مدرسین</a></li>
+                            </ul>
+                        </li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:staff' %}">دفترچه تلفن و مسئولان</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#chart">چارت سازمانی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:city_behnammir' %}">آشنایی با شهر بابلسر</a></li>
@@ -259,7 +291,6 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office' %}">دفتر ریاست</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'modir-daftar' %}">مدیر دفتر ریاست</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-raise' %}">دبیرخانه هیأت رئیسه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:presidency_office_unit' 'dabirkhane-jazb' %}">دبیرخانه هیأت اجرایی جذب هیأت علمی</a></li>
 
                         {% comment %}
