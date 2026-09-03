@@ -1729,10 +1729,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --bnr-ink-500: #55380a;
     --bnr-ink-700: #241903;
 
-    --bnr-h: 96px;
-    --bnr-h-md: 78px;
-    --bnr-h-sm: 64px;
-    --bnr-h-cond: 56px;
+    --bnr-h: 118px;
+    --bnr-h-md: 96px;
+    --bnr-h-sm: 76px;
+    --bnr-h-cond: 64px;
 }
 
 .site-banner {
@@ -1811,7 +1811,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .bnr-mark { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .bnr-mark img {
     display: block;
-    height: calc(var(--bnr-h) - 26px);
+    height: calc(var(--bnr-h) - 18px);
     width: auto;
     transition: height var(--duration-base) var(--easing-standard),
                 filter .4s var(--easing-standard);
@@ -1843,8 +1843,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
        ۱۳۹ پیکسل ارتفاع می‌گرفت، سربرگ کش می‌آمد و نام موسسه از
        قاب بیرون می‌رفت. contain یعنی هر نسبتی داخل همین مربع
        جا می‌شود. */
-    inline-size: clamp(38px, 4.6vw, 64px);
-    block-size: clamp(38px, 4.6vw, 64px);
+    inline-size: clamp(44px, 5.4vw, 76px);
+    block-size: clamp(44px, 5.4vw, 76px);
     object-fit: contain;
     /* نشان یک دایرهٔ وسط‌چین روی زمینهٔ سفید است، نه PNG شفاف؛
        گرد کردن قاب، چهار گوشهٔ سفید را می‌برد بدون اینکه لازم
@@ -1859,7 +1859,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
        فارسی روی سیستمی که Arial فارسی ندارد هم درست بنشینند. */
     font-family: Arial, 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
     font-weight: 800;
-    font-size: clamp(1.3rem, 3.2vw, 2.45rem);
+    font-size: clamp(1.4rem, 3.4vw, 2.7rem);
     letter-spacing: .012em;
     line-height: 1.25;
     white-space: nowrap;
@@ -1923,7 +1923,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .bnr-state { display: flex; align-items: center; gap: 11px; min-width: 0; }
 .bnr-state img {
     display: block;
-    height: calc(var(--bnr-h) - 34px);
+    height: calc(var(--bnr-h) - 22px);
     width: auto;
     transition: height var(--duration-base) var(--easing-standard);
     /* این نشان خط‌نگارهٔ سفید است و روی زمینهٔ روشن ناپدید می‌شد؛
@@ -1934,8 +1934,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         drop-shadow(0 1px 2px rgba(255, 255, 255, .7));
 }
 .bnr-min {
-    font-size: clamp(.56rem, .78vw, .69rem);
-    line-height: 1.75;
+    font-size: clamp(.72rem, 1.02vw, .92rem);
+    line-height: 1.7;
     /* «جمهوری اسلامی ایران / وزارت علوم» و نام انگلیسی، هر دو
        نیمه‌شفاف بودند و از دو قدمی خوانده نمی‌شدند. */
     color: rgba(45, 32, 6, .95);
@@ -1944,9 +1944,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     text-align: left;
 }
 .bnr-en {
-    font-size: clamp(.52rem, .74vw, .66rem);
-    letter-spacing: .1em;
-    line-height: 1.6;
+    font-size: clamp(.68rem, .96vw, .86rem);
+    letter-spacing: .08em;
+    line-height: 1.55;
     color: rgba(45, 32, 6, .92);
     font-weight: 600;
     direction: ltr;
@@ -2002,8 +2002,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 /* ── حالت فشرده هنگام اسکرول ── */
 .site-header.is-condensed .site-banner > a { height: var(--bnr-h-cond); }
-.site-header.is-condensed .bnr-mark img { height: calc(var(--bnr-h-cond) - 18px); }
-.site-header.is-condensed .bnr-state img { height: calc(var(--bnr-h-cond) - 22px); }
+.site-header.is-condensed .bnr-mark img { height: calc(var(--bnr-h-cond) - 14px); }
+.site-header.is-condensed .bnr-state img { height: calc(var(--bnr-h-cond) - 18px); }
+.site-header.is-condensed .bnr-wcu { inline-size: 42px; block-size: 42px; }
 .site-header.is-condensed .bnr-fa { font-size: clamp(.92rem, 1.6vw, 1.15rem); }
 .site-header.is-condensed .bnr-sub,
 .site-header.is-condensed .bnr-rule,
@@ -2013,8 +2014,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* ── واکنش‌گرا: حذف عناصر، نه کوچک‌کردن تا ناخوانایی ── */
 @media (max-width: 1100px) {
     .site-banner > a { height: var(--bnr-h-md); }
-    .bnr-mark img { height: calc(var(--bnr-h-md) - 22px); }
-    .bnr-state img { height: calc(var(--bnr-h-md) - 28px); }
+    .bnr-mark img { height: calc(var(--bnr-h-md) - 16px); }
+    .bnr-state img { height: calc(var(--bnr-h-md) - 20px); }
     .bnr-en, .bnr-min { display: none; }
 }
 @media (max-width: 640px) {
@@ -2023,8 +2024,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         grid-template-columns: auto 1fr auto;
         gap: 9px;
     }
-    .bnr-mark img { height: calc(var(--bnr-h-sm) - 18px); }
-    .bnr-state img { height: calc(var(--bnr-h-sm) - 22px); }
+    .bnr-mark img { height: calc(var(--bnr-h-sm) - 14px); }
+    .bnr-state img { height: calc(var(--bnr-h-sm) - 18px); }
+    /* روی موبایل جا برای سه نشان نیست؛ نام موسسه می‌ماند */
+    .bnr-wcu { display: none; }
     .bnr-sub, .bnr-rule { display: none; }
     .bnr-fa { font-size: .95rem; letter-spacing: 0; }
     /* روی موبایل پارالاکس معنا ندارد و فقط باتری می‌برد */

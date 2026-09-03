@@ -32,20 +32,27 @@ class HeaderRevisionTests(TestCase):
         block = css[start:css.index('}', start)]
         self.assertIn('font-family: Arial', block)
         # اندازهٔ بیشینه باید از نسخهٔ قبلی (1.9rem) بزرگ‌تر باشد
-        self.assertIn('2.45rem', block)
+        self.assertIn('2.7rem', block)
 
-    def test_the_header_carries_only_the_name(self):
-        """نشان کلاس جهانی از سربرگ برداشته شد.
+    def test_the_header_carries_the_emblem_on_both_sides_of_the_name(self):
+        """نشان کلاس جهانی به سربرگ برگشت.
 
-        بند ۵ سند، نشان را در دو سوی عنوان خواسته بود؛ موسسه بعداً
-        خواست از سربرگ برداشته شود. جایش روی صفحهٔ ریاست است، همان‌جا
-        که لوح خودش را دارد.
+        بند ۵ سند نشان را در دو سوی عنوان خواسته بود، بعد مدتی از
+        سربرگ برداشته شد، و موسسه دوباره خواست همان‌جا باشد. روی
+        صفحهٔ ریاست هم می‌ماند.
         """
         SiteSettings.objects.all().delete()
         SiteSettings.objects.create(world_class_logo='site/wcu.png')
         banner = self._home().split('bnr-name')[1].split('bnr-state')[0]
-        self.assertEqual(banner.count('bnr-wcu'), 0)
+        self.assertEqual(banner.count('bnr-wcu'), 2)
         self.assertIn('موسسه آموزش عالی', banner)
+
+    def test_the_header_has_no_emblem_when_none_is_uploaded(self):
+        """بدون فایل، جای خالی نمی‌ماند."""
+        SiteSettings.objects.all().delete()
+        SiteSettings.objects.create()
+        banner = self._home().split('bnr-name')[1].split('bnr-state')[0]
+        self.assertNotIn('bnr-wcu', banner)
 
     def test_the_emblem_still_has_a_home_on_the_presidency_page(self):
         """برداشتن از سربرگ نباید یعنی برداشتن از همه‌جا."""
@@ -326,10 +333,12 @@ class EmblemSizeIsPinnedOnTheTagTests(TestCase):
         return (Path(settings.BASE_DIR) / 'templates' / name).read_text(
             encoding='utf-8')
 
-    def test_no_emblem_is_left_in_the_header_to_size(self):
-        """نشان از سربرگ رفت، پس دیگر اندازه‌ای هم لازم ندارد."""
+    def test_the_header_emblem_carries_its_own_size(self):
+        """نشان به سربرگ برگشت، پس دوباره به اندازهٔ روی تگ نیاز دارد."""
         html = self._template('base.html')
-        self.assertNotIn('bnr-wcu', html)
+        self.assertIn('bnr-wcu', html)
+        self.assertEqual(
+            html.count('width:72px;height:72px;object-fit:contain;'), 2)
 
     def test_the_page_emblem_carries_its_own_ceiling(self):
         html = self._template('core/presidency.html')
