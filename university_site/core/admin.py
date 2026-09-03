@@ -132,11 +132,13 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
             ),
         }),
         ('صفحهٔ اصلی و کلاس جهانی', {
-            'fields': ('admission_poster', 'world_class_url'),
+            'fields': ('admission_poster', 'about_image', 'world_class_url'),
             'description': (
                 'پوستر رشته‌های پذیرش روی صفحهٔ اصلی، میان آمار و '
                 'تقویم، در یک باکس نشان داده می‌شود و با کلیک '
                 'تمام‌صفحه باز می‌شود.<br>'
+                'تصویر صفحهٔ معرفی، همان عکسی است که کنار «تاریخچه '
+                'مؤسسه» می‌نشیند؛ خالی بگذارید تا عکس پیش‌فرض بماند.<br>'
                 'نشانی کلاس جهانی، مقصدِ نشانی است که در نوار بالای '
                 'سایت می‌آید.'
             ),

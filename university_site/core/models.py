@@ -52,6 +52,13 @@ class SiteSettings(models.Model):
         help_text=_(
             'روی صفحهٔ اصلی یک باکس با همین عنوان می‌آید و با کلیک، '
             'این تصویر تمام‌صفحه نشان داده می‌شود.'))
+    about_image = models.ImageField(
+        _('تصویر صفحهٔ معرفی موسسه'),
+        upload_to='site/about/', blank=True, null=True,
+        help_text=_(
+            'کنار «تاریخچه مؤسسه» دیده می‌شود. اگر خالی باشد، عکس '
+            'پیش‌فرض پردیس نمایش داده می‌شود. نسبت افقی (مثلاً '
+            '۱۶۰۰×۹۰۰) بهترین نتیجه را می‌دهد.'))
     faculties_pdf = models.FileField(
         _('فایل رشته‌های دانشکده‌ها (PDF)'),
         upload_to='site/faculties/', blank=True, null=True,
@@ -361,7 +368,7 @@ class FAQ(models.Model):
 
     class Meta:
         verbose_name = _('سوال متداول')
-        verbose_name_plural = _('سوالات متداول')
+        verbose_name_plural = _('پرسش‌های متداول')
         ordering = ['category', 'order']
 
     def __str__(self):
@@ -1323,7 +1330,8 @@ class HomeSection(models.Model):
         ('quicklinks',  'دسترسی سریع'),
         ('news',        'اخبار و اطلاعیه‌ها'),
         ('departments', 'دانشکده‌ها و گروه‌ها'),
-        ('faculty',     'هیئت علمی'),
+        # «هیئت علمی» از صفحهٔ اصلی برداشته شد؛ کلیدش هم اینجا نماند
+        # تا مدیر برای بخشی که وجود ندارد تصویر و عنوان نگذارد.
         ('events',      'رویدادها'),
         ('gallery',     'گالری تصاویر'),
         ('alumni',      'فارغ‌التحصیلان'),

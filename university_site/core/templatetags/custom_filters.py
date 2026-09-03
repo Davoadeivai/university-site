@@ -58,3 +58,14 @@ def semester_jalali(semester):
 def split(value, delimiter=','):
     """Split a string by delimiter."""
     return value.split(delimiter)
+
+@register.filter
+def persian_digits(value):
+    """عدد را با رقم فارسی می‌نویسد.
+
+    بقیهٔ سایت — تقویم، شهریه، شمارهٔ تماس — فارسی می‌نویسد و یک عدد
+    لاتین میان آن‌ها وصله می‌زند.
+    """
+    from core.jalali import to_persian_digits
+
+    return to_persian_digits(str(value))

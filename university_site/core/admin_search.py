@@ -293,7 +293,7 @@ def public_live_search(request):
         {'title': 'تحصیلات تکمیلی', 'url': reverse('core:graduate_studies'), 'type': 'page', 'filter': 'pages', 'hint': 'کارشناسی ارشد'},
         {'title': 'خدمات الکترونیکی', 'url': reverse('core:eservices'), 'type': 'page', 'filter': 'pages', 'hint': 'لینک‌های سامانه‌ها'},
         {'title': 'گالری', 'url': reverse('core:gallery'), 'type': 'page', 'filter': 'pages', 'hint': 'تصاویر'},
-        {'title': 'سوالات متداول', 'url': reverse('core:faq'), 'type': 'page', 'filter': 'pages', 'hint': 'FAQ'},
+        {'title': 'پرسش‌های متداول', 'url': reverse('core:faq'), 'type': 'page', 'filter': 'pages', 'hint': 'FAQ'},
         {'title': 'شناسه واریز', 'url': reverse('core:payment_id'), 'type': 'page', 'filter': 'pages', 'hint': 'حساب بانکی'},
         {'title': 'آیین‌نامه‌ها و فرم‌ها', 'url': reverse('core:documents'), 'type': 'page', 'filter': 'pages', 'hint': 'دانلود فایل'},
         {'title': 'رویدادها', 'url': reverse('core:events'), 'type': 'page', 'filter': 'pages', 'hint': 'تقویم'},

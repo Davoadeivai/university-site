@@ -103,21 +103,29 @@ def home(request):
     calendar_items = AcademicCalendar.objects.filter(
         start_date__gte=timezone.now().date()
     ).order_by('start_date')[:5]
-    # اساتیدی که صریحاً برای صفحهٔ اصلی علامت خورده‌اند؛ اگر هیچ‌کدام
-    # علامت نخورده باشد، به ترتیب نمایش برمی‌گردیم تا بخش خالی نماند
-    featured_professors = list(
-        Professor.objects.filter(is_active=True, is_featured=True)
-        .select_related('department').order_by('order')[:4]
-    )
-    if not featured_professors:
-        featured_professors = list(
-            Professor.objects.filter(is_active=True)
-            .select_related('department').order_by('order')[:4]
-        )
+    # بخش «هیئت علمی برگزیده» به درخواست موسسه از صفحهٔ اصلی برداشته
+    # شد؛ صفحهٔ اساتید و «اعضای موسسه» سر جایشان هستند.
     faqs = FAQ.objects.filter(is_active=True)[:6]
     gallery_images = Gallery.objects.filter(is_active=True, media_type='image')[:8]
     alumni = Alumni.objects.filter(is_featured=True)[:4]
     bank_accounts = BankAccount.objects.filter(is_active=True)[:3]
+
+    # ── باکس «رشته‌های پذیرش دانشجو» ──
+    # تا امروز فقط پوستر را تمام‌صفحه باز می‌کرد و داوطلب از همان‌جا
+    # راهی به جلو نداشت. حالا هر مقطع یک دکمه است که مستقیم به مرحلهٔ
+    # انتخاب رشتهٔ همان مقطع در «مسیر دانشجو» می‌رود.
+    from core.degree_map import CANONICAL_DEGREES, major_degree_q
+
+    admission_degrees = []
+    for code, label in CANONICAL_DEGREES:
+        total = Major.objects.filter(is_active=True).filter(
+            major_degree_q(code)).count()
+        if total:
+            admission_degrees.append({
+                'code': code, 'label': label, 'total': total,
+                'url': '%s?degree=%s&step=1' % (
+                    reverse('core:student_path'), code),
+            })
 
     # ── ستون کنار اسلایدر ──
     # اسلاید تمام‌عرض بود و خبرها زیر خط تا می‌ماندند. این ستون
@@ -169,6 +177,7 @@ def home(request):
         'hero_side_on': hero_side_on,
         'hero_side_width': getattr(settings_row, 'hero_side_width', None) or 340,
         'hero_side_blocks': hero_side_blocks,
+        'admission_degrees': admission_degrees,
         'quick_links': quick_links,
         'featured_news': featured_news,
         'latest_news': latest_news,
@@ -179,7 +188,6 @@ def home(request):
         'calendar_items': calendar_items,
         'timeline': build_timeline(),
         'home_features': HomeFeature.objects.filter(is_active=True),
-        'featured_professors': featured_professors,
         'faqs': faqs,
         'gallery_images': gallery_images,
         'alumni': alumni,
@@ -295,7 +303,7 @@ def faq_view(request):
         'admission_faqs': admission_faqs,
         'academic_faqs': academic_faqs,
         'financial_faqs': financial_faqs,
-        'page_title': 'سوالات متداول',
+        'page_title': 'پرسش‌های متداول',
     }
     return render(request, 'core/faq.html', context)
 

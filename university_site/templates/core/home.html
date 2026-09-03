@@ -115,6 +115,7 @@
 [data-theme="dark"] .hero-side { background: var(--bg-white); }
 [data-theme="dark"] .hero-side-link { color: #e8eff7; }
 
+
 /* ─── track ─── */
 .uni-hero-track {
     display: flex;
@@ -428,6 +429,39 @@
 @media (max-width: 480px) {
     .uni-hero-wrap { height: 52svh; min-height: 300px; }
 }
+
+/* ─── پرداختِ نوار اول ───
+   اسلاید و ستون کنارش باید یک قطعه دیده شوند، نه دو تکه: یک خط زر
+   میانشان، و یک هالهٔ ملایم روی لبهٔ اسلاید که چشم را به سمت ستون
+   می‌برد. دکمه‌ها و نوارها هم از همان دو رنگ موسسه‌اند. */
+.hero-row.has-side .hero-side { border-inline-start-color: rgba(201, 163, 78, .55); }
+.hero-side-title i { color: var(--gold-light, #c9a34e); }
+
+.uni-hero-wrap::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    block-size: 3px;
+    background: linear-gradient(90deg,
+        transparent, rgba(201, 163, 78, .75), transparent);
+    pointer-events: none;
+    z-index: 3;
+}
+.uni-hero-arrow {
+    background: rgba(78, 18, 32, .45);
+    border: 1px solid rgba(201, 163, 78, .45);
+    color: #ffe9a8;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+}
+.uni-hero-arrow:hover { background: rgba(122, 31, 46, .8); }
+.uni-slide-counter {
+    background: rgba(78, 18, 32, .55);
+    border: 1px solid rgba(201, 163, 78, .35);
+    color: #ffe9a8;
+}
+.uni-hero-progress { background: linear-gradient(90deg, #9c2c3d, #c9a34e); }
+
 </style>
 {% endblock %}
 
@@ -848,24 +882,58 @@
 تصویر با همان نمایشگر تمام‌صفحه‌ای باز می‌شود که چارت سازمانی از آن
 استفاده می‌کند — بدون خروج از سایت.
 {% endcomment %}
-{% if site_settings.admission_poster %}
+{% if site_settings.admission_poster or admission_degrees %}
 <section class="section admit-band">
     <div class="container">
-        <button type="button" class="admit-card"
-                data-zoomable="{{ site_settings.admission_poster.url }}">
-            <span class="admit-icon" aria-hidden="true">
-                <i class="fas fa-graduation-cap"></i>
-            </span>
-            <span class="admit-text">
-                <span class="admit-title">رشته‌های پذیرش دانشجو</span>
-                <span class="admit-sub">
-                    برای دیدن فهرست کامل رشته‌ها و مقاطع، اینجا بزنید
+        <div class="admit-panel">
+            <div class="admit-head">
+                <span class="admit-icon" aria-hidden="true">
+                    <i class="fas fa-graduation-cap"></i>
                 </span>
-            </span>
-            <span class="admit-go" aria-hidden="true">
-                <i class="fas fa-up-right-and-down-left-from-center"></i>
-            </span>
-        </button>
+                <span class="admit-text">
+                    <span class="admit-title">رشته‌های پذیرش دانشجو</span>
+                    <span class="admit-sub">
+                        مقطع خود را انتخاب کنید تا رشته‌ها و مراحل ثبت‌نام
+                        همان مقطع باز شود.
+                    </span>
+                </span>
+                {% if site_settings.admission_poster %}
+                <button type="button" class="admit-poster"
+                        data-zoomable="{{ site_settings.admission_poster.url }}">
+                    <i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i>
+                    دیدن پوستر رشته‌ها
+                </button>
+                {% endif %}
+            </div>
+
+            {% comment %}
+            هر مقطع یک درِ ورودی است: مستقیم به مرحلهٔ انتخاب رشتهٔ
+            «مسیر دانشجو» می‌رود، با همان مقطع انتخاب‌شده. عدد کنار
+            نام، شمار رشته‌های فعال همان مقطع است — از دیتابیس، نه
+            دستی.
+            {% endcomment %}
+            {% if admission_degrees %}
+            <div class="admit-degrees">
+                {% for row in admission_degrees %}
+                <a class="admit-degree" href="{{ row.url }}">
+                    <span class="admit-degree-name">{{ row.label }}</span>
+                    <span class="admit-degree-count">{{ row.total|persian_digits }} رشته</span>
+                    <span class="admit-degree-go" aria-hidden="true">
+                        <i class="fas fa-arrow-left"></i>
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+            <div class="admit-foot">
+                <a class="admit-cta" href="{% url 'core:student_path' %}">
+                    <i class="fas fa-route" aria-hidden="true"></i>
+                    شروع مسیر پذیرش و انتخاب رشته
+                </a>
+                <a class="admit-link" href="{% url 'academics:majors' %}">فهرست همهٔ رشته‌ها</a>
+                <a class="admit-link" href="{% url 'admissions:admissions' %}">شرایط و مدارک پذیرش</a>
+            </div>
+            {% endif %}
+        </div>
     </div>
 </section>
 {% endif %}
@@ -1205,52 +1273,6 @@
 {% endif %}
 {% endwith %}
 
-<!-- ===== FACULTY ===== -->
-{% with sec=sections.faculty %}
-{% if sec.is_visible|default_if_none:True %}
-<section class="section section-alt{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
-    <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title">هیئت علمی برگزیده</h2>
-            <p class="section-subtitle">اعضای برجسته دانشگاه</p>
-        </div>
-        <div class="row g-4">
-            {% if featured_professors %}
-            {% for prof in featured_professors %}
-            <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
-                <div class="prof-card">
-                    {% if prof.photo %}
-                    <img loading="lazy" decoding="async" src="{{ prof.photo.url }}" alt="{{ prof.get_full_name }}" class="prof-avatar">
-                    {% else %}
-                    <div class="prof-avatar-placeholder"><i class="fas fa-user-tie"></i></div>
-                    {% endif %}
-                    <div class="prof-name">{{ prof.get_full_name }}</div>
-                    <div class="prof-rank">{{ prof.get_rank_display }}</div>
-                    {% if prof.department %}
-                    <div class="prof-dept">{{ prof.department.name }}</div>
-                    {% endif %}
-                    <div class="prof-links">
-                        {% if prof.email %}<a href="mailto:{{ prof.email }}" class="prof-link-btn"><i
-                                class="fas fa-envelope"></i></a>{% endif %}
-                        {% if prof.google_scholar %}<a href="{{ prof.google_scholar }}" target="_blank"
-                            class="prof-link-btn"><i class="fas fa-graduation-cap"></i></a>{% endif %}
-                        <a href="{{ prof.get_absolute_url }}" class="prof-link-btn"><i class="fas fa-user"></i></a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-            {% else %}
-            {% include 'core/_empty_state.html' with label='استادی' add_url='/admin/faculty/professor/add/' hint='اساتیدی که «نمایش در صفحهٔ اصلی» بخورند، اینجا معرفی می‌شوند.' %}
-            {% endif %}
-        </div>
-        <div class="text-center mt-4" data-aos="fade-up">
-            <a href="{% url 'faculty:list' %}" class="btn-primary-uni">مشاهده همه اساتید</a>
-        </div>
-    </div>
-</section>
-{% endif %}
-{% endwith %}
-
 <!-- ===== EVENTS ===== -->
 {% if upcoming_events %}
 {% with sec=sections.events %}
@@ -1374,7 +1396,7 @@
 <section class="section section-alt{% if sec.is_dark_overlay %} sec-on-dark{% endif %}" {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"{% endif %}>
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title">سوالات متداول</h2>
+            <h2 class="section-title">پرسش‌های متداول</h2>
             <p class="section-subtitle">پاسخ سریع به پرسش‌های رایج</p>
         </div>
         <div class="row justify-content-center">

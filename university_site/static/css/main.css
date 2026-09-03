@@ -1067,6 +1067,14 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .footer-top { padding: 60px 0 40px; }
 .footer-logo { display: flex; align-items: center; gap: 12px; }
 .footer-logo-icon { font-size: 36px; color: var(--secondary); }
+/* نشان موسسه در فوتر — روی زمینهٔ تیره باید پیدا باشد */
+.footer-logo-mark {
+    inline-size: 44px;
+    block-size: 44px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .5));
+}
+.footer-copy { font-size: 12.5px; color: #d9c2c6; }
 .footer-logo h5 { color: white; font-weight: 800; }
 .footer-logo small { color: #7b636a; }
 .footer-desc { font-size: 14px; line-height: 1.8; color: #bda6ab; }
@@ -3009,6 +3017,36 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .nav-dd-sub:hover, .nav-dd-sub:focus { opacity: 1; }
 
+/* ── عکس صفحهٔ معرفی موسسه ────────────────────────────────── */
+.about-shot {
+    position: relative;
+    margin: 0;
+    border-radius: var(--radius, 14px);
+    overflow: hidden;
+    box-shadow: 0 18px 44px -22px rgba(78, 18, 32, .55);
+    border: 1px solid var(--border, #e8dcd0);
+}
+.about-shot img {
+    display: block;
+    inline-size: 100%;
+    block-size: clamp(240px, 34vw, 340px);
+    object-fit: cover;
+    cursor: zoom-in;
+    transition: transform .6s var(--easing-standard);
+}
+.about-shot:hover img { transform: scale(1.03); }
+.about-shot figcaption {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    padding: 26px 16px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(180deg, transparent, rgba(30, 10, 15, .82));
+}
+.about-shot figcaption i { color: var(--gold-light, #c9a34e); margin-inline-end: 5px; }
+
 /* ── صفحهٔ دانشکده‌ها: هر دانشکده با رشته‌هایش ─────────────── */
 .fac-list {
     display: grid;
@@ -3649,9 +3687,12 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     inline-size: 100%;
     block-size: auto;
     cursor: zoom-in;
-    /* چارت یک تصویر آپلودی است و خط‌ها و نوشته‌هایش کم‌رنگ چاپ شده‌اند؛
-       کنتراست و اشباع بیشتر، بی‌آنکه فایل عوض شود، خواناترش می‌کند. */
-    filter: contrast(1.18) saturate(1.25) brightness(1.02);
+    /* کنتراست کمی بیشتر، نه بیشتر از این: عدد بالاتر خطوط نازک چارت
+       را می‌سوزاند و متن ریزش را هاله‌دار می‌کند. */
+    filter: contrast(1.06) saturate(1.12);
+    /* تصویر هرگز از اندازهٔ خودش بزرگ‌تر نمی‌شود — کشیدنش همان چیزی
+       بود که نوشته‌ها را مات می‌کرد. */
+    margin-inline: auto;
     /* مرورگر تصویر بزرگ را با کیفیت بهتری کوچک می‌کند وقتی بداند
        قرار است نرم شود؛ روی خطوط نازک چارت تفاوتش دیده می‌شود. */
     image-rendering: auto;
@@ -4307,36 +4348,28 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 [data-theme="dark"] .doc-btn { background: rgba(255, 255, 255, .05); }
 
-/* ══ باکس رشته‌های پذیرش، میان آمار و تقویم ═══════════════════════
-   داوطلبی که تا اینجا آمده دنبال یک چیز است: چه رشته‌هایی هست.
-   رنگش عمداً از باکس‌های دور و برش جدا است — سبز عمیق میان آمارِ
-   عنابی و تقویمِ کاغذی — تا در میانهٔ صفحه گم نشود. */
+/* ══ باکس رشته‌های پذیرش ══════════════════════════════════════════
+   داوطلبی که تا اینجا آمده دنبال یک چیز است: چه رشته‌هایی هست و از
+   کجا شروع کند. پیش از این فقط پوستر را باز می‌کرد و همان‌جا بن‌بست
+   بود؛ حالا هر مقطع یک در است به مرحلهٔ انتخاب رشتهٔ همان مقطع. */
 .admit-band { padding-block: clamp(18px, 2.4vw, 30px); }
 
-.admit-card {
+.admit-panel {
+    padding: clamp(20px, 2.8vw, 32px) clamp(20px, 3vw, 36px);
+    border-radius: var(--radius, 14px);
+    background:
+        radial-gradient(120% 140% at 88% -20%, rgba(255, 233, 168, .18) 0%, transparent 60%),
+        linear-gradient(135deg, #5b1421 0%, #8a2233 52%, #a8492c 100%);
+    color: #fff;
+    box-shadow: 0 18px 44px -22px rgba(78, 18, 32, .85);
+    border: 1px solid rgba(255, 233, 168, .22);
+}
+
+.admit-head {
     display: flex;
     align-items: center;
     gap: clamp(14px, 2.4vw, 26px);
-    inline-size: 100%;
-    padding: clamp(18px, 2.6vw, 28px) clamp(20px, 3vw, 36px);
-    border: 0;
-    border-radius: var(--radius, 14px);
-    background: linear-gradient(135deg, #14453a 0%, #8a4a1f 55%, #2f7d63 100%);
-    color: #fff;
-    text-align: start;
-    font: inherit;
-    cursor: pointer;
-    box-shadow: 0 14px 36px -20px rgba(105, 56, 24, .8);
-    transition: transform .25s, box-shadow .25s, filter .25s;
-}
-.admit-card:hover {
-    filter: brightness(1.08);
-    transform: translateY(-3px);
-    box-shadow: 0 20px 46px -20px rgba(105, 56, 24, .9);
-}
-.admit-card:focus-visible {
-    outline: 3px solid var(--gold-light, #c9a34e);
-    outline-offset: 3px;
+    flex-wrap: wrap;
 }
 
 .admit-icon {
@@ -4362,27 +4395,111 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .admit-sub {
     font-size: clamp(12.5px, 1.3vw, 15px);
     line-height: 1.9;
-    color: rgba(255, 255, 255, .82);
+    color: rgba(255, 255, 255, .85);
 }
 
-.admit-go {
-    flex: none;
+.admit-poster {
     margin-inline-start: auto;
-    inline-size: 42px;
-    block-size: 42px;
+    padding: 9px 16px;
+    border: 1px solid rgba(255, 233, 168, .5);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .1);
+    color: #ffe9a8;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.admit-poster:hover { background: rgba(255, 255, 255, .2); transform: translateY(-2px); }
+.admit-poster i { margin-inline-end: 6px; }
+
+/* ── مقاطع: هر کدام یک در ── */
+.admit-degrees {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    gap: 12px;
+    margin-block-start: clamp(18px, 2.4vw, 26px);
+}
+.admit-degree {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .16);
+    color: #fff;
+    text-decoration: none;
+    transition: background .2s, transform .2s, border-color .2s;
+}
+.admit-degree:hover {
+    background: rgba(255, 255, 255, .2);
+    border-color: rgba(255, 233, 168, .55);
+    transform: translateY(-3px);
+    color: #fff;
+}
+.admit-degree-name { font-size: 14px; font-weight: 800; }
+.admit-degree-count {
+    font-size: 11.5px;
+    color: #ffe9a8;
+    font-weight: 700;
+}
+.admit-degree-go {
+    margin-inline-start: auto;
+    inline-size: 30px;
+    block-size: 30px;
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .12);
-    font-size: 15px;
+    background: rgba(255, 255, 255, .14);
+    font-size: 12px;
     color: #ffe9a8;
 }
 
+.admit-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 22px;
+    margin-block-start: clamp(16px, 2vw, 22px);
+    padding-block-start: 16px;
+    border-block-start: 1px solid rgba(255, 255, 255, .16);
+}
+.admit-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffe9a8, #c9a34e);
+    color: #4e1220;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 12px 26px -14px rgba(255, 233, 168, .9);
+    transition: transform .2s, box-shadow .2s;
+}
+.admit-cta:hover {
+    transform: translateY(-2px);
+    color: #4e1220;
+    box-shadow: 0 16px 32px -14px rgba(255, 233, 168, 1);
+}
+.admit-link {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, .88);
+    text-decoration: none;
+    border-block-end: 1px dashed rgba(255, 233, 168, .5);
+}
+.admit-link:hover { color: #ffe9a8; }
+
 @media (max-width: 575.98px) {
-    .admit-go { display: none; }   /* جا تنگ است؛ خودِ کارت کلیک‌پذیر است */
+    .admit-poster { margin-inline-start: 0; }
+    .admit-degree-go { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .admit-card { transition: none; }
+    .admit-degree, .admit-cta, .admit-poster { transition: none; }
 }
 
 /* نشان کلاس جهانی در نوار بالا — میان نشانی پشتیبانی و کلید زبان */
@@ -4509,4 +4626,167 @@ a.grp-head-name:hover { text-decoration: underline; }
 .prof-head-badge:focus-visible {
     outline: 2px solid var(--secondary, #a67c1f);
     outline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   صفحهٔ اصلی — پرداخت نهایی
+
+   همه‌چیز اینجا زیر ‎.home-page‎ است، پس هیچ صفحهٔ دیگری از این
+   قواعد اثر نمی‌گیرد. سه ایده پشت این لایه است:
+
+   ۱. ریتم: هر بخش زمینهٔ خودش را دارد — کاغذ گرم، سفید، و یک نوار
+      عنابی — و میانشان یک خط زر با لوزی تذهیب می‌نشیند. چشم با
+      همین سه‌گانه می‌فهمد کجاست.
+   ۲. تیترها: نه یک خط ساده، که یک قلاب طلایی زیر عنوان.
+   ۳. کارت‌ها: بلندشدن کوتاه با سایهٔ گرم و یک خط زر بالای کارت که
+      با هاور کشیده می‌شود.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── تیتر بخش‌ها: قلاب طلایی ──
+   خطِ زیرِ عنوان از پیش هست؛ اینجا فقط بلندتر و باریک‌تر می‌شود و
+   وقتی عنوان وسط‌چین است، خودش هم وسط می‌نشیند (کلاس text-center
+   روی ظرف است، نه روی خودِ عنوان، پس قاعدهٔ عمومی به آن نمی‌رسد). */
+.home-page .section-title::after {
+    inline-size: 92px;
+    block-size: 3px;
+    border-radius: 3px;
+}
+.home-page .text-center .section-title::after { margin-inline: auto; }
+.home-page .section-subtitle {
+    font-size: 14.5px;
+    color: var(--text-muted, #6b5b5e);
+    letter-spacing: .2px;
+}
+
+/* ── جداکنندهٔ بخش‌ها: خط زر با لوزی تذهیب ── */
+.home-page .section + .section::before,
+.home-page .section + .stats-bar::before {
+    content: "";
+    display: block;
+    inline-size: min(680px, 78%);
+    block-size: 1px;
+    margin: 0 auto clamp(26px, 4vw, 48px);
+    background: linear-gradient(90deg,
+        transparent, rgba(201, 163, 78, .55), transparent);
+}
+
+/* ── نوار آمار: عدد طلایی روی کاغذ ── */
+.home-page .stats-bar {
+    background:
+        radial-gradient(90% 160% at 50% -40%, rgba(201, 163, 78, .1), transparent 62%),
+        var(--bg-white, #fff);
+    border-block: 1px solid rgba(201, 163, 78, .28);
+}
+.home-page .stat-item {
+    padding-block: 6px;
+    transition: transform var(--duration-base, 240ms) var(--easing-standard);
+}
+.home-page .stat-item:hover { transform: translateY(-4px); }
+.home-page .stat-number {
+    background: linear-gradient(135deg, #7a1f2e 0%, #b8863b 70%, #c9a34e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+.home-page .stat-icon {
+    inline-size: 46px;
+    block-size: 46px;
+    margin: 0 auto 10px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: rgba(122, 31, 46, .08);
+    color: var(--primary, #7a1f2e);
+    font-size: 20px;
+}
+.home-page .stat-label { font-weight: 700; }
+
+/* ── کارت‌های دسترسی سریع ── */
+.home-page .quick-link-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border, #e8dcd0);
+    transition: var(--transition-motion);
+}
+.home-page .quick-link-card::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: 3px;
+    background: var(--gradient-brand,
+        linear-gradient(90deg, #4e1220, #9c2c3d 45%, #c9a34e));
+    transform: scaleX(0);
+    transform-origin: inline-start;
+    transition: transform var(--duration-base, 240ms) var(--easing-standard);
+}
+.home-page .quick-link-card:hover::before { transform: scaleX(1); }
+.home-page .quick-link-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(201, 163, 78, .55);
+    box-shadow: 0 18px 40px -24px rgba(78, 18, 32, .7);
+}
+.home-page .quick-link-icon {
+    background: linear-gradient(135deg, rgba(122, 31, 46, .1), rgba(201, 163, 78, .16));
+    color: var(--primary, #7a1f2e);
+}
+
+/* ── کارت‌های محتوایی: دانشکده، خبر، رویداد، پرسش ── */
+.home-page .dept-card,
+.home-page .uni-card,
+.home-page .announce-card {
+    border: 1px solid var(--border, #e8dcd0);
+    transition: var(--transition-motion);
+}
+.home-page .dept-card:hover,
+.home-page .uni-card:hover,
+.home-page .announce-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(201, 163, 78, .5);
+    box-shadow: 0 20px 44px -26px rgba(78, 18, 32, .72);
+}
+
+/* ── نوار پایانی (فراخوان) ── */
+.home-page .cta-band,
+.home-page .section.sec-on-dark {
+    position: relative;
+    isolation: isolate;
+}
+.home-page .cta-band::after,
+.home-page .section.sec-on-dark::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .07;
+    background-image:
+        repeating-linear-gradient(45deg, #c9a34e 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(-45deg, #c9a34e 0 1px, transparent 1px 22px);
+    mask-image: radial-gradient(120% 140% at 50% 40%, #000 30%, transparent 88%);
+    -webkit-mask-image: radial-gradient(120% 140% at 50% 40%, #000 30%, transparent 88%);
+}
+
+/* ── دکمهٔ اصلی: طلا روی عنابی ── */
+.home-page .btn-primary-uni {
+    background: var(--gradient-primary,
+        linear-gradient(135deg, #4e1220, #9c2c3d));
+    border: 1px solid rgba(201, 163, 78, .45);
+    box-shadow: 0 14px 30px -18px rgba(78, 18, 32, .9);
+    transition: var(--transition-motion);
+}
+.home-page .btn-primary-uni:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px -18px rgba(78, 18, 32, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .stat-item,
+    .home-page .quick-link-card,
+    .home-page .dept-card,
+    .home-page .uni-card,
+    .home-page .announce-card,
+    .home-page .btn-primary-uni { transition: none; }
 }

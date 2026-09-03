@@ -34,7 +34,7 @@ SECTIONS = [
     ('quicklinks',  '', ''),
     ('news',        '', ''),
     ('departments', '', ''),
-    ('faculty',     '', ''),
+    # «هیئت علمی» از صفحهٔ اصلی برداشته شد
     ('events',      '', ''),
     ('gallery',     '', ''),
     ('alumni',      '', ''),

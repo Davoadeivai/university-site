@@ -1,4 +1,5 @@
 ﻿{% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div class="page-header">
     <div class="container">
@@ -30,15 +31,27 @@
                         <div class="dept-card text-center">
                             <div class="dept-icon"><i class="fas fa-award"></i></div>
                             <div class="dept-title" style="font-size:15px;">رتبه عالی</div>
-                            <div class="text-muted">ممتاز</div>
                         </div>
                     </div>
                 </div>
             </div>
+            {% comment %}
+            جای یک آیکون روی زمینهٔ رنگی، عکس خودِ موسسه.
+
+            عکس از تنظیمات سایت می‌آید و اگر مدیر چیزی آپلود نکرده
+            باشد، عکس پیش‌فرض پردیس می‌ماند — یعنی این قاب هیچ‌وقت
+            خالی نمی‌شود.
+            {% endcomment %}
             <div class="col-lg-6" data-aos="fade-left">
-                <div style="background:var(--gradient-primary); border-radius:var(--radius); height:300px; display:flex; align-items:center; justify-content:center;">
-                    <i class="fas fa-university" style="font-size:100px; color:rgba(255,255,255,0.3);"></i>
-                </div>
+                <figure class="about-shot">
+                    <img src="{% if settings and settings.about_image %}{{ settings.about_image.url }}{% else %}{% static 'images/hero-campus-01.jpg' %}{% endif %}"
+                         alt="موسسه آموزش عالی علامه امینی"
+                         loading="lazy" decoding="async" data-zoomable>
+                    <figcaption>
+                        <i class="fas fa-location-dot" aria-hidden="true"></i>
+                        پردیس موسسه — بابلسر، مازندران
+                    </figcaption>
+                </figure>
             </div>
         </div>
 
@@ -86,11 +99,17 @@
                 lazy برداشته شد: چارت هدفِ لینکِ #chart است و کسی که
                 مستقیم به آن می‌آید نباید منتظر بارگذاری تأخیری بماند.
                 {% endcomment %}
+                {% comment %}
+                عرضِ نمایش از عرضِ خودِ فایل بیشتر نمی‌شود: بزرگ‌نمایی
+                یک تصویر ۱۲۰۰ پیکسلی روی قاب پهن، خطوط نازک چارت را
+                مات می‌کرد. برای دیدن جزئیات، همان دکمهٔ تمام‌صفحه هست.
+                {% endcomment %}
                 <img decoding="async" fetchpriority="high"
                      src="{{ settings.org_chart_file.url }}"
                      alt="چارت سازمانی موسسه آموزش عالی علامه امینی"
                      class="org-chart-img" data-zoomable
-                     {% if settings.org_chart_size %}width="{{ settings.org_chart_size.0 }}" height="{{ settings.org_chart_size.1 }}"{% endif %}>
+                     {% if settings.org_chart_size %}width="{{ settings.org_chart_size.0 }}" height="{{ settings.org_chart_size.1 }}"
+                     style="max-inline-size: {{ settings.org_chart_size.0 }}px;"{% endif %}>
                 <div class="org-chart-bar">
                     <button type="button" class="btn btn-outline-primary btn-sm"
                             data-zoom-open=".org-chart-img">

@@ -240,7 +240,7 @@
                     </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}">معرفی و تاریخچه</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم انداز و اهداف</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم‌انداز و اهداف</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
                         {% comment %}
                         ارکان موسسه — هیئت مؤسس و هیئت امنا و دبیرخانه‌هایشان.
@@ -517,8 +517,8 @@
                     </a>
                     <ul class="dropdown-menu nav-dd">
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">مرکز اطلاع‌رسانی و کتابخانه مرکزی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:faculty_articles' %}">مقالات اعضای هیات علمی</a></li>
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:conference_articles' %}">بانک مقالات همایش ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:faculty_articles' %}">مقالات اعضای هیئت علمی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:conference_articles' %}">بانک مقالات همایش‌ها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'research:journals' %}">نشریات علمی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:resources' %}">منابع و پایگاه‌های پژوهشی</a></li>
                     </ul>
@@ -577,10 +577,18 @@
         <div class="container">
             <div class="row g-4">
                 <!-- About Column -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <div class="footer-widget">
                         <div class="footer-logo mb-3">
-                            <i class="fas fa-university footer-logo-icon"></i>
+                            {% comment %}
+                            نشان خودِ موسسه، نه آیکون عمومی «دانشگاه».
+                            اگر لوگو در پنل آپلود نشده باشد، همان نشانی
+                            که در سربرگ است به کار می‌رود.
+                            {% endcomment %}
+                            <img class="footer-logo-mark"
+                                 src="{% if site_settings and site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mark-institute.png' %}{% endif %}"
+                                 alt="" aria-hidden="true" width="44" height="44"
+                                 loading="lazy" decoding="async">
                             <div>
                                 <h5 class="mb-0">{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}</h5>
                                 <small>مازندران — بابلسر</small>
@@ -622,6 +630,22 @@
                             <li><a href="{% url 'core:gallery' %}"><i class="fas fa-angle-left"></i> گالری تصاویر</a></li>
                             <li><a href="{% url 'contact:contact' %}"><i class="fas fa-angle-left"></i> تماس با ما</a></li>
                             {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- آموزش — همان ساختاری که در منوی سایت هست -->
+                <div class="col-lg-2 col-md-6">
+                    <div class="footer-widget">
+                        <h6 class="footer-title">آموزش</h6>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'academics:departments' %}"><i class="fas fa-angle-left"></i> دانشکده‌ها</a></li>
+                            <li><a href="{% url 'academics:majors' %}"><i class="fas fa-angle-left"></i> رشته‌های تحصیلی</a></li>
+                            <li><a href="{% url 'academics:groups_list' %}"><i class="fas fa-angle-left"></i> گروه‌های آموزشی</a></li>
+                            <li><a href="{% url 'academics:group_heads' %}"><i class="fas fa-angle-left"></i> مدیران گروه</a></li>
+                            <li><a href="{% url 'core:councils' %}"><i class="fas fa-angle-left"></i> شوراها</a></li>
+                            <li><a href="{% url 'academics:calendar' %}"><i class="fas fa-angle-left"></i> تقویم آموزشی</a></li>
+                            <li><a href="{% url 'directory:curricula' %}"><i class="fas fa-angle-left"></i> سرفصل مصوب رشته‌ها</a></li>
                         </ul>
                     </div>
                 </div>
@@ -702,6 +726,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center">
+                    <p class="footer-copy mb-1">
+                        © تمامی حقوق این پایگاه متعلق به
+                        {% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}
+                        است.
+                    </p>
                     <p class="mb-0">
                         طراحی، اجرا و پشتیبانی توسط شرکت آرکاروناک
                         <a href="https://arkaronak.ir" class="footer-bottom-link" target="_blank" rel="noopener noreferrer">arkaronak.ir</a>

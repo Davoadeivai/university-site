@@ -16,37 +16,62 @@ class AdmissionPosterBoxTests(TestCase):
         cache.clear()
         self.settings_row = SiteSettings.objects.create(
             university_name_fa='موسسه', admission_poster='site/admission/p.jpg')
+        # باکس، مقاطع را از رشته‌های فعال می‌سازد
+        from academics.models import Department, Major
+
+        faculty = Department.objects.create(
+            name='دانشکده نمونه', slug='nemoone-admit', order=1,
+            is_active=True)
+        Major.objects.create(
+            department=faculty, name='مهندسی نمونه', slug='nemoone-major',
+            degree='bachelor_cont', is_active=True)
 
     def _html(self):
         return self.client.get(reverse('core:home')).content.decode()
 
+    def test_each_degree_leads_into_the_wizard(self):
+        """پیش از این باکس فقط پوستر را باز می‌کرد و راهی به جلو نبود."""
+        html = self._html()
+        block = html.split('admit-degrees')[1].split('</div>')[0]
+        self.assertIn('کارشناسی پیوسته', block)
+        self.assertIn(
+            reverse('core:student_path') + '?degree=bachelor_cont&amp;step=1',
+            block)
+
+    def test_the_count_comes_from_the_database(self):
+        block = self._html().split('admit-degrees')[1].split('</div>')[0]
+        self.assertIn('۱ رشته', block)
+
     def test_the_box_is_shown(self):
         html = self._html()
-        self.assertIn('admit-card', html)
+        self.assertIn('admit-panel', html)
         self.assertIn('رشته‌های پذیرش دانشجو', html)
 
     def test_it_opens_the_poster_full_screen(self):
-        box = self._html().split('admit-card')[1].split('>')[0]
+        box = self._html().split('admit-poster')[1].split('>')[0]
         self.assertIn('data-zoomable', box)
         self.assertIn('p.jpg', box)
 
     def test_it_sits_between_the_figures_and_the_calendar(self):
         html = self._html()
         stats = html.index('stats-bar')
-        box = html.index('admit-card')
+        box = html.index('admit-panel')
         calendar = html.index('تقویم آموزشی')
         self.assertLess(stats, box)
         self.assertLess(box, calendar)
 
-    def test_no_poster_means_no_box(self):
-        """باکسی که کلیکش هیچ نشان ندهد، بدتر از نبودنش است."""
+    def test_no_poster_leaves_the_degrees_behind(self):
+        """پوستر که نباشد، راه ورود به انتخاب رشته باید بماند."""
         self.settings_row.admission_poster = ''
         self.settings_row.save(update_fields=['admission_poster'])
         cache.clear()
-        self.assertNotIn('admit-card', self._html())
+        html = self._html()
+        self.assertNotIn('admit-poster', html)
+        self.assertIn('admit-panel', html)
 
-    def test_it_is_a_button_so_the_keyboard_reaches_it(self):
-        self.assertIn('<button type="button" class="admit-card"', self._html())
+    def test_the_poster_button_is_a_button_so_the_keyboard_reaches_it(self):
+        self.assertIn('<button type="button" class="admit-poster"',
+                      self._html())
 
     def test_the_viewer_accepts_a_plain_url(self):
         """نمایشگر تا امروز فقط روی خودِ تصویر کار می‌کرد."""

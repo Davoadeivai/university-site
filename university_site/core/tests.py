@@ -657,28 +657,31 @@ class NoFabricatedContentTests(TestCase):
         body = self.client.get(reverse('core:home')).content.decode()
         self.assertIn('افزودن از پنل ادمین', body)
 
-    def test_featured_flag_controls_the_home_section(self):
+    def test_no_professor_is_paraded_on_the_home_page(self):
+        """نوار «هیئت علمی برگزیده» به خواست موسسه از صفحهٔ اصلی رفت.
+
+        نام اساتید همچنان در صفحهٔ اساتید و «اعضای موسسه» هست؛ صفحهٔ
+        اصلی دیگر هیچ نامی را جلو نمی‌اندازد.
+        """
         from faculty.models import Professor
 
         Professor.objects.all().delete()
-        Professor.objects.create(first_name='الف', last_name='یکم',
-                                 rank='assistant', is_active=True, order=1)
         starred = Professor.objects.create(
             first_name='ب', last_name='دوم', rank='assistant',
             is_active=True, is_featured=True, order=9)
 
         body = self.client.get(reverse('core:home')).content.decode()
-        self.assertIn(starred.get_full_name(), body)
-        # وقتی کسی علامت خورده، ترتیب دیگر تعیین‌کننده نیست
-        self.assertNotIn('الف یکم', body)
+        self.assertNotIn(starred.get_full_name(), body)
+        self.assertNotIn('هیئت علمی برگزیده', body)
 
-    def test_falls_back_to_order_when_nobody_is_featured(self):
+    def test_the_faculty_page_still_shows_them(self):
+        from django.urls import reverse as url_for
         from faculty.models import Professor
 
         Professor.objects.all().delete()
         prof = Professor.objects.create(first_name='ج', last_name='سوم',
                                         rank='assistant', is_active=True)
-        body = self.client.get(reverse('core:home')).content.decode()
+        body = self.client.get(url_for('faculty:list')).content.decode()
         self.assertIn(prof.get_full_name(), body)
 
 
