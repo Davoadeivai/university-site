@@ -131,7 +131,7 @@ class FacultiesMenuItemTests(TestCase):
     def test_it_sits_before_the_groups(self):
         nav = self._nav()
         faculties = nav.index(reverse('academics:departments'))
-        groups = nav.index('گروه های آموزشی')
+        groups = nav.index('nav-dd-groups')
         self.assertLess(faculties, groups)
 
     def test_the_affiliated_units_label_is_gone(self):

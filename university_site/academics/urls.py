@@ -15,5 +15,6 @@ urlpatterns = [
     path('پنل-اساتید/', views.professors_panel, name='professors_panel'),
     path('آموزش-الکترونیکی/', views.elearning, name='elearning'),
     path('گروه‌های-آموزشی/', views.groups_list, name='groups_list'),
+    path('گروه‌های-آموزشی/مدیران/', views.group_heads, name='group_heads'),
     path('گروه‌های-آموزشی/<path:slug>/', views.group_detail, name='group_detail'),
 ]

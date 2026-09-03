@@ -137,7 +137,8 @@ class NamePreservationTests(TestCase):
         """«جامعه شناسی» و «جامعه‌شناسی» یک رشته‌اند."""
         Major.objects.create(
             name='جامعه شناسی', slug='old-jame', degree='bachelor_cont',
-            department=Department.objects.get(slug='modiriat-hesabdari'),
+            department=Department.objects.get(
+                slug='olum-tarbiati-ravanshenasi'),
             is_active=True)
         _run()
         self.assertEqual(
@@ -160,8 +161,8 @@ class DocumentTableTests(TestCase):
 
         counts = Counter(slug for _n, _d, slug, _k in DOCUMENT)
         self.assertEqual(counts['fanni-mohandesi'], 18)
-        self.assertEqual(counts['modiriat-hesabdari'], 20)
-        self.assertEqual(counts['olum-tarbiati-ravanshenasi'], 3)
+        self.assertEqual(counts['modiriat-hesabdari'], 19)
+        self.assertEqual(counts['olum-tarbiati-ravanshenasi'], 4)
 
     def test_every_alias_points_at_a_document_row(self):
         """هم‌ارزی‌ای که مقصدش در سند نیست، بی‌اثر است و گمراه‌کننده."""

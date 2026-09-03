@@ -340,18 +340,62 @@
                     </ul>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link-flat" href="{% url 'academics:departments' %}">
+                {% comment %}
+                دانشکده‌ها، و زیر هرکدام رشته‌های خودش.
+
+                پیش از این فقط یک لینک بود و رسیدن به یک رشته دو صفحه
+                فاصله داشت. ساختار از دیتابیس می‌آید (context_processors)
+                پس رشتهٔ تازه‌ای که در پنل ثبت شود، خودش اینجا می‌آید.
+
+                مقطع کنار نام رشته می‌آید چون چند رشته با یک نام در دو
+                مقطع هست — «حسابداری» چهار بار.
+                {% endcomment %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link-flat dropdown-toggle" href="{% url 'academics:departments' %}"
+                       data-bs-toggle="dropdown" data-bs-auto-close="outside">
                         <i class="fas fa-building-columns" style="font-size:13px;margin-left:3px;"></i> دانشکده‌ها
                     </a>
+                    <ul class="dropdown-menu nav-dd nav-dd-vices nav-dd-faculties">
+                        {% for row in nav_faculties %}
+                        <li class="vice-group vice-hue-{{ forloop.counter }}{% if row.majors %} has-sub{% endif %}">
+                            <div class="vice-lead-row">
+                                <a class="dropdown-item nav-dd-item vice-lead" href="{{ row.dept.get_absolute_url }}">
+                                    <span class="vice-lead-text">{{ row.dept.name }}</span>
+                                </a>
+                                {% if row.majors %}
+                                <button type="button" class="vice-toggle"
+                                        aria-expanded="false"
+                                        aria-label="رشته‌های {{ row.dept.name }}">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% if row.majors %}
+                            <ul class="vice-sub">
+                                {% for major in row.majors %}
+                                <li>
+                                    <a class="dropdown-item nav-dd-sub" href="{{ major.get_absolute_url }}">
+                                        {{ major.name }}
+                                        <span class="nav-dd-degree">{{ major.get_degree_display }}</span>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'academics:departments' %}">فهرست دانشکده‌ها</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'academics:majors' %}">همهٔ رشته‌ها</a></li>
+                    </ul>
                 </li>
 
                 <!-- گروه‌های آموزشی — dynamic از DB (مطابق سایت رسمی؛ بدون موارد اضافه) -->
                 <li class="nav-item dropdown">
                     <a class="nav-link-flat dropdown-toggle" href="{% url 'academics:groups_list' %}" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        <i class="fas fa-chalkboard-teacher" style="font-size:13px;margin-left:3px;"></i> گروه های آموزشی
+                        <i class="fas fa-chalkboard-teacher" style="font-size:13px;margin-left:3px;"></i> گروه‌های آموزشی
                     </a>
-                    <ul class="dropdown-menu nav-dd" style="max-height:460px;overflow-y:auto;">
+                    <ul class="dropdown-menu nav-dd nav-dd-groups" style="max-height:460px;overflow-y:auto;">
                         {% if nav_groups %}
                             {% for group in nav_groups %}
                             <li><a class="dropdown-item nav-dd-item" href="{{ group.get_absolute_url }}">{{ group.name }}</a></li>
@@ -360,6 +404,7 @@
                         <li><span class="dropdown-item nav-dd-item" style="opacity:.6;">گروهی ثبت نشده</span></li>
                         {% endif %}
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'academics:group_heads' %}">مدیران گروه‌های آموزشی</a></li>
                         <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'directory:curricula' %}">سرفصل مصوب رشته‌ها</a></li>
                     </ul>
                 </li>
@@ -441,7 +486,7 @@
                         <i class="fas fa-database" style="font-size:13px;margin-left:3px;"></i> بانک اطلاعات علمی
                     </a>
                     <ul class="dropdown-menu nav-dd">
-                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">مرکز اطلاع رسانی و کتابخانه مرکزی</a></li>
+                        <li><a class="dropdown-item nav-dd-item" href="{% url 'library:library' %}">مرکز اطلاع‌رسانی و کتابخانه مرکزی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'library:faculty_articles' %}">مقالات اعضای هیات علمی</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'library:conference_articles' %}">بانک مقالات همایش ها</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'research:journals' %}">نشریات علمی</a></li>

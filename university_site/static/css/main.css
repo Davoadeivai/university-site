@@ -3009,6 +3009,98 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .nav-dd-sub:hover, .nav-dd-sub:focus { opacity: 1; }
 
+/* ── صفحهٔ دانشکده‌ها: هر دانشکده با رشته‌هایش ─────────────── */
+.fac-list {
+    display: grid;
+    gap: clamp(16px, 2.2vw, 24px);
+    margin-block-start: clamp(20px, 3vw, 34px);
+    margin-block-end: clamp(24px, 4vw, 48px);
+}
+.fac-card { display: flex; flex-direction: column; gap: 10px; }
+.fac-name {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+}
+.fac-name a { color: var(--primary, #7a1f2e); text-decoration: none; }
+.fac-name a:hover { text-decoration: underline; }
+.fac-count { font-size: 12px; font-weight: 700; color: var(--text-muted, #6b5b5e); }
+.fac-blurb { margin: 0; font-size: 13.5px; line-height: 2; color: var(--text-muted, #6b5b5e); }
+.fac-majors {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 8px 18px;
+}
+.fac-majors li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-inline-start: 14px;
+    position: relative;
+    font-size: 13.5px;
+}
+.fac-majors li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 9px;
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+    background: var(--secondary, #a67c1f);
+}
+.fac-majors a { color: var(--text-dark, #241a1c); font-weight: 600; text-decoration: none; }
+.fac-majors a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
+.fac-degree { font-size: 11px; color: var(--text-muted, #6b5b5e); white-space: nowrap; }
+[data-theme="dark"] .fac-majors a { color: #e4edf6; }
+
+/* ── صفحهٔ مدیران گروه‌ها ─────────────────────────────────── */
+.grp-head-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    align-items: stretch;
+    gap: clamp(16px, 2.2vw, 24px);
+    margin-block-end: clamp(24px, 4vw, 48px);
+}
+.grp-head-card { display: flex; flex-direction: column; gap: 10px; block-size: 100%; }
+.grp-head-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+.grp-head-card-name { margin: 0; font-size: 16px; font-weight: 800; }
+.grp-head-card-name a { color: var(--primary, #7a1f2e); text-decoration: none; }
+.grp-head-card-name a:hover { text-decoration: underline; }
+.grp-head-dept { font-size: 11px; white-space: nowrap; }
+.grp-head-contact { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.grp-head-contact li { font-size: 13px; display: flex; align-items: center; gap: 7px; }
+.grp-head-contact i { color: var(--primary, #7a1f2e); inline-size: 16px; }
+.grp-head-contact a { color: var(--text-dark, #241a1c); text-decoration: none; }
+.grp-head-contact a:hover { text-decoration: underline; }
+.grp-head-missing {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted, #6b5b5e);
+}
+.grp-head-missing i { margin-inline-end: 5px; }
+.grp-head-more {
+    margin-block-start: auto;
+    padding-block-start: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary, #7a1f2e);
+    text-decoration: none;
+}
+.grp-head-more:hover { text-decoration: underline; }
+[data-theme="dark"] .grp-head-contact a { color: #dfe9f3; }
+
 /* ── کارت گروه: مدیر گروه با عکس ─────────────────────────── */
 .grp-head {
     display: flex;
@@ -3337,6 +3429,22 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .nav-dd-sub.is-plain { cursor: default; opacity: .6; }
 
+/* ── منوی دانشکده‌ها: هر دانشکده، رشته‌های خودش ──────────────
+   دانشکدهٔ مدیریت نوزده رشته دارد؛ بدون سقف ارتفاع، زیرمنو از کف
+   صفحه بیرون می‌زد و ردیف‌های آخرش دست‌نیافتنی می‌شد. */
+.nav-dd-faculties .vice-sub {
+    max-block-size: min(70vh, 520px);
+    overflow-y: auto;
+}
+/* مقطع، زیر نام رشته: چند رشته یک نام دارند و در دو مقطع‌اند */
+.nav-dd-degree {
+    display: block;
+    margin-block-start: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: .7;
+}
+
 /* ── صفحهٔ معاونت‌ها ─────────────────────────────────────────
    ستون شماره‌دار: خط عمودی از ۱ تا ۵ می‌گذرد و هر شماره آن را
    می‌شکند. ترتیب معنا دارد (سند اصلاحات آن را تعیین کرده)، پس
@@ -3541,6 +3649,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     inline-size: 100%;
     block-size: auto;
     cursor: zoom-in;
+    /* چارت یک تصویر آپلودی است و خط‌ها و نوشته‌هایش کم‌رنگ چاپ شده‌اند؛
+       کنتراست و اشباع بیشتر، بی‌آنکه فایل عوض شود، خواناترش می‌کند. */
+    filter: contrast(1.18) saturate(1.25) brightness(1.02);
     /* مرورگر تصویر بزرگ را با کیفیت بهتری کوچک می‌کند وقتی بداند
        قرار است نرم شود؛ روی خطوط نازک چارت تفاوتش دیده می‌شود. */
     image-rendering: auto;

@@ -67,18 +67,23 @@ class FacultyStructureTests(TestCase):
         self.assertIn('گروه مکانیک', names)
 
     def test_management_and_education_are_separated(self):
-        """سند موسسه جامعه‌شناسی را زیر مدیریت گذاشته، نه علوم تربیتی."""
+        """جامعه‌شناسی زیر علوم تربیتی است.
+
+        مدتی زیر مدیریت گذاشته شده بود؛ جدول سند «رشته‌های دانشکده‌ها»
+        آن را در بلوک علوم تربیتی و روان‌شناسی می‌آورد.
+        """
         _run()
         management = Department.objects.get(slug='modiriat-hesabdari')
         education = Department.objects.get(slug='olum-tarbiati-ravanshenasi')
-        self.assertEqual(management.groups.count(), 4)
-        self.assertEqual(education.groups.count(), 3)
+        self.assertEqual(management.groups.count(), 3)
+        self.assertEqual(education.groups.count(), 4)
 
         managed = set(management.groups.values_list('name', flat=True))
         taught = set(education.groups.values_list('name', flat=True))
-        self.assertIn('گروه علوم اجتماعی', managed)
+        self.assertIn('گروه علوم اجتماعی', taught)
         self.assertIn('گروه علوم تربیتی - مدیریت آموزشی', taught)
         self.assertIn('گروه روانشناسی', taught)
+        self.assertNotIn('گروه علوم اجتماعی', managed)
         self.assertNotIn('گروه علوم تربیتی - مدیریت آموزشی', managed)
 
     def test_the_third_faculty_carries_the_name_from_the_document(self):
@@ -109,13 +114,13 @@ class FacultyStructureTests(TestCase):
         """گروهی که زیر یکی از همین سه دانشکده اشتباه نشسته، اصلاح شود."""
         _run()
         social = AcademicGroup.objects.get(name='گروه علوم اجتماعی')
-        social.department = Department.objects.get(
-            slug='olum-tarbiati-ravanshenasi')
+        social.department = Department.objects.get(slug='modiriat-hesabdari')
         social.save(update_fields=['department'])
 
         _run()
         social.refresh_from_db()
-        self.assertEqual(social.department.slug, 'modiriat-hesabdari')
+        self.assertEqual(social.department.slug,
+                         'olum-tarbiati-ravanshenasi')
 
     def test_the_placeholder_is_removed_once_empty(self):
         _run()

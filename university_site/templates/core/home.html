@@ -15,15 +15,105 @@
 
        svh نه vh: روی موبایل نوار نشانی مرورگر داخل vh حساب می‌شود،
        پس اسلاید بلندتر از صفحه می‌افتد و با هر اسکرول می‌پرد. */
-    height: 78svh;
-    max-height: 720px;
-    min-height: 440px;
+    height: var(--hero-h, 62svh);
+    max-height: 620px;
+    min-height: 380px;
     overflow: hidden;
     background: #08243d;
 }
 @supports not (height: 1svh) {
-    .uni-hero-wrap { height: 78vh; }
+    .uni-hero-wrap { height: 62vh; }
 }
+
+/* ─── ردیف اول: اسلاید و ستون اطلاع‌رسانی ───
+   در صفحهٔ راست‌چین ستون دوم سمت چپ می‌نشیند، یعنی همان‌جایی که
+   خواسته شده. زیر ۱۰۲۴ پیکسل ستون می‌رود زیر اسلاید، چون کنار هم
+   هیچ‌کدام جا نمی‌شوند. */
+.hero-row { width: 100%; }
+@media (min-width: 1024px) {
+    .hero-row.has-side {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--hero-side-w, 340px);
+        align-items: stretch;
+        gap: 0;
+    }
+    .hero-row.has-side .uni-hero-wrap { height: var(--hero-h, 62svh); }
+    .hero-row.has-side .hero-side {
+        max-height: var(--hero-h, 62svh);
+        overflow-y: auto;
+    }
+}
+
+.hero-side {
+    background: var(--bg-white, #fff);
+    border-inline-start: 1px solid var(--border, #e8dcd0);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.hero-side-block { min-width: 0; }
+.hero-side-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--primary, #7a1f2e);
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--secondary, #a67c1f);
+}
+.hero-side-all {
+    margin-inline-start: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted, #6b5b5e);
+    text-decoration: none;
+}
+.hero-side-all:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
+.hero-side-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.hero-side-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-inline-start: 13px;
+    position: relative;
+}
+.hero-side-list li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--secondary, #a67c1f);
+}
+.hero-side-link {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.75;
+    color: var(--text-dark, #241a1c);
+    text-decoration: none;
+}
+.hero-side-link:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
+.hero-side-link.is-plain { cursor: default; }
+.hero-side-meta { font-size: 11px; color: var(--text-muted, #6b5b5e); }
+/* «خبر برجسته» پنل، اینجا یک نشان کوچک می‌شود */
+.hero-side-flag {
+    display: inline-block;
+    margin-inline-end: 5px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--primary, #7a1f2e);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    vertical-align: middle;
+}
+[data-theme="dark"] .hero-side { background: var(--bg-white); }
+[data-theme="dark"] .hero-side-link { color: #e8eff7; }
 
 /* ─── track ─── */
 .uni-hero-track {
@@ -325,7 +415,9 @@
 
 /* ─── responsive ─── */
 @media (max-width: 768px) {
-    .uni-hero-wrap { height: 60svh; min-height: 360px; }
+    /* روی موبایل عدد پنل هم کمی کوتاه‌تر می‌شود؛ زیرش ستون
+       اطلاع‌رسانی می‌آید و باید بی‌اسکرول طولانی دیده شود. */
+    .uni-hero-wrap { height: min(var(--hero-h, 62svh), 52svh); min-height: 320px; }
     .uni-slide-body { padding: 0 0 44px; }
     .uni-hero-arrow { width: 38px; height: 38px; font-size: 14px; }
     /* پیش‌نمایش بعدی روی موبایل جا تنگ می‌کند و جای انگشت را
@@ -341,9 +433,19 @@
 
 {% block content %}
 
-<!-- ═══════════════════════════════════════════
-     HERO SLIDER — fullscreen with news overlay
-═══════════════════════════════════════════ -->
+{% comment %}
+نوار اول صفحه: اسلایدر، و کنارش ستون اطلاع‌رسانی.
+
+اسلاید تمام‌عرض بود و تا وقتی کسی اسکرول نمی‌کرد هیچ خبری دیده
+نمی‌شد. حالا اسلاید کوتاه‌تر و باریک‌تر است و کنارش اطلاعیه‌ها،
+اخبار و رویدادها می‌آیند — همان‌هایی که در پنل ثبت می‌شوند.
+
+هر چهار عدد از تنظیمات سایت می‌آید: ارتفاع اسلاید، بودن ستون،
+پهنایش، و اینکه چه فهرست‌هایی در آن بیاید.
+{% endcomment %}
+<div class="hero-row{% if hero_side_on %} has-side{% endif %}"
+     style="--hero-h: {{ hero_height|default:62 }}svh; --hero-side-w: {{ hero_side_width|default:340 }}px;">
+
 <div class="uni-hero-wrap" id="uniHero">
 
     <!-- ── track ── -->
@@ -441,6 +543,44 @@
     <div class="uni-hero-progress" id="heroProgress"></div>
 
 </div><!-- /uni-hero-wrap -->
+
+{% if hero_side_on %}
+<aside class="hero-side" aria-label="اطلاع‌رسانی">
+    {% for block in hero_side_blocks %}
+    <section class="hero-side-block">
+        <h2 class="hero-side-title">
+            <i class="fas {{ block.icon }}" aria-hidden="true"></i>
+            {{ block.label }}
+            {% if block.url %}
+            <a class="hero-side-all" href="{{ block.url }}">همه</a>
+            {% endif %}
+        </h2>
+        <ul class="hero-side-list">
+            {% for row in block.rows %}
+            <li>
+                {% if block.key == 'events' %}
+                {% if row.link %}
+                <a href="{{ row.link }}" class="hero-side-link">{{ row.title }}</a>
+                {% else %}
+                <span class="hero-side-link is-plain">{{ row.title }}</span>
+                {% endif %}
+                <span class="hero-side-meta">{{ row.date|date:"Y/m/d" }}</span>
+                {% else %}
+                <a href="{{ row.get_absolute_url }}" class="hero-side-link">
+                    {% if row.is_featured %}<span class="hero-side-flag">مهم</span>{% endif %}
+                    {{ row.title }}
+                </a>
+                <span class="hero-side-meta">{{ row.published_at|date:"Y/m/d" }}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endfor %}
+</aside>
+{% endif %}
+
+</div><!-- /hero-row -->
 
 <script>
 /* اسلایدر صفحهٔ اصلی.
@@ -733,42 +873,6 @@
 <!-- ===== تقویم آموزشی — مراحل نیمسال با وضعیت زنده ===== -->
 {% include 'core/_academic_timeline.html' %}
 
-<!-- ===== FEATURES — از پنل ادمین: «مزایای تحصیل» ===== -->
-{% with sec=sections.features %}
-{% if sec.is_visible|default_if_none:True %}
-<section class="section"
-  {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"
-  {% else %}style="background:linear-gradient(180deg,#f3f7fc 0%,#fff 100%);"{% endif %}>
-    <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title">{{ sec.title|default:"مزایای تحصیل در موسسه آموزش عالی علامه امینی" }}</h2>
-            <p class="section-subtitle">{{ sec.subtitle|default:"یک تجربه آموزشی کامل و آینده‌ساز" }}</p>
-        </div>
-        <div class="row g-4">
-            {% for f in home_features %}
-            <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                {% if f.link %}<a href="{{ f.link }}" class="text-decoration-none text-reset">{% endif %}
-                <div class="dept-card text-center h-100 py-4">
-                    {% if f.image %}
-                    <img src="{{ f.image.url }}" alt="{{ f.title }}" loading="lazy"
-                         style="width:56px;height:56px;object-fit:contain;margin-bottom:10px;">
-                    {% else %}
-                    <div class="dept-icon" style="color:{{ f.color }};"><i class="fas {{ f.icon }}"></i></div>
-                    {% endif %}
-                    <h3 class="dept-title">{{ f.title }}</h3>
-                    {% if f.description %}
-                    <p class="text-muted" style="font-size:14px;">{{ f.description }}</p>
-                    {% endif %}
-                </div>
-                {% if f.link %}</a>{% endif %}
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-{% endif %}
-{% endwith %}
-
 <!-- ===== QUICK LINKS ===== -->
 {% with sec=sections.quicklinks %}
 {% if sec.is_visible|default_if_none:True %}
@@ -811,7 +915,7 @@
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="150">
                 <a href="{% url 'core:documents' %}" class="quick-link-card">
                     <div class="quick-link-icon"><i class="fas fa-file-alt"></i></div>
-                    <div class="quick-link-title">آیین نامه ها و فرمها</div>
+                    <div class="quick-link-title">آیین‌نامه‌ها و فرم‌ها</div>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="200">
@@ -839,6 +943,42 @@
                 </a>
             </div>
             {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endwith %}
+
+<!-- ===== FEATURES — از پنل ادمین: «مزایای تحصیل» ===== -->
+{% with sec=sections.features %}
+{% if sec.is_visible|default_if_none:True %}
+<section class="section"
+  {% if sec.image %}style="background-image:linear-gradient({{ sec.overlay_css }},{{ sec.overlay_css }}),url('{{ sec.image.url }}');background-size:cover;background-position:center;"
+  {% else %}style="background:linear-gradient(180deg,#f3f7fc 0%,#fff 100%);"{% endif %}>
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="section-title">{{ sec.title|default:"مزایای تحصیل در موسسه آموزش عالی علامه امینی" }}</h2>
+            <p class="section-subtitle">{{ sec.subtitle|default:"یک تجربه آموزشی کامل و آینده‌ساز" }}</p>
+        </div>
+        <div class="row g-4">
+            {% for f in home_features %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                {% if f.link %}<a href="{{ f.link }}" class="text-decoration-none text-reset">{% endif %}
+                <div class="dept-card text-center h-100 py-4">
+                    {% if f.image %}
+                    <img src="{{ f.image.url }}" alt="{{ f.title }}" loading="lazy"
+                         style="width:56px;height:56px;object-fit:contain;margin-bottom:10px;">
+                    {% else %}
+                    <div class="dept-icon" style="color:{{ f.color }};"><i class="fas {{ f.icon }}"></i></div>
+                    {% endif %}
+                    <h3 class="dept-title">{{ f.title }}</h3>
+                    {% if f.description %}
+                    <p class="text-muted" style="font-size:14px;">{{ f.description }}</p>
+                    {% endif %}
+                </div>
+                {% if f.link %}</a>{% endif %}
+            </div>
+            {% endfor %}
         </div>
     </div>
 </section>

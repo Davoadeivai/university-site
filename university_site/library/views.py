@@ -72,7 +72,7 @@ def library_home(request):
         'recent_articles': recent_articles,
         'recent_books': Book.objects.filter(is_available=True).order_by('-id')[:6],
         'stats': stats,
-        'page_title': 'مرکز اطلاع رسانی و کتابخانه مرکزی',
+        'page_title': 'مرکز اطلاع‌رسانی و کتابخانه مرکزی',
         'result_count': paginator.count,
     }
     return render(request, 'library/library.html', context)

@@ -19,8 +19,24 @@ def departments_list(request):
     settings_row = SiteSettings.objects.first()
     document = getattr(settings_row, 'faculties_pdf', None)
 
+    # ── همان جدول سند، ولی کلیک‌پذیر ──
+    # فایل PDF خواندنی است اما بن‌بست: بازدیدکننده اسم رشته را
+    # می‌بیند و راهی به صفحهٔ خودش ندارد. زیر فایل، همان ساختار از
+    # دیتابیس می‌آید و هر رشته لینک است.
+    majors_by_dept = {}
+    for major in (Major.objects.filter(is_active=True)
+                  .select_related('group')
+                  .order_by('department__order', 'degree', 'order', 'name')):
+        majors_by_dept.setdefault(major.department_id, []).append(major)
+
+    faculties = [
+        {'dept': dept, 'majors': majors_by_dept.get(dept.id, [])}
+        for dept in Department.objects.filter(is_active=True).order_by('order')
+    ]
+
     return render(request, 'academics/departments.html', {
         'document': document if file_present(document) else None,
+        'faculties': faculties,
         'page_title': 'دانشکده‌ها',
     })
 
@@ -169,6 +185,31 @@ def groups_list(request):
         'page_title': 'گروه‌های آموزشی',
     }
     return render(request, 'academics/groups_list.html', context)
+
+
+def group_heads(request):
+    """مدیران گروه‌های آموزشی، یک‌جا.
+
+    نام مدیر تا امروز فقط داخل کارت هر گروه بود؛ کسی که دنبال «مدیر
+    گروه کامپیوتر کیست» می‌گشت باید یازده صفحه را باز می‌کرد. اینجا
+    همهٔ گروه‌ها در یک جدول‌اند، با راه تماس هرکدام.
+
+    داده از خود گروه می‌آید: اگر مدیر عضو هیئت علمی باشد نام و عکس و
+    مرتبه‌اش از پروندهٔ استاد خوانده می‌شود، وگرنه از فیلد دستی. پس
+    ثبت و ویرایش، همان پنل «گروه‌های آموزشی» است.
+    """
+    groups = list(
+        AcademicGroup.objects.filter(is_active=True)
+        .select_related('department', 'head_professor')
+        .order_by('department__order', 'order', 'name')
+    )
+    named = [g for g in groups if g.head_name]
+    return render(request, 'academics/group_heads.html', {
+        'groups': groups,
+        'named_count': len(named),
+        'missing_count': len(groups) - len(named),
+        'page_title': 'مدیران گروه‌های آموزشی',
+    })
 
 
 def group_detail(request, slug):

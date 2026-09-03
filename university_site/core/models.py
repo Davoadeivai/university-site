@@ -67,6 +67,33 @@ class SiteSettings(models.Model):
             'اسلایدهای بیشتر از این عدد ثبت می‌مانند ولی نمایش داده '
             'نمی‌شوند. هر اسلاید یک عکس است و وزن صفحه را بالا '
             'می‌برد، پس سقف %d گذاشته شده.' % MAX_HOME_SLIDES))
+    # ── نوار اول صفحهٔ اصلی: اسلایدر و ستون اطلاع‌رسانی کنارش ──
+    #
+    # اسلاید تمام‌عرض بود و تا وقتی کسی اسکرول نمی‌کرد، هیچ خبری
+    # دیده نمی‌شد. حالا اسلایدر کوتاه‌تر و باریک‌تر است و کنارش یک
+    # ستون می‌ماند برای اطلاعیه، خبر و رویداد. هر چهار تصمیم —
+    # بودن یا نبودن ستون، ارتفاع اسلاید، پهنای ستون، و اینکه چه
+    # فهرست‌هایی در آن بیاید — از همین‌جا کنترل می‌شود.
+    hero_height = models.PositiveSmallIntegerField(
+        _('ارتفاع اسلایدر (درصد صفحه)'), default=62,
+        validators=[MinValueValidator(35), MaxValueValidator(90)],
+        help_text=_('عدد کوچک‌تر یعنی تصویر کوچک‌تر. پیش‌فرض ۶۲.'))
+    hero_side_enabled = models.BooleanField(
+        _('ستون اطلاع‌رسانی کنار اسلایدر'), default=True,
+        help_text=_('برداشتن تیک، اسلایدر را دوباره تمام‌عرض می‌کند.'))
+    hero_side_width = models.PositiveSmallIntegerField(
+        _('پهنای ستون اطلاع‌رسانی (پیکسل)'), default=340,
+        validators=[MinValueValidator(240), MaxValueValidator(520)])
+    hero_side_count = models.PositiveSmallIntegerField(
+        _('تعداد ردیف هر فهرست'), default=4,
+        validators=[MinValueValidator(1), MaxValueValidator(10)])
+    hero_side_show_announcements = models.BooleanField(
+        _('اطلاعیه‌ها در ستون'), default=True)
+    hero_side_show_news = models.BooleanField(
+        _('اخبار در ستون'), default=True)
+    hero_side_show_events = models.BooleanField(
+        _('رویدادها در ستون'), default=True)
+
     council_card_min_width = models.PositiveSmallIntegerField(
         _('حداقل عرض کارت شورا'), default=260,
         validators=[MinValueValidator(180), MaxValueValidator(420)],

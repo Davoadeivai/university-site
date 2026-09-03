@@ -34,6 +34,10 @@ class Department(models.Model):
         return self.name
 
     def get_absolute_url(self):
+        # دانشکده‌ای که هنوز نشانی ندارد، هر صفحه‌ای را که نامش را
+        # نشان می‌دهد می‌شکست — reverse با اسلاگ خالی خطا می‌دهد.
+        if not (self.slug or '').strip():
+            return reverse('academics:departments')
         return reverse('academics:department_detail', args=[self.slug])
 
 

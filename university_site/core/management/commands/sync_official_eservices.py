@@ -34,7 +34,7 @@ ESERVICES = [
         'open_in_new_tab': False,
     },
     {
-        'title': 'آیین نامه ها و فرمها',
+        'title': 'آیین‌نامه‌ها و فرم‌ها',
         'icon': 'fas fa-file-alt',
         'url': '/آیین-نامه-ها-و-فرم-ها/',
         'order': 4,
@@ -63,7 +63,7 @@ HOME_LINKS = [
     ('سامانه خدمات آموزشی', 'fas fa-graduation-cap', SAMAWEB, 1, True),
     ('اتوماسیون اداری', 'fas fa-network-wired', SAMAWEB, 2, True),
     ('کتابخانه دیجیتال', 'fas fa-book', '/کتابخانه/', 3, False),
-    ('آیین نامه ها و فرمها', 'fas fa-file-alt', '/آیین-نامه-ها-و-فرم-ها/', 4, False),
+    ('آیین‌نامه‌ها و فرم‌ها', 'fas fa-file-alt', '/آیین-نامه-ها-و-فرم-ها/', 4, False),
     ('سامانه نشریات', 'fas fa-newspaper', '/پژوهش/مجلات/', 5, False),
     ('شناسه واریز شهریه', 'fas fa-university', '/شناسه-واریز/', 6, False),
     ('پذیرش دانشجو', 'fas fa-user-plus', '/پذیرش/', 7, False),

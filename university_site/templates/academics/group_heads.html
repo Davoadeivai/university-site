@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% comment %}
+مدیران گروه‌های آموزشی، یک‌جا.
+
+هر ردیف از خود گروه می‌آید؛ اگر مدیرش عضو هیئت علمی باشد نام به
+پروندهٔ او لینک می‌شود. گروهی که مدیرش ثبت نشده پنهان نمی‌شود —
+همان‌جا می‌گوید که هنوز ثبت نشده، و برای همکاران موسسه لینک پنل
+هم کنارش است.
+{% endcomment %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'academics:groups_list' %}">گروه‌های آموزشی</a></li>
+                <li class="breadcrumb-item active" aria-current="page">مدیران گروه‌ها</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">مدیران گروه‌های آموزشی</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if groups %}
+        <div class="grp-head-grid">
+            {% for group in groups %}
+            <article class="uni-card council-panel p-4 grp-head-card">
+                <div class="grp-head-card-top">
+                    <h2 class="grp-head-card-name">
+                        <a href="{{ group.get_absolute_url }}">{{ group.name }}</a>
+                    </h2>
+                    <span class="badge bg-primary grp-head-dept">{{ group.department.name }}</span>
+                </div>
+
+                {% if group.head_name %}
+                {% include 'academics/_group_head.html' with group=group link=True %}
+
+                <ul class="grp-head-contact">
+                    {% if group.head_contact_phone %}
+                    <li>
+                        <i class="fas fa-phone" aria-hidden="true"></i>
+                        <a href="tel:{{ group.head_contact_phone }}">{{ group.head_contact_phone }}</a>
+                    </li>
+                    {% endif %}
+                    {% if group.head_contact_email %}
+                    <li>
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        <a href="mailto:{{ group.head_contact_email }}">{{ group.head_contact_email }}</a>
+                    </li>
+                    {% endif %}
+                    {% if group.location %}
+                    <li>
+                        <i class="fas fa-location-dot" aria-hidden="true"></i>
+                        {{ group.location }}
+                    </li>
+                    {% endif %}
+                </ul>
+                {% else %}
+                <p class="grp-head-missing">
+                    <i class="fas fa-user-tie" aria-hidden="true"></i>
+                    مدیر این گروه هنوز ثبت نشده است.
+                    {% if user.is_staff %}
+                    <a href="/admin/academics/academicgroup/{{ group.pk }}/change/">ثبت از پنل</a>
+                    {% endif %}
+                </p>
+                {% endif %}
+
+                <a class="grp-head-more" href="{{ group.get_absolute_url }}">
+                    صفحهٔ گروه
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+
+        {% if missing_count and user.is_staff %}
+        <p class="text-muted mt-4" style="font-size:13px;">
+            {{ named_count }} گروه مدیر ثبت‌شده دارد و {{ missing_count }} گروه هنوز ندارد.
+            مدیر هر گروه از پنل ← گروه‌های آموزشی ثبت می‌شود.
+        </p>
+        {% endif %}
+        {% else %}
+        {% include 'core/_empty_state.html' with label='گروهی' add_url='/admin/academics/academicgroup/add/' hint='گروه‌های آموزشی و مدیرانشان در این صفحه فهرست می‌شوند.' %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

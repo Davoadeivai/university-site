@@ -29,7 +29,7 @@
                     <div class="col-6">
                         <div class="dept-card text-center">
                             <div class="dept-icon"><i class="fas fa-award"></i></div>
-                            <div class="dept-title" style="font-size:15px;">رتبه کشوری</div>
+                            <div class="dept-title" style="font-size:15px;">رتبه عالی</div>
                             <div class="text-muted">ممتاز</div>
                         </div>
                     </div>
@@ -193,10 +193,10 @@
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 14px rgba(78,18,32,0.16);
     text-align: center;
     min-width: 200px;
-    border: 2px solid var(--primary);
+    border: 3px solid var(--primary);
 }
 
 .org-node.child-node {
@@ -238,23 +238,33 @@
     font-size: 24px;
 }
 
+/* نوشته‌های چارت کم‌رنگ بودند و از یک قدمی خوانده نمی‌شدند */
 .org-info h4,
 .org-info h5 {
     margin: 0 0 5px;
-    color: var(--text-dark);
+    color: #1c1214;
+    font-weight: 800;
 }
 
 .org-title {
     color: var(--primary);
-    font-weight: 600;
+    font-weight: 800;
     margin: 0 0 5px;
 }
 
 .org-person {
-    color: #6c757d;
+    color: #3f3336;
+    font-weight: 600;
     margin: 0;
     font-size: 14px;
 }
+
+.org-children { border-top-color: var(--secondary); }
+
+[data-theme="dark"] .org-node { background: var(--bg-white); }
+[data-theme="dark"] .org-info h4,
+[data-theme="dark"] .org-info h5 { color: #f4f8fc; }
+[data-theme="dark"] .org-person { color: #cfdae6; }
 
 .org-children {
     display: flex;

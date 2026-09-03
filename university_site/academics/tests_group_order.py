@@ -71,7 +71,8 @@ class GroupOrderTests(TestCase):
         _run()
         cache.clear()
         html = self.client.get(reverse('core:home')).content.decode()
-        block = html.split('گروه های آموزشی')[1].split('</ul>')[0]
+        # زیرمنوی خودِ «گروه‌های آموزشی»، نه هم‌نامش در منوی معاونت
+        block = html.split('nav-dd-groups')[1].split('</ul>')[0]
         positions = [block.index(name) for name in WANTED_FIRST]
         self.assertEqual(positions, sorted(positions))
 

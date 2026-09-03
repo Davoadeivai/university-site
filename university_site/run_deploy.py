@@ -8,8 +8,9 @@
 اسکریپت از پوشهٔ خودش می‌خواند و در پوشهٔ اپ می‌نویسد، پس اول باید
 «Update from Remote» زده باشید تا مخزن تازه باشد.
 
-  python run_deploy.py                 # کپی + migrate + collectstatic + ری‌استارت
+  python run_deploy.py                 # کپی + migrate + محتوا + collectstatic + ری‌استارت
   python run_deploy.py --copy-only     # فقط کپی، بی‌آنکه به دیتابیس دست بزند
+  python run_deploy.py --skip-content  # بدون هم‌خوان‌کردن دانشکده‌ها و رشته‌ها
   python run_deploy.py --to /path/app  # اگر پوشهٔ اپ جای دیگری است
 
 فایل‌های خود سرور — env. و media و دیتابیس و استاتیک جمع‌شده — کپی
@@ -29,6 +30,17 @@ SKIP_DIRS = {
     'logs', 'tmp', '.venv', 'venv', 'node_modules',
 }
 SKIP_FILES = {'.env', 'db.sqlite3'}
+
+# دستورهایی که ساختار را با سندهای موسسه هم‌خوان می‌کنند.
+#
+# سرور ترمینال ندارد، پس این‌ها جای دیگری اجرا نمی‌شوند. هر سه
+# idempotent‌اند: چیزی که سر جایش باشد دست نمی‌خورد. اگر یکی خطا داد،
+# دیپلوی نمی‌ایستد — بقیه اجرا می‌شوند و پیام خطا چاپ می‌شود.
+CONTENT_COMMANDS = [
+    'set_faculties',            # سه دانشکده و گروه‌هایشان
+    'set_majors_from_document',  # ۴۱ رشتهٔ سند «رشته‌های دانشکده‌ها»
+    'seed_councils',            # شوراهای سند «اعضای شورا»
+]
 
 
 def _target_from_argv(argv):
@@ -100,6 +112,15 @@ def main(argv):
 
     print('=== migrate ===')
     call_command('migrate', '--noinput')
+
+    if '--skip-content' not in argv:
+        for name in CONTENT_COMMANDS:
+            print('=== %s ===' % name)
+            try:
+                call_command(name)
+            except Exception as error:            # noqa: BLE001
+                print('   خطا در %s: %s' % (name, error))
+
     print('=== collectstatic ===')
     call_command('collectstatic', '--noinput')
 

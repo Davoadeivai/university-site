@@ -68,6 +68,39 @@
         {% include 'core/_empty_state.html' with label='فایلی' add_url='/admin/core/sitesettings/' hint='فایل رشته‌های دانشکده‌ها را در تنظیمات سایت آپلود کنید تا در همین صفحه نمایش داده شود.' %}
         </div>
         {% endif %}
+
+        {% comment %}
+        همان ساختار سند، ولی کلیک‌پذیر: هر دانشکده با رشته‌هایش، و
+        هر رشته لینک به صفحهٔ خودش (سرفصل، شهریه، شرایط پذیرش).
+        فایل بالا خواندنی است ولی بن‌بست بود.
+        {% endcomment %}
+        {% if faculties %}
+        <div class="fac-list">
+            {% for row in faculties %}
+            <article class="uni-card council-panel p-4 fac-card">
+                <h2 class="fac-name">
+                    <a href="{{ row.dept.get_absolute_url }}">{{ row.dept.name }}</a>
+                    <span class="fac-count">{{ row.majors|length }} رشته</span>
+                </h2>
+                {% if row.dept.short_description %}
+                <p class="fac-blurb">{{ row.dept.short_description }}</p>
+                {% endif %}
+                {% if row.majors %}
+                <ul class="fac-majors">
+                    {% for major in row.majors %}
+                    <li>
+                        <a href="{{ major.get_absolute_url }}">{{ major.name }}</a>
+                        <span class="fac-degree">{{ major.get_degree_display }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="fac-blurb">رشته‌ای برای این دانشکده ثبت نشده است.</p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

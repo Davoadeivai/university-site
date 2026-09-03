@@ -37,6 +37,21 @@ def global_context(request):
             .prefetch_related('groups').order_by('order')
         )
 
+        # ── دانشکده‌ها با رشته‌هایشان، برای منوی «دانشکده‌ها» ──
+        # منو تا امروز فقط یک لینک بود و بازدیدکننده برای رسیدن به یک
+        # رشته باید دو صفحه جلو می‌رفت. حالا هر دانشکده زیرمنوی
+        # رشته‌های خودش را دارد و هر رشته مستقیم به صفحهٔ خودش می‌رود.
+        from academics.models import Major
+        majors_by_dept = {}
+        for major in (Major.objects.filter(is_active=True)
+                      .order_by('department__order', 'degree', 'order',
+                                'name')):
+            majors_by_dept.setdefault(major.department_id, []).append(major)
+        nav_faculties = [
+            {'dept': dept, 'majors': majors_by_dept.get(dept.id, [])}
+            for dept in nav_departments
+        ]
+
         # معاونت‌ها برای صفحه‌ها (نه منو). منوی معاونین از بند ۱۳ سند
         # اصلاحات ترتیب ثابتی دارد و در قالب نوشته شده؛ این فهرست
         # جاهای دیگری که به داده نیاز دارند را تغذیه می‌کند.
@@ -66,6 +81,7 @@ def global_context(request):
             'urgent_announcements': urgent_announcements,
             'nav_groups': nav_groups,
             'nav_departments': nav_departments,
+            'nav_faculties': nav_faculties,
             'nav_vices': nav_vices,
             'nav_councils': nav_councils,
             'nav_graduate_groups': nav_graduate_groups,

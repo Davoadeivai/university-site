@@ -156,6 +156,20 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'ولی روی صفحه نمی‌آیند.'
             ),
         }),
+        ('اسلایدر و ستون اطلاع‌رسانی کنارش', {
+            'fields': (
+                'hero_height', 'hero_side_enabled', 'hero_side_width',
+                'hero_side_count', 'hero_side_show_announcements',
+                'hero_side_show_news', 'hero_side_show_events',
+            ),
+            'description': (
+                'ستون کنار اسلایدر از همین اطلاعیه‌ها، اخبار و رویدادهای '
+                'ثبت‌شده در پنل پر می‌شود؛ افزودن و ویرایش و حذفشان همان '
+                'جای همیشگی است. اینجا فقط تصمیم می‌گیرید ستون باشد یا '
+                'نه، چقدر پهن باشد، هر فهرست چند ردیف بیاورد، و اسلاید '
+                'چقدر بلند باشد.'
+            ),
+        }),
         ('اندازهٔ کارت‌های صفحهٔ شوراها', {
             'fields': ('council_card_min_width', 'council_card_min_height'),
             'description': (

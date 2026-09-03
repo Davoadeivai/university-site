@@ -119,8 +119,56 @@ def home(request):
     alumni = Alumni.objects.filter(is_featured=True)[:4]
     bank_accounts = BankAccount.objects.filter(is_active=True)[:3]
 
+    # ── ستون کنار اسلایدر ──
+    # اسلاید تمام‌عرض بود و خبرها زیر خط تا می‌ماندند. این ستون
+    # همان اطلاعیه‌ها، اخبار و رویدادهای ثبت‌شده در پنل را کنار
+    # اسلاید می‌آورد؛ چه بیاید و چند ردیف بیاورد، از تنظیمات سایت
+    # خوانده می‌شود، پس مدیر بی‌آنکه به کد دست بزند تغییرش می‌دهد.
+    side_count = getattr(settings_row, 'hero_side_count', None) or 4
+    hero_side_blocks = []
+    if getattr(settings_row, 'hero_side_show_announcements', True):
+        rows = list(published.filter(news_type='announcement')[:side_count])
+        if rows:
+            hero_side_blocks.append({
+                'key': 'announcements',
+                'label': 'اطلاعیه‌ها',
+                'icon': 'fa-bullhorn',
+                'url': reverse('news:announcements'),
+                'rows': rows,
+            })
+    if getattr(settings_row, 'hero_side_show_news', True):
+        rows = list(published.exclude(news_type='announcement')[:side_count])
+        if rows:
+            hero_side_blocks.append({
+                'key': 'news',
+                'label': 'آخرین اخبار',
+                'icon': 'fa-newspaper',
+                'url': reverse('news:list'),
+                'rows': rows,
+            })
+    if getattr(settings_row, 'hero_side_show_events', True):
+        # از خود مدل، نه از upcoming_events که پیش‌تر به چهار بریده
+        # شده — وگرنه عدد پنل بالای چهار بی‌اثر می‌ماند.
+        rows = list(Event.objects.filter(
+            is_active=True, date__gte=timezone.now().date()
+        ).order_by('date')[:side_count])
+        if rows:
+            hero_side_blocks.append({
+                'key': 'events',
+                'label': 'رویدادهای پیش‌رو',
+                'icon': 'fa-calendar-day',
+                'url': '',
+                'rows': rows,
+            })
+    hero_side_on = bool(
+        getattr(settings_row, 'hero_side_enabled', True) and hero_side_blocks)
+
     context = {
         'sliders': sliders,
+        'hero_height': getattr(settings_row, 'hero_height', None) or 62,
+        'hero_side_on': hero_side_on,
+        'hero_side_width': getattr(settings_row, 'hero_side_width', None) or 340,
+        'hero_side_blocks': hero_side_blocks,
         'quick_links': quick_links,
         'featured_news': featured_news,
         'latest_news': latest_news,
