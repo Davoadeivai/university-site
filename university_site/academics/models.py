@@ -458,6 +458,19 @@ class AcademicGroup(models.Model):
     is_active = models.BooleanField(_('فعال'), default=True)
 
     @property
+    def bare_name(self) -> str:
+        """نام گروه بدون واژهٔ «گروه» در آغازش.
+
+        نامِ ذخیره‌شده «گروه حسابداری» است، پس «مدیر گروه {name}» روی
+        صفحه «مدیر گروه گروه حسابداری» می‌شد.
+        """
+        name = (self.name or '').strip()
+        for prefix in ('گروه آموزشی ', 'گروه '):
+            if name.startswith(prefix):
+                return name[len(prefix):].strip()
+        return name
+
+    @property
     def blurb(self) -> str:
         """معرفی گروه، بدون تکرار نامش در آغاز.
 

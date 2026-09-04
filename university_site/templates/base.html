@@ -266,13 +266,14 @@
                                 </button>
                             </div>
                             <ul class="vice-sub">
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#founder">هیئت مؤسس</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-موسس' %}">هیئت مؤسس</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-moases' %}">دبیرخانه هیأت مؤسس</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#trustee">هیئت امنا</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-امنا' %}">هیئت امنا</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#faculty">اعضای هیئت علمی</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-علمی' %}">اعضای هیئت علمی</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:group_heads' %}">مدیران گروه آموزشی</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}#lecturer">مدرسین</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'مدرسین' %}">مدرسین</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}">فهرست کامل ارکان و اعضا</a></li>
                             </ul>
                         </li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:staff' %}">دفترچه تلفن و مسئولان</a></li>

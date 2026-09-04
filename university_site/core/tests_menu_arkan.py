@@ -43,20 +43,29 @@ class ArkanMenuTests(TestCase):
         self.assertIn('مدرسین', nav)
         self.assertIn(reverse('academics:group_heads'), nav)
 
-    def test_each_body_lands_on_its_own_block(self):
+    def test_each_body_has_a_page_of_its_own(self):
+        """پیش از این همه به یک صفحه می‌رفتند و فقط لنگر فرق داشت."""
         nav = self._nav()
-        people = reverse('directory:people')
-        for anchor in ('#founder', '#trustee', '#faculty', '#lecturer'):
-            self.assertIn(people + anchor, nav)
+        for slug in ('هیات-موسس', 'هیات-امنا', 'هیات-علمی', 'مدرسین'):
+            self.assertIn(
+                reverse('directory:people_section', args=[slug]), nav)
 
-    def test_the_page_has_those_anchors(self):
+    def test_those_pages_open_and_show_only_their_own_people(self):
         from directory.models import DirectoryPerson
 
         DirectoryPerson.objects.create(
             category='founder', full_name='نمونهٔ مؤسس', is_active=True)
-        html = self.client.get(
-            reverse('directory:people')).content.decode()
-        self.assertIn('id="founder"', html)
+        DirectoryPerson.objects.create(
+            category='lecturer', full_name='نمونهٔ مدرس', is_active=True)
+
+        founders = self.client.get(
+            reverse('directory:people_section',
+                    args=['هیات-موسس'])).content.decode()
+        self.assertIn('نمونهٔ مؤسس', founders)
+        self.assertNotIn('نمونهٔ مدرس', founders)
+
+    def test_the_full_list_still_exists(self):
+        self.assertIn(reverse('directory:people'), self._nav())
 
 
 class SecretariatsMovedTests(TestCase):
@@ -109,3 +118,59 @@ class SecretariatsMovedTests(TestCase):
         menu = self._presidency_menu()
         self.assertIn('dabirkhane-heyat-raise', menu)
         self.assertIn('dabirkhane-jazb', menu)
+
+
+class PeopleSectionPagesTests(TestCase):
+    """هر رکن، صفحهٔ خودش — نه پنج بخش زیر یک عنوان."""
+
+    def setUp(self):
+        cache.clear()
+        from directory.models import DirectoryPerson
+
+        for category, name in (
+            ('founder', 'مؤسس نمونه'),
+            ('trustee', 'امنای نمونه'),
+            ('faculty', 'استاد نمونه'),
+            ('group_head', 'مدیر گروه نمونه'),
+            ('lecturer', 'مدرس نمونه'),
+        ):
+            DirectoryPerson.objects.create(
+                category=category, full_name=name, is_active=True)
+
+    def _page(self, slug):
+        return self.client.get(
+            reverse('directory:people_section', args=[slug]))
+
+    def test_every_section_has_its_own_address(self):
+        for slug in ('هیات-موسس', 'هیات-امنا', 'هیات-علمی',
+                     'مدیران-گروه', 'مدرسین'):
+            self.assertEqual(self._page(slug).status_code, 200, slug)
+
+    def test_a_section_shows_only_its_own_people(self):
+        html = self._page('هیات-امنا').content.decode()
+        self.assertIn('امنای نمونه', html)
+        for other in ('مؤسس نمونه', 'استاد نمونه', 'مدرس نمونه'):
+            self.assertNotIn(other, html)
+
+    def test_an_unknown_section_is_a_404(self):
+        self.assertEqual(self._page('چیزی-نیست').status_code, 404)
+
+    def test_each_page_offers_the_way_to_the_others(self):
+        html = self._page('هیات-موسس').content.decode()
+        self.assertIn('people-others', html)
+        self.assertIn(
+            reverse('directory:people_section', args=['هیات-امنا']), html)
+
+    def test_the_full_list_links_into_each_page(self):
+        html = self.client.get(reverse('directory:people')).content.decode()
+        for slug in ('هیات-موسس', 'مدرسین'):
+            self.assertIn(
+                reverse('directory:people_section', args=[slug]), html)
+
+    def test_an_empty_section_does_not_break(self):
+        from directory.models import DirectoryPerson
+
+        DirectoryPerson.objects.filter(category='lecturer').delete()
+        response = self._page('مدرسین')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('مدرسین', response.content.decode())

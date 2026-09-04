@@ -12,7 +12,7 @@
                 <li class="breadcrumb-item active">اعضای موسسه</li>
             </ol>
         </nav>
-        <h1 class="page-header-title">اعضای موسسه</h1>
+        <h1 class="page-header-title">ارکان و اعضای موسسه</h1>
     </div>
 </div>
 
@@ -22,7 +22,7 @@
         {% if groups %}
         <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
             {% for group in groups %}
-            <a href="#{{ group.key }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            <a href="{{ group.url }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                 <i class="fas {{ group.icon }} ms-1"></i>
                 {{ group.label }}
                 <span class="badge bg-primary ms-1">{{ group.members|length }}</span>
@@ -34,7 +34,7 @@
         <div class="mb-5" id="{{ group.key }}">
             <h2 class="section-title d-flex align-items-center gap-2 mb-4">
                 <i class="fas {{ group.icon }} text-primary"></i>
-                {{ group.label }}
+                <a href="{{ group.url }}" class="text-decoration-none">{{ group.label }}</a>
             </h2>
 
             <div class="row g-3">

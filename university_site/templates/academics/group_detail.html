@@ -35,7 +35,7 @@
                     <a href="{{ group.head_page }}" class="text-decoration-none">{{ group.head_name }}</a>
                     {% else %}{{ group.head_name }}{% endif %}
                 </h4>
-                <p class="text-primary fw-semibold mb-1">مدیر گروه {{ group.name }}</p>
+                <p class="text-primary fw-semibold mb-1">مدیر گروه {{ group.bare_name }}</p>
                 {% if group.head_rank %}
                 <p class="text-muted" style="font-size:13px;">{{ group.head_rank }}</p>
                 {% endif %}
@@ -62,13 +62,17 @@
                 </div>
             </div>
             <div class="col-lg-8">
-                {% if group.description %}
+                {% if group.blurb %}
                 <div class="dept-card mb-3">
                     <h4 class="section-title mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>معرفی گروه</h4>
-                    <p class="text-muted" style="font-size:15px;line-height:2.2;">{{ group.description }}</p>
+                    <p class="text-muted" style="font-size:15px;line-height:2.2;">{{ group.blurb }}</p>
                 </div>
                 {% endif %}
-                <!-- اطلاعات تماس -->
+                {% comment %}
+                کارت تماس فقط وقتی می‌آید که چیزی برای گفتن داشته باشد؛
+                پیش از این یک قاب با عنوان و هیچ، روی صفحه می‌ماند.
+                {% endcomment %}
+                {% if group.phone or group.email or group.location %}
                 <div class="dept-card">
                     <h5 class="dept-title mb-3"><i class="fas fa-address-card me-2 text-info"></i>اطلاعات تماس</h5>
                     <div class="row g-2">
@@ -77,6 +81,7 @@
                         {% if group.location %}<div class="col-12 mt-1"><i class="fas fa-map-marker-alt text-danger me-2"></i>{{ group.location }}</div>{% endif %}
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
 
@@ -115,20 +120,18 @@
         <div class="mt-4" data-aos="fade-up">
             <h4 class="section-title mb-4">
                 <i class="fas fa-book-open me-2 text-primary"></i>
-                لیست رشته‌ها و مقاطع تحصیلی {{ group.name }}
+                رشته‌ها و مقاطع تحصیلی {{ group.bare_name }}
             </h4>
             {% if majors_by_degree %}
-            <div class="uni-card p-4" style="background:#1a2e1a;color:#fff;">
+            <div class="uni-card p-4 grp-majors">
                 {% for degree_label, degree_majors in majors_by_degree.items %}
                 <div class="mb-4">
-                    <h5 style="color:#f97316;font-weight:700;margin-bottom:10px;">{{ degree_label }}:</h5>
-                    <ol style="padding-right:1.2rem;margin:0;">
+                    <h5 class="grp-majors-degree">{{ degree_label }}</h5>
+                    <ol class="grp-majors-list">
                         {% for major in degree_majors %}
-                        <li class="mb-2" style="color:#e5e7eb;">
+                        <li>
                             {% if major.slug %}
-                            <a href="{{ major.get_absolute_url }}" class="text-decoration-none" style="color:#f3f4f6;">
-                                {{ major.name }}
-                            </a>
+                            <a href="{{ major.get_absolute_url }}">{{ major.name }}</a>
                             {% else %}
                             <span>{{ major.name }}</span>
                             {% endif %}
@@ -150,7 +153,10 @@
         <!-- اساتید مرتبط -->
         {% if professors %}
         <div class="mt-5" data-aos="fade-up">
-            <h4 class="section-title mb-4"><i class="fas fa-chalkboard-teacher me-2 text-success"></i>اعضای هیئت علمی</h4>
+            <h4 class="section-title mb-4">
+                <i class="fas fa-chalkboard-teacher me-2 text-success"></i>
+                اعضای هیئت علمی {{ group.department.name }}
+            </h4>
             <div class="row g-4">
                 {% for prof in professors %}
                 <div class="col-md-6 col-lg-3">

@@ -152,13 +152,20 @@ class Command(BaseCommand):
                 names = placed.get(group.pk)
                 if not names:
                     continue
-                if (group.head_name or '').strip() and not options['replace']:
-                    kept += 1
-                    continue
-
+                current = (group.head_name or '').strip()
                 # یک نام، نه دو: «مدیر گروه: الف و ب» روی کارت
                 # خوانده نمی‌شد. نفر دومِ فهرست موسسه در گزارش می‌آید.
                 text = names[0]
+
+                # نوشتهٔ خودِ همین دستور در اجرای قبلی — دو نام کنار هم —
+                # باید اصلاح شود، وگرنه روی سرور برای همیشه می‌ماند: بدون
+                # ‎--replace‎ هر اجرا آن را «دست‌نویس مدیر» می‌دید و رد
+                # می‌شد. متنی که مدیر خودش نوشته دست نمی‌خورد.
+                ours = current == ' و '.join(names)
+                if current and not ours and not options['replace']:
+                    kept += 1
+                    continue
+
                 professor = self._professor_for(text)
 
                 self.stdout.write('  %s → %s%s' % (
@@ -171,7 +178,14 @@ class Command(BaseCommand):
 
                 group.head = '' if professor else text
                 group.head_professor = professor
-                group.save(update_fields=['head', 'head_professor'])
+                fields = ['head', 'head_professor']
+                # عکسی که برای مدیر قبلی آپلود شده بود، عکس این یکی
+                # نیست؛ روی سرور یک منظرهٔ کوهستان جای چهرهٔ مدیر گروه
+                # نشسته بود.
+                if current and current != text and group.head_photo:
+                    group.head_photo = None
+                    fields.append('head_photo')
+                group.save(update_fields=fields)
 
         self.stdout.write(self.style.SUCCESS(
             'پیش‌نمایش:' if dry else 'انجام شد:'))

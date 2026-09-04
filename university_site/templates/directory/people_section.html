@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% comment %}
+یک رکن موسسه، در صفحهٔ خودش.
+
+پیش از این هر پنج دسته در یک صفحه بودند و منو با لنگر به میانهٔ آن
+می‌پرید. حالا هیئت مؤسس، هیئت امنا، هیئت علمی، مدیران گروه و
+مدرسین هرکدام نشانی و صفحهٔ خودشان را دارند؛ پایین صفحه هم راه
+رفتن به بقیه هست.
+{% endcomment %}
+
+{% block title %}{{ label }} | موسسه آموزش عالی علامه امینی{% endblock %}
+{% block meta_description %}{{ blurb }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'directory:people' %}">ارکان و اعضای موسسه</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ label }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title">
+            <i class="fas {{ icon }} ms-2" aria-hidden="true"></i>{{ label }}
+        </h1>
+        <p class="text-white-50 mb-0">{{ blurb }}</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if group.members %}
+        <div class="row g-3">
+            {% for person in group.members %}
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="uni-card council-panel p-3 h-100 d-flex gap-3 align-items-start person-card">
+                    {% if person.photo %}
+                    <img src="{{ person.photo.url }}" alt="{{ person.display_name }}"
+                         class="person-avatar" loading="lazy" width="56" height="56">
+                    {% else %}
+                    <span class="person-avatar person-avatar--empty" aria-hidden="true">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    {% endif %}
+                    <div class="min-w-0">
+                        <div class="fw-semibold">{{ person.display_name }}</div>
+                        {% if person.position %}
+                        <div class="text-muted small mt-1">{{ person.position }}</div>
+                        {% endif %}
+                        {% if person.field_of_study %}
+                        <div class="small mt-1 person-field">
+                            <i class="fas fa-graduation-cap ms-1" aria-hidden="true"></i>{{ person.field_of_study }}
+                        </div>
+                        {% endif %}
+                        {% if person.degree %}
+                        <span class="badge person-degree mt-2">{{ person.get_degree_display }}</span>
+                        {% endif %}
+                        {% if person.contact_line %}
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-phone ms-1" aria-hidden="true"></i>{{ person.contact_line }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% include 'core/_empty_state.html' with label='فردی' add_url='/admin/directory/directoryperson/add/' hint='اعضای این بخش از پنل ← افراد موسسه ثبت می‌شوند.' %}
+        {% endif %}
+
+        <nav class="people-others" aria-label="بخش‌های دیگر">
+            <span class="people-others-label">بخش‌های دیگر:</span>
+            {% for other in others %}
+            <a href="{% url 'directory:people_section' other.slug %}">
+                <i class="fas {{ other.icon }}" aria-hidden="true"></i>
+                {{ other.label }}
+            </a>
+            {% endfor %}
+        </nav>
+    </div>
+</section>
+
+<style>
+.person-avatar {
+    width: 56px; height: 56px; flex-shrink: 0;
+    border-radius: 14px; object-fit: cover;
+    border: 1px solid var(--border, #e8dcd0);
+}
+.person-avatar--empty {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--bg-light, #faf6f1); color: var(--text-muted, #6b5b5e);
+}
+.person-field { color: var(--primary, #7a1f2e); }
+.person-degree {
+    background: rgba(122, 31, 46, .1);
+    color: var(--primary, #7a1f2e);
+    font-weight: 700;
+}
+.people-others {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    margin-block-start: clamp(26px, 4vw, 44px);
+    padding-block-start: 18px;
+    border-block-start: 1px solid var(--border, #e8dcd0);
+}
+.people-others-label { font-size: 13px; font-weight: 700; color: var(--text-muted, #6b5b5e); }
+.people-others a {
+    font-size: 13.5px; font-weight: 700; text-decoration: none;
+    color: var(--primary, #7a1f2e);
+    padding: 6px 14px; border-radius: 999px;
+    border: 1px solid rgba(122, 31, 46, .25);
+}
+.people-others a:hover { background: rgba(122, 31, 46, .08); }
+.people-others a i { margin-inline-end: 5px; }
+</style>
+{% endblock %}

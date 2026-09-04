@@ -1573,9 +1573,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
    سلکتور عمداً `:root[...]` است نه `[...]`: تعریف روشنِ همین متغیرها
    پایین‌تر در فایل می‌آید و با ویژگی برابر، آخری برنده می‌شد. */
 :root[data-theme="dark"] {
-    --bnr-cream-050: #2a1017;
-    --bnr-cream-200: #200c12;
-    --bnr-cream-400: #180a0e;
+    /* شبِ فیروزه: زمینه تیرهٔ دریایی، نوشته طلا. */
+    --bnr-cream-050: #07333a;
+    --bnr-cream-200: #052730;
+    --bnr-cream-400: #031b23;
     --bnr-ink-300: #ffeec2;
     --bnr-ink-500: #f5c95e;
     --bnr-ink-700: #d9a534;
@@ -1724,18 +1725,24 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 }
 
 :root {
-    /* کاغذِ زر — از روشن‌ترین گوشه تا گرم‌ترین */
-    --bnr-cream-050: #fffdf8;
-    --bnr-cream-200: #f9f0d9;
-    --bnr-cream-400: #efdfba;
+    /* ── زمینهٔ سربرگ: فیروزهٔ ایرانی ──
+       بنر تا امروز کاغذِ کرم بود و کنار عنابیِ سایت، بی‌صدا. فیروزه
+       رنگِ کاشیِ گنبد و مسجد است: شاد، آشنا، و کاملاً جدا از عنابی —
+       یعنی سربرگ دیگر ادامهٔ منو دیده نمی‌شود، خودش یک تاج است.
+       طلا روی فیروزه همان جفتی است که روی کاشی‌کاری می‌نشیند. */
+    --bnr-cream-050: #eafbf8;
+    --bnr-cream-200: #b7ecec;
+    --bnr-cream-400: #6fd3d6;
     /* طلا — خط‌ها و تذهیب */
     --bnr-gold-300: #e3ba58;
     --bnr-gold-500: #c9922b;
     --bnr-gold-700: #8a6118;
-    /* مرکبِ کنده‌کاری — نوشته‌ها روی زمینهٔ روشن */
-    --bnr-ink-300: #8f6415;
-    --bnr-ink-500: #55380a;
-    --bnr-ink-700: #241903;
+    /* مرکبِ کنده‌کاری — نوشته‌ها روی فیروزه.
+       سرمه‌ایِ مایل به آبیِ عمیق روی این زمینه ۹:۱ کنتراست می‌دهد و
+       رنگش با کاشی یکی است؛ طلا برای خط‌ها و تذهیب می‌ماند. */
+    --bnr-ink-300: #0e5c63;
+    --bnr-ink-500: #08383f;
+    --bnr-ink-700: #04212a;
 
     --bnr-h: 118px;
     --bnr-h-md: 96px;
@@ -1752,9 +1759,14 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     background:
         /* هالهٔ نور — مرکزش با نشانگر جابه‌جا می‌شود */
         radial-gradient(65% 180% at var(--halo-x) 8%,
-            rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, 0) 55%),
+            rgba(255, 255, 255, .92) 0%, rgba(255, 255, 255, 0) 55%),
+        /* یک ردِ طلایی از گوشهٔ پایین، مثل زرِ حاشیهٔ کاشی */
         radial-gradient(90% 150% at 8% 105%,
-            rgba(201, 146, 43, .20) 0%, transparent 62%),
+            rgba(201, 146, 43, .28) 0%, transparent 62%),
+        /* و یک نمِ عنابی در گوشهٔ دیگر، تا سربرگ از بدنهٔ سایت
+           بیگانه نشود: فیروزه تاج است، عنابی امضای موسسه. */
+        radial-gradient(70% 130% at 100% 110%,
+            rgba(122, 31, 46, .16) 0%, transparent 58%),
         linear-gradient(104deg,
             var(--bnr-cream-050) 0%, var(--bnr-cream-200) 52%, var(--bnr-cream-400) 100%);
     transition: --halo-x .45s cubic-bezier(.22, 1, .36, 1);
@@ -1769,7 +1781,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: .085;
+    opacity: .12;
     background-image:
         repeating-linear-gradient(45deg,  var(--bnr-gold-700) 0 1px, transparent 1px 22px),
         repeating-linear-gradient(-45deg, var(--bnr-gold-700) 0 1px, transparent 1px 22px),
@@ -1946,8 +1958,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     line-height: 1.7;
     /* «جمهوری اسلامی ایران / وزارت علوم» و نام انگلیسی، هر دو
        نیمه‌شفاف بودند و از دو قدمی خوانده نمی‌شدند. */
-    color: rgba(45, 32, 6, .95);
-    font-weight: 600;
+    color: rgba(4, 40, 46, .95);
+    font-weight: 700;
     white-space: nowrap;
     text-align: left;
 }
@@ -1955,8 +1967,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     font-size: clamp(.68rem, .96vw, .86rem);
     letter-spacing: .08em;
     line-height: 1.55;
-    color: rgba(45, 32, 6, .92);
-    font-weight: 600;
+    color: rgba(4, 40, 46, .92);
+    font-weight: 700;
     direction: ltr;
     text-align: right;
     white-space: nowrap;
@@ -3097,6 +3109,30 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .fac-majors a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
 .fac-degree { font-size: 11px; color: var(--text-muted, #6b5b5e); white-space: nowrap; }
 [data-theme="dark"] .fac-majors a { color: #f2e6e8; }
+
+/* ── فهرست رشته‌های یک گروه ───────────────────────────────
+   پیش از این سبزِ تیره با تیترِ نارنجی بود — رنگ‌هایی که هیچ‌جای
+   دیگر سایت نیستند. حالا همان کاغذ و عنابیِ بقیهٔ صفحه. */
+.grp-majors { background: var(--bg-white, #fff); }
+.grp-majors-degree {
+    margin: 0 0 10px;
+    padding-block-end: 6px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--primary, #7a1f2e);
+    border-block-end: 2px solid var(--secondary, #a67c1f);
+}
+.grp-majors-list {
+    margin: 0 0 22px;
+    padding-inline-start: 1.3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 6px 20px;
+}
+.grp-majors-list li { font-size: 14px; line-height: 2; }
+.grp-majors-list a { color: var(--text-dark, #241a1c); text-decoration: none; font-weight: 600; }
+.grp-majors-list a:hover { color: var(--primary, #7a1f2e); text-decoration: underline; }
+[data-theme="dark"] .grp-majors-list a { color: #e8dfe1; }
 
 /* ── صفحهٔ مدیران گروه‌ها ─────────────────────────────────── */
 .grp-head-grid {

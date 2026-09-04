@@ -252,7 +252,7 @@ class HomeSectionTests(TestCase):
 
         css = (Path(dj.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(encoding='utf-8')
         dark = css.find(':root[data-theme="dark"] {')
-        light = css.find('    --bnr-cream-050: #fffdf8;')
+        light = css.find('    --bnr-cream-050: #eafbf8;')
         self.assertGreater(dark, -1, 'بلوک تیرهٔ بنر با ویژگی کافی پیدا نشد')
         self.assertGreater(light, dark,
                            'تعریف روشن باید بعد از تیره باشد تا ویژگی معنا پیدا کند')

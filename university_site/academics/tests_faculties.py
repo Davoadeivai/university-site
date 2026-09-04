@@ -12,13 +12,13 @@ from academics.models import AcademicGroup, Department, Major
 GROUP_NAMES = [
     'گروه برق، الکترونیک و مخابرات',
     'گروه کامپیوتر',
-    'گروه معماری و نقشه کشی',
+    'گروه معماری و نقشه‌کشی',
     'گروه مکانیک',
     'گروه حسابداری',
     'گروه مدیریت صنعتی و مالی',
     'گروه مدیریت بازرگانی',
     'گروه علوم اجتماعی',
-    'گروه روانشناسی',
+    'گروه روان‌شناسی',
     'گروه علوم پایه و معارف',
     'گروه علوم تربیتی - مدیریت آموزشی',
 ]
@@ -82,7 +82,7 @@ class FacultyStructureTests(TestCase):
         taught = set(education.groups.values_list('name', flat=True))
         self.assertIn('گروه علوم اجتماعی', taught)
         self.assertIn('گروه علوم تربیتی - مدیریت آموزشی', taught)
-        self.assertIn('گروه روانشناسی', taught)
+        self.assertIn('گروه روان‌شناسی', taught)
         self.assertNotIn('گروه علوم اجتماعی', managed)
         self.assertNotIn('گروه علوم تربیتی - مدیریت آموزشی', managed)
 
@@ -98,7 +98,7 @@ class FacultyStructureTests(TestCase):
         _run()
         old = Department.objects.create(
             name='دانشکده علوم انسانی', slug='olum-ensani')
-        moved = AcademicGroup.objects.get(name='گروه روانشناسی')
+        moved = AcademicGroup.objects.get(name='گروه روان‌شناسی')
         moved.department = old
         moved.save(update_fields=['department'])
         Department.objects.filter(

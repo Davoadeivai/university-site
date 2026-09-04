@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, render
 
 from .models import CurriculumDocument, DirectoryPerson, ExternalResource
@@ -30,24 +31,69 @@ def staff_directory(request):
     })
 
 
-def academic_people(request):
-    """هیات موسس، هیات امنا، هیات علمی، مدیران گروه و مدرسین در یک صفحه."""
-    groups = []
-    for key, label, icon in (
-        ('founder', 'هیات موسس', 'fa-landmark'),
-        ('trustee', 'هیات امنا', 'fa-users-gear'),
-        ('faculty', 'اعضای هیات علمی', 'fa-user-graduate'),
-        ('group_head', 'مدیران گروه آموزشی', 'fa-sitemap'),
-        ('lecturer', 'مدرسین', 'fa-chalkboard-user'),
-    ):
-        members = list(
-            DirectoryPerson.objects.filter(category=key, is_active=True))
-        if members:
-            groups.append({
-                'key': key, 'label': label, 'icon': icon, 'members': members,
-            })
+# ارکان و اعضای موسسه — هر کدام با نشانی و صفحهٔ خودش.
+#
+# پیش از این همه در یک صفحه بودند و منو با لنگر (#founder) به میانهٔ
+# همان صفحه می‌پرید: هیئت مؤسس و هیئت امنا و هیئت علمی و مدرسین، همه
+# زیر یک عنوان. حالا هر رکن نشانی مستقل دارد و صفحه‌اش فقط خودش را
+# نشان می‌دهد.
+#
+# (نشانی, کلید دسته, عنوان, آیکون, یک‌جمله معرفی)
+PEOPLE_SECTIONS = [
+    ('هیات-موسس', 'founder', 'هیئت مؤسس', 'fa-landmark',
+     'بنیان‌گذاران موسسه؛ اساسنامه و خط‌مشی بلندمدت از این رکن می‌آید.'),
+    ('هیات-امنا', 'trustee', 'هیئت امنا', 'fa-users-gear',
+     'بالاترین رکن سیاست‌گذاری موسسه؛ بودجه و تشکیلات اینجا تصویب می‌شود.'),
+    ('هیات-علمی', 'faculty', 'اعضای هیئت علمی', 'fa-user-graduate',
+     'استادان موسسه، به تفکیک رشته و مدرک.'),
+    ('مدیران-گروه', 'group_head', 'مدیران گروه آموزشی', 'fa-sitemap',
+     'مدیر هر گروه آموزشی و حوزهٔ کاری‌اش.'),
+    ('مدرسین', 'lecturer', 'مدرسین', 'fa-chalkboard-user',
+     'مدرسان همکار موسسه.'),
+]
 
-    return render(request, 'directory/people.html', {'groups': groups})
+
+def _people_group(key, label, icon):
+    members = list(
+        DirectoryPerson.objects.filter(category=key, is_active=True))
+    return {'key': key, 'label': label, 'icon': icon, 'members': members}
+
+
+def academic_people(request):
+    """فهرست کامل — همهٔ ارکان و اعضا، با لینک به صفحهٔ هرکدام."""
+    groups = []
+    for slug, key, label, icon, _blurb in PEOPLE_SECTIONS:
+        group = _people_group(key, label, icon)
+        if group['members']:
+            group['url'] = reverse('directory:people_section', args=[slug])
+            groups.append(group)
+
+    return render(request, 'directory/people.html', {
+        'groups': groups,
+        'sections': PEOPLE_SECTIONS,
+    })
+
+
+def academic_people_section(request, slug):
+    """یک رکن، در صفحهٔ خودش."""
+    row = next((item for item in PEOPLE_SECTIONS if item[0] == slug), None)
+    if row is None:
+        raise Http404('چنین بخشی نیست.')
+
+    _slug, key, label, icon, blurb = row
+    group = _people_group(key, label, icon)
+    others = [
+        {'slug': other[0], 'label': other[2], 'icon': other[3]}
+        for other in PEOPLE_SECTIONS if other[0] != slug
+    ]
+    return render(request, 'directory/people_section.html', {
+        'group': group,
+        'label': label,
+        'icon': icon,
+        'blurb': blurb,
+        'others': others,
+        'page_title': label,
+    })
 
 
 def curriculum_list(request):
