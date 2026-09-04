@@ -142,13 +142,9 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     z-index: 1030;
     box-shadow: 0 6px 18px rgba(40, 10, 16, 0.22);
 }
-.site-banner {
-    position: relative;
-    width: 100%;
-    line-height: 0;
-    /* modern blue gradient behind the banner (matches the image background) */
-    background: linear-gradient(105deg, #5e1424 0%, #3a0f18 55%, #22090e 100%);
-}
+/* خودِ ‎.site-banner‎ پایین‌تر، کنار بقیهٔ قواعد سربرگ تعریف شده؛
+   نسخهٔ کهنه‌ای که اینجا بود (با زمینهٔ گرادیانی و line-height صفر)
+   همان‌جا بازنویسی می‌شد و فقط خواندن فایل را سخت می‌کرد. */
 .site-banner a { display: block; width: 100%; }
 /* full-width banner: image always spans edge to edge, height follows aspect ratio,
    so there is never a black/empty area on the sides. */
@@ -1769,7 +1765,12 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     position: relative;
     width: 100%;
     line-height: normal;
+    /* بریدن لازم است (نقشِ تذهیب و هاله نباید بیرون بزنند) ولی نه
+       بی‌رحمانه: با overflow-clip-margin چند پیکسلِ لبهٔ نشان‌ها
+       رسم می‌شود. مرورگرهای قدیمی‌تر همان hidden را می‌بینند. */
     overflow: hidden;
+    overflow: clip;
+    overflow-clip-margin: 14px;
     isolation: isolate;
     background:
         /* هالهٔ نور — مرکزش با نشانگر جابه‌جا می‌شود */
@@ -1830,7 +1831,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     height: var(--bnr-h);
     max-width: 1480px;
     margin: 0 auto;
-    padding: 0 clamp(12px, 2.2vw, 28px);
+    /* لبه‌ها گشادتر از پیش: نشان‌ها درست کنار همین لبه می‌ایستند و
+       بنر هرچه از قاب بیرون بزند را می‌برد. */
+    padding: 0 clamp(20px, 3vw, 44px);
     text-decoration: none;
     transition: height var(--duration-base) var(--easing-standard);
 }
@@ -1838,7 +1841,11 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* ── لایهٔ ۳: عمقِ سه‌لایه ──────────────────────────────────────────
    هر لایه با ضریب متفاوتی جابه‌جا می‌شود؛ چشم این اختلاف را به‌صورت
    فاصلهٔ فیزیکی می‌خواند، بدون هیچ ترفند سه‌بعدی. */
-.bnr-mark, .bnr-state { transform: translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 3px), 0); }
+/* پارالاکسِ نشان‌ها فقط عمودی است.
+   جابه‌جایی افقی تا ۵ پیکسل، نشانی را که همان کنارِ لبه ایستاده از
+   قابِ بریده‌شوندهٔ بنر بیرون می‌برد — نتیجه‌اش ارمِ نیمه بود. عمق
+   با حرکت عمودی و لایه‌های دیگر هنوز حس می‌شود. */
+.bnr-mark, .bnr-state { transform: translate3d(0, calc(var(--py, 0) * 3px), 0); }
 .bnr-name             { transform: translate3d(calc(var(--px, 0) * -3px), calc(var(--py, 0) * -2px), 0); }
 .bnr-mark, .bnr-state, .bnr-name {
     transition: transform .5s cubic-bezier(.22, 1, .36, 1);
@@ -1968,6 +1975,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     display: flex;
     align-items: center;
     gap: 11px;
+    /* دو قدم به داخل، تا نشان به لبهٔ برش نچسبد */
+    padding-inline-end: 14px;
     flex: none;
     /* nowrap واجب است: بنر قدِ ثابت دارد و overflow پنهان. اگر این
        بلوک بشکند، نشان می‌رود خط دوم و همان‌جا بریده می‌شود — همان
@@ -1979,7 +1988,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     display: block;
     /* نه کوچک شود، نه کش بیاید */
     flex: 0 0 auto;
-    height: calc(var(--bnr-h) - 22px);
+    /* ۳۰ پیکسل کمتر از قدِ بنر: با ۲۲، بالای نشان تا یک قدمیِ لبه
+       می‌آمد و کوچک‌ترین جابه‌جایی، نوکش را می‌برید. */
+    height: calc(var(--bnr-h) - 30px);
     width: auto;
     /* max-inline-size: 100% حذف شد: ستون که تنگ می‌شد، همین قاعده
        تصویر را باریک می‌کرد و بخشی از نشان بیرون از کادر می‌ماند. */
@@ -2073,7 +2084,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 /* ── حالت فشرده هنگام اسکرول ── */
 .site-header.is-condensed .site-banner > a { height: var(--bnr-h-cond); }
 .site-header.is-condensed .bnr-mark img { height: calc(var(--bnr-h-cond) - 14px); }
-.site-header.is-condensed .bnr-state img { height: calc(var(--bnr-h-cond) - 18px); }
+.site-header.is-condensed .bnr-state img { height: calc(var(--bnr-h-cond) - 22px); }
 .site-header.is-condensed .bnr-wcu { inline-size: 42px; block-size: 42px; }
 .site-header.is-condensed .bnr-fa { font-size: clamp(.92rem, 1.6vw, 1.15rem); }
 .site-header.is-condensed .bnr-sub,
@@ -2091,7 +2102,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 @media (max-width: 1100px) {
     .site-banner > a { height: var(--bnr-h-md); }
     .bnr-mark img { height: calc(var(--bnr-h-md) - 16px); }
-    .bnr-state img { height: calc(var(--bnr-h-md) - 20px); }
+    .bnr-state img { height: calc(var(--bnr-h-md) - 26px); }
 }
 @media (max-width: 640px) {
     .site-banner > a {
@@ -2100,7 +2111,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         gap: 9px;
     }
     .bnr-mark img { height: calc(var(--bnr-h-sm) - 14px); }
-    .bnr-state img { height: calc(var(--bnr-h-sm) - 18px); }
+    .bnr-state img { height: calc(var(--bnr-h-sm) - 22px); }
     /* روی موبایل جا برای سه نشان نیست؛ نام موسسه می‌ماند */
     .bnr-wcu { display: none; }
     .bnr-sub, .bnr-rule { display: none; }

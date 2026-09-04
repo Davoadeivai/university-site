@@ -270,6 +270,20 @@ class BannerEmblemTests(TestCase):
         css = _css()
         self.assertIn('@media (max-width: 1300px)', css)
 
+    def test_the_banner_forgives_a_few_pixels_at_its_edge(self):
+        """لبهٔ نشان نباید قربانیِ برشِ بی‌رحمِ بنر شود."""
+        rule = _css().split('%s.site-banner {' % chr(10))[1].split('}')[0]
+        self.assertIn('overflow-clip-margin', rule)
+
+    def test_the_emblem_keeps_a_step_from_that_edge(self):
+        rule = _css().split('%s.bnr-state {' % chr(10))[1].split('}')[0]
+        self.assertIn('padding-inline-end', rule)
+
+    def test_the_marks_do_not_drift_sideways(self):
+        """پارالاکسِ افقی، نشانِ کنارِ لبه را از قاب بیرون می‌برد."""
+        rule = _css().split('.bnr-mark, .bnr-state { transform:')[1]             .split(';')[0]
+        self.assertIn('translate3d(0,', rule)
+
     def test_the_emblem_is_gold_on_the_night_banner(self):
         rule = _css().split('[data-theme="dark"] .bnr-state img {')[1]             .split('}')[0]
         self.assertIn('invert(84%)', rule)
