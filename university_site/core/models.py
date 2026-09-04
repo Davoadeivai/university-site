@@ -270,9 +270,41 @@ class Slider(ShrinkImagesMixin, models.Model):
         ('gold',    'طلایی'),
         ('dark',    'تیره'),
     ]
+    FIT_CHOICES = [
+        ('', _('خودکار — از روی ابعاد تصویر')),
+        ('cover', _('پر کردن قاب — عکس افقی')),
+        ('contain', _('نمایش کامل — پوستر، اینفوگرافیک، عکس عمودی')),
+    ]
+    FOCUS_CHOICES = [
+        ('center', _('مرکز')),
+        ('top', _('بالای تصویر')),
+        ('bottom', _('پایین تصویر')),
+    ]
+
     title = models.CharField(_('عنوان'), max_length=200)
     subtitle = models.CharField(_('زیرعنوان'), max_length=400, blank=True)
     image = models.ImageField(_('تصویر'), upload_to='sliders/')
+    # ابعاد هنگام ذخیره نوشته می‌شوند. بدون آن‌ها، تصمیم «این عکس را
+    # کامل نشان بده یا قاب را پر کن» یعنی بازکردن فایل در هر بار
+    # نمایش صفحهٔ اصلی.
+    #
+    # ‎width_field‎ خودِ جنگو این کار را می‌کند، ولی فایلِ نبوده را
+    # با خطا رد می‌کند و ذخیرهٔ ردیف را می‌شکند؛ اینجا نبودِ فایل
+    # فقط یعنی ابعاد نامعلوم.
+    image_width = models.PositiveIntegerField(null=True, blank=True,
+                                              editable=False)
+    image_height = models.PositiveIntegerField(null=True, blank=True,
+                                               editable=False)
+    fit = models.CharField(
+        _('نحوهٔ نمایش تصویر'), max_length=10, choices=FIT_CHOICES,
+        default='', blank=True,
+        help_text=_('قاب اسلایدر افقی است. عکس افقی قاب را پر می‌کند؛ '
+                    'پوستر و اینفوگرافیک باید کامل دیده شوند، وگرنه '
+                    'فقط نوار میانی‌شان می‌ماند.'))
+    focus = models.CharField(
+        _('نقطهٔ مهم تصویر'), max_length=10, choices=FOCUS_CHOICES,
+        default='center',
+        help_text=_('وقتی قاب پر می‌شود، کدام بخش تصویر باید بماند.'))
     # دکمه اول (اصلی)
     link = models.CharField(_('لینک دکمه اول'), max_length=300, blank=True)
     link_text = models.CharField(_('متن دکمه اول'), max_length=100, blank=True)
@@ -302,8 +334,49 @@ class Slider(ShrinkImagesMixin, models.Model):
         verbose_name_plural = _('اسلایدرها')
         ordering = ['order']
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        width, height = None, None
+        try:
+            width, height = self.image.width, self.image.height
+        except Exception:
+            pass
+        if (width, height) != (self.image_width, self.image_height):
+            self.image_width, self.image_height = width, height
+            type(self).objects.filter(pk=self.pk).update(
+                image_width=width, image_height=height)
+
     def __str__(self):
         return self.title
+
+    # نسبت تصویر: زیر این عدد یعنی عکس عمودی یا نزدیک به مربع، و
+    # قاب افقی اسلایدر آن را تا یک نوار باریک می‌بُرد.
+    WIDE_ENOUGH = 1.3
+    # کمتر از این پهنا روی نمایشگر بزرگ کشیده و مات دیده می‌شود
+    MIN_WIDTH = 1400
+
+    @property
+    def resolved_fit(self) -> str:
+        """انتخاب مدیر، وگرنه تصمیم از روی ابعاد خود فایل."""
+        if self.fit:
+            return self.fit
+        if not (self.image_width and self.image_height):
+            return 'cover'
+        ratio = self.image_width / self.image_height
+        return 'cover' if ratio >= self.WIDE_ENOUGH else 'contain'
+
+    @property
+    def size_warning(self) -> str:
+        """چرا این فایل برای اسلایدر مناسب نیست — برای پنل."""
+        if not (self.image_width and self.image_height):
+            return ''
+        if self.image_height > self.image_width:
+            return 'عکس عمودی است؛ کامل نشان داده می‌شود، ولی جای اصلی‌اش اطلاعیه یا گالری است.'
+        if self.image_width / self.image_height < self.WIDE_ENOUGH:
+            return 'نسبت تصویر به مربع نزدیک است؛ دو طرف قاب خالی می‌ماند.'
+        if self.image_width < self.MIN_WIDTH:
+            return 'پهنای تصویر کم است؛ روی نمایشگر بزرگ مات دیده می‌شود.'
+        return ''
 
 
 # LandingSlider حذف شد — همه اسلایدها در Slider یکپارچه شدند.

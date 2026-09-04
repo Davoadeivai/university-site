@@ -200,6 +200,25 @@ def _queue_specs():
         pass
 
     try:
+        from core.models import Slider
+
+        def _unfit_slides():
+            # تصویری که نسبتش با قاب افقی اسلایدر نمی‌خواند، یا آن‌قدر
+            # کم‌پهناست که روی نمایشگر بزرگ مات می‌شود.
+            rows = Slider.objects.filter(is_active=True).exclude(
+                image_width=None).exclude(image_height=None)
+            return sum(1 for row in rows if row.size_warning)
+
+        specs.append((
+            'sliders_wrong_shape', 'تصویر اسلایدر با ابعاد نامناسب',
+            _unfit_slides,
+            _url('admin:core_slider_changelist', ''),
+            'fa-image', False,
+        ))
+    except Exception:
+        pass
+
+    try:
         from core.models import Council
         specs.append((
             'councils_without_members', 'شورای بدون عضو',

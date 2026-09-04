@@ -289,6 +289,29 @@
     transform: scale(1);
 }
 
+/* ── اسلایدی که باید کامل دیده شود ──
+   پوستر، اینفوگرافیک، عکس عمودی. قاب پر نمی‌شود، پس پشتش همان
+   تصویر مات و تیره می‌نشیند: نه نوار سیاه می‌ماند، نه چیزی از خود
+   تصویر بریده می‌شود. */
+.uni-hero-slide.is-contain img.slide-bg {
+    object-fit: contain;
+    /* بزرگ‌نمایی آرام برای عکسِ بریده‌نشده معنا ندارد؛ فقط تصویر را
+       از قاب بیرون می‌برد. */
+    transform: none;
+}
+.uni-hero-slide .slide-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* مقیاس، لبه‌های محوشدهٔ بلور را از قاب بیرون می‌برد */
+    transform: scale(1.15);
+    filter: blur(30px) brightness(.5) saturate(1.1);
+}
+.uni-hero-slide.is-contain img.slide-bg { z-index: 1; }
+
 /* dark gradient overlay */
 /* پردهٔ تیره فقط برای خوانا نگه‌داشتن متنِ روی اسلاید بود؛ متن
    برداشته شد و آنچه ماند، تصویر را بی‌دلیل کدر می‌کرد. یک لایهٔ
@@ -628,10 +651,20 @@
 
         {% if sliders %}
         {% for slide in sliders %}
-        <div class="uni-hero-slide{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.counter0 }}">
+        <div class="uni-hero-slide is-{{ slide.resolved_fit }}{% if forloop.first %} is-active{% endif %}" data-index="{{ forloop.counter0 }}">
 
             <!-- background image -->
             {% if slide.image %}
+            {% comment %}
+            پوستر و اینفوگرافیک و عکس عمودی در قاب افقی اسلایدر تا یک
+            نوار میانی بریده می‌شدند. حالا کامل نشان داده می‌شوند و
+            پشتشان همان تصویر، مات و تیره، جای دو نوار خالی را پر
+            می‌کند — قاب پر می‌ماند و هیچ‌چیز از تصویر کم نمی‌شود.
+            {% endcomment %}
+            {% if slide.resolved_fit == 'contain' %}
+            <img class="slide-backdrop" src="{{ slide.image.url }}" alt=""
+                 aria-hidden="true" loading="lazy" decoding="async">
+            {% endif %}
             {% comment %}
             اسلاید اول تنها تصویری است که پیش از دیده‌شدن صفحه لازم
             است؛ fetchpriority به مرورگر می‌گوید آن را جلوی صف
@@ -639,6 +672,7 @@
             هم رشتهٔ اصلی را برای رمزگشایی تصویر نگه نمی‌دارد.
             {% endcomment %}
             <img class="slide-bg" src="{{ slide.image.url }}" alt="{{ slide.title }}"
+                 style="object-position: center {{ slide.focus|default:'center' }};"
                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
                  fetchpriority="{% if forloop.first %}high{% else %}low{% endif %}"
                  decoding="async">

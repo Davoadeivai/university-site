@@ -280,6 +280,7 @@ class UploadThroughTheAdminTests(TestCase):
             '/admin/core/slider/add/',
             {'title': 'اسلاید تازه', 'subtitle': '', 'order': 1,
              'is_active': 'on', 'image': self._upload(),
+             'fit': '', 'focus': 'center',
              'link_text': '', 'link': '', 'btn2_text': '', 'btn2_url': '',
              'badge_text': '', 'badge_color': 'primary', 'badge_icon': ''},
             follow=True)
@@ -291,6 +292,7 @@ class UploadThroughTheAdminTests(TestCase):
             '/admin/core/slider/add/',
             {'title': 'اسلاید بزرگ', 'subtitle': '', 'order': 2,
              'is_active': 'on', 'image': self._upload(),
+             'fit': '', 'focus': 'center',
              'link_text': '', 'link': '', 'btn2_text': '', 'btn2_url': '',
              'badge_text': '', 'badge_color': 'primary', 'badge_icon': ''},
             follow=True)

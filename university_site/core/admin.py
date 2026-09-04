@@ -233,13 +233,41 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
 
 @admin.register(Slider)
 class SliderAdmin(JalaliAdminMixin, admin.ModelAdmin):
-    list_display = ['title', 'badge_text', 'badge_color', 'order', 'is_active', 'created_jalali']
-    list_editable = ['order', 'is_active']
-    list_filter = ['is_active', 'badge_color']
+    list_display = ['title', 'shape', 'fit', 'order', 'is_active',
+                    'created_jalali']
+    list_editable = ['fit', 'order', 'is_active']
+    list_filter = ['is_active', 'fit', 'badge_color']
     search_fields = ['title', 'subtitle', 'badge_text']
+
+    # ابعاد و هشدارش کنار هر ردیف.
+    #
+    # عکس ۴۰۰۰×۲۲۵۰ و اسکرین‌شات ۵۹۱×۱۲۸۰ در فهرست پنل یک شکل
+    # دیده می‌شوند — تا وقتی صفحهٔ اصلی باز شود و معلوم شود دومی
+    # به یک نوار باریک تبدیل شده است.
+    @admin.display(description='ابعاد تصویر')
+    def shape(self, obj):
+        if not (obj.image_width and obj.image_height):
+            return format_html('<span style="color:#888;">—</span>')
+        size = '%s×%s' % (obj.image_width, obj.image_height)
+        warning = obj.size_warning
+        if not warning:
+            return format_html(
+                '<span style="color:#166534;font-weight:700;">{}</span>', size)
+        return format_html(
+            '<span style="color:#9a3412;font-weight:700;">{}</span>'
+            '<br><small style="color:#9a3412;">{}</small>', size, warning)
+
     fieldsets = (
         ('تصویر و متن اصلی', {
-            'fields': ('title', 'subtitle', 'image', 'order', 'is_active')
+            'fields': ('title', 'subtitle', 'image', ('fit', 'focus'),
+                       'order', 'is_active'),
+            'description': (
+                'قاب اسلایدر افقی است. عکس افقی قاب را پر می‌کند؛ پوستر، '
+                'اینفوگرافیک و عکس عمودی باید <strong>کامل</strong> دیده '
+                'شوند، وگرنه فقط نوار میانی‌شان می‌ماند. «خودکار» همین را '
+                'از روی ابعاد فایل تشخیص می‌دهد و معمولاً لازم نیست دست '
+                'بزنید.'
+            ),
         }),
         ('دکمه‌های اقدام', {
             'fields': (('link_text', 'link'), ('btn2_text', 'btn2_url')),
