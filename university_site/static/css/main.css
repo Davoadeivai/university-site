@@ -2845,7 +2845,11 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 .pres-portrait {
-    margin: 0;
+    /* ارتفاع عکس یک پله کوتاه‌تر: عرض قاب کم می‌شود و ارتفاع به
+       همان نسبت. برشِ خودِ عکس این کار را نمی‌کند، چون هر عدد ثابتی
+       روی عکس عمودی یا افقی غلط از آب درمی‌آید. */
+    margin: 0 auto;
+    max-inline-size: 90%;
     position: sticky;
     inset-block-start: 84px;
     border-radius: 16px;
@@ -3418,6 +3422,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .wcu-link {
     display: flex;
     align-items: center;
+    /* دو سطر فاصله بیشتر از شعار: نشانی سایت آخرین چیز لوح است و
+       نباید به متن بالای خودش بچسبد. */
+    margin-block-start: clamp(30px, 3.4vw, 52px);
     gap: clamp(10px, 1.6vw, 18px);
     inline-size: 100%;
     text-decoration: none;
@@ -4007,7 +4014,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 /* ── دکمهٔ دانلود رزومه ─────────────────────────────────────
    شش کارت سوابق برداشته شدند و جایشان یک دکمه نشست. */
-.pres-cv-download { text-align: center; margin-block-start: clamp(20px, 3vw, 34px); }
+.pres-cv-download { text-align: center; margin-block-start: clamp(72px, 8vw, 86px); }
 
 .pres-cv-btn {
     display: inline-flex;

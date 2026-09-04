@@ -1,4 +1,5 @@
 """صفحهٔ ریاست موسسه — مطابق سند اصلاحات موسسه."""
+import re
 from io import StringIO
 
 from django.core.management import call_command
@@ -418,3 +419,35 @@ class PresidencyProportionTests(TestCase):
         rule = self._rule('.pres-wcu')
         self.assertIn('max-block-size', rule)
         self.assertIn('object-fit: contain', rule)
+
+
+class PresidencyBreathingRoomTests(TestCase):
+    """موسسه خواست عکس کمی کوتاه‌تر شود و دو لینک پایین‌تر بیایند."""
+
+    def _rule(self, selector):
+        return _rule(_css_text(), selector)
+
+    def test_the_portrait_frame_is_capped(self):
+        """کوتاه‌کردن از راه عرض قاب است، نه برشِ عکس."""
+        rule = self._rule('.pres-portrait')
+        self.assertIn('max-inline-size', rule)
+
+    def test_the_portrait_stays_centred_in_its_column(self):
+        rule = self._rule('.pres-portrait')
+        self.assertIn('margin: 0 auto', rule)
+
+    def test_the_photo_itself_is_never_cropped(self):
+        rule = self._rule('.pres-portrait img')
+        self.assertIn('block-size: auto', rule)
+        self.assertNotIn('object-fit: cover', rule)
+
+    def test_the_website_link_sits_lower(self):
+        rule = self._rule('.wcu-link')
+        self.assertIn('margin-block-start', rule)
+
+    def test_the_resume_button_sits_lower(self):
+        """دو سطر فاصلهٔ بیشتر یعنی دست‌کم ۶۰ پیکسل از لوح بالا."""
+        rule = self._rule('.pres-cv-download')
+        floor = int(re.search(r'margin-block-start: clamp\((\d+)px',
+                              rule).group(1))
+        self.assertGreaterEqual(floor, 60)
