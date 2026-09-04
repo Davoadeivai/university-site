@@ -1878,23 +1878,6 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     min-width: 0;
 }
 
-.bnr-wcu {
-    flex: 0 0 auto;
-    /* هر دو بُعد بسته می‌شوند، نه فقط عرض. با block-size:auto یک
-       تصویر بلند (مثلاً اسکرین‌شات ۵۹۱×۱۲۸۰) در ۶۴ پیکسل عرض
-       ۱۳۹ پیکسل ارتفاع می‌گرفت، سربرگ کش می‌آمد و نام موسسه از
-       قاب بیرون می‌رفت. contain یعنی هر نسبتی داخل همین مربع
-       جا می‌شود. */
-    inline-size: clamp(44px, 5.4vw, 76px);
-    block-size: clamp(44px, 5.4vw, 76px);
-    object-fit: contain;
-    /* نشان یک دایرهٔ وسط‌چین روی زمینهٔ سفید است، نه PNG شفاف؛
-       گرد کردن قاب، چهار گوشهٔ سفید را می‌برد بدون اینکه لازم
-       باشد کسی فایل را دوباره بسازد. */
-    border-radius: 50%;
-    filter: drop-shadow(0 1px 3px rgba(59, 42, 9, .28));
-}
-
 .bnr-fa {
     position: relative;
     /* Arial به درخواست موسسه؛ Vazirmatn پشت سرش می‌ماند تا حروف
@@ -2083,7 +2066,6 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .site-header.is-condensed .site-banner > a { height: var(--bnr-h-cond); }
 .site-header.is-condensed .bnr-mark img { height: calc(var(--bnr-h-cond) - 14px); }
 .site-header.is-condensed .bnr-state img { height: calc(var(--bnr-h-cond) - 22px); }
-.site-header.is-condensed .bnr-wcu { inline-size: 42px; block-size: 42px; }
 .site-header.is-condensed .bnr-fa { font-size: clamp(.92rem, 1.6vw, 1.15rem); }
 .site-header.is-condensed .bnr-sub,
 .site-header.is-condensed .bnr-rule,
@@ -2110,8 +2092,6 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     }
     .bnr-mark img { height: calc(var(--bnr-h-sm) - 14px); }
     .bnr-state img { height: calc(var(--bnr-h-sm) - 22px); }
-    /* روی موبایل جا برای سه نشان نیست؛ نام موسسه می‌ماند */
-    .bnr-wcu { display: none; }
     .bnr-sub, .bnr-rule { display: none; }
     .bnr-fa { font-size: .95rem; letter-spacing: 0; }
     /* روی موبایل پارالاکس معنا ندارد و فقط باتری می‌برد */
@@ -2833,11 +2813,18 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .pres-wcu {
     /* سقف ارتفاع لازم است: تصویر بلند وگرنه کل ستون را می‌کشد و
        رزومه را پایین می‌راند. */
-    inline-size: min(100%, 290px);
-    max-block-size: 290px;
+    inline-size: min(100%, 360px);
+    max-block-size: 360px;
     block-size: auto;
+    aspect-ratio: 1;
     object-fit: contain;
+    /* گِردکردنِ ساده گوشه‌های سفید را نمی‌برد: فایل یک مربع سفید
+       است و دایرهٔ ۵۰٪ از خودِ نشان بزرگ‌تر، پس یک حلقهٔ سفید نازک
+       دور تا دور می‌ماند. برشِ کمی تنگ‌تر درست روی لبهٔ طلایی
+       می‌نشیند و سفیدی را کامل می‌برد.
+       border-radius هم می‌ماند، برای مرورگری که clip-path ندارد. */
     border-radius: 50%;
+    clip-path: circle(47.5% at 50% 50%);
     /* یک خط فاصله تا عنوان زیرش — gap لوح برای همهٔ اجزا یکی است
        و اینجا کم بود. */
     margin-block-end: 1.6rem;

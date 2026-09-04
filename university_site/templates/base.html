@@ -190,25 +190,12 @@
         </span>
 
         {% comment %}
-        نشان کلاس جهانی در دو سوی نام موسسه — به درخواست موسسه به
-        سربرگ برگشت. اگر در پنل آپلود نشده باشد هیچ جای خالی نمی‌ماند،
-        چون دو تصویر اصلاً رندر نمی‌شوند.
-
-        اندازه روی خود تگ هم نوشته شده: سه بار اصلاح CSS به سرور
-        نرسید و تصویر بزرگ سربرگ را ترکاند.
+        نشان کلاس جهانی در دو سوی نام بود و موسسه خواست از سربرگ
+        برداشته شود. جای اصلی‌اش صفحهٔ ریاست است، و لینک کوچکش در
+        نوار بالای صفحه هم سر جای خود می‌ماند.
         {% endcomment %}
         <span class="bnr-name">
-            {% if site_settings.world_class_logo %}
-            <img class="bnr-wcu" src="{{ site_settings.world_class_logo.url }}"
-                 alt="" aria-hidden="true" width="72" height="72"
-                 style="width:72px;height:72px;object-fit:contain;border-radius:50%;">
-            {% endif %}
             <span class="bnr-fa">{{ site_settings.university_name_fa|default:"موسسه آموزش عالی علامه امینی" }}</span>
-            {% if site_settings.world_class_logo %}
-            <img class="bnr-wcu" src="{{ site_settings.world_class_logo.url }}"
-                 alt="" aria-hidden="true" width="72" height="72"
-                 style="width:72px;height:72px;object-fit:contain;border-radius:50%;">
-            {% endif %}
         </span>
 
         <span class="bnr-state">

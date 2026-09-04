@@ -84,13 +84,17 @@ class Command(BaseCommand):
                      MISSING if 'دانش · مهارت · آینده' in base else DONE,
                      'در base.html نباشد'))
 
-        in_template = 'bnr-wcu' in base
+        # بند ۵ سند نشان را در دو سوی نام خواسته بود؛ موسسه بعداً
+        # خواست از سربرگ برداشته شود و فقط روی صفحهٔ ریاست بماند.
+        in_banner = 'bnr-wcu' in base
+        in_topbar = 'topbar-wcu' in base
         uploaded = bool(site and site.world_class_logo)
         rows.append((
-            5, 'نشان کلاس جهانی در دو سوی نام',
-            DONE if (in_template and uploaded) else MISSING,
-            'قالب=%s آپلود=%s' % (
-                'دارد' if in_template else 'ندارد',
+            5, 'نشان کلاس جهانی — بیرون از سربرگ، روی صفحهٔ ریاست',
+            DONE if (not in_banner and uploaded) else MISSING,
+            'بنر=%s نوار بالا=%s آپلود=%s' % (
+                'هنوز دارد' if in_banner else 'برداشته شد',
+                'دارد' if in_topbar else 'ندارد',
                 'شده' if uploaded else 'نشده — پنل ← تنظیمات سایت')))
 
         rows.append((6, 'رنگ‌بندی و محور تایم‌لاین تقویم',

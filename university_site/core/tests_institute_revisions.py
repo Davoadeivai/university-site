@@ -34,25 +34,24 @@ class HeaderRevisionTests(TestCase):
         # اندازهٔ بیشینه باید از نسخهٔ قبلی (1.9rem) بزرگ‌تر باشد
         self.assertIn('2.7rem', block)
 
-    def test_the_header_carries_the_emblem_on_both_sides_of_the_name(self):
-        """نشان کلاس جهانی به سربرگ برگشت.
+    def test_the_header_carries_the_name_alone(self):
+        """نشان کلاس جهانی از سربرگ برداشته شد.
 
-        بند ۵ سند نشان را در دو سوی عنوان خواسته بود، بعد مدتی از
-        سربرگ برداشته شد، و موسسه دوباره خواست همان‌جا باشد. روی
-        صفحهٔ ریاست هم می‌ماند.
+        بند ۵ سند نشان را در دو سوی عنوان خواسته بود؛ موسسه بعداً
+        نظرش عوض شد و خواست سربرگ فقط نام را داشته باشد. نشان روی
+        صفحهٔ ریاست و در نوار بالای صفحه می‌ماند.
         """
         SiteSettings.objects.all().delete()
         SiteSettings.objects.create(world_class_logo='site/wcu.png')
         banner = self._home().split('bnr-name')[1].split('bnr-state')[0]
-        self.assertEqual(banner.count('bnr-wcu'), 2)
+        self.assertNotIn('bnr-wcu', banner)
         self.assertIn('موسسه آموزش عالی', banner)
 
-    def test_the_header_has_no_emblem_when_none_is_uploaded(self):
-        """بدون فایل، جای خالی نمی‌ماند."""
+    def test_the_emblem_still_has_a_link_in_the_top_bar(self):
+        """برداشتن از بنر یعنی برداشتن از بنر، نه از کل سایت."""
         SiteSettings.objects.all().delete()
-        SiteSettings.objects.create()
-        banner = self._home().split('bnr-name')[1].split('bnr-state')[0]
-        self.assertNotIn('bnr-wcu', banner)
+        SiteSettings.objects.create(world_class_logo='site/wcu.png')
+        self.assertIn('topbar-wcu', self._home())
 
     def test_the_emblem_still_has_a_home_on_the_presidency_page(self):
         """برداشتن از سربرگ نباید یعنی برداشتن از همه‌جا."""
@@ -305,13 +304,13 @@ class UploadedLogoCannotStretchTheLayoutTests(TestCase):
         start = css.index(chr(10) + selector + ' {') + 1
         return css[start:css.index('}', start)]
 
-    def test_the_header_emblem_is_boxed_in_both_directions(self):
-        rule = self._rule('.bnr-wcu')
-        self.assertIn('inline-size', rule)
-        self.assertIn('block-size', rule)
-        self.assertNotIn('block-size: auto', rule,
-                         'ارتفاع باز است — تصویر بلند سربرگ را می‌کشد')
-        self.assertIn('object-fit: contain', rule)
+    def test_the_header_no_longer_styles_an_emblem(self):
+        """قاعده‌ای که هیچ تگی ندارد، فقط جای بعدی را گیج می‌کند."""
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        self.assertNotIn('.bnr-wcu', css)
 
     def test_the_page_emblem_has_a_height_ceiling(self):
         rule = self._rule('.pres-wcu')
@@ -333,16 +332,15 @@ class EmblemSizeIsPinnedOnTheTagTests(TestCase):
         return (Path(settings.BASE_DIR) / 'templates' / name).read_text(
             encoding='utf-8')
 
-    def test_the_header_emblem_carries_its_own_size(self):
-        """نشان به سربرگ برگشت، پس دوباره به اندازهٔ روی تگ نیاز دارد."""
+    def test_the_header_no_longer_carries_an_emblem(self):
         html = self._template('base.html')
-        self.assertIn('bnr-wcu', html)
-        self.assertEqual(
-            html.count('width:72px;height:72px;object-fit:contain;'), 2)
+        self.assertNotIn('bnr-wcu', html)
 
-    def test_the_page_emblem_carries_its_own_ceiling(self):
+    def test_the_page_emblem_is_sized_in_one_place(self):
+        """اندازه روی تگ و در CSS، یعنی هر اصلاح باید دو بار انجام شود."""
         html = self._template('core/presidency.html')
-        self.assertIn('max-width:290px;max-height:290px;object-fit:contain;', html)
+        self.assertIn('class="pres-wcu"', html)
+        self.assertNotIn('max-width:290px', html)
 
 
 class SettingsImagePreviewTests(TestCase):

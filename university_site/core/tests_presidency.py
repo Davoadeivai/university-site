@@ -451,3 +451,38 @@ class PresidencyBreathingRoomTests(TestCase):
         floor = int(re.search(r'margin-block-start: clamp\((\d+)px',
                               rule).group(1))
         self.assertGreaterEqual(floor, 60)
+
+
+class PresidencyEmblemIsACircleTests(TestCase):
+    """نشان کلاس جهانی: بزرگ‌تر، و بدون هیچ گوشهٔ سفیدی."""
+
+    def _rule(self, selector):
+        return _rule(_css_text(), selector)
+
+    def test_the_white_ring_is_cut_away(self):
+        """فایل یک مربع سفید است؛ دایرهٔ ۵۰٪ حلقهٔ سفید باقی می‌گذارد."""
+        rule = self._rule('.pres-wcu')
+        self.assertIn('clip-path: circle(', rule)
+        radius = float(re.search(r'clip-path: circle\(([\d.]+)%', rule).group(1))
+        self.assertLess(radius, 50, 'برش به لبهٔ مربع رسیده، سفیدی می‌ماند')
+        self.assertGreater(radius, 44, 'برش آن‌قدر تنگ است که لبهٔ نشان را می‌خورد')
+
+    def test_it_stays_a_square_box_so_the_circle_is_round(self):
+        rule = self._rule('.pres-wcu')
+        self.assertIn('aspect-ratio: 1', rule)
+
+    def test_a_browser_without_clip_path_still_gets_a_circle(self):
+        rule = self._rule('.pres-wcu')
+        self.assertIn('border-radius: 50%', rule)
+
+    def test_the_institute_asked_for_it_bigger(self):
+        rule = self._rule('.pres-wcu')
+        size = int(re.search(r'inline-size: min\(100%, (\d+)px\)', rule).group(1))
+        self.assertGreater(size, 290, 'نشان از اندازهٔ قبلی بزرگ‌تر نشده')
+
+    def test_the_ceiling_grew_with_it(self):
+        """سقف ارتفاع اگر پایین بماند، بزرگ‌کردن عرض بی‌اثر است."""
+        rule = self._rule('.pres-wcu')
+        width = int(re.search(r'inline-size: min\(100%, (\d+)px\)', rule).group(1))
+        ceiling = int(re.search(r'max-block-size: (\d+)px', rule).group(1))
+        self.assertGreaterEqual(ceiling, width)
