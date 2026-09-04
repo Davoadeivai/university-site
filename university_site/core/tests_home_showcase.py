@@ -179,3 +179,79 @@ class HomePolishTests(TestCase):
     def test_other_pages_do_not(self):
         html = self.client.get(reverse('core:about')).content.decode()
         self.assertNotIn('class="home-page"', html)
+
+
+class SelectionAndCtaTests(TestCase):
+    """آبیِ پیش‌فرضِ مرورگر، و متن سفید روی تصویر روشن."""
+
+    def test_selected_text_is_not_browser_blue(self):
+        css = _css()
+        self.assertIn('::selection', css)
+        rule = css.split('::selection {')[1].split('}')[0]
+        self.assertIn('var(--primary', rule)
+
+    def test_dark_bands_flip_the_selection_colours(self):
+        css = _css()
+        self.assertIn('.cta-band ::selection', css)
+        self.assertIn('.uni-hero-wrap ::selection', css)
+
+    def test_the_final_band_carries_its_own_scrim(self):
+        """مدیر می‌تواند آسمانِ روشن زیر متن سفید بگذارد."""
+        css = _css()
+        rule = css.split('.cta-band::before {')[1].split('}')[0]
+        self.assertIn('rgba(78, 18, 32', rule)
+
+    def test_the_band_is_marked_in_the_template(self):
+        cache.clear()
+        SiteSettings.objects.create(university_name_fa='موسسه')
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('section cta-band', html)
+
+
+class NewsSectionTests(TestCase):
+    """اخبار سمت راست، و همه‌چیز از راست."""
+
+    def setUp(self):
+        cache.clear()
+        SiteSettings.objects.create(university_name_fa='موسسه')
+
+    def _html(self):
+        return self.client.get(reverse('core:home')).content.decode()
+
+    def test_the_section_is_marked_for_right_alignment(self):
+        self.assertIn('section-alt home-news', self._html())
+
+    def test_the_news_column_comes_before_the_announcements(self):
+        """ستون نخست در صفحهٔ راست‌چین، سمت راست می‌نشیند."""
+        html = self._html()
+        news = html.index('آخرین اخبار')
+        announcements = html.index('اطلاعیه‌ها</h2>')
+        self.assertLess(news, announcements)
+
+    def test_the_alignment_rules_exist(self):
+        css = _css()
+        block = css.split('.home-news { text-align: start; }')[1]
+        self.assertIn('.home-news .announce-title', block[:600])
+
+    def test_the_headline_rule_starts_from_the_right(self):
+        css = _css()
+        self.assertIn('.home-news .section-title::after { margin-inline: 0; }',
+                      css)
+
+
+class BannerEmblemTests(TestCase):
+    """نشان وزارت از لبه بریده می‌شد."""
+
+    def test_the_emblem_column_cannot_be_squeezed(self):
+        # سلکتور مشترک ‎.bnr-mark, .bnr-state‎ هم بالاتر هست
+        rule = _css().split('\n.bnr-state {')[1].split('}')[0]
+        self.assertIn('flex: none', rule)
+
+    def test_the_emblem_scales_instead_of_being_cropped(self):
+        rule = _css().split('\n.bnr-state img {')[1].split('}')[0]
+        self.assertIn('object-fit: contain', rule)
+        self.assertIn('max-inline-size: 100%', rule)
+
+    def test_the_middle_column_cannot_crush_the_sides(self):
+        rule = _css().split('.site-banner > a {')[1].split('}')[0]
+        self.assertIn('minmax(0, 1fr)', rule)

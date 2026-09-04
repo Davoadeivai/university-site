@@ -89,6 +89,19 @@ img, video { height: auto; }
 /* شکستن آدرس‌ها و رشته‌های بلند لاتین که روی موبایل صفحه را می‌کشند */
 p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 
+/* ── متنِ انتخاب‌شده ──────────────────────────────────────────
+   آبیِ پیش‌فرضِ مرورگر وسط سایتِ عنابی-طلایی مثل وصله بود؛ هر بار که
+   کسی جمله‌ای را انتخاب می‌کرد، یک مستطیل آبی وسط صفحه می‌نشست. */
+::selection { background: var(--primary, #7a1f2e); color: #ffe9a8; }
+::-moz-selection { background: var(--primary, #7a1f2e); color: #ffe9a8; }
+/* روی زمینه‌های تیره، طلا انتخاب می‌کند و مرکبِ عنابی می‌نویسد */
+.main-navbar ::selection,
+.main-footer ::selection,
+.sec-on-dark ::selection,
+.admit-panel ::selection,
+.cta-band ::selection,
+.uni-hero-wrap ::selection { background: #ffe9a8; color: #4e1220; }
+
 /* ---- Topbar ---- */
 .topbar {
     background: var(--primary);
@@ -1807,7 +1820,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 
 .site-banner > a {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    /* ‎minmax(0, 1fr)‎ برای ستون میانی: با ‎1fr‎ خالی، نامِ بلندِ موسسه
+       ستون‌های کناری را جمع می‌کرد و نشان‌ها از لبه بریده می‌شدند. */
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: clamp(12px, 2.4vw, 34px);
     height: var(--bnr-h);
@@ -1940,11 +1955,27 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     box-shadow: 0 0 10px 2px rgba(201, 146, 43, .55);
 }
 
-.bnr-state { display: flex; align-items: center; gap: 11px; min-width: 0; }
+/* ستون این نشان نباید فشرده شود.
+
+   بنر ‎overflow: hidden‎ دارد و ستون سومِ گرید با ‎auto‎ عرض می‌گیرد؛
+   وقتی نامِ میانی پهن می‌شد، همین ستون کوچک می‌شد و لبهٔ نشان — در
+   صفحهٔ راست‌چین، سمت راستِ خودش — می‌رفت زیر برش. ‎flex: none‎ و
+   ‎object-fit: contain‎ یعنی تصویر کامل می‌ماند و اگر جا کم بیاید،
+   خودش را کوچک می‌کند نه اینکه بریده شود. */
+.bnr-state {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    flex: none;
+    min-width: 0;
+}
 .bnr-state img {
     display: block;
+    flex: none;
     height: calc(var(--bnr-h) - 22px);
     width: auto;
+    max-inline-size: 100%;
+    object-fit: contain;
     transition: height var(--duration-base) var(--easing-standard);
     /* این نشان خط‌نگارهٔ سفید است و روی زمینهٔ روشن ناپدید می‌شد؛
        فیلتر آن را به برنزِ هم‌خانواده می‌برد. */
@@ -4826,3 +4857,131 @@ a.grp-head-name:hover { text-decoration: underline; }
     .home-page .announce-card,
     .home-page .btn-primary-uni { transition: none; }
 }
+
+/* ══ نوار فراخوان پایانی ══════════════════════════════════════════
+   متنش سفید است و مدیر می‌تواند هر تصویری زیرش بگذارد؛ روی آسمانِ
+   روشن، سفید روی سفید می‌شد. پردهٔ عنابی از پایین و یک سایهٔ نازکِ
+   متن، خوانایی را از انتخابِ تصویر مستقل می‌کند. */
+.cta-band { position: relative; isolation: isolate; }
+.cta-band::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(100deg,
+        rgba(78, 18, 32, .88) 0%,
+        rgba(122, 31, 46, .72) 55%,
+        rgba(78, 18, 32, .55) 100%);
+}
+.cta-band h2,
+.cta-band p { text-shadow: 0 2px 10px rgba(30, 8, 14, .55); }
+.cta-band h2 { letter-spacing: .2px; }
+.cta-band p { opacity: 1 !important; color: rgba(255, 240, 225, .95); }
+
+/* ══ اخبار و اطلاعیه‌های صفحهٔ اصلی ════════════════════════════════
+   سه چیز اینجا عوض شد: همه‌چیز از راست شروع می‌شود، کارت خبر یک
+   قاب یکدست دارد (تصویر، نشان دسته، عنوان، تاریخ)، و ردیف‌های
+   فهرست با یک خط زر از هم جدا می‌شوند به‌جای اینکه شناور بمانند. */
+.home-news { text-align: start; }
+.home-news .section-title { text-align: start; }
+.home-news .section-title::after { margin-inline: 0; }
+.home-news .uni-card-title,
+.home-news .uni-card-meta,
+.home-news .announce-title,
+.home-news .announce-date { text-align: start; }
+
+/* کارت خبر شاخص */
+.home-news .uni-card { overflow: hidden; }
+.home-news .uni-card-img { position: relative; }
+.home-news .uni-card-img::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    block-size: 3px;
+    background: var(--gradient-brand,
+        linear-gradient(90deg, #4e1220, #9c2c3d 45%, #c9a34e));
+    transform: scaleX(0);
+    transform-origin: inline-start;
+    transition: transform var(--duration-base, 240ms) var(--easing-standard);
+}
+.home-news .uni-card:hover .uni-card-img::after { transform: scaleX(1); }
+.home-news .uni-card-badge {
+    background: rgba(122, 31, 46, .1);
+    color: var(--primary, #7a1f2e);
+    font-weight: 700;
+}
+.home-news .uni-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.9;
+    /* دو خط، نه بیشتر: عنوان بلند کارت‌های یک ردیف را نامیزان می‌کرد */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+/* ردیف‌های فهرست خبر و اطلاعیه */
+.home-news .announce-card {
+    border-inline-start: 0;
+    border-inline-end: 4px solid var(--secondary, #a67c1f);
+    transition: var(--transition-motion);
+}
+.home-news .announce-card:hover {
+    transform: translateX(-4px);
+    border-inline-end-color: var(--primary, #7a1f2e);
+}
+.home-news .announce-urgent {
+    border-inline-end-color: var(--danger, #b3261e);
+    background: linear-gradient(90deg,
+        rgba(179, 38, 30, .06), transparent 65%);
+}
+.home-news .announce-date::before {
+    content: "\f133";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
+    font-weight: 900;
+    margin-inline-end: 5px;
+    opacity: .6;
+}
+
+/* تب‌های اطلاعیه: عنابی و طلا، نه خاکستریِ بی‌رنگ */
+.home-news .announce-tabs .nav-link {
+    border: 1px solid var(--border, #e8dcd0);
+    border-radius: 999px;
+}
+.home-news .announce-tabs .nav-link.active {
+    background: var(--gradient-primary,
+        linear-gradient(135deg, #4e1220, #9c2c3d)) !important;
+    color: #ffe9a8 !important;
+    border-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-news .announce-card,
+    .home-news .uni-card-img::after { transition: none; }
+}
+
+/* ردیف خبر: تصویرِ خودِ خبر، و شمار بازدید در انتهای ردیف */
+.news-row-thumb {
+    inline-size: 46px;
+    block-size: 46px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+}
+.news-row-thumb--empty {
+    display: grid;
+    place-items: center;
+    background: var(--bg-light, #faf6f1);
+    color: var(--primary, #7a1f2e);
+}
+.news-row-views {
+    flex: none;
+    align-self: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted, #6b5b5e);
+    white-space: nowrap;
+}
+.news-row-views i { margin-inline-end: 4px; opacity: .7; }
