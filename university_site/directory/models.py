@@ -43,6 +43,15 @@ class DirectoryPerson(models.Model):
         ('other', _('سایر')),
     ]
 
+    # همان فهرستی که پروندهٔ هیئت علمی دارد، تا دو جا دو چیز نگویند.
+    RANK_CHOICES = [
+        ('instructor', _('مربی')),
+        ('assistant', _('استادیار')),
+        ('associate', _('دانشیار')),
+        ('professor', _('استاد تمام')),
+        ('emeritus', _('استاد بازنشسته')),
+    ]
+
     category = models.CharField(
         _('دسته'), max_length=20, choices=CATEGORY_CHOICES, db_index=True)
 
@@ -61,6 +70,17 @@ class DirectoryPerson(models.Model):
     field_of_study = models.CharField(_('رشته تحصیلی'), max_length=200, blank=True)
     degree = models.CharField(
         _('مدرک تحصیلی'), max_length=20, choices=DEGREE_CHOICES, blank=True)
+    # مرتبهٔ علمی، صریح.
+    #
+    # سند موسسه فقط مدرک داشت، پس مرتبه از مدرک حدس زده می‌شد —
+    # دکتری یعنی استادیار. برای بیشتر افراد درست بود و برای کسی که
+    # دانشیار یا استاد تمام است غلط، و هیچ کادری هم برای اصلاحش
+    # نبود. خالی یعنی «همان حدس»؛ پرکردنش یعنی «این حکم است».
+    academic_rank = models.CharField(
+        _('مرتبه علمی'), max_length=20, choices=RANK_CHOICES, blank=True,
+        help_text=_('اگر خالی بماند از مدرک تحصیلی حدس زده می‌شود '
+                    '(دکتری → استادیار). برای دانشیار و استاد تمام '
+                    'حتماً پرش کنید.'))
 
     extension = models.CharField(
         _('شماره داخلی'), max_length=20, blank=True,

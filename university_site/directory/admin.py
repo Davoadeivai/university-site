@@ -8,11 +8,11 @@ from .models import CurriculumDocument, DirectoryPerson, ExternalResource
 class DirectoryPersonAdmin(admin.ModelAdmin):
     list_display = [
         'thumb', 'display_name', 'category', 'position', 'field_of_study',
-        'degree', 'extension', 'order', 'is_active',
+        'degree', 'academic_rank', 'extension', 'order', 'is_active',
     ]
     list_display_links = ['thumb', 'display_name']
-    list_editable = ['order', 'is_active']
-    list_filter = ['category', 'degree', 'is_active']
+    list_editable = ['academic_rank', 'order', 'is_active']
+    list_filter = ['category', 'degree', 'academic_rank', 'is_active']
     search_fields = [
         'full_name', 'first_name', 'last_name', 'position',
         'field_of_study', 'extension', 'phone', 'email',
@@ -32,7 +32,14 @@ class DirectoryPersonAdmin(admin.ModelAdmin):
                            'خالی بگذارید، از دو فیلد قبلی ساخته می‌شود.',
         }),
         ('اطلاعات علمی و سازمانی', {
-            'fields': ('position', 'field_of_study', 'degree'),
+            'fields': ('position', 'field_of_study',
+                       ('degree', 'academic_rank')),
+            'description': (
+                '«مرتبه علمی» را خالی بگذارید تا از مدرک حدس زده شود '
+                '(دکتری → استادیار). برای <strong>دانشیار</strong> و '
+                '<strong>استاد تمام</strong> باید صریح انتخابش کنید — '
+                'حدس هیچ‌وقت به آن‌ها نمی‌رسد.'
+            ),
         }),
         ('تماس و تصویر', {
             'fields': ('extension', 'phone', 'email', 'photo'),

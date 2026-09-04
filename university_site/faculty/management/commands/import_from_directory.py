@@ -13,11 +13,15 @@
 
 چه چیزی حدس زده می‌شود
 ──────────────────────
-سند فقط نام، مدرک و رشته دارد. «مرتبه علمی» در آن نیست، پس از مدرک
-استنتاج می‌شود — دکتری → استادیار، ارشد → مربی. این قرارداد رایج است
-ولی حکم رسمی نیست؛ خروجی دستور همه را فهرست می‌کند تا در پنل بررسی
-شوند. با `--draft` همه غیرفعال ساخته می‌شوند تا تا پیش از تأیید روی
-سایت نیایند.
+اگر در «افراد موسسه» مرتبهٔ علمی صریح نوشته شده باشد، همان حکم است و
+حدسی در کار نیست — و اگر پروندهٔ استاد از قبل مرتبهٔ دیگری داشته
+باشد، همین حکم جایش می‌نشیند.
+
+فقط وقتی خالی باشد از مدرک استنتاج می‌شود: دکتری → استادیار، ارشد →
+مربی. این قرارداد رایج است ولی حکم رسمی نیست — دانشیار و استاد تمام
+هیچ‌وقت از دلِ آن بیرون نمی‌آیند. خروجی دستور همه را فهرست می‌کند تا
+در پنل بررسی شوند. با `--draft` همه غیرفعال ساخته می‌شوند تا پیش از
+تأیید روی سایت نیایند.
 """
 from __future__ import annotations
 
@@ -144,7 +148,9 @@ class Command(BaseCommand):
                     continue
 
                 degree = known_degree(person.full_name, person.degree or '')
-                rank = RANK_BY_DEGREE.get(degree, 'instructor')
+                # مرتبهٔ صریحِ سند بر حدس مقدم است
+                stated = (person.academic_rank or '').strip()
+                rank = stated or RANK_BY_DEGREE.get(degree, 'instructor')
                 defaults = {
                     'rank': rank,
                     'status': status,
@@ -179,6 +185,12 @@ class Command(BaseCommand):
                     for field, value in defaults.items():
                         if value and not getattr(professor, field, None):
                             setattr(professor, field, value)
+                    # مرتبهٔ صریح استثناست: وقتی موسسه در «افراد
+                    # موسسه» نوشته «دانشیار»، حدسِ قبلیِ همین دستور
+                    # («استادیار») باید کنار برود، وگرنه اصلاح در
+                    # پنل هیچ‌وقت به پروندهٔ استاد نمی‌رسد.
+                    if stated and professor.rank != stated:
+                        professor.rank = stated
                     professor.save()
                     updated += 1
 

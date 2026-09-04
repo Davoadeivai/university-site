@@ -33,7 +33,8 @@ class GroupHeadInline(admin.StackedInline):
     extra = 0
     autocomplete_fields = ['professor']
     fields = (('honorific', 'professor'), ('name', 'note'),
-              'photo', ('email', 'phone'), ('order', 'is_active'))
+              'rank_override', 'photo', ('email', 'phone'),
+              ('order', 'is_active'))
     verbose_name = 'مدیر گروه'
     verbose_name_plural = 'مدیران این گروه'
 

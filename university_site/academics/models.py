@@ -676,6 +676,21 @@ class GroupHead(models.Model):
     note = models.CharField(
         _('توضیح'), max_length=60, blank=True,
         help_text=_('مثلاً «ارشد» یا «کارشناسی». کنار نام می‌آید.'))
+    # مرتبهٔ علمی، همین‌جا قابل تنظیم.
+    #
+    # تا امروز مرتبه فقط از پروندهٔ هیئت علمی می‌آمد، و آن پرونده در
+    # منوی دیگری است؛ کسی که مدیر گروه را ویرایش می‌کرد هیچ کادری
+    # برای «دانشیار» پیدا نمی‌کرد. خالی یعنی «از پروندهٔ استاد».
+    rank_override = models.CharField(
+        _('مرتبه علمی'), max_length=20, blank=True,
+        choices=[
+            ('instructor', _('مربی')),
+            ('assistant', _('استادیار')),
+            ('associate', _('دانشیار')),
+            ('professor', _('استاد تمام')),
+            ('emeritus', _('استاد بازنشسته')),
+        ],
+        help_text=_('خالی بگذارید تا از پروندهٔ هیئت علمی بیاید.'))
     photo = models.ImageField(
         _('تصویر'), upload_to='groups/heads/', blank=True, null=True,
         help_text=_('اگر استاد انتخاب شده و عکس دارد، لازم نیست.'))
@@ -715,6 +730,9 @@ class GroupHead(models.Model):
 
     @property
     def rank(self) -> str:
+        if self.rank_override:
+            return dict(self._meta.get_field(
+                'rank_override').choices)[self.rank_override]
         return self.professor.get_rank_display() if self.professor_id else ''
 
     @property

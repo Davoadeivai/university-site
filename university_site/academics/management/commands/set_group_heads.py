@@ -108,13 +108,29 @@ class Command(BaseCommand):
                 category='group_head', is_active=True):
             title = (person.honorific or '').strip()
             if title:
-                table[person.display_name] = title
+                table[person.full_name.strip()] = title
         return table
+
+    def _ranks(self):
+        """مرتبهٔ علمیِ صریحِ هر نام، اگر در فهرست افراد نوشته شده.
+
+        بدون این، مرتبه فقط از پروندهٔ هیئت علمی می‌آمد و آن پرونده
+        مرتبه را از مدرک حدس زده بود — دکتری یعنی استادیار. دانشیار
+        هیچ‌وقت از دلِ آن حدس بیرون نمی‌آمد.
+        """
+        return {
+            person.full_name.strip(): person.academic_rank
+            for person in DirectoryPerson.objects.filter(
+                category='group_head', is_active=True)
+            if (person.academic_rank or '').strip()
+        }
 
     def _heads(self):
         """نام و سمت مدیران گروه — از پنل، وگرنه از فهرست سند."""
+        # نامِ خالی، بدون پیشوند: پیشوند جدا نگه داشته می‌شود تا
+        # تطبیق با پروندهٔ هیئت علمی روی «دکتر …» شکست نخورد.
         rows = [
-            (person.display_name, person.position)
+            (person.full_name.strip(), person.position)
             for person in DirectoryPerson.objects.filter(
                 category='group_head', is_active=True).order_by('order')
             if (person.position or '').strip()
@@ -165,6 +181,7 @@ class Command(BaseCommand):
                 homeless.append((name, position))
 
         honorifics = self._honorifics()
+        ranks = self._ranks()
         made = kept = linked = 0
         with transaction.atomic():
             for group in groups:
@@ -204,6 +221,7 @@ class Command(BaseCommand):
                         name='' if professor else bare,
                         note=note_of_label(label),
                         honorific=honorifics.get(bare, ''),
+                        rank_override=ranks.get(bare, ''),
                         order=index,
                     )
                 if group.head or group.head_professor_id or group.head_photo:

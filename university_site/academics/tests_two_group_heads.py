@@ -226,3 +226,65 @@ class TheHeadCanBeEditedAndRemovedTests(TestCase):
 
         self.assertIn('head_locked', AcademicGroupAdmin.list_display)
         self.assertIn('head_locked', AcademicGroupAdmin.list_editable)
+
+
+class AHeadCanCarryItsOwnRankTests(TestCase):
+    """«دانشیار» را باید همان‌جا که مدیر گروه را ویرایش می‌کنید بشود نوشت.
+
+    مرتبه تا امروز فقط از پروندهٔ هیئت علمی می‌آمد، و آن پرونده در
+    منوی دیگری است — کسی که مدیر گروه را باز می‌کرد هیچ کادری برای
+    مرتبه پیدا نمی‌کرد.
+    """
+
+    def setUp(self):
+        faculty = Department.objects.create(
+            name='دانشکده نمونه', slug='nemoone-rank', order=1,
+            is_active=True)
+        self.group = AcademicGroup.objects.create(
+            department=faculty, name='گروه مدیریت صنعتی و مالی',
+            slug='sanati-rank', is_active=True)
+        self.professor = Professor.objects.create(
+            first_name='حسن', last_name='فارسیجانی', rank='assistant',
+            is_active=True)
+
+    def test_the_professor_rank_is_used_when_nothing_is_written(self):
+        GroupHead.objects.create(group=self.group, professor=self.professor)
+        self.assertEqual(self.group.heads_list[0]['rank'], 'استادیار')
+
+    def test_a_written_rank_wins(self):
+        GroupHead.objects.create(group=self.group, professor=self.professor,
+                                 rank_override='associate')
+        self.assertEqual(self.group.heads_list[0]['rank'], 'دانشیار')
+
+    def test_it_works_without_any_faculty_record(self):
+        GroupHead.objects.create(group=self.group, name='کسی',
+                                 rank_override='professor')
+        self.assertEqual(self.group.heads_list[0]['rank'], 'استاد تمام')
+
+    def test_it_reaches_the_group_page(self):
+        GroupHead.objects.create(group=self.group, professor=self.professor,
+                                 rank_override='associate')
+        html = self.client.get(
+            self.group.get_absolute_url()).content.decode()
+        self.assertIn('دانشیار', html)
+        self.assertNotIn('استادیار', html)
+
+    def test_the_panel_offers_the_field(self):
+        from academics.admin import GroupHeadInline
+
+        self.assertIn('rank_override', str(GroupHeadInline.fields))
+
+    def test_the_seeder_carries_a_stated_rank_over(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        from directory.models import DirectoryPerson
+
+        DirectoryPerson.objects.create(
+            category='group_head', full_name='حسن فارسیجانی',
+            honorific='دکتر', academic_rank='associate',
+            position='مدیر گروه مدیریت صنعتی', is_active=True)
+        call_command('set_group_heads', stdout=StringIO())
+        card = self.group.heads_list[0]
+        self.assertEqual(card['name'], 'دکتر حسن فارسیجانی')
+        self.assertEqual(card['rank'], 'دانشیار')
