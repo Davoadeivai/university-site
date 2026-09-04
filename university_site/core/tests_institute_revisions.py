@@ -404,9 +404,28 @@ class OrgChartFullScreenTests(TestCase):
         self.assertIn('data-zoomable', html)
         self.assertIn('org-chart-img', html)
 
-    def test_the_button_opens_the_same_image(self):
+    def test_the_image_itself_is_the_button(self):
+        """دکمهٔ «مشاهده تمام‌صفحه» برداشته شد؛ کلیک روی خودِ چارت
+        همان کار را می‌کند و نشانگر ذره‌بین هم همین را می‌گوید."""
         html = self._about()
-        self.assertIn('data-zoom-open=".org-chart-img"', html)
+        self.assertNotIn('data-zoom-open', html)
+        self.assertNotIn('مشاهده تمام‌صفحه', html)
+        chart = html.split('org-chart-img')[1][:200]
+        self.assertIn('data-zoomable', chart)
+
+    def test_nothing_frames_the_chart(self):
+        """چارت خودش زمینهٔ سفید دارد؛ قاب سفیدِ دیگری دورش اضافه بود."""
+        html = self._about()
+        frame = html.split('org-chart-file')[1].split('>')[0]
+        for extra in ('bg-white', 'shadow-sm', 'rounded-xl'):
+            self.assertNotIn(extra, frame)
+
+    def test_the_bar_under_it_is_gone_from_the_stylesheet(self):
+        from pathlib import Path
+        from django.conf import settings
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
+            encoding='utf-8')
+        self.assertNotIn('.org-chart-bar', css)
 
     def test_the_old_new_tab_link_is_gone(self):
         """باز کردن فایل در تب تازه یعنی خروج از سایت و برگشت با back."""

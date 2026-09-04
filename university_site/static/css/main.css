@@ -3792,14 +3792,6 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     image-rendering: auto;
 }
 
-.org-chart-bar {
-    display: flex;
-    justify-content: center;
-    padding: 14px;
-    background: var(--bg-light, #faf6f1);
-    border-block-start: 1px solid var(--border, #e8dcd0);
-}
-
 /* ── دانشکده‌ها در صفحهٔ اصلی ────────────────────────────────
    سه کارت، هر کدام با گروه‌هایش. عدد بالای کارت شمار گروه است، نه
    شمارهٔ ردیف — یعنی داده است، نه تزئین. */
