@@ -44,6 +44,11 @@ def _head(name):
     return AcademicGroup.objects.get(name=name)
 
 
+def _names(group_name):
+    """نام مدیران یک گروه، به ترتیب — یکی یا بیشتر."""
+    return [row['name'] for row in _head(group_name).heads_list]
+
+
 class GroupHeadsFromDirectoryTests(TestCase):
     """یازده گروه داشتیم و هیچ‌کدام مدیرش ثبت نشده بود."""
 
@@ -61,27 +66,47 @@ class GroupHeadsFromDirectoryTests(TestCase):
 
     def test_each_head_lands_on_the_group_of_their_title(self):
         _run()
-        self.assertEqual(_head('گروه روان‌شناسی').head_name, 'حسینعلی قربانی')
+        self.assertEqual(_names('گروه روان‌شناسی'), ['حسینعلی قربانی'])
         self.assertEqual(
-            _head('گروه مدیریت بازرگانی').head_name, 'هانیه دلیران چمن‌زمین')
+            _names('گروه مدیریت بازرگانی'), ['هانیه دلیران چمن‌زمین'])
         self.assertEqual(
-            _head('گروه علوم تربیتی - مدیریت آموزشی').head_name,
-            'جلال قنبری جلودار')
+            _names('گروه علوم تربیتی - مدیریت آموزشی'), ['جلال قنبری جلودار'])
 
     def test_a_head_of_two_subjects_reaches_both_groups(self):
         """«مدیر گروه برق و کامپیوتر» یعنی دو گروه، نه یکی."""
         _run()
         self.assertEqual(
-            _head('گروه برق، الکترونیک و مخابرات').head_name, 'فاطمه نمازی')
-        self.assertEqual(_head('گروه کامپیوتر').head_name, 'فاطمه نمازی')
-        self.assertEqual(_head('گروه مکانیک').head_name, 'حسن عمرانی')
-        self.assertEqual(
-            _head('گروه معماری و نقشه‌کشی').head_name, 'حسن عمرانی')
+            _names('گروه برق، الکترونیک و مخابرات'), ['فاطمه نمازی'])
+        self.assertEqual(_names('گروه کامپیوتر'), ['فاطمه نمازی'])
+        self.assertEqual(_names('گروه مکانیک'), ['حسن عمرانی'])
+        self.assertEqual(_names('گروه معماری و نقشه‌کشی'), ['حسن عمرانی'])
 
-    def test_a_group_gets_one_name_not_two(self):
-        """موسسه برای حسابداری دو نفر نوشته؛ کارت باید یک نام نشان دهد."""
+    def test_a_group_with_two_heads_gets_both(self):
+        """موسسه برای حسابداری دو نفر نوشته؛ هر دو باید ثبت شوند.
+
+        اول هر دو نام در یک خط کنار هم می‌آمد و خوانده نمی‌شد، بعد
+        نفر دوم کنار گذاشته شد. حالا هرکدام ردیف خودش را دارد.
+        """
         _run()
-        self.assertEqual(_head('گروه حسابداری').head_name, 'سجاد سالاری')
+        self.assertEqual(_names('گروه حسابداری'),
+                         ['سجاد سالاری', 'مسعود باباخانی'])
+
+    def test_each_of_the_two_carries_its_own_details(self):
+        """دو مدیر یعنی دو جای عکس و دو راه تماس، نه یکی مشترک."""
+        _run()
+        heads = list(_head('گروه حسابداری').group_heads.order_by('order'))
+        self.assertEqual(len(heads), 2)
+        heads[0].phone = '011-1'
+        heads[1].phone = '011-2'
+        for head in heads:
+            head.save(update_fields=['phone'])
+        cards = _head('گروه حسابداری').heads_list
+        self.assertEqual([card['phone'] for card in cards], ['011-1', '011-2'])
+
+    def test_the_label_becomes_plural_for_two(self):
+        _run()
+        self.assertEqual(_head('گروه حسابداری').heads_label, 'مدیران گروه')
+        self.assertEqual(_head('گروه روان‌شناسی').heads_label, 'مدیر گروه')
 
     def test_the_second_name_is_reported_not_dropped_silently(self):
         out = StringIO()
@@ -91,9 +116,13 @@ class GroupHeadsFromDirectoryTests(TestCase):
         self.assertIn('گروه حسابداری', report)
 
     def test_the_note_in_the_title_is_kept(self):
+        """«(ارشد)» توضیحِ همان مدیر است، نه بخشی از نامش."""
         _run()
-        self.assertEqual(_head('گروه مدیریت صنعتی و مالی').head_name,
-                         'حسن فارسیجانی (ارشد)')
+        cards = _head('گروه مدیریت صنعتی و مالی').heads_list
+        self.assertEqual([card['name'] for card in cards],
+                         ['حسن فارسیجانی', 'محمدرضا خسروی مقدم'])
+        self.assertEqual(cards[0]['note'], 'ارشد')
+        self.assertEqual(cards[1]['note'], '')
 
     def test_a_general_title_does_not_squat_on_a_specific_group(self):
         """«مدیر گروه مدیریت» نباید کنار «مدیر گروه مدیریت بازرگانی» بنشیند."""
@@ -109,7 +138,7 @@ class GroupHeadsFromDirectoryTests(TestCase):
 
     def test_a_group_nobody_manages_stays_empty(self):
         _run()
-        self.assertEqual(_head('گروه علوم اجتماعی').head_name, '')
+        self.assertEqual(_names('گروه علوم اجتماعی'), [])
 
     def test_a_faculty_record_is_linked_instead_of_typed(self):
         """اگر مدیر در هیئت علمی پرونده دارد، عکس و مرتبه‌اش هم بیاید."""
@@ -117,41 +146,54 @@ class GroupHeadsFromDirectoryTests(TestCase):
             first_name='حسینعلی', last_name='قربانی', rank='assistant',
             is_active=True)
         _run()
-        group = _head('گروه روان‌شناسی')
-        self.assertEqual(group.head_professor_id, professor.pk)
-        self.assertEqual(group.head, '')
-        self.assertEqual(group.head_name, 'حسینعلی قربانی')
+        head = _head('گروه روان‌شناسی').group_heads.first()
+        self.assertEqual(head.professor_id, professor.pk)
+        self.assertEqual(head.name, '')
+        self.assertEqual(head.display_name, 'حسینعلی قربانی')
 
-    def test_a_name_written_by_hand_survives(self):
+    def test_a_head_set_in_the_panel_survives(self):
+        """تیک قفل یعنی «خودم تنظیمش کردم»؛ به‌روزرسانی دستش نمی‌زند."""
         group = _head('گروه کامپیوتر')
         group.head = 'دکتر دست‌نویس'
-        group.save(update_fields=['head'])
+        group.head_locked = True
+        group.save(update_fields=['head', 'head_locked'])
         _run()
-        self.assertEqual(_head('گروه کامپیوتر').head_name, 'دکتر دست‌نویس')
+        self.assertEqual(_names('گروه کامپیوتر'), ['دکتر دست‌نویس'])
+
+    def test_a_head_deleted_in_the_panel_stays_deleted(self):
+        """حذف باید حذف بماند، وگرنه با هر به‌روزرسانی برمی‌گردد."""
+        _run()
+        group = _head('گروه کامپیوتر')
+        group.group_heads.all().delete()
+        group.head_locked = True
+        group.save(update_fields=['head_locked'])
+        _run()
+        self.assertEqual(_names('گروه کامپیوتر'), [])
 
     def test_replace_overwrites_it(self):
         group = _head('گروه کامپیوتر')
         group.head = 'دکتر دست‌نویس'
-        group.save(update_fields=['head'])
+        group.head_locked = True
+        group.save(update_fields=['head', 'head_locked'])
         _run('--replace')
-        self.assertEqual(_head('گروه کامپیوتر').head_name, 'فاطمه نمازی')
+        self.assertEqual(_names('گروه کامپیوتر'), ['فاطمه نمازی'])
 
     def test_dry_run_writes_nothing(self):
         _run('--dry-run')
-        self.assertEqual(_head('گروه روان‌شناسی').head_name, '')
+        self.assertEqual(_names('گروه روان‌شناسی'), [])
 
     def test_running_twice_changes_nothing(self):
         _run()
-        first = {g.name: g.head_name for g in AcademicGroup.objects.all()}
+        first = {g.name: _names(g.name) for g in AcademicGroup.objects.all()}
         _run()
-        second = {g.name: g.head_name for g in AcademicGroup.objects.all()}
+        second = {g.name: _names(g.name) for g in AcademicGroup.objects.all()}
         self.assertEqual(first, second)
 
     def test_an_empty_directory_falls_back_to_the_document(self):
         """اگر فهرست افراد پر نشده باشد، همان ده نام سند به کار می‌رود."""
         DirectoryPerson.objects.all().delete()
         _run()
-        self.assertEqual(_head('گروه روان‌شناسی').head_name, 'حسینعلی قربانی')
+        self.assertEqual(_names('گروه روان‌شناسی'), ['حسینعلی قربانی'])
 
 
 class GroupHeadsOnThePageTests(TestCase):
@@ -243,9 +285,9 @@ class GroupBlurbTests(TestCase):
 class SelfCorrectionTests(TestCase):
     """آنچه خودِ دستور قبلاً نوشته، باید بتواند اصلاحش کند.
 
-    روی سرور، اجرای پیشین دو نام را کنار هم نوشته بود؛ اجرای بعدی
-    بدون ‎--replace‎ آن را «دست‌نویس مدیر» می‌دید و برای همیشه رد
-    می‌کرد.
+    روی سرور، اجرای پیشین دو نام را در یک خط کنار هم نوشته بود و
+    اجرای بعدی نمی‌توانست تشخیص دهد نوشتهٔ خودش است یا دستِ مدیر
+    سایت. حالا مرز روشن است: تیک «مدیر گروه دستی تنظیم شده».
     """
 
     def setUp(self):
@@ -261,16 +303,18 @@ class SelfCorrectionTests(TestCase):
                 category='group_head', full_name=name, position=position,
                 order=index, is_active=True)
 
-    def test_the_old_two_name_text_is_replaced(self):
+    def test_the_old_one_line_text_gives_way_to_two_rows(self):
         self.group.head = 'سجاد سالاری و مسعود باباخانی'
         self.group.save(update_fields=['head'])
         _run()
-        self.group.refresh_from_db()
-        self.assertEqual(self.group.head, 'سجاد سالاری')
+        self.assertEqual(
+            [row['name'] for row in _head('گروه حسابداری').heads_list],
+            ['سجاد سالاری', 'مسعود باباخانی'])
 
-    def test_a_hand_written_name_is_still_safe(self):
+    def test_a_locked_group_is_still_safe(self):
         self.group.head = 'دکتر کسی که مدیر نوشته'
-        self.group.save(update_fields=['head'])
+        self.group.head_locked = True
+        self.group.save(update_fields=['head', 'head_locked'])
         _run()
         self.group.refresh_from_db()
         self.assertEqual(self.group.head, 'دکتر کسی که مدیر نوشته')
@@ -282,8 +326,11 @@ class SelfCorrectionTests(TestCase):
         self.group.save(update_fields=['head', 'head_photo'])
         _run('--replace')
         self.group.refresh_from_db()
-        self.assertEqual(self.group.head, 'سجاد سالاری')
+        self.assertEqual(self.group.head, '')
         self.assertFalse(self.group.head_photo)
+        self.assertEqual(
+            [row['name'] for row in _head('گروه حسابداری').heads_list],
+            ['سجاد سالاری', 'مسعود باباخانی'])
 
 
 class GroupNameWithoutTheWordGroupTests(TestCase):
@@ -391,8 +438,9 @@ class HeadHonorificTests(TestCase):
             category='group_head', full_name='حسینعلی قربانی',
             position='مدیر گروه روانشناسی', is_active=True)
         self.group.head_honorific = 'دکتر'
-        self.group.save(update_fields=['head_honorific'])
-        _run('--replace')
+        self.group.head_locked = True
+        self.group.save(update_fields=['head_honorific', 'head_locked'])
+        _run()
         self.group.refresh_from_db()
         self.assertEqual(self.group.head_honorific, 'دکتر')
 
@@ -405,9 +453,8 @@ class HeadHonorificTests(TestCase):
         self.group.head = ''
         self.group.save(update_fields=['head'])
         _run()
-        self.group.refresh_from_db()
-        self.assertEqual(self.group.head_honorific, 'دکتر')
-        self.assertIn('دکتر', self.group.head_name)
+        card = self.group.heads_list[0]
+        self.assertEqual(card['name'], 'دکتر حسینعلی قربانی')
 
     def test_the_panel_offers_the_field(self):
         from academics.admin import AcademicGroupAdmin

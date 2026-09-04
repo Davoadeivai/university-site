@@ -438,7 +438,25 @@ class AcademicGroup(models.Model):
         help_text=_(
             'مثلاً «دکتر» یا «مهندس». پیش از نام مدیر می‌آید — چه نام از '
             'پروندهٔ هیئت علمی بیاید، چه دستی نوشته شده باشد.'))
-    head = models.CharField(_('مدیر گروه (دستی)'), max_length=200, blank=True)
+    head = models.CharField(
+        _('مدیر گروه (دستی)'), max_length=200, blank=True,
+        help_text=_(
+            'اگر اینجا نامی بنویسید، همان روی صفحهٔ گروه می‌نشیند — '
+            'حتی اگر استادی هم انتخاب شده باشد.'))
+    # قفلِ ویرایش دستی.
+    #
+    # `set_group_heads` با هر به‌روزرسانی سایت اجرا می‌شود و مدیر
+    # گروه‌ها را از فهرست افراد موسسه می‌نویسد. تا امروز گروهی که
+    # مدیرش پاک شده بود، «بدون مدیر» به‌نظر می‌رسید نه «عمداً خالی»،
+    # پس دستور دوباره پُرش می‌کرد و مدیر سایت می‌دید حذفش برنگشته.
+    # این تیک همان تفاوت را نگه می‌دارد و خودش با اولین ویرایش در
+    # پنل زده می‌شود.
+    head_locked = models.BooleanField(
+        _('مدیر گروه دستی تنظیم شده'), default=False,
+        help_text=_(
+            'با زدن این تیک، به‌روزرسانی خودکار به مدیر این گروه دست '
+            'نمی‌زند. هر بار که از همین صفحه مدیر را عوض یا پاک کنید، '
+            'خودکار زده می‌شود.'))
     head_photo = models.ImageField(_('تصویر مدیر گروه'), upload_to='groups/', blank=True, null=True)
     head_email = models.EmailField(_('ایمیل مدیر گروه'), blank=True)
     head_phone = models.CharField(_('تلفن مدیر گروه'), max_length=50, blank=True)
@@ -530,8 +548,12 @@ class AcademicGroup(models.Model):
         در فیلد دستی می‌نوشت و هیچ اثری نمی‌دید، چون آن فیلد فقط
         وقتی خوانده می‌شود که استادی وصل نباشد.
         """
-        base = (self.head_professor.get_full_name()
-                if self.head_professor_id else (self.head or ''))
+        # نامِ دست‌نویس مقدم است: کسی که در کادر نامی می‌نویسد
+        # انتظار دارد همان را ببیند. پروندهٔ استاد همچنان منبعِ عکس،
+        # مرتبه و راه تماس می‌ماند.
+        base = (self.head or '').strip()
+        if not base and self.head_professor_id:
+            base = self.head_professor.get_full_name()
         base = base.strip()
         if not base:
             return ''
@@ -593,3 +615,137 @@ class AcademicGroup(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('academics:group_detail', args=[self.slug])
+
+    # ── مدیرانِ گروه ────────────────────────────────────────────
+    # موسسه برای «حسابداری» و «مدیریت صنعتی و مالی» دو مدیر دارد.
+    # فیلدهای بالا فقط یک نفر جا می‌دادند، پس نفر دوم تا امروز نه
+    # عکسی داشت نه راه تماسی — و در پنل جایی برای ثبتش نبود.
+    #
+    # `group_heads` هر تعداد مدیر را نگه می‌دارد. فیلدهای تکیِ بالا
+    # می‌مانند تا داده‌های موجود از بین نرود؛ اگر ردیفی ثبت نشده
+    # باشد، همان‌ها نفر اول می‌شوند.
+    @property
+    def heads_list(self) -> list:
+        """مدیران گروه، هرکدام با عکس و مرتبه و راه تماس خودش."""
+        rows = [head.as_card()
+                for head in self.group_heads.all()
+                if head.is_active and head.display_name]
+        if rows:
+            return rows
+        if not self.head_name:
+            return []
+        return [{
+            'name': self.head_name,
+            'note': '',
+            'image': self.head_image,
+            'rank': self.head_rank,
+            'page': self.head_page,
+            'email': self.head_contact_email,
+            'phone': self.head_contact_phone,
+        }]
+
+    @property
+    def heads_label(self) -> str:
+        """«مدیر گروه» یا «مدیران گروه» — بسته به اینکه چند نفرند."""
+        return 'مدیران گروه' if len(self.heads_list) > 1 else 'مدیر گروه'
+
+
+class GroupHead(models.Model):
+    """یک مدیر برای یک گروه آموزشی.
+
+    گروهی که دو مدیر دارد، دو ردیف اینجا دارد — هرکدام با عکس،
+    پیشوند، مرتبه و راه تماس خودش. «توضیح» برای وقتی است که تقسیم
+    کار روشن باشد، مثل «ارشد» یا «کارشناسی».
+    """
+    group = models.ForeignKey(
+        AcademicGroup, on_delete=models.CASCADE, related_name='group_heads',
+        verbose_name=_('گروه آموزشی'))
+    professor = models.ForeignKey(
+        'faculty.Professor', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='group_head_roles',
+        verbose_name=_('از اعضای هیئت علمی'),
+        help_text=_('با انتخاب استاد، نام و عکس و مرتبه و راه تماسش '
+                    'خودکار می‌آید.'))
+    honorific = models.CharField(
+        _('پیشوند'), max_length=40, blank=True,
+        help_text=_('مثلاً «دکتر» یا «مهندس».'))
+    name = models.CharField(
+        _('نام (دستی)'), max_length=200, blank=True,
+        help_text=_('اگر استادی انتخاب نکرده‌اید، نام را اینجا بنویسید. '
+                    'اگر هر دو پر باشند، همین نوشته می‌نشیند.'))
+    note = models.CharField(
+        _('توضیح'), max_length=60, blank=True,
+        help_text=_('مثلاً «ارشد» یا «کارشناسی». کنار نام می‌آید.'))
+    photo = models.ImageField(
+        _('تصویر'), upload_to='groups/heads/', blank=True, null=True,
+        help_text=_('اگر استاد انتخاب شده و عکس دارد، لازم نیست.'))
+    email = models.EmailField(_('ایمیل'), blank=True)
+    phone = models.CharField(_('تلفن'), max_length=50, blank=True)
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('مدیر گروه')
+        verbose_name_plural = _('مدیران گروه')
+        ordering = ['group', 'order', 'id']
+
+    def __str__(self):
+        return '%s — %s' % (self.display_name or '—', self.group.name)
+
+    @property
+    def display_name(self) -> str:
+        base = (self.name or '').strip()
+        if not base and self.professor_id:
+            base = self.professor.get_full_name()
+        base = base.strip()
+        if not base:
+            return ''
+        title = (self.honorific or '').strip()
+        if title and not base.startswith(title):
+            return '%s %s' % (title, base)
+        return base
+
+    @property
+    def image(self):
+        if self.photo:
+            return self.photo
+        if self.professor_id and self.professor.photo:
+            return self.professor.photo
+        return None
+
+    @property
+    def rank(self) -> str:
+        return self.professor.get_rank_display() if self.professor_id else ''
+
+    @property
+    def page(self) -> str:
+        if not self.professor_id:
+            return ''
+        try:
+            return self.professor.get_absolute_url()
+        except Exception:                          # noqa: BLE001
+            return ''
+
+    @property
+    def contact_email(self) -> str:
+        if self.email:
+            return self.email
+        return self.professor.email if self.professor_id else ''
+
+    @property
+    def contact_phone(self) -> str:
+        if self.phone:
+            return self.phone
+        return self.professor.phone if self.professor_id else ''
+
+    def as_card(self) -> dict:
+        """همان شکلی که قالب می‌خواند — یکی، چه از اینجا چه از فیلدهای تکی."""
+        return {
+            'name': self.display_name,
+            'note': (self.note or '').strip(),
+            'image': self.image,
+            'rank': self.rank,
+            'page': self.page,
+            'email': self.contact_email,
+            'phone': self.contact_phone,
+        }

@@ -8,7 +8,8 @@ from core.admin_jalali import JalaliAdminMixin
 from core.jalali_forms import JalaliAdminFormMixin
 from core.jalali import format_jalali_date
 
-from .models import Department, Major, Course, AcademicCalendar, Laboratory, AcademicGroup
+from .models import (Department, Major, Course, AcademicCalendar, Laboratory,
+                     AcademicGroup, GroupHead)
 
 
 class MajorInline(admin.TabularInline):
@@ -19,6 +20,22 @@ class MajorInline(admin.TabularInline):
     fields = ['name', 'group', 'degree', 'order', 'capacity', 'is_active']
     show_change_link = True
     autocomplete_fields = ['group']
+
+
+class GroupHeadInline(admin.StackedInline):
+    """مدیران گروه — هر تعداد که هست، هرکدام با عکس خودش.
+
+    «حسابداری» و «مدیریت صنعتی و مالی» دو مدیر دارند و فیلدهای تکیِ
+    بالای فرم فقط یک نفر جا می‌دادند: نفر دوم نه عکسی داشت، نه راه
+    تماسی، نه جایی برای ثبت.
+    """
+    model = GroupHead
+    extra = 0
+    autocomplete_fields = ['professor']
+    fields = (('honorific', 'professor'), ('name', 'note'),
+              'photo', ('email', 'phone'), ('order', 'is_active'))
+    verbose_name = 'مدیر گروه'
+    verbose_name_plural = 'مدیران این گروه'
 
 
 class GroupMajorInline(admin.TabularInline):
@@ -298,10 +315,11 @@ class AcademicGroupAdmin(admin.ModelAdmin):
     # پیشوند در همین فهرست قابل ویرایش است: افزودن «دکتر» به یازده
     # گروه نباید یازده بار باز و بسته کردن فرم باشد.
     list_display        = ['name', 'department', 'head_display',
-                           'head_honorific', 'majors_count',
+                           'head_honorific', 'head_locked', 'majors_count',
                            'has_graduate', 'order', 'is_active']
-    list_editable       = ['head_honorific', 'has_graduate', 'order',
-                           'is_active']
+    list_editable       = ['head_honorific', 'head_locked', 'has_graduate',
+                           'order', 'is_active']
+    actions             = ['clear_head']
     list_filter         = ['department', 'is_active', 'has_graduate']
     search_fields       = ['name', 'head', 'head_professor__first_name',
                            'head_professor__last_name', 'description',
@@ -309,22 +327,48 @@ class AcademicGroupAdmin(admin.ModelAdmin):
     autocomplete_fields = ['head_professor']
     list_select_related = ('department', 'head_professor')
     prepopulated_fields = {'slug': ('name',)}
-    inlines             = [GroupMajorInline]
+    inlines             = [GroupHeadInline, GroupMajorInline]
 
     @admin.display(description='مدیر گروه', ordering='head')
     def head_display(self, obj):
-        """نام مدیر، از هر جا که آمده — با نشانهٔ اینکه پیوند خورده یا نه."""
-        from django.utils.html import format_html
+        """نام مدیران گروه — یک نفر یا دو نفر، هر جا که ثبت شده‌اند."""
+        from django.utils.html import format_html, format_html_join
 
-        if obj.head_professor_id:
-            return format_html(
-                '<span style="color:#1f7a5c;font-weight:600;">{}</span>',
-                obj.head_name)
-        if obj.head:
-            return format_html(
-                '<span style="color:#8a6412;" title="دستی نوشته شده، به '
-                'پروندهٔ هیئت علمی وصل نیست">{}</span>', obj.head_name)
-        return format_html('<span style="color:#b3261e;">— ثبت نشده</span>')
+        rows = obj.heads_list
+        if not rows:
+            return format_html('<span style="color:#b3261e;">— ثبت نشده</span>')
+        return format_html_join(
+            mark_safe('<br>'),
+            '<span style="color:#1f7a5c;font-weight:600;">{}</span>'
+            '<small style="color:#8a6412;"> {}</small>',
+            ((row['name'], '(%s)' % row['note'] if row['note'] else '')
+             for row in rows))
+
+    # فیلدهایی که «مدیر گروه» را می‌سازند. دست‌زدن به هرکدام در پنل
+    # یعنی تصمیمِ مدیر سایت، و تصمیم مدیر سایت نباید با به‌روزرسانی
+    # بعدی پاک شود.
+    HEAD_FIELDS = ('head', 'head_professor', 'head_honorific',
+                   'head_photo', 'head_email', 'head_phone')
+
+    def save_model(self, request, obj, form, change):
+        if not obj.head_locked and any(
+                field in form.changed_data for field in self.HEAD_FIELDS):
+            obj.head_locked = True
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description='برداشتن مدیر گروه از گروه‌های انتخاب‌شده')
+    def clear_head(self, request, queryset):
+        """پاک‌کردن مدیر، در یک حرکت و برای همیشه.
+
+        پیش از این باید شش فیلد را جدا خالی می‌کردید، و بعد از
+        به‌روزرسانی بعدی دوباره برمی‌گشت.
+        """
+        count = queryset.update(
+            head='', head_professor=None, head_honorific='',
+            head_photo='', head_email='', head_phone='', head_locked=True)
+        self.message_user(
+            request, 'مدیر %d گروه برداشته شد و دیگر خودکار برنمی‌گردد.'
+            % count)
 
     fieldsets = (
         ('اطلاعات اصلی', {
@@ -333,16 +377,21 @@ class AcademicGroupAdmin(admin.ModelAdmin):
         }),
         ('مدیر گروه', {
             'fields': ('head_honorific', 'head_professor', 'head',
-                       'head_photo', 'head_email', 'head_phone'),
+                       'head_photo', 'head_email', 'head_phone',
+                       'head_locked'),
             'description': (
                 '<b>پیشوند</b> («دکتر»، «مهندس») همیشه اثر دارد — چه نام '
                 'از پروندهٔ هیئت علمی بیاید، چه دستی نوشته شده باشد.<br>'
-                '<b>روش درست برای نام:</b> استاد را از فهرست «مدیر گروه '
-                '(از اعضای هیئت علمی)» انتخاب کنید — نام، عکس، مرتبهٔ '
-                'علمی و راه تماسش خودکار روی صفحهٔ گروه می‌آید و با هر '
-                'تغییر در پروندهٔ استاد، اینجا هم تازه می‌شود.<br>'
-                'چهار فیلد بعدی فقط برای وقتی است که مدیر گروه عضو هیئت '
-                'علمی نیست.'
+                '<b>نام:</b> یا استاد را از فهرست «مدیر گروه (از اعضای '
+                'هیئت علمی)» انتخاب کنید تا عکس و مرتبه و راه تماسش هم '
+                'خودکار بیاید، یا نام را در کادر «مدیر گروه (دستی)» '
+                'بنویسید. اگر هر دو پر باشند، <b>نوشتهٔ دستی</b> روی '
+                'صفحه می‌نشیند.<br>'
+                '<b>برای برداشتن مدیر:</b> هر دو کادر را خالی کنید و '
+                'ذخیره بزنید — یا از فهرست گروه‌ها، گروه را تیک بزنید و '
+                'کار «برداشتن مدیر گروه» را اجرا کنید.<br>'
+                'با هر تغییری در این بخش، تیک پایین خودکار زده می‌شود تا '
+                'به‌روزرسانی خودکارِ سایت تصمیم شما را بازنویسی نکند.'
             ),
         }),
         ('محتوا', {

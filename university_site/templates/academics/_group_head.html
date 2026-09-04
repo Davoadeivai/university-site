@@ -1,20 +1,22 @@
 {% comment %}
-کارت مدیر گروه.
+کارت مدیران گروه.
 
-یک قالب، هر جا که لازم است — فهرست گروه‌ها، صفحهٔ خود گروه، و هر
-جای دیگری که بعداً اضافه شود. اگر سه بار کپی می‌شد، سه‌تا با هم
+یک قالب، هر جا که لازم است — فهرست گروه‌ها، صفحهٔ مدیران گروه‌ها، و
+هر جای دیگری که بعداً اضافه شود. اگر سه بار کپی می‌شد، سه‌تا با هم
 اختلاف پیدا می‌کردند.
 
-داده از `head_*` می‌آید، نه از فیلدهای خام: آن ویژگی‌ها اول سراغ
-پروندهٔ عضو هیئت علمی می‌روند و اگر نبود، به متن دستی برمی‌گردند.
+یک گروه می‌تواند بیش از یک مدیر داشته باشد — «حسابداری» و «مدیریت
+صنعتی و مالی» دو مدیر دارند. داده از `heads_list` می‌آید، که چه
+مدیران در ردیف‌های خودشان ثبت شده باشند و چه در فیلدهای تکیِ قدیمی،
+یک شکل برمی‌گرداند.
 
 پارامترها: group، و link (اگر True باشد نام به صفحهٔ استاد می‌رود)
 {% endcomment %}
-{% if group.head_name %}
+{% for head in group.heads_list %}
 <div class="grp-head">
-    {% if group.head_image %}
+    {% if head.image %}
     <img loading="lazy" decoding="async"
-         src="{{ group.head_image.url }}" alt="{{ group.head_name }}"
+         src="{{ head.image.url }}" alt="{{ head.name }}"
          class="grp-head-photo" width="52" height="52">
     {% else %}
     <span class="grp-head-photo grp-head-empty" aria-hidden="true">
@@ -22,15 +24,27 @@
     </span>
     {% endif %}
     <span class="grp-head-text">
-        <span class="grp-head-role">مدیر گروه</span>
-        {% if link and group.head_page %}
-        <a class="grp-head-name" href="{{ group.head_page }}">{{ group.head_name }}</a>
+        <span class="grp-head-role">
+            مدیر گروه{% if head.note %} — {{ head.note }}{% endif %}
+        </span>
+        {% if link and head.page %}
+        <a class="grp-head-name" href="{{ head.page }}">{{ head.name }}</a>
         {% else %}
-        <span class="grp-head-name">{{ group.head_name }}</span>
+        <span class="grp-head-name">{{ head.name }}</span>
         {% endif %}
-        {% if group.head_rank %}
-        <span class="grp-head-rank">{{ group.head_rank }}</span>
+        {% if head.rank %}
+        <span class="grp-head-rank">{{ head.rank }}</span>
+        {% endif %}
+        {% if head.phone or head.email %}
+        <span class="grp-head-lines">
+            {% if head.phone %}
+            <a href="tel:{{ head.phone }}"><i class="fas fa-phone" aria-hidden="true"></i> {{ head.phone }}</a>
+            {% endif %}
+            {% if head.email %}
+            <a href="mailto:{{ head.email }}"><i class="fas fa-envelope" aria-hidden="true"></i> {{ head.email }}</a>
+            {% endif %}
+        </span>
         {% endif %}
     </span>
 </div>
-{% endif %}
+{% endfor %}

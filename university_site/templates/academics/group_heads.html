@@ -36,29 +36,23 @@
                     <span class="badge bg-primary grp-head-dept">{{ group.department.name }}</span>
                 </div>
 
-                {% if group.head_name %}
+                {% if group.heads_list %}
+                {% comment %}
+                راه تماس هر مدیر داخل کارت خودش می‌آید، نه در یک
+                فهرست زیر همه: گروهی که دو مدیر دارد، دو شمارهٔ
+                جدا دارد و ریختنشان در یک فهرست معلوم نمی‌کرد کدام
+                مال کیست.
+                {% endcomment %}
                 {% include 'academics/_group_head.html' with group=group link=True %}
 
+                {% if group.location %}
                 <ul class="grp-head-contact">
-                    {% if group.head_contact_phone %}
-                    <li>
-                        <i class="fas fa-phone" aria-hidden="true"></i>
-                        <a href="tel:{{ group.head_contact_phone }}">{{ group.head_contact_phone }}</a>
-                    </li>
-                    {% endif %}
-                    {% if group.head_contact_email %}
-                    <li>
-                        <i class="fas fa-envelope" aria-hidden="true"></i>
-                        <a href="mailto:{{ group.head_contact_email }}">{{ group.head_contact_email }}</a>
-                    </li>
-                    {% endif %}
-                    {% if group.location %}
                     <li>
                         <i class="fas fa-location-dot" aria-hidden="true"></i>
                         {{ group.location }}
                     </li>
-                    {% endif %}
                 </ul>
+                {% endif %}
                 {% else %}
                 <p class="grp-head-missing">
                     <i class="fas fa-user-tie" aria-hidden="true"></i>

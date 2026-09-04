@@ -52,11 +52,18 @@ class GroupHeadFromFacultyTests(TestCase):
         self.assertEqual(self.group.head_rank, '')
         self.assertEqual(self.group.head_page, '')
 
-    def test_the_link_wins_over_the_manual_text(self):
-        """اگر هر دو پر باشند، پروندهٔ رسمی مبناست."""
-        self.group.head = 'نام قدیمی'
+    def test_the_typed_name_wins_over_the_link(self):
+        """کسی که در کادر نامی می‌نویسد، انتظار دارد همان را ببیند.
+
+        پیش از این پروندهٔ استاد مقدم بود و نوشتن در کادر هیچ اثری
+        نداشت — مدیر سایت نام را عوض می‌کرد و صفحه تکان نمی‌خورد.
+        عکس و مرتبه و راه تماس همچنان از پرونده می‌آیند.
+        """
+        self.group.head = 'نام تازه'
         self.group.head_professor = self.professor
-        self.assertEqual(self.group.head_name, 'مریم رضایی')
+        self.assertEqual(self.group.head_name, 'نام تازه')
+        self.assertEqual(self.group.head_rank,
+                         self.professor.get_rank_display())
 
     def test_nothing_recorded_says_nothing(self):
         self.assertEqual(self.group.head_name, '')

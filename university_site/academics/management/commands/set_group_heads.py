@@ -24,16 +24,18 @@
 با نام گروه‌ها سنجیده می‌شود، و واژهٔ بلندتر جلوتر است تا «مدیریت
 بازرگانی» پیش از «مدیریت» بنشیند.
 
-هر گروه یک نام می‌گیرد، نه بیشتر. موسسه برای حسابداری و مدیریت
-صنعتی دو نفر نوشته و اول هر دو نام کنار هم روی کارت می‌آمد؛ خواندنش
-گیج‌کننده بود («مدیر گروه: الف و ب»). حالا نفر اولِ فهرست موسسه ثبت
-می‌شود و نام دوم در گزارش پایان کار می‌آید تا اگر انتخاب درست او
-بود، از پنل جایگزینش کنید.
+گروهی که دو مدیر دارد، دو مدیر می‌گیرد. موسسه برای «حسابداری» و
+«مدیریت صنعتی و مالی» دو نفر نوشته؛ اول هر دو نام در یک خط کنار هم
+می‌آمد («مدیر گروه: الف و ب»)، بعد نفر دوم کنار گذاشته شد، و حالا
+هرکدام ردیف خودش را دارد — با عکس، مرتبه و راه تماس جداگانه.
 
 مدیری که گروهش روی سایت نیست (مثل «مدیر گروه مدیریت» که میان سه
 گروه پخش است) هم بی‌صدا کنار گذاشته نمی‌شود و در همان گزارش می‌آید.
 
-مدیری که کسی دستی در پنل نوشته، جز با ‎--replace‎ دست نمی‌خورد.
+گروهی که مدیرش در پنل دست‌کاری شده — تیک «مدیر گروه دستی تنظیم
+شده» — جز با ‎--replace‎ دست نمی‌خورد. آن تیک با هر ویرایشِ مدیر
+گروه در پنل خودکار زده می‌شود، تا حذف یا اصلاحِ دستی با
+به‌روزرسانی بعدی برنگردد.
 """
 from __future__ import annotations
 
@@ -42,7 +44,7 @@ import re
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from academics.models import AcademicGroup
+from academics.models import AcademicGroup, GroupHead
 from directory.models import DirectoryPerson
 from faculty.models import Professor
 
@@ -76,6 +78,12 @@ def scope_words(position: str) -> list:
     text = text.replace('مدیریت گروه', ' ').replace('مدیر گروه', ' ')
     parts = re.split(r'\s+و\s+|—|–|/|،|,', text)
     return [fold(part) for part in parts if fold(part)]
+
+
+def note_of_label(label: str) -> str:
+    """توضیح داخل پرانتزِ برچسبِ ساخته‌شده — «الف (ارشد)» → «ارشد»."""
+    found = re.search(r'\((.*?)\)', label or '')
+    return found.group(1).strip() if found else ''
 
 
 def note_of(position: str) -> str:
@@ -163,47 +171,47 @@ class Command(BaseCommand):
                 names = placed.get(group.pk)
                 if not names:
                     continue
-                current = (group.head_name or '').strip()
-                # یک نام، نه دو: «مدیر گروه: الف و ب» روی کارت
-                # خوانده نمی‌شد. نفر دومِ فهرست موسسه در گزارش می‌آید.
-                text = names[0]
 
-                # نوشتهٔ خودِ همین دستور در اجرای قبلی — دو نام کنار هم —
-                # باید اصلاح شود، وگرنه روی سرور برای همیشه می‌ماند: بدون
-                # ‎--replace‎ هر اجرا آن را «دست‌نویس مدیر» می‌دید و رد
-                # می‌شد. متنی که مدیر خودش نوشته دست نمی‌خورد.
-                ours = current == ' و '.join(names)
-                if current and not ours and not options['replace']:
+                # تصمیمِ مدیر سایت — چه ویرایش، چه حذف — با
+                # به‌روزرسانی بعدی برنمی‌گردد.
+                if group.head_locked and not options['replace']:
                     kept += 1
                     continue
 
-                professor = self._professor_for(text)
-
-                self.stdout.write('  %s → %s%s' % (
-                    group.name, text, ' [هیئت علمی]' if professor else ''))
+                self.stdout.write('  %s → %s' % (
+                    group.name, '، '.join(names)))
                 made += 1
-                if professor:
-                    linked += 1
                 if dry:
+                    linked += sum(
+                        1 for label in names if self._professor_for(label))
                     continue
 
-                group.head = '' if professor else text
-                group.head_professor = professor
-                fields = ['head', 'head_professor']
-                # پیشوندی که مدیر سایت نوشته («دکتر») دست نمی‌خورد؛ اگر
-                # خالی بود و فهرست افراد پیشوند داشت، از همان‌جا می‌آید.
-                if not (group.head_honorific or '').strip():
-                    title = honorifics.get(names[0], '')
-                    if title:
-                        group.head_honorific = title
-                        fields.append('head_honorific')
-                # عکسی که برای مدیر قبلی آپلود شده بود، عکس این یکی
-                # نیست؛ روی سرور یک منظرهٔ کوهستان جای چهرهٔ مدیر گروه
-                # نشسته بود.
-                if current and current != text and group.head_photo:
+                # فیلدهای تکیِ قدیمی خالی می‌شوند و همه‌چیز به
+                # ردیف‌های مدیران می‌رود؛ وگرنه یک گروه دو منبع
+                # می‌داشت و دیر یا زود با هم اختلاف پیدا می‌کردند.
+                group.group_heads.all().delete()
+                for index, label in enumerate(names):
+                    professor = self._professor_for(label)
+                    if professor:
+                        linked += 1
+                    # برچسب ممکن است توضیح داشته باشد — «الف (ارشد)».
+                    # پیشوند با نامِ خالی جست‌وجو می‌شود، وگرنه هیچ‌وقت
+                    # پیدا نمی‌شد.
+                    bare = re.sub(r'\s*\(.*?\)', '', label).strip()
+                    GroupHead.objects.create(
+                        group=group,
+                        professor=professor,
+                        name='' if professor else bare,
+                        note=note_of_label(label),
+                        honorific=honorifics.get(bare, ''),
+                        order=index,
+                    )
+                if group.head or group.head_professor_id or group.head_photo:
+                    group.head = ''
+                    group.head_professor = None
                     group.head_photo = None
-                    fields.append('head_photo')
-                group.save(update_fields=fields)
+                    group.save(update_fields=[
+                        'head', 'head_professor', 'head_photo'])
 
         self.stdout.write(self.style.SUCCESS(
             'پیش‌نمایش:' if dry else 'انجام شد:'))
@@ -211,15 +219,15 @@ class Command(BaseCommand):
             made, 'می‌گیرد' if dry else 'گرفت'))
         if linked:
             self.stdout.write(
-                '  %d از آن‌ها به پروندهٔ هیئت علمی وصل شد' % linked)
+                '  %d مدیر به پروندهٔ هیئت علمی وصل شد' % linked)
         if kept:
-            self.stdout.write('  %d گروه مدیرِ ثبت‌شده داشت و دست نخورد '
+            self.stdout.write('  %d گروه مدیرش در پنل تنظیم شده و دست نخورد '
                               '(با --replace بازنویسی می‌شود)' % kept)
         for group in groups:
-            for name in (placed.get(group.pk) or [])[1:]:
+            names = placed.get(group.pk) or []
+            if len(names) > 1:
                 self.stdout.write(
-                    '  «%s» هم برای %s نوشته شده؛ نفر اول ثبت شد.'
-                    % (name, group.name))
+                    '  %s دو مدیر دارد: %s' % (group.name, '، '.join(names)))
         without = [group.name for group in groups if group.pk not in placed]
         if without:
             self.stdout.write('  بدون مدیر ماند: %s' % '، '.join(without))

@@ -3186,6 +3186,43 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 [data-theme="dark"] .grp-majors-list a { color: #e8dfe1; }
 
 /* ── صفحهٔ مدیران گروه‌ها ─────────────────────────────────── */
+/* ── مدیرانِ گروه، در صفحهٔ خودِ گروه ──
+   یک گروه می‌تواند دو مدیر داشته باشد. با یک نفر، همان قاب ۱۸۰
+   پیکسلی همیشگی می‌ماند؛ با دو نفر، هر دو کوچک‌تر می‌شوند و کنار
+   هم می‌نشینند تا ستون بلند نشود. */
+.grp-leads {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(14px, 2.4vw, 26px);
+}
+.grp-lead { margin: 0; flex: 0 1 auto; max-inline-size: 240px; }
+.grp-lead-photo {
+    inline-size: 180px;
+    block-size: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary, #7a1f2e);
+    box-shadow: 0 12px 30px -20px rgba(30, 10, 15, .8);
+    margin-inline: auto;
+}
+.grp-lead.is-pair .grp-lead-photo { inline-size: 140px; block-size: 140px; }
+.grp-lead-blank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary, linear-gradient(135deg, #7a1f2e, #3a0e18));
+    color: rgba(255, 255, 255, .85);
+    font-size: 3.4rem;
+}
+.grp-lead-name { margin: 14px 0 4px; font-size: 17px; font-weight: 800; }
+.grp-lead.is-pair .grp-lead-name { font-size: 15.5px; }
+.grp-lead-name a { color: inherit; }
+
+@media (max-width: 575.98px) {
+    .grp-lead.is-pair .grp-lead-photo { inline-size: 120px; block-size: 120px; }
+}
+
 .grp-head-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
@@ -3258,7 +3295,28 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 .grp-head-role { font-size: 11.5px; color: var(--gray-600, #6c757d); }
 .grp-head-name { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 
+/* راه تماس داخل کارت هر مدیر — گروهی که دو مدیر دارد دو شماره
+   دارد، و یک فهرست زیر هر دو معلوم نمی‌کرد کدام مال کیست. */
+.grp-head-lines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 12px;
+    margin-block-start: 3px;
+    font-size: 11.5px;
+}
+.grp-head-lines a {
+    color: var(--text-muted, #6b5b5e);
+    text-decoration: none;
+    direction: ltr;
+}
+.grp-head-lines a:hover { color: var(--primary, #7a1f2e); }
+.grp-head-lines i { opacity: .7; }
+
+/* دو مدیر یعنی دو کارت پشت هم؛ فاصلهٔ آخری صفر می‌شود */
+.grp-head:last-of-type { margin-block-end: 0; }
+
 [data-theme="dark"] .grp-head { background: rgba(255, 255, 255, .05); }
+[data-theme="dark"] .grp-head-lines a { color: #c3aeb2; }
 
 /* ── هیات امنا و هیات موسس: نام‌ها خواناتر و رسمی‌تر ───────
    نسخهٔ قبلی نام را با همان خاکستریِ متن معمولی می‌نوشت و کارت‌ها

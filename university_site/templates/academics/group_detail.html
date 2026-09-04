@@ -15,51 +15,65 @@
         <div class="row g-5 align-items-center mb-5" data-aos="fade-up">
             <div class="col-lg-4 text-center">
                 {% comment %}
-                عکس و نام از ویژگی‌های head_* می‌آیند، نه از فیلد خام:
-                اگر مدیر گروه به پروندهٔ هیئت علمی وصل باشد، همه‌چیز
-                از همان‌جا می‌آید و همیشه تازه است.
+                یک گروه می‌تواند بیش از یک مدیر داشته باشد — «حسابداری»
+                و «مدیریت صنعتی و مالی» دو مدیر دارند. هر مدیر عکس و
+                مرتبه و راه تماس خودش را دارد؛ قالب روی همان فهرست
+                می‌چرخد و نمی‌داند داده از ردیف‌های مدیران آمده یا از
+                فیلدهای تکیِ قدیمی.
                 {% endcomment %}
-                {% if group.head_image %}
-                <img loading="lazy" decoding="async" src="{{ group.head_image.url }}" alt="{{ group.head_name }}"
-                     class="rounded-circle border border-4 border-primary shadow"
-                     style="width:180px;height:180px;object-fit:cover;">
-                {% else %}
-                <div class="rounded-circle d-inline-flex align-items-center justify-content-center border border-4 border-primary shadow"
-                     style="width:180px;height:180px;background:var(--gradient-primary);">
-                    <i class="fas fa-user-tie text-white" style="font-size:5rem;"></i>
+                {% if group.heads_list %}
+                <div class="grp-leads">
+                    {% for head in group.heads_list %}
+                    <figure class="grp-lead{% if group.heads_list|length > 1 %} is-pair{% endif %}">
+                        {% if head.image %}
+                        <img loading="lazy" decoding="async" src="{{ head.image.url }}"
+                             alt="{{ head.name }}" class="grp-lead-photo">
+                        {% else %}
+                        <div class="grp-lead-photo grp-lead-blank">
+                            <i class="fas fa-user-tie" aria-hidden="true"></i>
+                        </div>
+                        {% endif %}
+                        <figcaption>
+                            <h4 class="grp-lead-name">
+                                {% if head.page %}
+                                <a href="{{ head.page }}" class="text-decoration-none">{{ head.name }}</a>
+                                {% else %}{{ head.name }}{% endif %}
+                            </h4>
+                            <p class="text-primary fw-semibold mb-1">
+                                مدیر گروه {{ group.bare_name }}{% if head.note %} — {{ head.note }}{% endif %}
+                            </p>
+                            {% if head.rank %}
+                            <p class="text-muted mb-1" style="font-size:13px;">{{ head.rank }}</p>
+                            {% endif %}
+                            <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                                {% if head.page %}
+                                <a href="{{ head.page }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-id-card"></i> پروندهٔ علمی
+                                </a>
+                                {% endif %}
+                                {% if head.email %}
+                                <a href="mailto:{{ head.email }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-envelope"></i> ایمیل
+                                </a>
+                                {% endif %}
+                                {% if head.phone %}
+                                <a href="tel:{{ head.phone }}" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-phone"></i> {{ head.phone }}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </figcaption>
+                    </figure>
+                    {% endfor %}
                 </div>
-                {% endif %}
-                {% if group.head_name %}
-                <h4 class="mt-3 mb-1">
-                    {% if group.head_page %}
-                    <a href="{{ group.head_page }}" class="text-decoration-none">{{ group.head_name }}</a>
-                    {% else %}{{ group.head_name }}{% endif %}
-                </h4>
-                <p class="text-primary fw-semibold mb-1">مدیر گروه {{ group.bare_name }}</p>
-                {% if group.head_rank %}
-                <p class="text-muted" style="font-size:13px;">{{ group.head_rank }}</p>
-                {% endif %}
-                {% if group.head_page %}
-                <a href="{{ group.head_page }}" class="btn btn-sm btn-outline-secondary mt-1">
-                    <i class="fas fa-id-card"></i> پروندهٔ علمی
-                </a>
-                {% endif %}
+                {% else %}
+                <div class="grp-lead-photo grp-lead-blank mx-auto">
+                    <i class="fas fa-user-tie" aria-hidden="true"></i>
+                </div>
                 {% endif %}
                 {% if group.established_year %}
                 <span class="badge bg-success mt-2">تأسیس {{ group.established_year }}</span>
                 {% endif %}
-                <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
-                    {% if group.head_contact_email %}
-                    <a href="mailto:{{ group.head_contact_email }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-envelope"></i> ایمیل
-                    </a>
-                    {% endif %}
-                    {% if group.head_contact_phone %}
-                    <a href="tel:{{ group.head_contact_phone }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-phone"></i> {{ group.head_contact_phone }}
-                    </a>
-                    {% endif %}
-                </div>
             </div>
             <div class="col-lg-8">
                 {% if group.blurb %}
