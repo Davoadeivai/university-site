@@ -1765,12 +1765,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     position: relative;
     width: 100%;
     line-height: normal;
-    /* بریدن لازم است (نقشِ تذهیب و هاله نباید بیرون بزنند) ولی نه
-       بی‌رحمانه: با overflow-clip-margin چند پیکسلِ لبهٔ نشان‌ها
-       رسم می‌شود. مرورگرهای قدیمی‌تر همان hidden را می‌بینند. */
-    overflow: hidden;
-    overflow: clip;
-    overflow-clip-margin: 14px;
+    /* هیچ برشی. لایه‌های تزئینی (تذهیب، هاله، خط زر) همه ‎inset: 0‎
+       دارند و از قاب بیرون نمی‌زنند؛ پس پنهان‌کردنِ سرریز فقط یک چیز
+       را می‌برید — لبهٔ نشان‌ها، همان که ارمِ نیمه را می‌ساخت. */
+    overflow: visible;
     isolation: isolate;
     background:
         /* هالهٔ نور — مرکزش با نشانگر جابه‌جا می‌شود */
@@ -1988,9 +1986,9 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     display: block;
     /* نه کوچک شود، نه کش بیاید */
     flex: 0 0 auto;
-    /* ۳۰ پیکسل کمتر از قدِ بنر: با ۲۲، بالای نشان تا یک قدمیِ لبه
-       می‌آمد و کوچک‌ترین جابه‌جایی، نوکش را می‌برید. */
-    height: calc(var(--bnr-h) - 30px);
+    /* ۲۴ پیکسل کمتر از قدِ بنر: جای نفس بالا و پایین دارد و چون
+       بنر دیگر نمی‌برد، کاملش دیده می‌شود. */
+    height: calc(var(--bnr-h) - 24px);
     width: auto;
     /* max-inline-size: 100% حذف شد: ستون که تنگ می‌شد، همین قاعده
        تصویر را باریک می‌کرد و بخشی از نشان بیرون از کادر می‌ماند. */

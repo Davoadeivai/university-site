@@ -369,7 +369,53 @@ def public_live_search(request):
         {'title': 'اخبار', 'url': reverse('news:list'), 'type': 'page', 'filter': 'pages', 'hint': 'فهرست اخبار'},
         {'title': 'اساتید', 'url': reverse('faculty:list'), 'type': 'page', 'filter': 'pages', 'hint': 'هیأت علمی'},
         {'title': 'کتابخانه', 'url': reverse('library:library'), 'type': 'page', 'filter': 'pages', 'hint': 'بانک علمی'},
+        # صفحه‌هایی که در ماه‌های اخیر ساخته شدند و در جستجو نبودند
+        {'title': 'دانشکده‌ها', 'url': reverse('academics:departments'), 'type': 'page', 'filter': 'academics', 'hint': 'رشته‌های هر دانشکده'},
+        {'title': 'رشته‌های تحصیلی', 'url': reverse('academics:majors'), 'type': 'page', 'filter': 'academics', 'hint': 'فهرست همهٔ رشته‌ها'},
+        {'title': 'گروه‌های آموزشی', 'url': reverse('academics:groups_list'), 'type': 'page', 'filter': 'academics', 'hint': 'یازده گروه'},
+        {'title': 'مدیران گروه‌های آموزشی', 'url': reverse('academics:group_heads'), 'type': 'page', 'filter': 'academics', 'hint': 'مدیر هر گروه'},
+        {'title': 'تقویم آموزشی', 'url': reverse('academics:calendar'), 'type': 'page', 'filter': 'academics', 'hint': 'مراحل نیمسال'},
+        {'title': 'شوراها و کمیته‌ها', 'url': reverse('core:councils'), 'type': 'page', 'filter': 'pages', 'hint': 'ارکان مشورتی'},
+        {'title': 'معاونت‌ها', 'url': reverse('core:vices_list'), 'type': 'page', 'filter': 'pages', 'hint': 'پنج معاونت'},
+        {'title': 'ارکان و اعضای موسسه', 'url': reverse('directory:people'), 'type': 'page', 'filter': 'pages', 'hint': 'هیئت مؤسس، امنا، علمی'},
+        {'title': 'دفترچه تلفن و مسئولان', 'url': reverse('directory:staff'), 'type': 'page', 'filter': 'pages', 'hint': 'شماره‌های داخلی'},
+        {'title': 'سرفصل مصوب رشته‌ها', 'url': reverse('directory:curricula'), 'type': 'page', 'filter': 'docs', 'hint': 'برنامهٔ درسی'},
+        {'title': 'منابع پژوهشی', 'url': reverse('directory:resources'), 'type': 'page', 'filter': 'research', 'hint': 'پایگاه‌های علمی'},
+        {'title': 'مسیر پذیرش و انتخاب رشته', 'url': reverse('core:student_path'), 'type': 'page', 'filter': 'pages', 'hint': 'ویزارد دانشجو'},
+        {'title': 'پیگیری درخواست پذیرش', 'url': reverse('admissions:track'), 'type': 'page', 'filter': 'pages', 'hint': 'کد رهگیری'},
+        {'title': 'روابط عمومی', 'url': reverse('core:public_relations'), 'type': 'page', 'filter': 'pages', 'hint': 'اطلاع‌رسانی'},
+        {'title': 'حراست', 'url': reverse('core:security_office'), 'type': 'page', 'filter': 'pages', 'hint': 'واحد حراست'},
+        {'title': 'نشریات علمی', 'url': reverse('research:journals'), 'type': 'page', 'filter': 'research', 'hint': 'مجله‌ها'},
     ]
+    # ── صفحه‌هایی که خودشان از یک ساختار می‌آیند ──
+    # نوشتنشان دستی یعنی روزی که یکی اضافه شود، جستجو از آن بی‌خبر
+    # می‌ماند. هر دو از همان منبعی خوانده می‌شوند که منو می‌خواند.
+    try:
+        from core.vices import VICE_ORDER
+
+        for vice_type, label, _icon in VICE_ORDER:
+            static_pages.append({
+                'title': label,
+                'url': reverse('core:vice_detail', args=[vice_type]),
+                'type': 'page', 'filter': 'pages',
+                'hint': 'معاونت و زیرمجموعه‌هایش',
+            })
+    except Exception:
+        pass
+
+    try:
+        from directory.views import PEOPLE_SECTIONS
+
+        for slug, _key, label, _icon, blurb in PEOPLE_SECTIONS:
+            static_pages.append({
+                'title': label,
+                'url': reverse('directory:people_section', args=[slug]),
+                'type': 'page', 'filter': 'pages',
+                'hint': blurb[:60],
+            })
+    except Exception:
+        pass
+
     for page in static_pages:
         if _matches(q, page['title'], page['hint'], page.get('type', '')):
             results.append(page)
@@ -511,10 +557,22 @@ def public_live_search(request):
         from directory.models import (
             CurriculumDocument, DirectoryPerson, ExternalResource,
         )
+        from directory.views import PEOPLE_SECTIONS
+
+        _section_of = {key: slug for slug, key, _l, _i, _b in PEOPLE_SECTIONS}
+
+        def _person_url(person):
+            """هر کس به صفحهٔ رکنِ خودش، نه به فهرست کلی."""
+            if person.category == 'staff':
+                return reverse('directory:staff')
+            slug = _section_of.get(person.category)
+            if slug:
+                return reverse('directory:people_section', args=[slug])
+            return reverse('directory:people')
+
         collect(
             DirectoryPerson, ['full_name', 'position', 'field_of_study', 'extension'],
-            lambda p: reverse('directory:staff') if p.category == 'staff'
-            else reverse('directory:people'),
+            _person_url,
             'person', 'pages', 'افراد موسسه', limit=6,
             only={'is_active': True},
             label=lambda p: '%s — %s' % (
@@ -561,6 +619,39 @@ def public_live_search(request):
             lambda l: reverse('academics:laboratories'),
             'lab', 'academics', 'آزمایشگاه', limit=3,
             label=lambda l: l.name,
+        )
+    except Exception:
+        pass
+
+    # شورا، دبیرخانه‌ها، معاونت‌ها و ارکان — همه صفحه دارند و هیچ‌کدام
+    # تا امروز از باکس جستجو پیدا نمی‌شدند.
+    try:
+        from core.models import (
+            Council, PresidencyOfficeUnit, VicePresidency, ViceUnit,
+        )
+        collect(
+            Council, ['name', 'short_description', 'members', 'duties'],
+            lambda c: reverse('core:council_detail', args=[c.slug]),
+            'council', 'pages', 'شورا / کمیته', limit=5,
+            only={'is_active': True}, label=lambda c: c.name,
+        )
+        collect(
+            PresidencyOfficeUnit, ['title', 'content', 'manager_name'],
+            lambda u: reverse('core:presidency_office_unit', args=[u.slug]),
+            'page', 'pages', 'واحد دفتر ریاست', limit=5,
+            label=lambda u: u.title,
+        )
+        collect(
+            VicePresidency, ['title', 'description'],
+            lambda v: reverse('core:vice_detail', args=[v.vice_type]),
+            'page', 'pages', 'معاونت', limit=5,
+            only={'is_active': True}, label=lambda v: v.title,
+        )
+        collect(
+            ViceUnit, ['title', 'description'],
+            lambda u: reverse('core:vice_detail', args=[u.vice.vice_type]),
+            'page', 'pages', 'واحد معاونت', limit=5,
+            label=lambda u: u.title,
         )
     except Exception:
         pass

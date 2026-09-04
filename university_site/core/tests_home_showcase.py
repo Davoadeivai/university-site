@@ -270,10 +270,11 @@ class BannerEmblemTests(TestCase):
         css = _css()
         self.assertIn('@media (max-width: 1300px)', css)
 
-    def test_the_banner_forgives_a_few_pixels_at_its_edge(self):
-        """لبهٔ نشان نباید قربانیِ برشِ بی‌رحمِ بنر شود."""
+    def test_the_banner_does_not_clip_its_marks(self):
+        """لایه‌های تزئینی inset:0 دارند؛ برش فقط نشان‌ها را می‌برید."""
         rule = _css().split('%s.site-banner {' % chr(10))[1].split('}')[0]
-        self.assertIn('overflow-clip-margin', rule)
+        self.assertIn('overflow: visible', rule)
+        self.assertNotIn('overflow: hidden', rule)
 
     def test_the_emblem_keeps_a_step_from_that_edge(self):
         rule = _css().split('%s.bnr-state {' % chr(10))[1].split('}')[0]
