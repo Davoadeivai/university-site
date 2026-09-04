@@ -3,7 +3,7 @@ from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import MAX_HOME_SLIDES, SiteSettings, Slider
+from core.models import SiteSettings, Slider
 
 
 class HomeSliderCountTests(TestCase):
@@ -30,19 +30,41 @@ class HomeSliderCountTests(TestCase):
         self.assertEqual(self._shown(), 3)
 
     def test_a_bigger_number_than_there_are_slides_is_harmless(self):
-        SiteSettings.objects.create(home_slider_count=MAX_HOME_SLIDES)
+        SiteSettings.objects.create(home_slider_count=40)
         cache.clear()
         self.assertEqual(self._shown(), 7)
 
-    def test_the_ceiling_still_holds(self):
-        """سقف از وزن صفحه محافظت می‌کند؛ هر اسلاید یک عکس است."""
-        for index in range(7, 20):
+    def test_there_is_no_ceiling_any_more(self):
+        """موسسه خواست محدودیت برداشته شود.
+
+        وزن صفحه با سقف حل نمی‌شد: جز اسلاید اول، بقیه تنبل بار
+        می‌شوند و تا دیده‌نشدن دانلود نمی‌شوند.
+        """
+        for index in range(7, 25):
             Slider.objects.create(
                 title='اسلاید %d' % index, order=index, is_active=True,
                 image='sliders/s%d.jpg' % index)
-        SiteSettings.objects.create(home_slider_count=MAX_HOME_SLIDES)
+        SiteSettings.objects.create(home_slider_count=0)
         cache.clear()
-        self.assertEqual(self._shown(), MAX_HOME_SLIDES)
+        self.assertEqual(self._shown(), 25)
+
+    def test_zero_means_every_slide(self):
+        SiteSettings.objects.create(home_slider_count=0)
+        cache.clear()
+        self.assertEqual(self._shown(), 7)
+
+    def test_a_number_still_limits_when_the_panel_asks(self):
+        """برداشتن سقف یعنی اختیار، نه اجبار به نمایش همه."""
+        SiteSettings.objects.create(home_slider_count=4)
+        cache.clear()
+        self.assertEqual(self._shown(), 4)
+
+    def test_only_the_first_slide_loads_eagerly(self):
+        """همین است که برداشتن سقف را بی‌خطر می‌کند."""
+        html = self.client.get(reverse('core:home')).content.decode()
+        hero = html.split('id="heroTrack"')[1].split('/track')[0]
+        self.assertEqual(hero.count('loading="eager"'), 1)
+        self.assertEqual(hero.count('loading="lazy"'), 6)
 
     def test_no_settings_row_still_renders(self):
         """دیتابیس تازه هنوز ردیف تنظیمات ندارد."""
@@ -67,18 +89,11 @@ class HomeSliderCountTests(TestCase):
 
         self.assertIn('home_slider_count', str(SiteSettingsAdmin.fieldsets))
 
-    def test_the_field_refuses_a_number_over_the_ceiling(self):
-        from django.core.exceptions import ValidationError
+    def test_the_field_accepts_any_number(self):
+        SiteSettings(home_slider_count=99).full_clean()
 
-        row = SiteSettings(home_slider_count=MAX_HOME_SLIDES + 1)
-        with self.assertRaises(ValidationError):
-            row.full_clean()
-
-    def test_the_field_refuses_zero(self):
-        from django.core.exceptions import ValidationError
-
-        with self.assertRaises(ValidationError):
-            SiteSettings(home_slider_count=0).full_clean()
+    def test_zero_is_a_valid_choice(self):
+        SiteSettings(home_slider_count=0).full_clean()
 
 
 class HeroHeightTests(TestCase):

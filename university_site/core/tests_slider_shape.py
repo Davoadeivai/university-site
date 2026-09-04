@@ -170,3 +170,65 @@ class SliderAdminTests(TestCase):
         from core.admin import SliderAdmin
 
         self.assertIn('fit', SliderAdmin.list_editable)
+
+
+class EveryySlideIsEditableInPlaceTests(TestCase):
+    """اصلاح ده اسلاید نباید یعنی ده بار بازکردن فرم."""
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser(
+            'modiredit', 'e@aab.ac.ir', 'Str0ng!Pass2026')
+        self.client.force_login(self.staff)
+
+    def _list(self):
+        return self.client.get('/admin/core/slider/').content.decode()
+
+    def test_each_row_shows_its_own_picture(self):
+        """فهرست فقط عنوان‌ها را نشان می‌داد؛ یک ردیف از دیگری پیدا نبود."""
+        _slide(4000, 2250, title='عکس هوایی')
+        self.assertIn('sliders/x.jpg', self._list())
+
+    def test_the_picture_is_the_door_to_the_full_form(self):
+        from core.admin import SliderAdmin
+
+        self.assertEqual(SliderAdmin.list_display_links, ['preview'])
+
+    def test_the_title_is_editable_without_opening_anything(self):
+        from core.admin import SliderAdmin
+
+        self.assertIn('title', SliderAdmin.list_editable)
+        _slide(4000, 2250, title='عنوان قدیمی')
+        self.assertIn('name="form-0-title"', self._list())
+
+    def test_every_display_setting_is_editable_in_the_row(self):
+        from core.admin import SliderAdmin
+
+        for field in ('fit', 'focus', 'order', 'is_active'):
+            self.assertIn(field, SliderAdmin.list_editable, field)
+
+    def test_saving_a_row_really_changes_the_slide(self):
+        row = _slide(4000, 2250, title='پیش از ویرایش')
+        response = self.client.post('/admin/core/slider/', {
+            'form-TOTAL_FORMS': '1', 'form-INITIAL_FORMS': '1',
+            'form-MIN_NUM_FORMS': '0', 'form-MAX_NUM_FORMS': '1000',
+            'form-0-id': str(row.pk), 'form-0-title': 'پس از ویرایش',
+            'form-0-fit': 'contain', 'form-0-focus': 'top',
+            'form-0-order': '3', 'form-0-is_active': 'on',
+            '_save': 'ذخیره',
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        row.refresh_from_db()
+        self.assertEqual(row.title, 'پس از ویرایش')
+        self.assertEqual(row.fit, 'contain')
+        self.assertEqual(row.focus, 'top')
+        self.assertEqual(row.order, 3)
+
+    def test_a_slide_without_a_picture_says_so(self):
+        Slider.objects.create(title='بی‌عکس', image='')
+        self.assertIn('بدون تصویر', self._list())
+
+    def test_the_page_holds_every_slide_at_once(self):
+        """با برداشتن سقف، تعدادشان زیاد می‌شود."""
+        from core.admin import SliderAdmin
+
+        self.assertGreaterEqual(SliderAdmin.list_per_page, 40)

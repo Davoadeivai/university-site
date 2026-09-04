@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db.models import Q
 
 from core.models import (
-    MAX_HOME_SLIDES, Council, SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
+    Council, SiteSettings, Slider, QuickLink, Event, FAQ, InstitutionGoal, BoardMember,
     CityInfo, CityAttraction,
     PresidencyOffice, PresidencyOfficeUnit, DeputyVice,
     InternationalOffice, InternationalActivity,
@@ -36,11 +36,11 @@ def home(request):
     # این عدد ۵ همین‌جا نوشته شده بود و اسلاید ششم به بعد بی‌صدا
     # کنار گذاشته می‌شد — مدیر آپلود می‌کرد و هیچ‌وقت نمی‌دیدشان.
     settings_row = SiteSettings.objects.first()
-    limit = getattr(settings_row, 'home_slider_count', None) or MAX_HOME_SLIDES
-    sliders = list(
-        Slider.objects.filter(is_active=True)
-        .order_by('order')[:min(limit, MAX_HOME_SLIDES)]
-    )
+    # صفر یا خالی یعنی «همه». سقفی نمانده: اسلایدهای بعد از اولی
+    # تنبل بار می‌شوند و تا دیده‌نشدن وزنی به صفحه اضافه نمی‌کنند.
+    limit = getattr(settings_row, 'home_slider_count', None)
+    slides = Slider.objects.filter(is_active=True).order_by('order')
+    sliders = list(slides[:limit] if limit else slides)
     quick_links = QuickLink.objects.filter(is_active=True, category='home')[:8]
     if not quick_links.exists():
         quick_links = QuickLink.objects.filter(is_active=True, category='eservice')[:8]

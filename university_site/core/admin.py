@@ -153,8 +153,9 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         ('صفحهٔ اصلی', {
             'fields': ('home_slider_count',),
             'description': (
-                'اسلایدهای بیشتر از این عدد در فهرست اسلایدها می‌مانند '
-                'ولی روی صفحه نمی‌آیند.'
+                'سقفی برای تعداد اسلاید نیست. <strong>صفر</strong> بگذارید '
+                'تا همهٔ اسلایدهای فعال بیایند، یا عددی بنویسید تا فقط '
+                'همان تعداد اولِ فهرست نمایش داده شود.'
             ),
         }),
         ('اسلایدر و ستون اطلاع‌رسانی کنارش', {
@@ -232,11 +233,30 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
 
 @admin.register(Slider)
 class SliderAdmin(JalaliAdminMixin, admin.ModelAdmin):
-    list_display = ['title', 'shape', 'fit', 'order', 'is_active',
-                    'created_jalali']
-    list_editable = ['fit', 'order', 'is_active']
+    # همهٔ اسلایدها در یک صفحه، هر کدام با عکس خودش و همان‌جا
+    # قابل ویرایش.
+    #
+    # اصلاح ده اسلاید یعنی ده بار بازکردن فرم، ده بار ذخیره، و
+    # بازگشت به فهرستی که در آن یک ردیف از ردیف دیگر قابل تشخیص
+    # نیست — فهرست فقط عنوان‌ها را نشان می‌داد، نه خودِ عکس‌ها.
+    list_display = ['preview', 'title', 'shape', 'fit', 'focus', 'order',
+                    'is_active', 'created_jalali']
+    # عکس، درِ فرم کامل است؛ پس عنوان هم می‌تواند ویرایش‌شدنی باشد.
+    list_display_links = ['preview']
+    list_editable = ['title', 'fit', 'focus', 'order', 'is_active']
     list_filter = ['is_active', 'fit', 'badge_color']
     search_fields = ['title', 'subtitle', 'badge_text']
+    list_per_page = 40
+
+    @admin.display(description='اسلاید')
+    def preview(self, obj):
+        if not obj.image:
+            return format_html(
+                '<span style="color:#888;">— بدون تصویر —</span>')
+        return format_html(
+            '<img src="{}" alt="" loading="lazy" style="width:150px;'
+            'height:84px;object-fit:cover;border-radius:8px;'
+            'border:1px solid #e8dcd0;display:block;">', obj.image.url)
 
     # ابعاد و هشدارش کنار هر ردیف.
     #
