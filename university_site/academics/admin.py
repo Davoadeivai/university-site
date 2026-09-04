@@ -295,9 +295,13 @@ class LaboratoryAdmin(admin.ModelAdmin):
 
 @admin.register(AcademicGroup)
 class AcademicGroupAdmin(admin.ModelAdmin):
-    list_display        = ['name', 'department', 'head_display', 'majors_count',
+    # پیشوند در همین فهرست قابل ویرایش است: افزودن «دکتر» به یازده
+    # گروه نباید یازده بار باز و بسته کردن فرم باشد.
+    list_display        = ['name', 'department', 'head_display',
+                           'head_honorific', 'majors_count',
                            'has_graduate', 'order', 'is_active']
-    list_editable       = ['has_graduate', 'order', 'is_active']
+    list_editable       = ['head_honorific', 'has_graduate', 'order',
+                           'is_active']
     list_filter         = ['department', 'is_active', 'has_graduate']
     search_fields       = ['name', 'head', 'head_professor__first_name',
                            'head_professor__last_name', 'description',
@@ -315,11 +319,11 @@ class AcademicGroupAdmin(admin.ModelAdmin):
         if obj.head_professor_id:
             return format_html(
                 '<span style="color:#1f7a5c;font-weight:600;">{}</span>',
-                obj.head_professor.get_full_name())
+                obj.head_name)
         if obj.head:
             return format_html(
                 '<span style="color:#8a6412;" title="دستی نوشته شده، به '
-                'پروندهٔ هیئت علمی وصل نیست">{}</span>', obj.head)
+                'پروندهٔ هیئت علمی وصل نیست">{}</span>', obj.head_name)
         return format_html('<span style="color:#b3261e;">— ثبت نشده</span>')
 
     fieldsets = (
@@ -328,13 +332,15 @@ class AcademicGroupAdmin(admin.ModelAdmin):
             'description': 'برای ویرایش رشته‌های هر مقطع، از جدول پایین صفحه («رشته‌ها و مقاطع این گروه») استفاده کنید.',
         }),
         ('مدیر گروه', {
-            'fields': ('head_professor', 'head', 'head_photo',
-                       'head_email', 'head_phone'),
+            'fields': ('head_honorific', 'head_professor', 'head',
+                       'head_photo', 'head_email', 'head_phone'),
             'description': (
-                '<b>روش درست:</b> استاد را از فهرست «مدیر گروه (از اعضای '
-                'هیئت علمی)» انتخاب کنید — نام، عکس، مرتبهٔ علمی و راه '
-                'تماسش خودکار روی صفحهٔ گروه می‌آید و با هر تغییر در '
-                'پروندهٔ استاد، اینجا هم تازه می‌شود.<br>'
+                '<b>پیشوند</b> («دکتر»، «مهندس») همیشه اثر دارد — چه نام '
+                'از پروندهٔ هیئت علمی بیاید، چه دستی نوشته شده باشد.<br>'
+                '<b>روش درست برای نام:</b> استاد را از فهرست «مدیر گروه '
+                '(از اعضای هیئت علمی)» انتخاب کنید — نام، عکس، مرتبهٔ '
+                'علمی و راه تماسش خودکار روی صفحهٔ گروه می‌آید و با هر '
+                'تغییر در پروندهٔ استاد، اینجا هم تازه می‌شود.<br>'
                 'چهار فیلد بعدی فقط برای وقتی است که مدیر گروه عضو هیئت '
                 'علمی نیست.'
             ),

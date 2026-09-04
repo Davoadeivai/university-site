@@ -334,3 +334,83 @@ class GroupNameWithoutTheWordGroupTests(TestCase):
             self.group.get_absolute_url()).content.decode()
         self.assertNotIn('#1a2e1a', html)
         self.assertNotIn('#f97316', html)
+
+
+class HeadHonorificTests(TestCase):
+    """«دکتر» را نمی‌شد به نام مدیر گروه اضافه کرد.
+
+    وقتی مدیر گروه به پروندهٔ هیئت علمی وصل بود، فیلد دستی اصلاً
+    خوانده نمی‌شد؛ مدیر سایت «دکتر فلانی» را می‌نوشت و هیچ تغییری
+    روی صفحه نمی‌دید.
+    """
+
+    def setUp(self):
+        faculty = Department.objects.create(
+            name='دانشکده نمونه', slug='nemoone-title', order=1,
+            is_active=True)
+        self.group = AcademicGroup.objects.create(
+            department=faculty, name='گروه روان‌شناسی', slug='ravan-title',
+            is_active=True, head='حسینعلی قربانی')
+
+    def test_the_prefix_shows_before_a_typed_name(self):
+        self.group.head_honorific = 'دکتر'
+        self.group.save(update_fields=['head_honorific'])
+        self.assertEqual(self.group.head_name, 'دکتر حسینعلی قربانی')
+
+    def test_it_also_works_when_the_name_comes_from_a_faculty_record(self):
+        professor = Professor.objects.create(
+            first_name='حسینعلی', last_name='قربانی', rank='assistant',
+            is_active=True)
+        self.group.head = ''
+        self.group.head_professor = professor
+        self.group.head_honorific = 'دکتر'
+        self.group.save()
+        self.assertEqual(self.group.head_name, 'دکتر حسینعلی قربانی')
+
+    def test_a_name_that_already_carries_it_is_not_doubled(self):
+        self.group.head = 'دکتر حسینعلی قربانی'
+        self.group.head_honorific = 'دکتر'
+        self.group.save()
+        self.assertEqual(self.group.head_name, 'دکتر حسینعلی قربانی')
+
+    def test_no_prefix_changes_nothing(self):
+        self.assertEqual(self.group.head_name, 'حسینعلی قربانی')
+
+    def test_it_reaches_the_page(self):
+        from django.urls import reverse
+
+        self.group.head_honorific = 'دکتر'
+        self.group.save(update_fields=['head_honorific'])
+        html = self.client.get(
+            reverse('academics:group_heads')).content.decode()
+        self.assertIn('دکتر حسینعلی قربانی', html)
+
+    def test_the_command_does_not_wipe_it(self):
+        """پیشوندی که مدیر سایت نوشته، با اجرای دوبارهٔ دستور نرود."""
+        DirectoryPerson.objects.create(
+            category='group_head', full_name='حسینعلی قربانی',
+            position='مدیر گروه روانشناسی', is_active=True)
+        self.group.head_honorific = 'دکتر'
+        self.group.save(update_fields=['head_honorific'])
+        _run('--replace')
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.head_honorific, 'دکتر')
+
+    def test_the_directory_prefix_is_carried_over(self):
+        """اگر در «افراد موسسه» پیشوند نوشته شده، خودش می‌آید."""
+        DirectoryPerson.objects.create(
+            category='group_head', honorific='دکتر',
+            full_name='حسینعلی قربانی',
+            position='مدیر گروه روانشناسی', is_active=True)
+        self.group.head = ''
+        self.group.save(update_fields=['head'])
+        _run()
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.head_honorific, 'دکتر')
+        self.assertIn('دکتر', self.group.head_name)
+
+    def test_the_panel_offers_the_field(self):
+        from academics.admin import AcademicGroupAdmin
+
+        self.assertIn('head_honorific', str(AcademicGroupAdmin.fieldsets))
+        self.assertIn('head_honorific', AcademicGroupAdmin.list_editable)

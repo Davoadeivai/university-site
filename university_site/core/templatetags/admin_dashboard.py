@@ -159,6 +159,69 @@ ESSENTIAL_LINKS = [
 ]
 
 
+# ── نبضِ سایت ──
+#
+# داشبورد می‌گفت چه کاری معطل است، ولی نمی‌گفت سایت اصلاً چقدر
+# محتوا دارد. این هفت عدد در یک نگاه همان را می‌گویند و هرکدام
+# درِ همان فهرست‌اند.
+#
+# (برچسب, ایموجی, سازندهٔ عدد, نشانی)
+def _content_stats():
+    rows = []
+
+    def add(label, icon, counter, viewname, query=''):
+        try:
+            count = counter()
+            url = reverse(viewname) + query
+        except Exception:
+            return
+        rows.append({'label': label, 'icon': icon, 'count': count,
+                     'url': url})
+
+    try:
+        from news.models import News
+        add('خبر منتشرشده', '📰',
+            lambda: News.objects.filter(is_published=True).count(),
+            'admin:news_news_changelist', '?is_published__exact=1')
+    except Exception:
+        pass
+    try:
+        from academics.models import AcademicGroup, Department, Major
+        add('رشتهٔ فعال', '🎓',
+            lambda: Major.objects.filter(is_active=True).count(),
+            'admin:academics_major_changelist')
+        add('گروه آموزشی', '🏫',
+            lambda: AcademicGroup.objects.filter(is_active=True).count(),
+            'admin:academics_academicgroup_changelist')
+        add('دانشکده', '🏛️',
+            lambda: Department.objects.filter(is_active=True).count(),
+            'admin:academics_department_changelist')
+    except Exception:
+        pass
+    try:
+        from faculty.models import Professor
+        add('عضو هیئت علمی', '👨‍🏫',
+            lambda: Professor.objects.filter(is_active=True).count(),
+            'admin:faculty_professor_changelist')
+    except Exception:
+        pass
+    try:
+        from directory.models import DirectoryPerson
+        add('فرد در بانک اطلاعات', '👥',
+            lambda: DirectoryPerson.objects.filter(is_active=True).count(),
+            'admin:directory_directoryperson_changelist')
+    except Exception:
+        pass
+    try:
+        from django.contrib.auth.models import User
+        add('کاربر فعال', '🧑‍💻',
+            lambda: User.objects.filter(is_active=True).count(),
+            'admin:auth_user_changelist')
+    except Exception:
+        pass
+    return rows
+
+
 def _essential_links():
     """همان درها، با نشانیِ واقعی — هرکدام که در این نصب نباشد، نمی‌آید."""
     rows = []
@@ -333,6 +396,7 @@ def admin_dashboard_catalog(dashboard_list):
         'letters': letters,
         'quick': quick,
         'essentials': _essential_links(),
+        'stats': _content_stats(),
         'sections': sections,
         'total': len(items),
         'counters': counters,

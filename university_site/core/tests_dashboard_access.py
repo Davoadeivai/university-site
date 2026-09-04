@@ -98,3 +98,82 @@ class ContentHealthQueueTests(TestCase):
     def test_nothing_pending_means_a_clean_queue(self):
         total = sum(item['count'] for item in build_work_queue())
         self.assertEqual(total, 0)
+
+
+class DashboardIsNotClutteredTests(TestCase):
+    """هشتاد و یک بخش، همه باز، یعنی صفحه‌ای به بلندی چند نمایشگر."""
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser(
+            'modir2', 'modir2@aab.ac.ir', 'Str0ng!Pass2026')
+        self.client.force_login(self.staff)
+
+    def _dashboard(self):
+        return self.client.get(reverse('admin:index')).content.decode()
+
+    def test_groups_are_collapsed_not_stacked(self):
+        html = self._dashboard()
+        self.assertIn('admin-section-summary', html)
+        self.assertIn('<details class="admin-section-block"', html)
+
+    def test_only_the_first_group_starts_open(self):
+        import re
+
+        html = self._dashboard()
+        blocks = re.findall(r'<details class="admin-section-block"[^>]*>', html)
+        self.assertGreater(len(blocks), 1)
+        opened = [block for block in blocks if ' open' in block]
+        self.assertEqual(len(opened), 1)
+
+    def test_the_technical_models_are_out_of_the_menu(self):
+        from django.conf import settings as django_settings
+
+        hidden = django_settings.JAZZMIN_SETTINGS['hide_models']
+        for key in ('core.QueuedSMS', 'accounts.OTPCode',
+                    'admissions.AdmissionOTP', 'core.PageView'):
+            self.assertIn(key, hidden)
+
+    def test_they_are_hidden_not_removed(self):
+        """پنهان یعنی از منو، نه از دسترس."""
+        for url in ('/admin/core/queuedsms/', '/admin/accounts/otpcode/'):
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_the_top_menu_holds_four_daily_jobs(self):
+        from django.conf import settings as django_settings
+
+        links = django_settings.JAZZMIN_SETTINGS['topmenu_links']
+        self.assertEqual(len(links), 4)
+
+
+class ContentPulseTests(TestCase):
+    """داشبورد نمی‌گفت سایت اصلاً چه دارد."""
+
+    def setUp(self):
+        self.staff = User.objects.create_superuser(
+            'modir3', 'modir3@aab.ac.ir', 'Str0ng!Pass2026')
+        self.client.force_login(self.staff)
+
+    def test_the_numbers_are_shown(self):
+        from core.templatetags.admin_dashboard import _content_stats
+
+        rows = _content_stats()
+        self.assertGreaterEqual(len(rows), 5)
+        html = self.client.get(reverse('admin:index')).content.decode()
+        self.assertIn('admin-pulse-card', html)
+
+    def test_each_number_is_a_door(self):
+        from core.templatetags.admin_dashboard import _content_stats
+
+        for row in _content_stats():
+            self.assertTrue(row['url'].startswith('/admin/'), row)
+            self.assertEqual(
+                self.client.get(row['url']).status_code, 200, row['label'])
+
+    def test_the_counts_are_real(self):
+        from academics.models import Department
+        from core.templatetags.admin_dashboard import _content_stats
+
+        Department.objects.create(name='دانشکدهٔ شمارش', slug='shomaresh',
+                                  is_active=True)
+        rows = {row['label']: row['count'] for row in _content_stats()}
+        self.assertEqual(rows['دانشکده'], 1)

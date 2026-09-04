@@ -93,6 +93,16 @@ class Command(BaseCommand):
         parser.add_argument('--replace', action='store_true',
                             help='مدیری که دستی ثبت شده را هم بازنویسی کن')
 
+    def _honorifics(self):
+        """پیشوندِ هر نام، همان‌طور که در فهرست افراد ثبت شده."""
+        table = {}
+        for person in DirectoryPerson.objects.filter(
+                category='group_head', is_active=True):
+            title = (person.honorific or '').strip()
+            if title:
+                table[person.display_name] = title
+        return table
+
     def _heads(self):
         """نام و سمت مدیران گروه — از پنل، وگرنه از فهرست سند."""
         rows = [
@@ -146,6 +156,7 @@ class Command(BaseCommand):
             if not taken:
                 homeless.append((name, position))
 
+        honorifics = self._honorifics()
         made = kept = linked = 0
         with transaction.atomic():
             for group in groups:
@@ -179,6 +190,13 @@ class Command(BaseCommand):
                 group.head = '' if professor else text
                 group.head_professor = professor
                 fields = ['head', 'head_professor']
+                # پیشوندی که مدیر سایت نوشته («دکتر») دست نمی‌خورد؛ اگر
+                # خالی بود و فهرست افراد پیشوند داشت، از همان‌جا می‌آید.
+                if not (group.head_honorific or '').strip():
+                    title = honorifics.get(names[0], '')
+                    if title:
+                        group.head_honorific = title
+                        fields.append('head_honorific')
                 # عکسی که برای مدیر قبلی آپلود شده بود، عکس این یکی
                 # نیست؛ روی سرور یک منظرهٔ کوهستان جای چهرهٔ مدیر گروه
                 # نشسته بود.

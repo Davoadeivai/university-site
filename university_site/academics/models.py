@@ -433,6 +433,11 @@ class AcademicGroup(models.Model):
             'با انتخاب استاد، نام و عکس و مرتبه و راه تماسش خودکار '
             'روی صفحهٔ گروه می‌آید. اگر مدیر گروه عضو هیئت علمی نیست، '
             'این را خالی بگذارید و فیلدهای زیر را دستی پر کنید.'))
+    head_honorific = models.CharField(
+        _('پیشوند مدیر گروه'), max_length=40, blank=True,
+        help_text=_(
+            'مثلاً «دکتر» یا «مهندس». پیش از نام مدیر می‌آید — چه نام از '
+            'پروندهٔ هیئت علمی بیاید، چه دستی نوشته شده باشد.'))
     head = models.CharField(_('مدیر گروه (دستی)'), max_length=200, blank=True)
     head_photo = models.ImageField(_('تصویر مدیر گروه'), upload_to='groups/', blank=True, null=True)
     head_email = models.EmailField(_('ایمیل مدیر گروه'), blank=True)
@@ -518,9 +523,23 @@ class AcademicGroup(models.Model):
     # لازم نیست هرکدام خودشان تصمیم بگیرند.
     @property
     def head_name(self) -> str:
-        if self.head_professor_id:
-            return self.head_professor.get_full_name()
-        return self.head or ''
+        """نام مدیر گروه، با پیشوندش.
+
+        پیشوند («دکتر»، «مهندس») فیلد جداست چون وقتی نام از پروندهٔ
+        هیئت علمی می‌آید، جایی برای نوشتنش نبود: مدیر سایت «دکتر» را
+        در فیلد دستی می‌نوشت و هیچ اثری نمی‌دید، چون آن فیلد فقط
+        وقتی خوانده می‌شود که استادی وصل نباشد.
+        """
+        base = (self.head_professor.get_full_name()
+                if self.head_professor_id else (self.head or ''))
+        base = base.strip()
+        if not base:
+            return ''
+        title = (self.head_honorific or '').strip()
+        # اگر خودِ نام از قبل با همان پیشوند شروع شده، دو بار نیاید
+        if title and not base.startswith(title):
+            return '%s %s' % (title, base)
+        return base
 
     @property
     def head_image(self):

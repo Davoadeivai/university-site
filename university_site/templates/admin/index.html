@@ -53,6 +53,23 @@
             </div>
         </div>
 
+        {# ═══════════ ۱٫۲) نبض سایت ═══════════ #}
+        {% comment %}
+        داشبورد می‌گفت چه کاری معطل است ولی نمی‌گفت سایت چه دارد.
+        هفت عدد، هرکدام درِ همان فهرست.
+        {% endcomment %}
+        {% if catalog.stats %}
+        <div class="admin-pulse">
+            {% for row in catalog.stats %}
+            <a class="admin-pulse-card" href="{{ row.url }}">
+                <span class="admin-pulse-icon" aria-hidden="true">{{ row.icon }}</span>
+                <span class="admin-pulse-num">{{ row.count }}</span>
+                <span class="admin-pulse-label">{{ row.label }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {# ═══════════ ۱٫۵) دسترسی‌های همیشگی ═══════════ #}
         {% comment %}
         درهایی که مدیر سایت هر هفته سراغشان می‌رود. تا امروز باید در
@@ -122,11 +139,22 @@
             </div>
         </div>
 
+        {% comment %}
+        هشتاد و یک بخش، همه باز، یعنی صفحه‌ای که باید اسکرولش کرد تا
+        ته. هر گروه حالا جمع‌شده می‌آید و با یک کلیک باز می‌شود؛
+        شمارِ کنارش می‌گوید داخلش چند بخش هست. مرورگر خودش این را
+        بلد است (details/summary) و به جاوااسکریپت نیازی نیست.
+        {% endcomment %}
         <div id="viewSections">
             {% for section in catalog.sections %}
-                <div class="admin-section-block" data-section="{{ section.name }}">
+                <details class="admin-section-block" data-section="{{ section.name }}"
+                         {% if forloop.first %}open{% endif %}>
+                    <summary class="admin-section-summary">
+                        <span class="admin-section-name">{{ section.name }}</span>
+                        <span class="admin-section-count">{{ section.count }}</span>
+                    </summary>
                     {% include "admin/_dash_table.html" with card_title=section.name rows=section.items %}
-                </div>
+                </details>
             {% endfor %}
         </div>
 

@@ -1055,3 +1055,90 @@ fieldset {
 }
 .admin-essential-icon { font-size: 16px; line-height: 1; }
 .admin-essential-label { min-width: 0; }
+
+/* ── گروه‌های بخش‌ها: جمع‌شده، با شمار کنارشان ──────────────────
+   هشتاد و یک بخش که همه بازند یعنی صفحه‌ای به بلندی چند نمایشگر.
+   حالا هر گروه یک سطر است و با کلیک باز می‌شود. */
+.admin-section-block {
+    margin-bottom: 10px;
+    border: 1px solid #e8dcd0;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+}
+.admin-section-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    color: #4e1220;
+    list-style: none;
+    user-select: none;
+}
+.admin-section-summary::-webkit-details-marker { display: none; }
+.admin-section-summary::before {
+    content: "▾";
+    font-size: 12px;
+    color: #a67c1f;
+    transition: transform .18s ease;
+}
+.admin-section-block:not([open]) .admin-section-summary::before {
+    transform: rotate(90deg);
+}
+.admin-section-summary:hover { background: #faf6f1; }
+.admin-section-count {
+    margin-inline-start: auto;
+    background: rgba(122, 31, 46, .1);
+    color: #7a1f2e;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 800;
+}
+.admin-section-block[open] .admin-section-summary {
+    border-bottom: 1px solid #f0e6dc;
+}
+
+/* ── نبض سایت: هفت عدد، هرکدام یک در ─────────────────────────── */
+.admin-pulse {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.admin-pulse-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid #e8dcd0;
+    background:
+        radial-gradient(120% 120% at 100% 0%, rgba(201, 163, 78, .14) 0%, transparent 60%),
+        #fff;
+    color: #241a1c;
+    text-decoration: none;
+    transition: transform .16s ease, box-shadow .16s ease,
+                border-color .16s ease;
+}
+.admin-pulse-card:hover {
+    transform: translateY(-3px);
+    border-color: #c9a34e;
+    color: #7a1f2e;
+    box-shadow: 0 14px 28px -18px rgba(78, 18, 32, .65);
+}
+.admin-pulse-icon { font-size: 17px; line-height: 1; }
+.admin-pulse-num {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #7a1f2e 0%, #b8863b 70%, #c9a34e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+.admin-pulse-label { font-size: 12px; font-weight: 700; color: #6b5b5e; }

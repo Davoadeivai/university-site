@@ -194,16 +194,20 @@ JAZZMIN_SETTINGS = {
     'copyright': 'طراحی، اجرا و پشتیبانی توسط شرکت آرکاروناک — arkaronak.ir',
     'search_model': [
         'admissions.Application',
-        'auth.User',
         'news.News',
         'academics.Major',
+        'academics.AcademicGroup',
         'faculty.Professor',
+        'directory.DirectoryPerson',
+        'auth.User',
     ],
+    # نوار بالا: چهار کارِ روزمره، نه بیشتر. بقیه در داشبورد
+    # («دسترسی‌های همیشگی») و در جستجوی سراسری هستند.
     'topmenu_links': [
         {'name': 'مشاهده سایت', 'url': '/', 'new_window': True},
-        {'name': 'داشبورد کاربران', 'url': '/dashboard/'},
         {'name': 'درخواست‌های پذیرش', 'url': 'admin:admissions_application_changelist'},
         {'name': 'پیام‌های تماس', 'url': 'admin:contact_contactmessage_changelist'},
+        {'name': 'اخبار و اطلاعیه‌ها', 'url': 'admin:news_news_changelist'},
     ],
     'show_sidebar': True,
     'navigation_expanded': True,
@@ -329,9 +333,23 @@ JAZZMIN_SETTINGS = {
         'core.downloadabledocument': 'single',
     },
     'language_chooser': False,
-    # مدل‌های کم‌کاربرد/فنی — در صورت نیاز از URL مستقیم قابل دسترس‌اند
+    # ── چیزهایی که هیچ‌کس ویرایششان نمی‌کند ──
+    #
+    # هشتاد و یک مدل در پنل ثبت شده و منوی کناری همه را ردیف می‌کرد؛
+    # میان آن‌ها چند ردیف صرفاً فنی بود — صف پیامک، کدهای یک‌بارمصرف،
+    # پیش‌نویسِ نیمه‌کارهٔ فرم پذیرش، شمارندهٔ بازدید. کسی این‌ها را
+    # باز نمی‌کند و بودنشان فقط پیدا کردنِ بقیه را سخت می‌کرد.
+    #
+    # پنهان‌اند، نه حذف: با نشانی مستقیم همچنان باز می‌شوند و لاگ
+    # فعالیت هم از داشبورد یک کلیک فاصله دارد.
     'hide_models': [
-        'core.PageView',
+        'core.PageView',          # شمارندهٔ بازدید صفحه‌ها
+        'core.QueuedSMS',         # صف پیامک — فنی
+        'accounts.OTPCode',       # کد یک‌بارمصرف ورود
+        'admissions.AdmissionOTP',   # کد یک‌بارمصرف پذیرش
+        'admissions.ApplicationDraft',  # پیش‌نویس فرم داوطلب
+        'auth.Group',             # گروه‌های دسترسی؛ در این نصب بی‌استفاده
+        'admin.LogEntry',         # از داشبورد در دسترس است
     ],
     'custom_links': {
         'core': [

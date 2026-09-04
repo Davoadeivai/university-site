@@ -109,13 +109,23 @@
             var qOk = !q || hay.indexOf(q) !== -1;
             row.style.display = (sectionOk && qOk) ? '' : 'none';
         });
-        // بلوک گروهی که همه ردیف‌هایش پنهان شده‌اند را جمع کن
-        document.querySelectorAll('.admin-section-block').forEach(function (block) {
-            var visible = block.querySelectorAll(
-                '.admin-feature-row:not([style*="display: none"])'
-            ).length;
-            block.hidden = visible === 0;
-        });
+        // بلوک گروهی که همه ردیف‌هایش پنهان شده‌اند را جمع کن.
+        //
+        // گروه‌ها حالا details هستند و جمع‌شده باز می‌شوند؛ پس هنگام
+        // جستجو باید خودشان باز شوند، وگرنه کاربر نتیجه‌ای می‌بیند که
+        // پشتِ یک عنوانِ بسته پنهان است. با پاک‌شدنِ جستجو، به همان
+        // حالت اولیه برمی‌گردند: فقط گروه نخست باز.
+        var searching = !!q || sectionFilter !== 'all';
+        document.querySelectorAll('.admin-section-block').forEach(
+            function (block, index) {
+                var visible = block.querySelectorAll(
+                    '.admin-feature-row:not([style*="display: none"])'
+                ).length;
+                block.hidden = visible === 0;
+                if (block.tagName === 'DETAILS') {
+                    block.open = searching ? visible > 0 : index === 0;
+                }
+            });
     }
 
     function renderResults(value) {
