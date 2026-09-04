@@ -144,6 +144,72 @@ def _queue_specs():
     except Exception:
         pass
 
+    # ── سلامت محتوا ──
+    #
+    # صف کار تا امروز فقط «کارِ مردم» را می‌شمرد: درخواست پذیرش، پیام،
+    # پرداخت. ولی چیزهایی هم هست که هیچ‌کس گزارش نمی‌دهد و سال‌ها روی
+    # سایت می‌مانند — گروهی بدون مدیر، رشته‌ای بدون سرفصل، خبری که
+    # نوشته شده و منتشر نشده. این‌ها هم کارِ معطل‌اند.
+
+    try:
+        from academics.models import AcademicGroup
+        specs.append((
+            'groups_without_head', 'گروه بدون مدیر',
+            lambda: AcademicGroup.objects.filter(
+                is_active=True, head='', head_professor__isnull=True).count(),
+            _url('admin:academics_academicgroup_changelist', ''),
+            'fa-user-tie', False,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from academics.models import Major
+        specs.append((
+            'majors_without_curriculum', 'رشته بدون سرفصل',
+            lambda: Major.objects.filter(is_active=True).filter(
+                curriculum='', curriculum_pdf='', curriculum_word='').count(),
+            _url('admin:academics_major_changelist', ''),
+            'fa-book-open', False,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from news.models import News
+        specs.append((
+            'news_drafts', 'خبر منتشرنشده',
+            lambda: News.objects.filter(is_published=False).count(),
+            _url('admin:news_news_changelist', '?is_published__exact=0'),
+            'fa-newspaper', False,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from accounts.models import Announcement
+        from django.utils import timezone as _tz
+        specs.append((
+            'announcements_expired', 'اطلاعیهٔ منقضی که هنوز فعال است',
+            lambda: Announcement.objects.filter(
+                is_active=True, expires_at__lt=_tz.now().date()).count(),
+            _url('admin:accounts_announcement_changelist', '?is_active__exact=1'),
+            'fa-bullhorn', False,
+        ))
+    except Exception:
+        pass
+
+    try:
+        from core.models import Council
+        specs.append((
+            'councils_without_members', 'شورای بدون عضو',
+            lambda: Council.objects.filter(is_active=True, members='').count(),
+            _url('admin:core_council_changelist', ''),
+            'fa-users-rectangle', False,
+        ))
+    except Exception:
+        pass
+
     return specs
 
 

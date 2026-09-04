@@ -53,6 +53,31 @@
             </div>
         </div>
 
+        {# ═══════════ ۱٫۵) دسترسی‌های همیشگی ═══════════ #}
+        {% comment %}
+        درهایی که مدیر سایت هر هفته سراغشان می‌رود. تا امروز باید در
+        فهرست الفبایی دنبالشان می‌گشت یا جست‌وجو می‌کرد؛ حالا یک ردیف
+        ثابت‌اند. هر دری که در این نصب نباشد، اصلاً رندر نمی‌شود.
+        {% endcomment %}
+        {% if catalog.essentials %}
+        <div class="admin-essentials card mb-3">
+            <div class="card-header">
+                <h5 class="m-0">🚪 دسترسی‌های همیشگی</h5>
+                <span class="admin-essentials-hint">پرکاربردترین بخش‌های مدیریت سایت</span>
+            </div>
+            <div class="card-body">
+                <div class="admin-essentials-grid">
+                    {% for link in catalog.essentials %}
+                    <a class="admin-essential" href="{{ link.url }}">
+                        <span class="admin-essential-icon" aria-hidden="true">{{ link.icon }}</span>
+                        <span class="admin-essential-label">{{ link.label }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         {# ═══════════ ۲) جستجو + علاقه‌مندی ═══════════ #}
         <div class="admin-dash-top sticky-top">
             <div class="admin-mega-search-wrap" id="adminMegaSearch">

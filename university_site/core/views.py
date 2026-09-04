@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -133,6 +135,9 @@ def home(request):
     # اسلاید می‌آورد؛ چه بیاید و چند ردیف بیاورد، از تنظیمات سایت
     # خوانده می‌شود، پس مدیر بی‌آنکه به کد دست بزند تغییرش می‌دهد.
     side_count = getattr(settings_row, 'hero_side_count', None) or 4
+    # «تازه» یعنی هفت روز گذشته — همان بازه‌ای که بازدیدکننده هنوز
+    # آن را خبرِ روز می‌داند.
+    fresh_since = timezone.now() - timedelta(days=7)
     hero_side_blocks = []
     if getattr(settings_row, 'hero_side_show_announcements', True):
         rows = list(published.filter(news_type='announcement')[:side_count])
@@ -143,6 +148,8 @@ def home(request):
                 'icon': 'fa-bullhorn',
                 'url': reverse('news:announcements'),
                 'rows': rows,
+                'fresh': sum(1 for row in rows
+                             if row.published_at >= fresh_since),
             })
     if getattr(settings_row, 'hero_side_show_news', True):
         rows = list(published.exclude(news_type='announcement')[:side_count])
@@ -153,6 +160,8 @@ def home(request):
                 'icon': 'fa-newspaper',
                 'url': reverse('news:list'),
                 'rows': rows,
+                'fresh': sum(1 for row in rows
+                             if row.published_at >= fresh_since),
             })
     if getattr(settings_row, 'hero_side_show_events', True):
         # از خود مدل، نه از upcoming_events که پیش‌تر به چهار بریده
@@ -167,6 +176,7 @@ def home(request):
                 'icon': 'fa-calendar-day',
                 'url': '',
                 'rows': rows,
+                'fresh': 0,
             })
     hero_side_on = bool(
         getattr(settings_row, 'hero_side_enabled', True) and hero_side_blocks)
@@ -177,6 +187,8 @@ def home(request):
         'hero_side_on': hero_side_on,
         'hero_side_width': getattr(settings_row, 'hero_side_width', None) or 340,
         'hero_side_blocks': hero_side_blocks,
+        # مرزِ «تازه» برای قالب، تا نشانش را روی ردیف‌های همین هفته بگذارد
+        'hero_fresh_since': fresh_since,
         'admission_degrees': admission_degrees,
         'quick_links': quick_links,
         'featured_news': featured_news,

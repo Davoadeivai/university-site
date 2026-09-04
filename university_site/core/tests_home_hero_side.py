@@ -114,3 +114,47 @@ class QuickLinksMovedUpTests(TestCase):
         features = html.index('مزایای تحصیل')
         self.assertLess(timeline, quick)
         self.assertLess(quick, features)
+
+
+class HeroSidePolishTests(TestCase):
+    """تاریخ شمسی، نشان «تازه»، و قابِ عنابی به‌جای کاغذ سفید."""
+
+    def setUp(self):
+        cache.clear()
+        SiteSettings.objects.create(university_name_fa='موسسه')
+        _news('اطلاعیهٔ تازه', 'announcement')
+        _news('خبر تازه')
+
+    def _column(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        return html.split('<aside class="hero-side"')[1].split('</aside>')[0]
+
+    def test_the_date_is_jalali_not_gregorian(self):
+        column = self._column()
+        year = str(timezone.now().year)
+        self.assertNotIn(year, column, 'تاریخ میلادی روی ستون مانده')
+        self.assertIn('۱۴', column)
+
+    def test_a_recent_item_is_flagged_as_new(self):
+        self.assertIn('تازه', self._column())
+
+    def test_an_old_item_is_not(self):
+        News.objects.all().update(
+            published_at=timezone.now() - timedelta(days=40))
+        cache.clear()
+        column = self._column()
+        self.assertNotIn('hero-side-new', column)
+
+    def test_each_list_shows_how_many_are_new(self):
+        self.assertIn('hero-side-count', self._column())
+
+    def test_the_panel_has_its_own_ground(self):
+        from pathlib import Path
+
+        from django.conf import settings as django_settings
+
+        template = (Path(django_settings.BASE_DIR) / 'templates' / 'core' /
+                    'home.html').read_text(encoding='utf-8')
+        # سلکتور ‎.hero-row.has-side .hero-side‎ هم بالاتر هست
+        rule = template.split('%s.hero-side {' % chr(10))[1].split('}')[0]
+        self.assertIn('linear-gradient(165deg, #4e1220', rule)

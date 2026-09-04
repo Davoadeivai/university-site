@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
+
 from django import template
+from django.urls import NoReverseMatch, reverse
 
 register = template.Library()
 
@@ -130,6 +132,45 @@ def _section_for(key: str) -> str:
 
 
 # میانبرهای پیشنهادی داشبورد (object_name lowercase)
+# ── دسترسی‌های همیشگی ──
+#
+# صف کار و جستجو خوب‌اند، ولی کارِ روزمرهٔ مدیر سایت چند در ثابت
+# دارد که نباید هر بار جست‌وجو شوند: تنظیمات، اسلاید، خبر، اطلاعیه،
+# رشته، گروه، شورا، افراد موسسه، فرم‌ها، کاربران و لاگ.
+#
+# (برچسب, نشانی ادمین, ایموجی)
+ESSENTIAL_LINKS = [
+    ('تنظیمات سایت', 'admin:core_sitesettings_changelist', '⚙️'),
+    ('اسلایدهای صفحهٔ اصلی', 'admin:core_slider_changelist', '🖼️'),
+    ('اخبار', 'admin:news_news_changelist', '📰'),
+    ('اطلاعیه‌ها', 'admin:accounts_announcement_changelist', '📢'),
+    ('رویدادها', 'admin:core_event_changelist', '📅'),
+    ('رشته‌های تحصیلی', 'admin:academics_major_changelist', '🎓'),
+    ('گروه‌های آموزشی', 'admin:academics_academicgroup_changelist', '🏫'),
+    ('دانشکده‌ها', 'admin:academics_department_changelist', '🏛️'),
+    ('شوراها', 'admin:core_council_changelist', '🗳️'),
+    ('افراد موسسه', 'admin:directory_directoryperson_changelist', '👥'),
+    ('اعضای هیئت علمی', 'admin:faculty_professor_changelist', '👨‍🏫'),
+    ('فرم‌ها و آیین‌نامه‌ها', 'admin:core_downloadabledocument_changelist', '📄'),
+    ('دسترسی سریع و لینک‌ها', 'admin:core_quicklink_changelist', '🔗'),
+    ('بخش‌های صفحهٔ اصلی', 'admin:core_homesection_changelist', '🧩'),
+    ('کاربران', 'admin:auth_user_changelist', '🧑‍💻'),
+    ('گزارش فعالیت ادمین', 'admin:admin_logentry_changelist', '🕵️'),
+]
+
+
+def _essential_links():
+    """همان درها، با نشانیِ واقعی — هرکدام که در این نصب نباشد، نمی‌آید."""
+    rows = []
+    for label, viewname, icon in ESSENTIAL_LINKS:
+        try:
+            rows.append({'label': label, 'url': reverse(viewname),
+                         'icon': icon})
+        except NoReverseMatch:
+            continue
+    return rows
+
+
 QUICK_KEYS = (
     'sitesettings',
     'application',
@@ -291,6 +332,7 @@ def admin_dashboard_catalog(dashboard_list):
         'alpha_groups': alpha_groups,
         'letters': letters,
         'quick': quick,
+        'essentials': _essential_links(),
         'sections': sections,
         'total': len(items),
         'counters': counters,

@@ -1016,3 +1016,42 @@ fieldset {
     .admin-queue-num  { color: #e2e8f0; }
     .admin-view-btn   { background: #1e293b; color: #cbd5e1; border-color: #334155; }
 }
+
+/* ── دسترسی‌های همیشگی ─────────────────────────────────────────
+   ردیف ثابتِ درهایی که مدیر سایت هر هفته سراغشان می‌رود؛ پیش از
+   این باید در فهرست الفبایی دنبالشان می‌گشت. */
+.admin-essentials .card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.admin-essentials-hint { font-size: 12px; color: #8a7176; }
+.admin-essentials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
+    gap: 8px;
+}
+.admin-essential {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e8dcd0;
+    background: #fff;
+    color: #241a1c;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: transform .16s ease, border-color .16s ease,
+                box-shadow .16s ease;
+}
+.admin-essential:hover {
+    transform: translateY(-2px);
+    border-color: #c9a34e;
+    color: #7a1f2e;
+    box-shadow: 0 10px 22px -14px rgba(78, 18, 32, .6);
+}
+.admin-essential-icon { font-size: 16px; line-height: 1; }
+.admin-essential-label { min-width: 0; }
