@@ -1282,22 +1282,18 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 }
 .chatbot-input button:hover { background: var(--primary-light); }
 
-/* ---- Page Header ---- */
+/* ---- Page Header ----
+   لبهٔ پایین صاف است، نه مورب.
+   تا امروز یک نوار ۶۰ پیکسلی با دو درجه چرخش روی پایین سربرگ
+   می‌نشست و آن را به یک برشِ کج تبدیل می‌کرد. کجی روی نمایشگر پهن
+   چند پیکسل بود و روی نمایشگر باریک ده‌ها پیکسل — یعنی سربرگ در هر
+   دستگاه شکل دیگری داشت، و در هر صفحه یک بار تکرار می‌شد. */
 .page-header {
     background: var(--gradient-primary);
     padding: 60px 0;
     color: white;
     position: relative;
     overflow: hidden;
-}
-.page-header::after {
-    content: '';
-    position: absolute;
-    inset-block-end: 0; inset-inline: -5%;
-    height: 60px;
-    background: var(--bg-light);
-    transform: skewY(-2deg);
-    transform-origin: right;
 }
 .page-header-title { font-size: 32px; font-weight: 900; }
 .breadcrumb-item a { color: rgba(255,255,255,0.7); text-decoration: none; }
