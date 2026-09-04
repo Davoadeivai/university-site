@@ -26,15 +26,34 @@ class ArkanMenuTests(TestCase):
         nav = self._nav()
         self.assertIn('ارکان موسسه', nav)
 
-    def test_the_old_single_item_label_is_gone(self):
-        """«هیئت علمی» تنها، جای «ارکان موسسه» را گرفته بود."""
+    def _arkan_menu(self):
+        """زیرمنوی «ارکان موسسه» — تا انتهای همان فهرست."""
         nav = self._nav()
-        self.assertNotIn('>هیئت علمی<', nav)
+        return nav.split('ارکان موسسه')[-1].split('</ul>')[0]
 
-    def test_the_two_founding_bodies_are_listed(self):
-        nav = self._nav()
-        self.assertIn('هیئت مؤسس', nav)
-        self.assertIn('هیئت امنا', nav)
+    def test_it_holds_only_the_two_founding_bodies(self):
+        """هیئت علمی و مدیران گروه و مدرسین از اینجا رفتند."""
+        menu = self._arkan_menu()
+        self.assertIn('هیئت مؤسس', menu)
+        self.assertIn('هیئت امنا', menu)
+        self.assertNotIn('اعضای هیئت علمی', menu)
+        self.assertNotIn('مدرسین', menu)
+        self.assertNotIn(reverse('academics:group_heads'), menu)
+
+    def test_each_secretariat_stays_beside_its_body(self):
+        menu = self._arkan_menu()
+        self.assertIn('dabirkhane-heyat-moases', menu)
+        self.assertIn('dabirkhane-heyat-omana', menu)
+
+    def test_the_academic_staff_moved_under_the_faculties(self):
+        """کنارِ دانشکده‌ها دنبالشان می‌گردند، نه کنارِ هیئت امنا."""
+        # «مقالات اعضای هیئت علمی» در منوی بانک اطلاعات هم هست، پس
+        # جست‌وجو در کل نوار جواب نمی‌دهد؛ خودِ همین زیرمنو مهم است.
+        block = self._nav().split('nav-dd-faculties')[1].split('nav-dd-groups')[0]
+        for marker in ('هیئت علمی', 'اعضای هیئت علمی', 'مدرسین',
+                       reverse('academics:group_heads'),
+                       reverse('faculty:list')):
+            self.assertIn(marker, block, marker)
 
     def test_the_rest_of_the_people_page_keeps_a_home(self):
         """اعضای هیئت علمی، مدیران گروه و مدرسین گم نشدند."""

@@ -243,17 +243,15 @@
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:about' %}#vision">چشم‌انداز و اهداف</a></li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'core:institution_goals' %}">اهداف موسسه</a></li>
                         {% comment %}
-                        ارکان موسسه — هیئت مؤسس و هیئت امنا و دبیرخانه‌هایشان.
+                        ارکان موسسه — دو رکنِ بنیادین و دبیرخانه‌هایشان:
+                        هیئت مؤسس و هیئت امنا. همین و بس.
 
-                        پیش از این یک آیتم بود به نام «هیئت علمی» که به
-                        صفحهٔ «اعضای موسسه» می‌رفت؛ آن صفحه پنج بخش دارد
-                        و هیئت علمی فقط یکی از آن‌هاست. حالا هر رکن
-                        زیرشاخهٔ خودش را دارد و هر کدام به بخش خودش در
-                        همان صفحه می‌رود.
+                        هیئت علمی و مدیران گروه و مدرسین از اینجا رفتند
+                        زیر «دانشکده‌ها»؛ آن‌ها بدنهٔ آموزشی‌اند، نه رکنِ
+                        حاکمیتی، و کنارِ دانشکده‌ها دنبالشان می‌گردند.
 
-                        دبیرخانهٔ هیئت امنا از «حوزه ریاست» به اینجا آمد،
-                        چون رکنِ خودش زیر همین سرشاخه است، و دبیرخانهٔ
-                        هیئت مؤسس هم کنارش اضافه شد.
+                        دبیرخانهٔ هیئت امنا هم از «حوزه ریاست» به اینجا
+                        آمد، چون رکنِ خودش همین‌جاست.
                         {% endcomment %}
                         <li class="vice-group vice-hue-1 has-sub">
                             <div class="vice-lead-row">
@@ -270,10 +268,6 @@
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-moases' %}">دبیرخانه هیأت مؤسس</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-امنا' %}">هیئت امنا</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-علمی' %}">اعضای هیئت علمی</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:group_heads' %}">مدیران گروه آموزشی</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'مدرسین' %}">مدرسین</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}">فهرست کامل ارکان و اعضا</a></li>
                             </ul>
                         </li>
                         <li><a class="dropdown-item nav-dd-item" href="{% url 'directory:staff' %}">دفترچه تلفن و مسئولان</a></li>
@@ -418,6 +412,31 @@
                         {% endfor %}
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item nav-dd-item fw-bold" href="{% url 'academics:majors' %}">همهٔ رشته‌ها</a></li>
+
+                        {% comment %}
+                        هیئت علمی، ته همین منو: استاد و مدیر گروه و مدرس،
+                        بدنهٔ آموزشیِ همین دانشکده‌ها هستند. پیش از این
+                        زیر «ارکان موسسه» بودند، کنار هیئت امنا — جایی
+                        که کسی دنبالشان نمی‌گشت.
+                        {% endcomment %}
+                        <li class="vice-group vice-hue-4 has-sub">
+                            <div class="vice-lead-row">
+                                <a class="dropdown-item nav-dd-item vice-lead" href="{% url 'directory:people_section' 'هیات-علمی' %}">
+                                    <span class="vice-lead-text">هیئت علمی</span>
+                                </a>
+                                <button type="button" class="vice-toggle" aria-expanded="false"
+                                        aria-label="هیئت علمی">
+                                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <ul class="vice-sub">
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-علمی' %}">اعضای هیئت علمی</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:group_heads' %}">مدیران گروه آموزشی</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'مدرسین' %}">مدرسین</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'faculty:list' %}">صفحهٔ اساتید</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}">فهرست کامل ارکان و اعضا</a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </li>
 
