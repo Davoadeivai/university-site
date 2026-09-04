@@ -143,6 +143,11 @@ def build(vices_by_type: dict | None = None,
     rows = []
     for index, (key, label, icon) in enumerate(VICE_ORDER, start=1):
         vice = vices_by_type.get(key)
+        # عنوانِ دست‌نویس پنل بر عنوان این فهرست مقدم است؛ خالی که
+        # باشد، همین‌جا سرِ جایش می‌ماند. (عنوان پیش‌فرضِ خودِ مدل
+        # بلندتر است و برای منو مناسب نیست.)
+        if vice is not None and (vice.title or '').strip():
+            label = vice.title.strip()
 
         children = _units(STATIC_UNITS.get(key, []))
         # گروه‌های دارای تحصیلات تکمیلی، زیر «تحصیلات تکمیلی»

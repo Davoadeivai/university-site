@@ -160,7 +160,9 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         }),
         ('اسلایدر و ستون اطلاع‌رسانی کنارش', {
             'fields': (
-                'hero_height', 'hero_side_enabled', 'hero_side_width',
+                'hero_height', 'hero_side_enabled',
+                ('hero_side_title', 'hero_side_tagline'),
+                'hero_side_width',
                 'hero_side_count', 'hero_side_show_announcements',
                 'hero_side_show_news', 'hero_side_show_events',
             ),
@@ -596,13 +598,22 @@ class ViceAchievementInline(admin.TabularInline):
 
 @admin.register(VicePresidency)
 class VicePresidencyAdmin(CompletenessAdminMixin, admin.ModelAdmin):
-    list_display  = ['get_vice_type_display', 'full_name', 'academic_rank', 'phone', 'is_active', 'completeness']
-    list_editable = ['is_active']
+    # «عنوان» مستقیم از همین فهرست ویرایش می‌شود: پنج معاونت یعنی
+    # پنج بار بازکردن فرم، برای عوض‌کردن پنج کلمه.
+    list_display  = ['get_vice_type_display', 'title', 'full_name', 'academic_rank', 'phone', 'is_active', 'completeness']
+    list_editable = ['title', 'is_active']
     list_filter   = ['vice_type', 'is_active']
     search_fields = ['full_name', 'bio', 'resume', 'description', 'achievements']
     inlines       = [ViceUnitInline, ViceAchievementInline]
     fieldsets = (
-        ('معاونت', {'fields': ('vice_type', 'is_active')}),
+        ('معاونت', {
+            'fields': ('vice_type', 'title', 'is_active'),
+            'description': (
+                '«نوع معاونت» کلید ثابتِ سیستم است و نشانی صفحه از آن ساخته '
+                'می‌شود. برای عوض‌کردن <strong>نامی که در سایت دیده می‌شود</strong> '
+                'کادر «عنوان معاونت» را پر کنید.'
+            ),
+        }),
         ('معاون', {
             'fields': (
                 'full_name', 'academic_rank', 'photo',

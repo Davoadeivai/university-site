@@ -74,6 +74,86 @@
         repeating-linear-gradient(45deg, #ffe9a8 0 1px, transparent 1px 18px),
         repeating-linear-gradient(-45deg, #ffe9a8 0 1px, transparent 1px 18px);
 }
+/* ── سربرگ «پایگاه خبری» ──
+   ستون سه فهرست داشت و هیچ عنوانی؛ این سربرگ آن را از یک تکه
+   فهرست به یک بخشِ نام‌دار تبدیل می‌کند. خط طلایی زیرش، همان مرزی
+   است که سرصفحهٔ روزنامه دارد. */
+.newsdesk {
+    margin: 0 0 -4px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(201, 163, 78, .55);
+}
+.newsdesk-head { display: flex; align-items: center; gap: 9px; }
+.newsdesk-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -.2px;
+    line-height: 1.4;
+    color: #ffe9a8;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+/* نقطهٔ زندهٔ کنار عنوان — همان نشانی که پخش زنده دارد */
+.newsdesk-dot {
+    inline-size: 9px;
+    block-size: 9px;
+    border-radius: 50%;
+    flex: none;
+    background: #ff5a6e;
+    box-shadow: 0 0 0 0 rgba(255, 90, 110, .7);
+    animation: newsdeskPulse 2.4s ease-out infinite;
+}
+@keyframes newsdeskPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 90, 110, .55); }
+    70%  { box-shadow: 0 0 0 9px rgba(255, 90, 110, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 90, 110, 0); }
+}
+/* کسی که حرکت را دوست ندارد، نقطه ساکن می‌ماند */
+@media (prefers-reduced-motion: reduce) {
+    .newsdesk-dot { animation: none; }
+}
+.newsdesk-rss {
+    margin-inline-start: auto;
+    inline-size: 26px;
+    block-size: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-size: 12px;
+    color: rgba(255, 233, 168, .85);
+    border: 1px solid rgba(201, 163, 78, .4);
+    text-decoration: none;
+}
+.newsdesk-rss:hover { color: #4e1220; background: #ffe9a8; }
+.newsdesk-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    margin: 7px 0 0;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(247, 236, 224, .66);
+}
+.newsdesk-date { margin-inline-start: auto; color: rgba(255, 233, 168, .75); }
+
+/* نشانِ نزدیکیِ رویداد — چیزی که این هفته است باید از دور پیدا باشد */
+.hero-side-soon {
+    margin-inline-start: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #ffe9a8;
+    background: rgba(201, 163, 78, .18);
+    border: 1px solid rgba(201, 163, 78, .45);
+}
+.hero-side-soon.is-today {
+    color: #4e1220;
+    background: linear-gradient(135deg, #ffe9a8, #c9a34e);
+    border-color: transparent;
+}
+
 .hero-side-block { min-width: 0; }
 .hero-side-title {
     display: flex;
@@ -640,7 +720,28 @@
 </div><!-- /uni-hero-wrap -->
 
 {% if hero_side_on %}
-<aside class="hero-side" aria-label="اطلاع‌رسانی">
+<aside class="hero-side" aria-labelledby="newsdeskTitle">
+
+    {% comment %}
+    سربرگ ستون. سه فهرستِ زیرش هرکدام عنوان خودشان را داشتند ولی
+    خودِ ستون هیچ نامی نداشت — کنار اسلاید یک تکه فهرست بود، نه یک
+    بخش. حالا اسمش را دارد، با تاریخ امروز زیرش.
+    {% endcomment %}
+    <header class="newsdesk">
+        <div class="newsdesk-head">
+            <span class="newsdesk-dot" aria-hidden="true"></span>
+            <h2 class="newsdesk-title" id="newsdeskTitle">{{ hero_side_title }}</h2>
+            <a class="newsdesk-rss" href="{% url 'news:feed' %}"
+               title="خوراک خبری (RSS)" aria-label="خوراک خبری">
+                <i class="fas fa-rss" aria-hidden="true"></i>
+            </a>
+        </div>
+        <p class="newsdesk-sub">
+            <span>{{ hero_side_tagline|default:'موسسه آموزش عالی علامه امینی' }}</span>
+            <span class="newsdesk-date">{{ today|jalali_date:"full" }}</span>
+        </p>
+    </header>
+
     {% for block in hero_side_blocks %}
     <section class="hero-side-block">
         <h2 class="hero-side-title">
@@ -671,6 +772,13 @@
                 <span class="hero-side-meta">
                     <i class="fas fa-calendar-day" aria-hidden="true"></i>
                     {{ row.date|jalali_date:"short" }}
+                    {% if row.days_left == 0 %}
+                    <span class="hero-side-soon is-today">امروز</span>
+                    {% elif row.days_left == 1 %}
+                    <span class="hero-side-soon is-today">فردا</span>
+                    {% elif row.days_left <= 7 %}
+                    <span class="hero-side-soon">{{ row.days_left|persian_digits }} روز مانده</span>
+                    {% endif %}
                 </span>
                 {% else %}
                 <a href="{{ row.get_absolute_url }}" class="hero-side-link">

@@ -533,7 +533,7 @@ def public_live_search(request):
             DeputyVice, ['full_name', 'academic_rank'],
             lambda d: reverse('core:deputies'),
             'person', 'pages', 'معاونت', limit=4,
-            label=lambda d: '%s — %s' % (d.full_name, d.get_vice_type_display()),
+            label=lambda d: '%s — %s' % (d.full_name, d.display_name),
         )
         collect(
             PressRelease, ['title'],

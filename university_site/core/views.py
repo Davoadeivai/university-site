@@ -166,9 +166,14 @@ def home(request):
     if getattr(settings_row, 'hero_side_show_events', True):
         # از خود مدل، نه از upcoming_events که پیش‌تر به چهار بریده
         # شده — وگرنه عدد پنل بالای چهار بی‌اثر می‌ماند.
+        today = timezone.now().date()
         rows = list(Event.objects.filter(
-            is_active=True, date__gte=timezone.now().date()
+            is_active=True, date__gte=today
         ).order_by('date')[:side_count])
+        # «۳ روز مانده» را خواننده می‌فهمد؛ «۱۴۰۵/۰۶/۱۶» را باید با
+        # تاریخ امروز مقایسه کند تا بفهمد نزدیک است یا دور.
+        for row in rows:
+            row.days_left = (row.date - today).days
         if rows:
             hero_side_blocks.append({
                 'key': 'events',
@@ -185,6 +190,12 @@ def home(request):
         'sliders': sliders,
         'hero_height': getattr(settings_row, 'hero_height', None) or 62,
         'hero_side_on': hero_side_on,
+        'hero_side_title': (
+            getattr(settings_row, 'hero_side_title', '') or 'پایگاه خبری'),
+        'hero_side_tagline': getattr(settings_row, 'hero_side_tagline', ''),
+        # تاریخ امروز، بالای ستون — همان کاری که سرصفحهٔ یک روزنامه
+        # می‌کند: می‌گوید این صفحه مال امروز است.
+        'today': timezone.now().date(),
         'hero_side_width': getattr(settings_row, 'hero_side_width', None) or 340,
         'hero_side_blocks': hero_side_blocks,
         # مرزِ «تازه» برای قالب، تا نشانش را روی ردیف‌های همین هفته بگذارد
@@ -667,6 +678,9 @@ def vice_detail(request, vice_type):
     # نام فارسی برای page_title
     label_map = dict(VicePresidency.VICE_TYPE_CHOICES)
     page_title = label_map.get(vice_type, 'معاونت')
+    # عنوانی که موسسه در پنل نوشته، بر عنوان پیش‌فرض مقدم است
+    if vice is not None and (vice.title or '').strip():
+        page_title = vice.title.strip()
     context = {
         'vice': vice,
         'vice_type': vice_type,

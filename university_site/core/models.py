@@ -100,6 +100,12 @@ class SiteSettings(models.Model):
         _('اخبار در ستون'), default=True)
     hero_side_show_events = models.BooleanField(
         _('رویدادها در ستون'), default=True)
+    hero_side_title = models.CharField(
+        _('عنوان ستون اطلاع‌رسانی'), max_length=60, default='پایگاه خبری',
+        help_text=_('سرتیتر بالای ستون کنار اسلایدر.'))
+    hero_side_tagline = models.CharField(
+        _('زیرعنوان ستون اطلاع‌رسانی'), max_length=120, blank=True,
+        help_text=_('یک سطر زیر سرتیتر. خالی بگذارید تا نام موسسه بیاید.'))
 
     council_card_min_width = models.PositiveSmallIntegerField(
         _('حداقل عرض کارت شورا'), default=260,
@@ -975,6 +981,14 @@ class VicePresidency(models.Model):
         ('development',   _('معاونت توسعه و منابع انسانی')),
     ]
     vice_type      = models.CharField(_('نوع معاونت'), max_length=20, choices=VICE_TYPE_CHOICES, unique=True)
+    # عنوان معاونت تا امروز فقط از فهرست ثابتِ بالا می‌آمد و موسسه
+    # هیچ راهی برای عوض‌کردنش نداشت — نه در منو، نه در صفحه. حالا
+    # هرچه اینجا نوشته شود جای عنوان پیش‌فرض می‌نشیند، و خالی‌ماندنش
+    # یعنی همان عنوان پیش‌فرض.
+    title          = models.CharField(
+        _('عنوان معاونت'), max_length=120, blank=True,
+        help_text=_('نامی که در منو و صفحهٔ معاونت دیده می‌شود. '
+                    'خالی بگذارید تا عنوان پیش‌فرض بماند.'))
     full_name      = models.CharField(_('نام معاون'), max_length=200, blank=True)
     academic_rank  = models.CharField(_('مرتبه علمی'), max_length=200, blank=True)
     photo          = models.ImageField(_('تصویر'), upload_to='vices/', blank=True, null=True)
@@ -996,8 +1010,13 @@ class VicePresidency(models.Model):
         verbose_name_plural = _('معاونت‌ها')
         ordering = ['vice_type']
 
+    @property
+    def display_name(self) -> str:
+        """عنوانِ دست‌نویس موسسه، وگرنه عنوان پیش‌فرض."""
+        return (self.title or '').strip() or self.get_vice_type_display()
+
     def __str__(self):
-        return self.get_vice_type_display()
+        return self.display_name
 
 
 class ViceUnit(models.Model):
@@ -1019,7 +1038,7 @@ class ViceUnit(models.Model):
         ordering = ['vice', 'order']
 
     def __str__(self):
-        return f"{self.vice.get_vice_type_display()} ← {self.name}"
+        return f"{self.vice.display_name} ← {self.name}"
 
 
 class ViceAchievement(models.Model):

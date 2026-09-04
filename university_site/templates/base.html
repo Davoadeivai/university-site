@@ -13,6 +13,18 @@
     <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}{% endblock %}</title>
 
     {% comment %}
+      خوراک خبری. مرورگرها و خواننده‌خوان‌ها این دو سطر را می‌بینند و
+      خودشان اشتراک را پیشنهاد می‌دهند؛ بدون آن، خوراک فقط نشانی‌ای
+      است که کسی از وجودش خبر ندارد.
+    {% endcomment %}
+    <link rel="alternate" type="application/rss+xml"
+          title="پایگاه خبری — {% if site_settings %}{{ site_settings.university_name_fa }}{% else %}موسسه آموزش عالی علامه امینی{% endif %}"
+          href="{% url 'news:feed' %}">
+    <link rel="alternate" type="application/atom+xml"
+          title="پایگاه خبری (Atom)"
+          href="{% url 'news:feed_atom' %}">
+
+    {% comment %}
       Open Graph — بدون این، لینک سایت در تلگرام و واتساپ فقط یک نشانی
       خشک است بدون عنوان، توضیح و تصویر. برای موسسه‌ای که جذب دانشجو
       بخش زیادی‌اش در تلگرام می‌چرخد، همان پیش‌نمایش تفاوت بین

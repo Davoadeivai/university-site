@@ -57,7 +57,7 @@ class Command(BaseCommand):
         made = synced = 0
         for index, vice in enumerate(
                 VicePresidency.objects.filter(is_active=True), start=1):
-            label = vice.get_vice_type_display()
+            label = vice.display_name
             node, is_new = OrganizationalChart.objects.get_or_create(
                 name=label, parent=root,
                 defaults={'node_type': 'vice', 'order': index},
