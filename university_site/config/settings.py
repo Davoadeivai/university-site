@@ -253,7 +253,6 @@ JAZZMIN_SETTINGS = {
         'core.VicePresidency': 'fas fa-sitemap',
         'core.ViceUnit': 'fas fa-building',
         'core.ViceAchievement': 'fas fa-trophy',
-        'core.OrganizationalChart': 'fas fa-project-diagram',
         'core.BankAccount': 'fas fa-university',
         'core.PaymentIdentifier': 'fas fa-barcode',
         'core.DownloadableDocument': 'fas fa-file-download',

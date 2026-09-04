@@ -16,7 +16,6 @@ from core.models import (
     PublicRelations, PressRelease,
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
-    OrganizationalChart,
     BankAccount, PaymentIdentifier, DownloadableDocument,
     GraduateStudiesInfo,
     HomeFeature,
@@ -221,11 +220,16 @@ def home(request):
 
 
 def about(request):
+    from core import org_chart as org_chart_index
+
     settings = SiteSettings.objects.first()
-    org_chart = OrganizationalChart.objects.filter(is_active=True, parent__isnull=True).order_by('order')
+    # تصویر چارت خوانده و جست‌وجو نمی‌شود؛ همین ساختار در متن، زیرش
+    # می‌نشیند تا روی موبایل خوانده شود و هر واحد به صفحهٔ خودش برود.
+    chart_index = org_chart_index.build()
     context = {
         'settings': settings,
-        'org_chart': org_chart,
+        'chart_index': chart_index,
+        'chart_index_count': org_chart_index.count(chart_index),
         'page_title': 'معرفی دانشگاه',
     }
     return render(request, 'core/about.html', context)

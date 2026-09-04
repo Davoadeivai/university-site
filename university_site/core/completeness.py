@@ -70,15 +70,6 @@ PROFILES = {
         ('office_hours', 'ساعات مراجعه', 1),
         ('manager_photo', 'تصویر مسئول', 1),
     ],
-    'core.OrganizationalChart': [
-        ('name', 'نام واحد', 3),
-        ('person_name', 'نام مسئول', 3),
-        ('title', 'سمت', 2),
-        ('person_photo', 'تصویر', 1),
-        ('description', 'شرح وظایف', 2),
-        ('person_phone', 'تلفن', 1),
-        ('location', 'محل', 1),
-    ],
     'core.BoardMember': [
         ('full_name', 'نام', 3),
         ('title', 'سمت', 3),

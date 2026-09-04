@@ -1,0 +1,22 @@
+{% comment %}
+یک گره از راهنمای چارت، و زیرمجموعه‌هایش.
+
+خودش را صدا می‌زند: چارت سه سطح دارد (معاونت ← مدیر ← اداره) و
+نوشتن سه حلقهٔ تودرتو یعنی هر بار که سطحی اضافه شود، قالب هم باید
+عوض شود.
+
+واحدی که صفحه ندارد span می‌شود، نه لینکِ بی‌مقصد: لینکی که به ۴۰۴
+می‌رسد از نبودن لینک بدتر است.
+{% endcomment %}
+{% if row.url %}
+<a class="chart-node{% if level == 1 %} is-top{% endif %}" href="{{ row.url }}">{{ row.title }}</a>
+{% else %}
+<span class="chart-node{% if level == 1 %} is-top{% endif %}">{{ row.title }}</span>
+{% endif %}
+{% if row.children %}
+<ul>
+    {% for child in row.children %}
+    <li>{% include 'core/_chart_row.html' with row=child level=2 %}</li>
+    {% endfor %}
+</ul>
+{% endif %}

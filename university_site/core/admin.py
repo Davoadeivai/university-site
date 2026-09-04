@@ -17,7 +17,6 @@ from .models import (
     PublicRelations, PressRelease,
     SecurityOffice,
     VicePresidency, ViceUnit, ViceAchievement,
-    OrganizationalChart,
     BankAccount, PaymentIdentifier, DownloadableDocument,
     GraduateStudiesInfo,
     HomeFeature, HomeSection,
@@ -685,39 +684,12 @@ class ViceAchievementAdmin(admin.ModelAdmin):
 
 
 # ─── چارت سازمانی ───────────────────────────────────────────────
-
-class OrganizationalChartInline(admin.TabularInline):
-    model = OrganizationalChart
-    fk_name = 'parent'
-    extra = 0
-    fields = ['name', 'node_type', 'person_name', 'order', 'is_active']
-    show_change_link = True
-
-
-@admin.register(OrganizationalChart)
-class OrganizationalChartAdmin(CompletenessAdminMixin, admin.ModelAdmin):
-    list_display = ['name', 'node_type', 'parent', 'person_name', 'order', 'is_active', 'completeness']
-    list_editable = ['order', 'is_active']
-    list_filter = ['node_type', 'is_active']
-    search_fields = ['name', 'person_name', 'title', 'person_email', 'person_phone']
-    list_select_related = ('parent',)
-    inlines = [OrganizationalChartInline]
-    
-    fieldsets = (
-        ('اطلاعات اصلی', {
-            'fields': ('parent', 'node_type', 'name', 'order', 'is_active')
-        }),
-        ('اطلاعات مسئول', {
-            'fields': ('person_name', 'person_photo', 'title', 'person_email', 'person_phone')
-        }),
-        ('اطلاعات تکمیلی', {
-            'fields': ('description', 'location', 'staff_count')
-        }),
-    )
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('parent')
-
+#
+# چارت رسمی موسسه یک تصویر است و از «تنظیمات سایت» آپلود می‌شود.
+# درختِ گره‌به‌گرهٔ `OrganizationalChart` راه دومی برای همان کار بود
+# که هیچ‌وقت کامل نشد و روی سایت هم دیده نمی‌شد؛ ماندنش در پنل فقط
+# یک فرم بی‌مصرف بود کنار فرم اصلی. مدل و داده‌اش سر جایشان هستند،
+# فقط دیگر در پنل ثبت نمی‌شوند.
 
 @admin.register(BankAccount)
 class BankAccountAdmin(admin.ModelAdmin):

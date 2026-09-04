@@ -16,7 +16,6 @@ EMPTY_PAGE_WARNINGS = {
     'core.VicePresidency': 'صفحهٔ «معاونت‌ها» بدون رکورد خالی است',
     'core.BoardMember': 'صفحات «هیات موسس» و «هیات امنا» خالی می‌مانند',
     'core.InstitutionGoal': 'صفحهٔ «اهداف موسسه» خالی می‌ماند',
-    'core.OrganizationalChart': 'چارت سازمانی خالی می‌ماند',
 }
 
 
