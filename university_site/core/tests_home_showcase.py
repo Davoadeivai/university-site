@@ -255,3 +255,21 @@ class BannerEmblemTests(TestCase):
     def test_the_middle_column_cannot_crush_the_sides(self):
         rule = _css().split('.site-banner > a {')[1].split('}')[0]
         self.assertIn('minmax(0, 1fr)', rule)
+
+    def test_the_emblem_block_never_wraps(self):
+        """بنر قدِ ثابت دارد؛ خط دوم یعنی نصفِ نشان زیر برش."""
+        rule = _css().split('%s.bnr-state {' % chr(10))[1].split('}')[0]
+        self.assertIn('flex-wrap: nowrap', rule)
+
+    def test_the_caption_shrinks_before_the_emblem_does(self):
+        rule = _css().split('%s.bnr-min {' % chr(10))[1].split('}')[0]
+        self.assertIn('min-width: 0', rule)
+        self.assertIn('text-overflow: ellipsis', rule)
+
+    def test_the_captions_step_aside_early_enough(self):
+        css = _css()
+        self.assertIn('@media (max-width: 1300px)', css)
+
+    def test_the_emblem_is_gold_on_the_night_banner(self):
+        rule = _css().split('[data-theme="dark"] .bnr-state img {')[1]             .split('}')[0]
+        self.assertIn('invert(84%)', rule)

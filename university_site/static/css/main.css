@@ -1601,10 +1601,12 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 [data-theme="dark"] .bnr-en { color: rgba(255, 255, 255, .94); font-weight: 600; }
 [data-theme="dark"] .bnr-sub { color: rgba(245, 220, 160, .9); }
 [data-theme="dark"] .bnr-state img {
-    /* نشان سفید است و روی زمینهٔ تیره محو می‌شد؛ کمی روشن‌تر با یک
-       سایهٔ تیره، لبه‌اش پیدا می‌شود. */
-    filter: brightness(1.2) contrast(1.08)
-            drop-shadow(0 1px 3px rgba(0, 0, 0, .55));
+    /* روی شبِ فیروزه، نشان را طلایی می‌کنیم: برنزِ حالت روشن آنجا
+       تقریباً هم‌رنگِ زمینه می‌شد و نصفِ نشان گم به نظر می‌رسید. */
+    filter:
+        brightness(0) saturate(100%) invert(84%) sepia(38%)
+        saturate(560%) hue-rotate(340deg) brightness(101%) contrast(96%)
+        drop-shadow(0 1px 3px rgba(0, 0, 0, .55));
 }
 [data-theme="dark"] .acal {
     background:
@@ -1967,14 +1969,20 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     align-items: center;
     gap: 11px;
     flex: none;
+    /* nowrap واجب است: بنر قدِ ثابت دارد و overflow پنهان. اگر این
+       بلوک بشکند، نشان می‌رود خط دوم و همان‌جا بریده می‌شود — همان
+       ارمِ نیمه‌ای که دیده شد. */
+    flex-wrap: nowrap;
     min-width: 0;
 }
 .bnr-state img {
     display: block;
-    flex: none;
+    /* نه کوچک شود، نه کش بیاید */
+    flex: 0 0 auto;
     height: calc(var(--bnr-h) - 22px);
     width: auto;
-    max-inline-size: 100%;
+    /* max-inline-size: 100% حذف شد: ستون که تنگ می‌شد، همین قاعده
+       تصویر را باریک می‌کرد و بخشی از نشان بیرون از کادر می‌ماند. */
     object-fit: contain;
     transition: height var(--duration-base) var(--easing-standard);
     /* این نشان خط‌نگارهٔ سفید است و روی زمینهٔ روشن ناپدید می‌شد؛
@@ -1985,6 +1993,13 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
         drop-shadow(0 1px 2px rgba(255, 255, 255, .7));
 }
 .bnr-min {
+    /* این متن ‎nowrap‎ است و اگر اجازهٔ کوچک‌شدن نداشته باشد، نشانِ
+       کنارش را از قاب بیرون می‌راند. ‎min-width: 0‎ یعنی اول این
+       کوتاه می‌آید، نه نشان. */
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: clamp(.72rem, 1.02vw, .92rem);
     line-height: 1.7;
     /* «جمهوری اسلامی ایران / وزارت علوم» و نام انگلیسی، هر دو
@@ -1995,6 +2010,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     text-align: left;
 }
 .bnr-en {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: clamp(.68rem, .96vw, .86rem);
     letter-spacing: .08em;
     line-height: 1.55;
@@ -2063,11 +2082,16 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .site-header.is-condensed .bnr-en { display: none; }
 
 /* ── واکنش‌گرا: حذف عناصر، نه کوچک‌کردن تا ناخوانایی ── */
+/* زیرنویس‌ها پیش از آنکه نشان‌ها را تنگ کنند، کنار می‌روند.
+   ۱۱۰۰ دیر بود: میان ۱۱۰۰ تا ۱۳۰۰ پیکسل، نامِ موسسه و این دو متن
+   با هم عرض را می‌بلعیدند و لبهٔ نشان زیر برشِ بنر می‌رفت. */
+@media (max-width: 1300px) {
+    .bnr-en, .bnr-min { display: none; }
+}
 @media (max-width: 1100px) {
     .site-banner > a { height: var(--bnr-h-md); }
     .bnr-mark img { height: calc(var(--bnr-h-md) - 16px); }
     .bnr-state img { height: calc(var(--bnr-h-md) - 20px); }
-    .bnr-en, .bnr-min { display: none; }
 }
 @media (max-width: 640px) {
     .site-banner > a {
