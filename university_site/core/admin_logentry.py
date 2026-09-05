@@ -36,7 +36,26 @@ class LogEntryAdmin(JalaliAdminMixin, admin.ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        """ردیف لاگ مستقیم پاک نمی‌شود، ولی جلوی حذف کاربر را هم نگیرد.
+
+        این متد دو جای کاملاً متفاوت صدا زده می‌شود و «False» برای هر
+        دو، یک ایراد جدی می‌ساخت: هنگام حذف یک کاربر، جنگو برای هر
+        مدلی که به او وصل است همین را می‌پرسد، و چون لاگ‌های او با
+        CASCADE پاک می‌شوند، پاسخ منفی یعنی «حساب شما دسترسی حذف
+        اشیای از نوع مورد اتفاقات را ندارد» — برای همه، حتی مدیر کل.
+        نتیجه‌اش این بود که هیچ کاربری که یک بار در پنل کاری کرده
+        باشد، دیگر قابل حذف نبود.
+
+        پس اجازه فقط در همان مسیرِ آبشاری باز است (obj داده می‌شود) و
+        فقط برای مدیر کل؛ حذف مستقیمِ خودِ ردیف لاگ را `delete_view`
+        پایین می‌بندد.
+        """
+        return obj is not None and request.user.is_superuser
+
+    def delete_view(self, request, object_id, extra_context=None):
+        """تاریخچه دست‌کاری نمی‌شود — حتی به دست مدیر کل."""
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
 
     def has_view_permission(self, request, obj=None):
         # فقط superuser — لاگ شامل نام رکوردهای حساس است
