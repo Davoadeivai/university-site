@@ -1411,6 +1411,76 @@ class HomeFeature(models.Model):
         return self.TONE_HEX.get(self.tone, '#1a73e8')
 
 
+class AboutSection(models.Model):
+    """بخش‌های دلخواهِ صفحهٔ «معرفی دانشگاه».
+
+    صفحه تا امروز پنج متنِ ثابت داشت — تاریخچه، چشم‌انداز، مأموریت،
+    ارزش‌ها و چارت — و هیچ راهی نبود که موسسه چیز تازه‌ای به آن اضافه
+    کند. هر خواسته‌ای («امکانات آموزشی»، «افتخارات»، «آمار یک نگاه»)
+    یعنی یک ویرایش در قالب و یک دیپلوی.
+
+    این مدل همان کار را از پنل ممکن می‌کند: هر ردیف یک بخش تازه در
+    پایین صفحه است، با عنوان، متن، تصویر اختیاری و چیدمانِ انتخابی.
+    نبودِ ردیف یعنی صفحه دقیقاً همان است که بود.
+    """
+    LAYOUT_CHOICES = [
+        ('text', 'فقط متن — تمام عرض'),
+        ('image_end', 'متن راست، تصویر چپ'),
+        ('image_start', 'تصویر راست، متن چپ'),
+        ('cards', 'کارت‌های چندتایی — هر خط یک کارت'),
+        ('highlight', 'کادر برجسته — یک پیام کوتاه'),
+    ]
+
+    title = models.CharField(_('عنوان بخش'), max_length=200)
+    subtitle = models.CharField(
+        _('زیرعنوان'), max_length=300, blank=True,
+        help_text=_('یک سطر زیر عنوان. اختیاری.'))
+    icon = models.CharField(
+        _('آیکون'), max_length=60, blank=True, default='fas fa-circle-info',
+        help_text=_('نام آیکون Font Awesome، مثلاً fas fa-award'))
+    body = models.TextField(
+        _('متن'), blank=True,
+        help_text=_('برای چیدمان «کارت‌های چندتایی»، هر خط یک کارت '
+                    'می‌شود؛ اگر خط را با «|» دو تکه کنید، تکهٔ اول '
+                    'عنوان کارت است و تکهٔ دوم متنش.'))
+    image = models.ImageField(
+        _('تصویر'), upload_to='about/', blank=True, null=True,
+        help_text=_('فقط در چیدمان‌هایی که تصویر دارند دیده می‌شود.'))
+    layout = models.CharField(
+        _('چیدمان'), max_length=20, choices=LAYOUT_CHOICES, default='text')
+    order = models.PositiveIntegerField(_('ترتیب'), default=0)
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('بخش صفحهٔ معرفی')
+        verbose_name_plural = _('بخش‌های صفحهٔ معرفی')
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def cards(self) -> list:
+        """هر خطِ متن، یک کارت — با عنوان اختیاری پیش از «|»."""
+        rows = []
+        for line in (self.body or '').splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if '|' in line:
+                head, _, rest = line.partition('|')
+                rows.append({'title': head.strip(), 'text': rest.strip()})
+            else:
+                rows.append({'title': '', 'text': line})
+        return rows
+
+    @property
+    def paragraphs(self) -> list:
+        """متن، خط‌به‌خط — تا قالب مجبور نباشد با linebreaks کلنجار برود."""
+        return [line.strip() for line in (self.body or '').splitlines()
+                if line.strip()]
+
+
 class HomeSection(models.Model):
     """ظاهر هر بخش صفحهٔ اصلی — عنوان، زیرعنوان، تصویر پس‌زمینه.
 

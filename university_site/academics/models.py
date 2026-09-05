@@ -690,7 +690,10 @@ class GroupHead(models.Model):
             ('professor', _('استاد تمام')),
             ('emeritus', _('استاد بازنشسته')),
         ],
-        help_text=_('خالی بگذارید تا از پروندهٔ هیئت علمی بیاید.'))
+        help_text=_('خالی بگذارید تا از پروندهٔ هیئت علمی بیاید. '
+                    'اگر پرش کنید و استادی هم انتخاب شده باشد، همین '
+                    'مرتبه در پروندهٔ خودِ استاد هم ثبت می‌شود تا دو '
+                    'صفحهٔ سایت دو چیز نگویند.'))
     photo = models.ImageField(
         _('تصویر'), upload_to='groups/heads/', blank=True, null=True,
         help_text=_('اگر استاد انتخاب شده و عکس دارد، لازم نیست.'))
@@ -703,6 +706,19 @@ class GroupHead(models.Model):
         verbose_name = _('مدیر گروه')
         verbose_name_plural = _('مدیران گروه')
         ordering = ['group', 'order', 'id']
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # مرتبه‌ای که اینجا نوشته می‌شود، همان‌جا هم بنشیند.
+        #
+        # وگرنه کارت گروه «دانشیار» می‌گفت و صفحهٔ خودِ استاد
+        # «استادیار» — دو صفحه از یک سایت، دو حرف دربارهٔ یک نفر.
+        # این کادر میان‌بُری به پروندهٔ استاد است، نه مقداری موازی
+        # با آن.
+        if self.rank_override and self.professor_id:
+            if self.professor.rank != self.rank_override:
+                type(self.professor).objects.filter(
+                    pk=self.professor_id).update(rank=self.rank_override)
 
     def __str__(self):
         return '%s — %s' % (self.display_name or '—', self.group.name)

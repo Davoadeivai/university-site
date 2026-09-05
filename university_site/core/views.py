@@ -221,6 +221,7 @@ def home(request):
 
 def about(request):
     from core import org_chart as org_chart_index
+    from core.models import AboutSection
 
     settings = SiteSettings.objects.first()
     # تصویر چارت خوانده و جست‌وجو نمی‌شود؛ همین ساختار در متن، زیرش
@@ -228,6 +229,9 @@ def about(request):
     chart_index = org_chart_index.build()
     context = {
         'settings': settings,
+        # بخش‌هایی که خودِ موسسه از پنل اضافه کرده؛ نبودشان یعنی
+        # صفحه دقیقاً همان است که بود.
+        'about_sections': AboutSection.objects.filter(is_active=True),
         'chart_index': chart_index,
         'chart_index_count': org_chart_index.count(chart_index),
         'page_title': 'معرفی دانشگاه',

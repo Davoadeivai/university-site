@@ -119,6 +119,28 @@ class DirectoryPerson(models.Model):
         if not self.full_name:
             self.full_name = ('%s %s' % (self.first_name, self.last_name)).strip()
         super().save(*args, **kwargs)
+        self._push_rank()
+
+    def _push_rank(self):
+        """مرتبهٔ نوشته‌شده را به پروندهٔ هیئت علمی همین شخص هم بنویس.
+
+        بدون این، اصلاح در «افراد موسسه» تا اجرای بعدیِ دستور
+        واردکردن اساتید هیچ اثری روی صفحهٔ خود استاد نداشت — یعنی
+        عملاً تا دیپلوی بعدی. و تا آن موقع کارت گروه یک مرتبه نشان
+        می‌داد و صفحهٔ استاد مرتبهٔ دیگری.
+        """
+        stated = (self.academic_rank or '').strip()
+        if not stated:
+            return
+        from faculty.models import Professor
+
+        target = ''.join((self.full_name or '').split())
+        for professor in Professor.objects.all():
+            if ''.join(professor.get_full_name().split()) == target:
+                if professor.rank != stated:
+                    Professor.objects.filter(pk=professor.pk).update(
+                        rank=stated)
+                break
 
     @property
     def display_name(self) -> str:

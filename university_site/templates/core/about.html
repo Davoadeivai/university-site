@@ -184,6 +184,60 @@
             </details>
             {% endif %}
         </div>
+
+        {% comment %}
+        بخش‌هایی که خودِ موسسه از پنل اضافه کرده.
+
+        صفحه پنج متنِ ثابت داشت و هیچ راهی نبود چیز تازه‌ای به آن
+        افزوده شود؛ هر خواسته یعنی یک ویرایش در قالب و یک دیپلوی.
+        اگر ردیفی ثبت نشده باشد، اینجا هیچ‌چیز رندر نمی‌شود.
+        {% endcomment %}
+        {% for block in about_sections %}
+        <div class="about-block about-block-{{ block.layout }}" data-aos="fade-up"
+             id="about-{{ block.pk }}">
+            <header class="about-block-head">
+                {% if block.icon %}<i class="{{ block.icon }}" aria-hidden="true"></i>{% endif %}
+                <div>
+                    <h2 class="section-title">{{ block.title }}</h2>
+                    {% if block.subtitle %}
+                    <p class="about-block-sub">{{ block.subtitle }}</p>
+                    {% endif %}
+                </div>
+            </header>
+
+            {% if block.layout == 'cards' %}
+            <div class="about-cards">
+                {% for card in block.cards %}
+                <div class="about-card">
+                    {% if card.title %}<h3>{{ card.title }}</h3>{% endif %}
+                    <p>{{ card.text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% elif block.layout == 'highlight' %}
+            <div class="about-highlight">
+                {% for line in block.paragraphs %}<p>{{ line }}</p>{% endfor %}
+            </div>
+
+            {% elif block.image and block.layout != 'text' %}
+            <div class="about-split{% if block.layout == 'image_start' %} is-flipped{% endif %}">
+                <div class="about-split-text">
+                    {% for line in block.paragraphs %}<p>{{ line }}</p>{% endfor %}
+                </div>
+                <figure class="about-split-shot">
+                    <img src="{{ block.image.url }}" alt="{{ block.title }}"
+                         loading="lazy" decoding="async" data-zoomable>
+                </figure>
+            </div>
+
+            {% else %}
+            <div class="about-block-text">
+                {% for line in block.paragraphs %}<p>{{ line }}</p>{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
 </section>
 
@@ -294,5 +348,104 @@ span.chart-node::before {
     .chart-index-body { padding-inline: 12px; }
     .chart-tree ul { padding-inline-start: 11px; }
 }
+
+/* ── بخش‌های دلخواهِ صفحهٔ معرفی ──
+   پنج چیدمان، یک ظاهر. هرچه موسسه از پنل اضافه کند باید کنار
+   بخش‌های موجود بنشیند، نه اینکه وصله به‌نظر برسد. */
+.about-block { margin-block-start: clamp(38px, 5vw, 66px); }
+.about-block-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin-block-end: 18px;
+}
+.about-block-head > i {
+    flex: none;
+    inline-size: 44px;
+    block-size: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    font-size: 18px;
+    color: var(--primary-deep, #4e1220);
+    background: linear-gradient(135deg,
+        rgba(122, 31, 46, .1), rgba(201, 163, 78, .18));
+}
+.about-block-head .section-title { margin: 0; }
+.about-block-sub {
+    margin: 5px 0 0;
+    font-size: 13.5px;
+    color: var(--text-muted, #6b5b5e);
+}
+.about-block-text p,
+.about-split-text p {
+    margin-block-end: 12px;
+    font-size: 15px;
+    line-height: 2;
+    color: var(--text-muted, #6b5b5e);
+}
+
+.about-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(20px, 3.4vw, 44px);
+    align-items: center;
+}
+.about-split.is-flipped { direction: ltr; }
+.about-split.is-flipped > * { direction: rtl; }
+.about-split-shot { margin: 0; }
+.about-split-shot img {
+    inline-size: 100%;
+    block-size: auto;
+    border-radius: 16px;
+    cursor: zoom-in;
+    box-shadow: 0 16px 40px -28px rgba(30, 10, 15, .7);
+}
+@media (max-width: 768px) {
+    .about-split { grid-template-columns: 1fr; }
+}
+
+.about-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: clamp(12px, 1.8vw, 20px);
+}
+.about-card {
+    padding: 17px 19px;
+    border-radius: 14px;
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
+    border-block-start: 3px solid var(--secondary, #a67c1f);
+}
+.about-card h3 {
+    margin: 0 0 7px;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: var(--primary-deep, #4e1220);
+}
+.about-card p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.95;
+    color: var(--text-muted, #6b5b5e);
+}
+
+/* کادر برجسته — یک پیام کوتاه که باید دیده شود */
+.about-highlight {
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: 18px;
+    background: linear-gradient(135deg, #4e1220 0%, #7a1f2e 60%, #3a0e18 100%);
+    color: #f7ece0;
+    border-inline-start: 5px solid var(--bnr-gold-300, #f0d080);
+}
+.about-highlight p {
+    margin: 0 0 10px;
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 2.05;
+}
+.about-highlight p:last-child { margin-block-end: 0; }
+
+[data-theme="dark"] .about-card { background: #1b1013; }
 </style>
 {% endblock %}

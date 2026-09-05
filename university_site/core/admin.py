@@ -19,7 +19,7 @@ from .models import (
     VicePresidency, ViceUnit, ViceAchievement,
     BankAccount, PaymentIdentifier, DownloadableDocument,
     GraduateStudiesInfo,
-    HomeFeature, HomeSection,
+    HomeFeature, HomeSection, AboutSection,
 )
 from core.sms_queue import QueuedSMS
 
@@ -296,6 +296,39 @@ class SliderAdmin(JalaliAdminMixin, admin.ModelAdmin):
             'fields': ('badge_text', 'badge_color', 'badge_icon'),
         }),
     )
+
+
+@admin.register(AboutSection)
+class AboutSectionAdmin(admin.ModelAdmin):
+    """بخش‌های دلخواه صفحهٔ «معرفی دانشگاه»."""
+
+    list_display = ['title', 'layout', 'has_image', 'order', 'is_active']
+    list_editable = ['layout', 'order', 'is_active']
+    list_filter = ['layout', 'is_active']
+    search_fields = ['title', 'subtitle', 'body']
+    fieldsets = (
+        ('بخش تازه', {
+            'fields': ('title', 'subtitle', 'icon', 'order', 'is_active'),
+            'description': (
+                'هر ردیف یک بخش تازه در پایین صفحهٔ «معرفی دانشگاه» است. '
+                'ترتیب کوچک‌تر، بالاتر.'
+            ),
+        }),
+        ('محتوا', {
+            'fields': ('layout', 'body', 'image'),
+            'description': (
+                'در چیدمان <strong>کارت‌های چندتایی</strong> هر خطِ متن یک '
+                'کارت می‌شود؛ اگر خط را با <code>|</code> دو تکه کنید، تکهٔ '
+                'اول عنوان کارت است و تکهٔ دوم متنش:<br>'
+                '<code>کتابخانه | بیش از ۳۰٬۰۰۰ جلد کتاب</code><br>'
+                'تصویر فقط در چیدمان‌هایی دیده می‌شود که تصویر دارند.'
+            ),
+        }),
+    )
+
+    @admin.display(description='تصویر', boolean=True)
+    def has_image(self, obj):
+        return bool(obj.image)
 
 
 @admin.register(QuickLink)
