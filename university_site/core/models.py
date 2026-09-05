@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.text import get_valid_filename
 from django.utils.translation import gettext_lazy as _
 from core.filecheck import file_present
-from core.imaging import ShrinkImagesMixin
+from core.imaging import ShrinkImagesMixin, drop_flat_background
 
 
 def _safe_upload_filename(filename):
@@ -46,6 +46,16 @@ class SiteSettings(ShrinkImagesMixin, models.Model):
     # پیکسلی هر بازدید را کند می‌کند. فاویکون و لوگو عمداً بیرون‌اند —
     # کوچک‌کردن فاویکون خرابش می‌کند.
     shrink_images = {'state_emblem': 400}
+
+    def save(self, *args, **kwargs):
+        # نشان‌هایی که از اینترنت برداشته می‌شوند معمولاً JPEG با
+        # پس‌زمینهٔ سیاهِ توپر هستند، نه PNG شفاف — و در سربرگ به یک
+        # مربع سیاه تبدیل می‌شوند. پیش از کوچک‌کردن، پس‌زمینهٔ یکدست
+        # شفاف می‌شود. تصویری که پس‌زمینهٔ یکدست ندارد دست نمی‌خورد.
+        update_fields = kwargs.get('update_fields')
+        if update_fields is None or 'state_emblem' in update_fields:
+            drop_flat_background(self.state_emblem)
+        super().save(*args, **kwargs)
 
     university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی')
     university_name_en = models.CharField(

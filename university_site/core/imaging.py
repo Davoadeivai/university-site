@@ -54,6 +54,79 @@ def _extension(name: str) -> str:
     return name[dot:].lower() if dot >= 0 else ''
 
 
+def _read(field_file, name):
+    """محتوای فایل، و اینکه از قبل روی استوریج نشسته یا تازه آپلود شده.
+
+    فرقش سرنوشت‌ساز است: فایل تازه‌آپلودشده را جنگو بعداً — داخل
+    ‎Model.save()‎ و در ‎FileField.pre_save‎ — روی دیسک می‌نویسد. اگر
+    اینجا ببندیمش، آن نوشتن با «I/O operation on closed file» می‌شکند
+    و افزودن اسلاید در پنل خطای ۵۰۰ می‌دهد.
+
+    در خطا None برمی‌گرداند؛ آپلود نباید بشکند.
+    """
+    committed = getattr(field_file, '_committed', True)
+    try:
+        field_file.open('rb')
+        data = field_file.read()
+    except (OSError, ValueError) as exc:
+        # فایل روی دیسک نیست — بعد از انتقال مدیا پیش می‌آید
+        logger.warning('عکس خوانده نشد (%s): %s', name, exc)
+        return None, committed
+    finally:
+        if committed:
+            # پایین‌تر روی همین فایل می‌نویسیم و ویندوز اجازهٔ
+            # پاک‌کردن فایلِ باز را نمی‌دهد؛ روی لینوکس هم رها
+            # کردنش یعنی نشت توصیف‌گر در حلقه‌های طولانی.
+            try:
+                field_file.close()
+            except Exception:                      # noqa: BLE001
+                pass
+        else:
+            # آپلود تازه: بستن ممنوع، فقط سر جای اول برگردان تا
+            # ذخیرهٔ بعدی جنگو بتواند از ابتدا بخواندش.
+            try:
+                field_file.seek(0)
+            except Exception:                      # noqa: BLE001
+                pass
+    return data, committed
+
+
+def _write(field_file, name, data, suffix, committed):
+    """نتیجه را جای همان فایل می‌نویسد، نه کنارش."""
+    from django.core.files.base import ContentFile
+
+    stem_only = name.rsplit('/', 1)[-1]
+    stem_only = (stem_only[:stem_only.rfind('.')]
+                 if '.' in stem_only else stem_only)
+
+    if not committed:
+        # آپلود تازه: هنوز چیزی روی دیسک نیست، پس بازنویسیِ درجا
+        # معنا ندارد. همین‌جا نسخهٔ تازه ذخیره می‌شود و جنگو بعداً
+        # می‌بیند که فایل نشسته و دوباره نمی‌نویسدش.
+        field_file.save(stem_only + suffix, ContentFile(data), save=False)
+        return
+
+    # ‎FieldFile.save‎ همیشه نام تازه می‌گیرد و اگر نام اشغال باشد هفت
+    # نویسهٔ تصادفی ته آن می‌چسباند. چون همین‌جا داریم روی فایلِ خودمان
+    # می‌نویسیم، آن نام همیشه اشغال است: هر ذخیره یک دنبالهٔ تازه
+    # اضافه می‌کرد («1.jpg» → «1_aB3.jpg» → «1_aB3_xY9.jpg») و نسخهٔ
+    # قبلی را یتیم روی دیسک جا می‌گذاشت.
+    folder = name.rsplit('/', 1)[0] + '/' if '/' in name else ''
+    stem = name.rsplit('/', 1)[-1]
+    stem = stem[:stem.rfind('.')] if '.' in stem else stem
+    target = folder + stem + suffix
+
+    storage = field_file.storage
+    previous = field_file.name
+    if storage.exists(target):
+        storage.delete(target)
+    field_file.name = storage.save(target, ContentFile(data))
+
+    # فایل قبلی اگر پسوندش عوض شده باشد (PNG که JPEG شد) هنوز هست
+    if previous != field_file.name and storage.exists(previous):
+        storage.delete(previous)
+
+
 def shrink(field_file, max_width: int = DEFAULT_WIDTH,
            quality: int = DEFAULT_QUALITY) -> bool:
     """عکس یک ImageField را کوچک و دوباره فشرده می‌کند.
@@ -74,37 +147,9 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
         logger.warning('Pillow نصب نیست — تصویرها کوچک نمی‌شوند.')
         return False
 
-    # آیا این فایل از قبل روی استوریج نشسته، یا تازه آپلود شده؟
-    #
-    # فرقش سرنوشت‌ساز است: فایل تازه‌آپلودشده را جنگو بعداً — داخل
-    # ‎Model.save()‎ و در ‎FileField.pre_save‎ — روی دیسک می‌نویسد.
-    # اگر اینجا ببندیمش، آن نوشتن با «I/O operation on closed file»
-    # می‌شکند و افزودن اسلاید در پنل خطای ۵۰۰ می‌دهد.
-    committed = getattr(field_file, '_committed', True)
-
-    try:
-        field_file.open('rb')
-        original = field_file.read()
-    except (OSError, ValueError) as exc:
-        # فایل روی دیسک نیست — بعد از انتقال مدیا پیش می‌آید
-        logger.warning('عکس خوانده نشد (%s): %s', name, exc)
+    original, committed = _read(field_file, name)
+    if original is None:
         return False
-    finally:
-        if committed:
-            # پایین‌تر روی همین فایل می‌نویسیم و ویندوز اجازهٔ
-            # پاک‌کردن فایلِ باز را نمی‌دهد؛ روی لینوکس هم رها
-            # کردنش یعنی نشت توصیف‌گر در حلقه‌های طولانی.
-            try:
-                field_file.close()
-            except Exception:                      # noqa: BLE001
-                pass
-        else:
-            # آپلود تازه: بستن ممنوع، فقط سر جای اول برگردان تا
-            # ذخیرهٔ بعدی جنگو بتواند از ابتدا بخواندش.
-            try:
-                field_file.seek(0)
-            except Exception:                      # noqa: BLE001
-                pass
 
     try:
         image = Image.open(io.BytesIO(original))
@@ -149,40 +194,123 @@ def shrink(field_file, max_width: int = DEFAULT_WIDTH,
     if len(shrunk) >= len(original):
         return False
 
-    from django.core.files.base import ContentFile
+    _write(field_file, name, shrunk, suffix, committed)
+    return True
 
-    stem_only = name.rsplit('/', 1)[-1]
-    stem_only = (stem_only[:stem_only.rfind('.')]
-                 if '.' in stem_only else stem_only)
 
-    if not committed:
-        # آپلود تازه: هنوز چیزی روی دیسک نیست، پس بازنویسیِ درجا
-        # معنا ندارد. همین‌جا نسخهٔ کوچک ذخیره می‌شود و جنگو بعداً
-        # می‌بیند که فایل نشسته و دوباره نمی‌نویسدش.
-        field_file.save(stem_only + suffix, ContentFile(shrunk), save=False)
-        return True
+# نشانی که به‌جای پس‌زمینه گذاشته می‌شود تا بعد شفافش کنیم. رنگی
+# انتخاب می‌شود که در خودِ تصویر نباشد، وگرنه بخشی از خودِ نشان هم
+# پاک می‌شود.
+_SENTINELS = [(255, 0, 255), (0, 255, 0), (255, 255, 0), (0, 255, 255)]
 
-    # جای همان فایل نوشته می‌شود، نه کنارش.
-    #
-    # ‎FieldFile.save‎ همیشه نام تازه می‌گیرد و اگر نام اشغال باشد هفت
-    # نویسهٔ تصادفی ته آن می‌چسباند. چون همین‌جا داریم روی فایلِ خودمان
-    # می‌نویسیم، آن نام همیشه اشغال است: هر ذخیره یک دنبالهٔ تازه
-    # اضافه می‌کرد («1.jpg» → «1_aB3.jpg» → «1_aB3_xY9.jpg») و نسخهٔ
-    # قبلی را یتیم روی دیسک جا می‌گذاشت.
-    folder = name.rsplit('/', 1)[0] + '/' if '/' in name else ''
-    stem = name.rsplit('/', 1)[-1]
-    stem = stem[:stem.rfind('.')] if '.' in stem else stem
-    target = folder + stem + suffix
 
-    storage = field_file.storage
-    previous = field_file.name
-    if storage.exists(target):
-        storage.delete(target)
-    field_file.name = storage.save(target, ContentFile(shrunk))
+def _unused_colour(image):
+    """رنگی که هیچ پیکسلی از این تصویر ندارد."""
+    from PIL import Image, ImageChops
 
-    # فایل قبلی اگر پسوندش عوض شده باشد (PNG که JPEG شد) هنوز هست
-    if previous != field_file.name and storage.exists(previous):
-        storage.delete(previous)
+    for colour in _SENTINELS:
+        flat = Image.new('RGB', image.size, colour)
+        red, green, blue = ImageChops.difference(image, flat).split()
+        worst = ImageChops.lighter(ImageChops.lighter(red, green), blue)
+        # کمینهٔ اختلاف اگر صفر باشد یعنی پیکسلی دقیقاً همین رنگ است
+        if worst.getextrema()[0] > 0:
+            return colour
+    return None
+
+
+def drop_flat_background(field_file, tolerance: int = 40) -> bool:
+    """پس‌زمینهٔ یکدستِ دور تصویر را شفاف می‌کند.
+
+    چرا لازم شد
+    ───────────
+    نشان‌هایی که از اینترنت برداشته می‌شوند معمولاً JPEG با پس‌زمینهٔ
+    سیاه یا سفیدِ توپر هستند، نه PNG شفاف. چنین فایلی در سربرگ به یک
+    مربعِ رنگی تبدیل می‌شود و مدیر سایت راهی برای درست‌کردنش ندارد جز
+    آنکه با یک ویرایشگر گرافیکی خودش فایل را بسازد.
+
+    چطور کار می‌کند
+    ───────────────
+    پُرکردنِ سیلابی از چهار گوشه، نه جایگزینیِ سراسریِ رنگ. فرقش
+    همه‌چیز است: در نشانِ جمهوری اسلامی، دایرهٔ سیاهِ وسط هم سیاه
+    است، و جایگزینیِ سراسری آن را هم سوراخ می‌کرد. سیلاب فقط به
+    ناحیه‌ای می‌رسد که از لبه به آن راه باشد.
+
+    دست‌نگه‌داشتن در سه حالت
+    ────────────────────────
+    - تصویر از قبل شفافیت دارد؛ کاری لازم نیست.
+    - چهار گوشه هم‌رنگ نیستند؛ یعنی پس‌زمینهٔ یکدستی در کار نیست و
+      حدس‌زدن خطرناک است.
+    - نتیجه تقریباً همه‌چیز را پاک می‌کند یا تقریباً هیچ‌چیز؛ هر دو
+      یعنی تشخیص غلط بوده.
+    """
+    if not field_file:
+        return False
+
+    name = getattr(field_file, 'name', '') or ''
+    if _extension(name) in UNTOUCHED:
+        return False
+
+    try:
+        from PIL import Image, ImageChops, ImageDraw, ImageOps
+    except ImportError:
+        logger.warning('Pillow نصب نیست — پس‌زمینه شفاف نمی‌شود.')
+        return False
+
+    original, committed = _read(field_file, name)
+    if original is None:
+        return False
+
+    try:
+        image = ImageOps.exif_transpose(Image.open(io.BytesIO(original)))
+
+        # از قبل شفاف است؟ دست نزن.
+        if image.mode in ('RGBA', 'LA') or (
+                image.mode == 'P' and 'transparency' in image.info):
+            alpha = image.convert('RGBA').getchannel('A')
+            if alpha.getextrema()[0] < 250:
+                return False
+
+        rgb = image.convert('RGB')
+        width, height = rgb.size
+        corners = [rgb.getpixel(xy) for xy in
+                   ((0, 0), (width - 1, 0), (0, height - 1),
+                    (width - 1, height - 1))]
+        base = corners[0]
+        for corner in corners[1:]:
+            if max(abs(a - b) for a, b in zip(base, corner)) > tolerance:
+                return False          # پس‌زمینهٔ یکدستی در کار نیست
+
+        sentinel = _unused_colour(rgb)
+        if sentinel is None:
+            return False
+
+        work = rgb.copy()
+        for xy in ((0, 0), (width - 1, 0), (0, height - 1),
+                   (width - 1, height - 1)):
+            ImageDraw.floodfill(work, xy, sentinel, thresh=tolerance)
+
+        flat = Image.new('RGB', work.size, sentinel)
+        red, green, blue = ImageChops.difference(work, flat).split()
+        worst = ImageChops.lighter(ImageChops.lighter(red, green), blue)
+        # صفر یعنی دقیقاً همان نشان — یعنی پس‌زمینه
+        alpha = worst.point(lambda value: 0 if value == 0 else 255)
+
+        cleared = sum(1 for value in alpha.getdata() if value == 0)
+        share = cleared / float(max(1, width * height))
+        if share < .02 or share > .95:
+            return False          # تشخیص غلط بوده
+
+        out = rgb.convert('RGBA')
+        out.putalpha(alpha)
+
+        buffer = io.BytesIO()
+        out.save(buffer, 'PNG', optimize=True)
+        cleaned = buffer.getvalue()
+    except Exception as exc:                      # noqa: BLE001
+        logger.warning('پس‌زمینه شفاف نشد (%s): %s', name, exc)
+        return False
+
+    _write(field_file, name, cleaned, '.png', committed)
     return True
 
 

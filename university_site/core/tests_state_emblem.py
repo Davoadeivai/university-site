@@ -121,3 +121,117 @@ class ABigUploadIsShrunkTests(TestCase):
         """کوچک‌کردن فاویکون خرابش می‌کند."""
         self.assertNotIn('favicon', SiteSettings.shrink_images)
         self.assertNotIn('logo', SiteSettings.shrink_images)
+
+
+class ABlackBackgroundBecomesTransparentTests(TestCase):
+    """نشانی که از اینترنت می‌آید معمولاً JPEG با پس‌زمینهٔ توپر است.
+
+    چنین فایلی در سربرگ یک مربع سیاه می‌شود و مدیر سایت راهی برای
+    درست‌کردنش ندارد جز ساختن فایل با ویرایشگر گرافیکی.
+    """
+
+    def _emblem(self, background=(0, 0, 0), fmt='JPEG'):
+        """نشانی شبیه ارم الله: پس‌زمینه، حلقهٔ طلایی، دایرهٔ تیرهٔ داخلی."""
+        import io as _io
+
+        from django.core.files.base import ContentFile
+        from django.core.files.storage import default_storage
+        from PIL import Image, ImageDraw
+
+        image = Image.new('RGB', (200, 200), background)
+        draw = ImageDraw.Draw(image)
+        draw.ellipse((10, 10, 190, 190), fill=(212, 160, 23))
+        draw.ellipse((35, 35, 165, 165), fill=background)
+        draw.ellipse((70, 70, 130, 130), fill=(212, 160, 23))
+        buffer = _io.BytesIO()
+        image.save(buffer, fmt)
+        name = default_storage.save(
+            'site/probe.%s' % ('jpg' if fmt == 'JPEG' else 'png'),
+            ContentFile(buffer.getvalue()))
+        self.addCleanup(default_storage.delete, name)
+        return name
+
+    def _saved(self, name):
+        import io as _io
+
+        from django.core.files.storage import default_storage
+        from PIL import Image
+
+        row = SiteSettings.objects.create(university_name_fa='موسسه')
+        row.state_emblem.name = name
+        row.save()
+        self.addCleanup(
+            lambda: default_storage.exists(row.state_emblem.name)
+            and default_storage.delete(row.state_emblem.name))
+        with default_storage.open(row.state_emblem.name, 'rb') as handle:
+            return row, Image.open(_io.BytesIO(handle.read())).convert('RGBA')
+
+    def test_the_black_square_is_gone(self):
+        _, image = self._saved(self._emblem())
+        self.assertEqual(image.getpixel((2, 2))[3], 0)
+
+    def test_the_emblem_itself_survives(self):
+        """جایگزینیِ سراسریِ سیاه، دایرهٔ داخلی نشان را هم سوراخ می‌کرد."""
+        _, image = self._saved(self._emblem())
+        self.assertEqual(image.getpixel((100, 45))[3], 255)   # حلقهٔ طلایی
+        self.assertEqual(image.getpixel((100, 50))[3], 255)   # سیاهِ داخلی
+
+    def test_it_is_stored_as_png(self):
+        row, _ = self._saved(self._emblem())
+        self.assertTrue(row.state_emblem.name.endswith('.png'))
+
+    def test_a_white_background_works_the_same(self):
+        _, image = self._saved(self._emblem(background=(255, 255, 255)))
+        self.assertEqual(image.getpixel((2, 2))[3], 0)
+
+    def test_an_already_transparent_file_is_left_alone(self):
+        import io as _io
+
+        from django.core.files.base import ContentFile
+        from django.core.files.storage import default_storage
+        from PIL import Image
+
+        image = Image.new('RGBA', (60, 60), (0, 0, 0, 0))
+        image.paste((212, 160, 23, 255), (10, 10, 50, 50))
+        buffer = _io.BytesIO()
+        image.save(buffer, 'PNG')
+        name = default_storage.save('site/clear.png',
+                                    ContentFile(buffer.getvalue()))
+        self.addCleanup(
+            lambda: default_storage.exists(name)
+            and default_storage.delete(name))
+
+        from core.imaging import drop_flat_background
+
+        row = SiteSettings.objects.create(university_name_fa='موسسه')
+        row.state_emblem.name = name
+        self.assertFalse(drop_flat_background(row.state_emblem))
+
+    def test_a_busy_photo_is_left_alone(self):
+        """گوشه‌های ناهم‌رنگ یعنی پس‌زمینهٔ یکدستی نیست؛ حدس ممنوع."""
+        import io as _io
+
+        from django.core.files.base import ContentFile
+        from django.core.files.storage import default_storage
+        from PIL import Image, ImageDraw
+
+        image = Image.new('RGB', (100, 100), (10, 10, 10))
+        ImageDraw.Draw(image).rectangle((0, 0, 49, 49), fill=(240, 30, 90))
+        buffer = _io.BytesIO()
+        image.save(buffer, 'JPEG')
+        name = default_storage.save('site/busy.jpg',
+                                    ContentFile(buffer.getvalue()))
+        self.addCleanup(
+            lambda: default_storage.exists(name)
+            and default_storage.delete(name))
+
+        from core.imaging import drop_flat_background
+
+        row = SiteSettings.objects.create(university_name_fa='موسسه')
+        row.state_emblem.name = name
+        self.assertFalse(drop_flat_background(row.state_emblem))
+
+    def test_no_file_is_harmless(self):
+        from core.imaging import drop_flat_background
+
+        self.assertFalse(drop_flat_background(None))

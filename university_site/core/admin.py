@@ -60,6 +60,24 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 '<span style="color:#b45309;">فایل پیدا نشد: {}</span>', image.name)
 
         note = ''
+        if field_name == 'state_emblem':
+            # پس‌زمینهٔ یکدست هنگام آپلود شفاف می‌شود؛ اگر باز هم
+            # تصویر کاملاً مات مانده، یعنی تشخیص نگرفته و مدیر باید
+            # نسخهٔ شفاف بگذارد — وگرنه در بنر یک مربع رنگی می‌بیند.
+            try:
+                from PIL import Image
+                with Image.open(image.path) as probe:
+                    opaque = (probe.mode not in ('RGBA', 'LA')
+                              or probe.convert('RGBA')
+                              .getchannel('A').getextrema()[0] >= 250)
+            except Exception:                      # noqa: BLE001
+                opaque = False
+            if opaque:
+                note = format_html(
+                    '<div style="color:#b45309;margin-top:4px;">'
+                    'این تصویر پس‌زمینهٔ شفاف ندارد و در سربرگ به‌صورت '
+                    'یک مربع رنگی دیده می‌شود. نسخهٔ PNG با پس‌زمینهٔ '
+                    'شفاف آپلود کنید.</div>')
         if field_name in ('favicon', 'world_class_logo') and width and height:
             ratio = max(width, height) / min(width, height)
             if ratio > 1.2:
