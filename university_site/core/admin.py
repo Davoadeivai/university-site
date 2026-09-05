@@ -39,6 +39,9 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         'world_class_logo': ('نشان کلاس جهانی',
                              'دو سوی نام در سربرگ، و صفحهٔ ریاست',
                              'مربع، ترجیحاً PNG شفاف'),
+        'state_emblem': ('ارم الله',
+                         'سمت چپ سربرگ، کنار نام وزارت علوم',
+                         'عمودی، حدود ۱۸۲×۱۹۸، PNG شفاف'),
     }
 
     def _preview(self, field_name):
@@ -88,6 +91,10 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
         return self._preview('world_class_logo')
     world_class_logo_preview.short_description = 'پیش‌نمایش نشان کلاس جهانی'
 
+    def state_emblem_preview(self, obj=None):
+        return self._preview('state_emblem')
+    state_emblem_preview.short_description = 'پیش‌نمایش ارم الله'
+
     def get_form(self, request, obj=None, **kwargs):
         # پیش‌نمایش‌ها به رکورد نیاز دارند و متدهای readonly آن را
         # نمی‌گیرند؛ همین‌جا نگهش می‌داریم.
@@ -97,7 +104,7 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         base = list(super().get_readonly_fields(request, obj))
         for name in ('logo_preview', 'favicon_preview',
-                     'world_class_logo_preview'):
+                     'world_class_logo_preview', 'state_emblem_preview'):
             if name not in base:
                 base.append(name)
         return base
@@ -122,9 +129,10 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'logo', 'logo_preview',
                 'favicon', 'favicon_preview',
                 'world_class_logo', 'world_class_logo_preview',
+                'state_emblem', 'state_emblem_preview',
             ),
             'description': (
-                'سه فیلد تصویری سه کار متفاوت دارند و پیش‌نمایش هرکدام '
+                'چهار فیلد تصویری چهار کار متفاوت دارند و پیش‌نمایش هرکدام '
                 'زیرش می‌آید.<br>'
                 'برای <b>برداشتن</b> یک تصویر، تیک «Clear» کنار همان '
                 'فیلد را بزنید و ذخیره کنید — بقیه دست‌نخورده می‌مانند.'

@@ -40,7 +40,13 @@ def _org_chart_file_upload_to(instance, filename):
 DEFAULT_HOME_SLIDES = 7
 
 
-class SiteSettings(models.Model):
+class SiteSettings(ShrinkImagesMixin, models.Model):
+    # فقط ارم الله کوچک می‌شود، نه بقیهٔ تصویرها: این یکی در سربرگِ
+    # هر صفحه و با بارگذاری زودهنگام می‌آید، پس یک عکس چهارهزار
+    # پیکسلی هر بازدید را کند می‌کند. فاویکون و لوگو عمداً بیرون‌اند —
+    # کوچک‌کردن فاویکون خرابش می‌کند.
+    shrink_images = {'state_emblem': 400}
+
     university_name_fa = models.CharField(_('نام دانشگاه (فارسی)'), max_length=200, default='موسسه آموزش عالی علامه امینی')
     university_name_en = models.CharField(
         _('نام دانشگاه (انگلیسی)'), max_length=200,
@@ -64,6 +70,19 @@ class SiteSettings(models.Model):
             'کنار «تاریخچه مؤسسه» دیده می‌شود. اگر خالی باشد، عکس '
             'پیش‌فرض پردیس نمایش داده می‌شود. نسبت افقی (مثلاً '
             '۱۶۰۰×۹۰۰) بهترین نتیجه را می‌دهد.'))
+    # نشان جمهوری اسلامی («ارم الله») در سوی چپ سربرگ.
+    #
+    # تا امروز یک فایل ثابت در پوشهٔ static بود؛ عوض‌کردنش یعنی
+    # ویرایش کد و یک دیپلوی کامل. حالا از پنل آپلود می‌شود و
+    # خالی‌ماندنش یعنی همان نشان پیش‌فرض — پس سربرگ هیچ‌وقت بی‌نشان
+    # نمی‌ماند.
+    state_emblem = models.ImageField(
+        _('ارم الله (نشان جمهوری اسلامی)'),
+        upload_to='site/', blank=True, null=True,
+        help_text=_(
+            'سمت چپ سربرگ، کنار «جمهوری اسلامی ایران». خالی بگذارید '
+            'تا نشان پیش‌فرض بماند. PNG با پس‌زمینهٔ شفاف بهترین '
+            'نتیجه را می‌دهد؛ نسبت عمودی (مثلاً ۱۸۲×۱۹۸).'))
     faculties_pdf = models.FileField(
         _('فایل رشته‌های دانشکده‌ها (PDF)'),
         upload_to='site/faculties/', blank=True, null=True,

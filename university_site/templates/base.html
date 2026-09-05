@@ -202,7 +202,12 @@
             <span class="bnr-min">
                 جمهوری اسلامی ایران<br>وزارت علوم، تحقیقات و فناوری
             </span>
-            <img src="{% static 'images/mark-iran.png' %}" alt="" aria-hidden="true"
+            {% comment %}
+            نشان از پنل می‌آید و اگر آپلود نشده باشد، فایل پیش‌فرض
+            می‌ماند — یعنی این جای سربرگ هیچ‌وقت خالی نمی‌شود.
+            {% endcomment %}
+            <img src="{% if site_settings.state_emblem %}{{ site_settings.state_emblem.url }}{% else %}{% static 'images/mark-iran.png' %}{% endif %}"
+                 alt="" aria-hidden="true"
                  width="182" height="198" fetchpriority="high">
         </span>
     </a>
