@@ -1,4 +1,4 @@
-"""نوار «فوری» زیر بنر: یک خط، روان از چپ به راست."""
+"""نوار «فوری» زیر بنر: یک خط، یک نسخه، آرام از چپ به راست."""
 from datetime import timedelta
 from pathlib import Path
 
@@ -22,20 +22,27 @@ def _rule(selector):
     return css[start:css.index('}', start)]
 
 
+def _keyframes():
+    css = _css()
+    start = css.index('@keyframes urgentSlide')
+    return css[start:css.index('}' + chr(10) + '}', start)]
+
+
+def _announce(count):
+    Announcement.objects.all().delete()
+    for index in range(count):
+        Announcement.objects.create(
+            title='اطلاعیهٔ فوری شمارهٔ %d' % index, content='…',
+            is_active=True, is_urgent=True,
+            expires_at=timezone.now().date() + timedelta(days=30))
+
+
 class TheBarStaysOnOneLineTests(TestCase):
     """با دو اطلاعیه دو خطی می‌شد و روی گوشی کل اسلایدر را می‌پوشاند."""
 
     def setUp(self):
         cache.clear()
-        for index in range(3):
-            Announcement.objects.create(
-                title='اطلاعیهٔ فوری شمارهٔ %d با عنوانی نسبتاً بلند' % index,
-                content='…', is_active=True, is_urgent=True,
-                expires_at=timezone.now().date() + timedelta(days=30))
-
-    def _html(self):
-        cache.clear()
-        return self.client.get(reverse('core:home')).content.decode()
+        _announce(3)
 
     def test_the_bar_is_height_locked(self):
         rule = _rule('.urgent-bar')
@@ -55,40 +62,71 @@ class TheBarStaysOnOneLineTests(TestCase):
         self.assertIn('min-inline-size: 0', rule)
         self.assertIn('overflow: hidden', rule)
 
+    def test_the_ticker_keeps_its_own_height(self):
+        """ریل مطلق است؛ بدون قدِ صریح، قاب صفر می‌شود و چیزی دیده نمی‌شود."""
+        self.assertIn('block-size: 22px', _rule('.urgent-ticker'))
 
-class ItMovesLeftToRightTests(TestCase):
+
+class OneCopyOnlyTests(TestCase):
+    """دو نسخه هم‌زمان دیده می‌شد و نوار دوتایی به‌نظر می‌رسید."""
 
     def setUp(self):
         cache.clear()
-        Announcement.objects.create(
-            title='اطلاعیهٔ فوری', content='…', is_active=True,
-            is_urgent=True,
-            expires_at=timezone.now().date() + timedelta(days=30))
+        _announce(2)
 
     def _html(self):
         cache.clear()
         return self.client.get(reverse('core:home')).content.decode()
 
+    def test_the_old_duplicate_wrapper_is_gone(self):
+        self.assertNotIn('urgent-run', self._html())
+        self.assertNotIn('.urgent-run', _css())
+
+    def test_each_headline_appears_once(self):
+        # فقط داخل خودِ نوار؛ همین عنوان‌ها پایین‌تر در بخش
+        # اطلاعیه‌های صفحهٔ اصلی هم می‌آیند.
+        ticker = self._html().split('urgent-ticker')[1].split('</div>')[0]
+        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 0'), 1)
+        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 1'), 1)
+
+    def test_nothing_is_hidden_from_screen_readers_any_more(self):
+        """نسخهٔ دوم رفت، پس دیگر چیزی برای پنهان‌کردن نیست."""
+        html = self._html()
+        ticker = html.split('urgent-ticker')[1].split('</div>')[0]
+        self.assertNotIn('aria-hidden', ticker)
+
+
+class ItMakesOneFullPassLeftToRightTests(TestCase):
+
+    def setUp(self):
+        cache.clear()
+        _announce(1)
+
     def test_the_track_is_animated(self):
         self.assertIn('animation: urgentSlide', _rule('.urgent-track'))
 
-    def test_the_direction_is_left_to_right(self):
-        css = _css()
-        start = css.index('@keyframes urgentSlide')
-        block = css[start:css.index('}\n}', start)]
-        self.assertIn('from { transform: translateX(-50%)', block)
-        self.assertIn('to   { transform: translateX(0)', block)
+    def test_it_starts_outside_the_left_edge(self):
+        self.assertIn('from { left: 0;    transform: translateX(-100%)',
+                      _keyframes())
 
-    def test_the_text_is_written_twice_for_a_seamless_loop(self):
-        html = self._html()
-        bar = html.split('urgent-bar')[1].split('</div>\n</div>')[0]
-        self.assertEqual(bar.count('urgent-run'), 2)
+    def test_it_ends_outside_the_right_edge(self):
+        self.assertIn('to   { left: 100%; transform: translateX(0)',
+                      _keyframes())
 
-    def test_the_second_copy_is_hidden_from_screen_readers(self):
-        """وگرنه هر خبر دو بار خوانده می‌شود."""
-        html = self._html()
-        second = html.split('urgent-run')[2]
-        self.assertIn('aria-hidden="true"', second[:60])
+    def test_the_pass_uses_both_reference_frames(self):
+        """متنی که از قاب کوتاه‌تر است با یک واحد هرگز کامل رد نمی‌شود.
+
+        درصدِ ‎left‎ از پهنای قاب می‌آید و درصدِ ‎translateX‎ از پهنای
+        خودِ متن؛ کنار هم یعنی گذرِ کامل، مستقل از اینکه کدام بلندتر
+        است.
+        """
+        block = _keyframes()
+        self.assertIn('left:', block)
+        self.assertIn('translateX', block)
+
+    def test_no_fade_hides_the_edges(self):
+        """موسسه خواست متن کامل دیده شود."""
+        self.assertNotIn('mask-image', _rule('.urgent-ticker'))
 
     def test_it_pauses_on_hover(self):
         css = _css()
@@ -100,30 +138,27 @@ class ItMovesLeftToRightTests(TestCase):
         block = css[css.index('@media (prefers-reduced-motion: reduce)',
                               css.index('.urgent-track')):][:400]
         self.assertIn('animation: none', block)
+        self.assertIn('position: static', block)
 
 
-class TheSpeedFollowsTheContentTests(TestCase):
+class TheSpeedIsUnhurriedTests(TestCase):
     """سه خبر با زمانِ یک خبر رد می‌شدند و خوانده نمی‌شدند."""
 
-    def _html(self, count):
+    def _seconds(self, count):
         cache.clear()
-        Announcement.objects.all().delete()
-        for index in range(count):
-            Announcement.objects.create(
-                title='خبر %d' % index, content='…', is_active=True,
-                is_urgent=True,
-                expires_at=timezone.now().date() + timedelta(days=30))
-        return self.client.get(reverse('core:home')).content.decode()
+        _announce(count)
+        html = self.client.get(reverse('core:home')).content.decode()
+        return int(html.split('--urgent-secs: ')[1].split('s')[0])
 
-    def _seconds(self, html):
-        chunk = html.split('--urgent-secs: ')[1].split('s')[0]
-        return int(chunk)
+    def test_one_item_is_slow_enough_to_read(self):
+        self.assertGreaterEqual(self._seconds(1), 30)
 
-    def test_one_item_is_quick(self):
-        self.assertEqual(self._seconds(self._html(1)), 16)
+    def test_it_got_slower_than_before(self):
+        """پیش از این ۱۶ ثانیه بود و موسسه گفت تندتر از خواندن است."""
+        self.assertGreater(self._seconds(1), 16)
 
-    def test_three_items_take_longer(self):
-        self.assertEqual(self._seconds(self._html(3)), 48)
+    def test_more_items_take_proportionally_longer(self):
+        self.assertEqual(self._seconds(3), 3 * self._seconds(1))
 
     def test_the_bar_is_gone_when_nothing_is_urgent(self):
         cache.clear()
