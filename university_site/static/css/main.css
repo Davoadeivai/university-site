@@ -695,7 +695,7 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     inset-block-start: 0;
     left: 0;
     white-space: nowrap;
-    animation: urgentSlide var(--urgent-secs, 34s) linear infinite;
+    animation: urgentSlide var(--urgent-secs, 60s) linear infinite;
 }
 /* روی نوار که بایستید، می‌ایستد — وگرنه خبری که نیمه‌خوانده مانده
    از قاب بیرون می‌رود و باید یک دور کامل منتظرش ماند. */
@@ -717,13 +717,15 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     background: rgba(255, 255, 255, .45);
 }
 
-/* یک گذرِ کامل: از بیرونِ لبهٔ چپ تا بیرونِ لبهٔ راست.
-   دو واحد با دو مرجعِ متفاوت لازم است — ‎left‎ درصدش را از پهنای
-   قاب می‌گیرد و ‎translateX‎ از پهنای خودِ متن. با فقط یکی از این
-   دو، متنی که از قاب کوتاه‌تر است هیچ‌وقت کامل رد نمی‌شود. */
+/* از همان گوشهٔ چپ، دیده‌شده، و بعد آرام به راست.
+   نسخهٔ پیش از این از بیرونِ قاب شروع می‌کرد: خبر چند ثانیه اول
+   اصلاً دیده نمی‌شد و وقتی می‌رسید، داشت می‌رفت. حالا لحظهٔ صفر
+   کنار لبهٔ چپ ایستاده و خوانده می‌شود.
+   ‎left‎ درصدش را از پهنای قاب می‌گیرد، پس ۱۰۰٪ یعنی درست تا لبهٔ
+   راست — مستقل از اینکه متن چقدر بلند باشد. */
 @keyframes urgentSlide {
-    from { left: 0;    transform: translateX(-100%); }
-    to   { left: 100%; transform: translateX(0); }
+    from { left: 0; }
+    to   { left: 100%; }
 }
 
 /* کسی که حرکت را دوست ندارد یا برایش آزاردهنده است: نوار می‌ایستد

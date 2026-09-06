@@ -105,24 +105,18 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
     def test_the_track_is_animated(self):
         self.assertIn('animation: urgentSlide', _rule('.urgent-track'))
 
-    def test_it_starts_outside_the_left_edge(self):
-        self.assertIn('from { left: 0;    transform: translateX(-100%)',
-                      _keyframes())
-
-    def test_it_ends_outside_the_right_edge(self):
-        self.assertIn('to   { left: 100%; transform: translateX(0)',
-                      _keyframes())
-
-    def test_the_pass_uses_both_reference_frames(self):
-        """متنی که از قاب کوتاه‌تر است با یک واحد هرگز کامل رد نمی‌شود.
-
-        درصدِ ‎left‎ از پهنای قاب می‌آید و درصدِ ‎translateX‎ از پهنای
-        خودِ متن؛ کنار هم یعنی گذرِ کامل، مستقل از اینکه کدام بلندتر
-        است.
-        """
+    def test_it_starts_at_the_left_corner_already_visible(self):
+        """پیش از این از بیرونِ قاب می‌آمد و تا می‌رسید، داشت می‌رفت."""
         block = _keyframes()
-        self.assertIn('left:', block)
-        self.assertIn('translateX', block)
+        self.assertIn('from { left: 0; }', block)
+        self.assertNotIn('translateX(-100%)', block)
+
+    def test_it_ends_at_the_right_edge(self):
+        self.assertIn('to   { left: 100%;', _keyframes())
+
+    def test_the_travel_is_measured_against_the_bar(self):
+        """درصدِ ‎left‎ از پهنای قاب می‌آید، پس گذر همیشه کامل است."""
+        self.assertIn('left:', _keyframes())
 
     def test_no_fade_hides_the_edges(self):
         """موسسه خواست متن کامل دیده شود."""
@@ -151,11 +145,11 @@ class TheSpeedIsUnhurriedTests(TestCase):
         return int(html.split('--urgent-secs: ')[1].split('s')[0])
 
     def test_one_item_is_slow_enough_to_read(self):
-        self.assertGreaterEqual(self._seconds(1), 30)
+        self.assertGreaterEqual(self._seconds(1), 55)
 
-    def test_it_got_slower_than_before(self):
-        """پیش از این ۱۶ ثانیه بود و موسسه گفت تندتر از خواندن است."""
-        self.assertGreater(self._seconds(1), 16)
+    def test_it_got_slower_twice(self):
+        """اول ۱۶ ثانیه بود، بعد ۳۴، و باز هم تند بود."""
+        self.assertGreater(self._seconds(1), 34)
 
     def test_more_items_take_proportionally_longer(self):
         self.assertEqual(self._seconds(3), 3 * self._seconds(1))
