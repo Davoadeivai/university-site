@@ -95,4 +95,66 @@ def global_context(request):
     # در قالب با کلید در دسترس است: sections.features.image
     data = dict(cached)
     data['sections'] = {s.key: s for s in HomeSection.objects.all()}
+    data['nav_active'] = _active_tab(request)
     return data
+
+
+# کدام صفحه به کدام تب نوار بالا تعلق دارد.
+#
+# کلید «فضای‌نام:نام مسیر» است، و اگر نام مسیر نیامده باشد، همهٔ
+# مسیرهای آن فضای‌نام به همان تب می‌روند.
+NAV_TABS = {
+    'core:home': 'home',
+
+    'core:about': 'about',
+    'core:institution_goals': 'about',
+    'core:board_founders': 'about',
+    'core:board_trustees': 'about',
+    'core:city_behnammir': 'about',
+
+    'core:presidency': 'presidency',
+    'core:presidency_office': 'presidency',
+    'core:presidency_office_unit': 'presidency',
+    'core:public_relations': 'presidency',
+    'core:security_office': 'presidency',
+    'core:international_office': 'presidency',
+
+    'core:vices_list': 'vices',
+    'core:vice_detail': 'vices',
+    'core:deputies': 'vices',
+    'core:graduate_studies': 'vices',
+    'core:graduate_manager': 'vices',
+
+    'core:councils': 'councils',
+    'core:council_detail': 'councils',
+
+    'academics:departments': 'faculties',
+    'academics:department_detail': 'faculties',
+    'academics:major_detail': 'faculties',
+    'academics:majors': 'faculties',
+    'academics:groups_list': 'groups',
+    'academics:group_detail': 'groups',
+    'academics:group_heads': 'groups',
+
+    'news': 'news',
+    'admissions': 'admissions',
+    'contact': 'contact',
+    'library': 'services',
+    'research': 'services',
+}
+
+
+def _active_tab(request):
+    """نام تبِ نوار بالا که باید برجسته باشد.
+
+    تا امروز فقط «صفحه اصلی» حالت فعال داشت و بقیهٔ تب‌ها — از جمله
+    معاونت‌ها — هیچ‌وقت برجسته نمی‌شدند؛ بازدیدکننده در هر عمقی از
+    سایت که بود، نوار بالا چیزی دربارهٔ جای او نمی‌گفت.
+    """
+    match = getattr(request, 'resolver_match', None)
+    if match is None:
+        return ''
+    namespace = match.namespace or ''
+    name = match.url_name or ''
+    return (NAV_TABS.get('%s:%s' % (namespace, name))
+            or NAV_TABS.get(namespace, ''))

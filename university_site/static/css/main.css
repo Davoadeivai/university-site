@@ -4154,7 +4154,9 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    روی دسکتاپ با هاور و فوکوس باز می‌شود — فوکوس هم لازم است، وگرنه
    کاربر صفحه‌کلید هیچ‌وقت به زیرشاخه‌ها نمی‌رسد. روی موبایل هاوری در
    کار نیست، پس دکمهٔ فلش بازش می‌کند. */
-.vice-lead-row { display: flex; align-items: stretch; }
+/* ردیف معاونت: کل عرض ردیف هدف هاور است، نه فقط متن. نوار باریک
+   میان دو ردیف باعث می‌شد نشانگر لحظه‌ای «بیرون» بیفتد. */
+.vice-lead-row { display: flex; align-items: stretch; position: relative; }
 .vice-lead-row .vice-lead { flex: 1 1 auto; min-inline-size: 0; }
 
 .vice-toggle {
@@ -4210,12 +4212,40 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
         z-index: 5;
     }
 
+    /* پلِ نامرئی میان ردیف و زیرمنو.
+       زیرمنو دقیقاً چسبیده باز می‌شود ولی در حالت بسته هشت پیکسل
+       عقب است؛ در همان هشت پیکسل، نشانگر روی «هیچ‌چیز» بود و
+       زیرمنو بسته می‌شد. این نوار عریض همان شکاف را می‌پوشاند. */
+    .vice-group.has-sub > .vice-sub::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 100%;
+        inline-size: 16px;
+    }
+
+    /* بازشدن با کمی درنگ، بسته‌شدن با درنگ بیشتر.
+       بدون این، عبور از روی ردیف‌های میانی — که برای رسیدن به
+       زیرمنو ناگزیر است — هر بار زیرمنوی تازه‌ای باز و زیرمنوی
+       قبلی را می‌بست؛ منو زیر دست می‌پرید و به‌نظر می‌رسید موس
+       بیش از حد سریع است. */
+    .vice-group.has-sub > .vice-sub {
+        transition-delay: .35s;
+    }
     .vice-group.has-sub:hover > .vice-sub,
     .vice-group.has-sub:focus-within > .vice-sub,
     .vice-group.has-sub.is-open > .vice-sub {
         opacity: 1;
         visibility: visible;
         transform: translateX(0);
+        transition-delay: .12s;
+    }
+
+    /* زیرمنوی معاونتِ آخر می‌توانست از پایین صفحه بیرون بزند و
+       ردیف‌هایش دیگر قابل رسیدن نبودند. */
+    .nav-dd-vices .vice-sub {
+        max-block-size: min(70vh, 460px);
+        overflow-y: auto;
     }
 
     /* روی دسکتاپ دکمه لازم نیست — هاور و فوکوس کار را می‌کنند */
