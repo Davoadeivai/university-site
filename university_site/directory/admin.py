@@ -23,7 +23,12 @@ class DirectoryPersonAdmin(admin.ModelAdmin):
     fieldsets = (
         ('دسته‌بندی', {
             'fields': ('category', 'order', 'is_active'),
-            'description': 'دسته تعیین می‌کند این فرد در کدام صفحهٔ سایت دیده شود.',
+            'description': (
+                'دسته تعیین می‌کند این فرد در کدام صفحهٔ سایت دیده شود.<br>'
+                '<b>هیات مؤسس و هیات امنا استثنا هستند:</b> صفحه‌های آن دو '
+                'از فهرست «اعضای هیئت‌ها» خوانده می‌شوند، نه از اینجا. '
+                'برای دیده‌شدن تغییر روی سایت، آنجا ویرایش کنید.'
+            ),
         }),
         ('نام', {
             'fields': ('honorific', 'first_name', 'last_name', 'full_name'),

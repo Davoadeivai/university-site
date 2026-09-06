@@ -654,8 +654,19 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
 .urgent-bar {
     background: linear-gradient(90deg, #d92d20, #a81d14);
     color: white;
-    padding: 8px 0;
+    padding: 7px 0;
     font-size: 13px;
+    /* قدِ یک خط، قفل‌شده. بدون این، عنوان‌ها می‌پیچیدند و نوار روی
+       گوشی چند خط می‌شد و کل اسلایدر را می‌پوشاند. */
+    line-height: 22px;
+    overflow: hidden;
+}
+.urgent-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* برچسب و متن هرگز زیر هم نمی‌روند */
+    flex-wrap: nowrap;
 }
 .urgent-label {
     background: rgba(255,255,255,0.2);
@@ -663,8 +674,63 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     border-radius: 20px;
     font-weight: 700;
     white-space: nowrap;
+    /* نه کوچک می‌شود، نه می‌شکند */
+    flex: none;
 }
-.urgent-ticker { overflow: hidden; }
+
+/* ── نوار روان ──
+   قاب ثابت است و ریل داخلش حرکت می‌کند. min-inline-size صفر لازم
+   است: بدون آن، آیتمِ فلکسی به اندازهٔ محتوایش پهن می‌ماند و از قاب
+   بیرون می‌زند به‌جای اینکه بریده شود. */
+.urgent-ticker {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    /* ماسکِ محو در دو لبه، تا متن یکهو قطع نشود */
+    -webkit-mask-image: linear-gradient(to right,
+        transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+    mask-image: linear-gradient(to right,
+        transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+}
+.urgent-track {
+    display: flex;
+    inline-size: max-content;
+    /* از چپ به راست، همان‌طور که خواسته شده */
+    animation: urgentSlide var(--urgent-secs, 20s) linear infinite;
+}
+/* روی نوار که بایستید، می‌ایستد — وگرنه خبری که نیمه‌خوانده مانده
+   از قاب بیرون می‌رود و باید یک دور کامل منتظرش ماند. */
+.urgent-bar:hover .urgent-track,
+.urgent-bar:focus-within .urgent-track { animation-play-state: paused; }
+
+.urgent-run { display: flex; flex: none; }
+.urgent-item {
+    white-space: nowrap;
+    padding-inline: 22px;
+    position: relative;
+}
+/* جداکنندهٔ میان خبرها، از CSS نه از متن */
+.urgent-item + .urgent-item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: 5px;
+    inline-size: 1px;
+    background: rgba(255, 255, 255, .45);
+}
+
+@keyframes urgentSlide {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+}
+
+/* کسی که حرکت را دوست ندارد یا برایش آزاردهنده است: نوار می‌ایستد
+   و به‌جایش با انگشت یا موشواره کنار می‌رود. */
+@media (prefers-reduced-motion: reduce) {
+    .urgent-track { animation: none; }
+    .urgent-ticker { overflow-x: auto; }
+    .urgent-run + .urgent-run { display: none; }
+}
 
 /* ---- Hero / Slider ---- */
 .hero-section {

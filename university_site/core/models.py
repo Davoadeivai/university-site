@@ -531,6 +531,14 @@ class BoardMember(ShrinkImagesMixin, models.Model):
     ]
     board_type = models.CharField(_('نوع هیات'), max_length=20, choices=BOARD_TYPE_CHOICES)
     full_name = models.CharField(_('نام و نام خانوادگی'), max_length=200)
+    # کلید ثابتِ همین شخص در سند موسسه.
+    #
+    # تطبیق پیش از این روی خودِ نام انجام می‌شد و همین یک ایراد
+    # پنهان می‌ساخت: اگر کسی نام عضوی را در پنل اصلاح می‌کرد، اجرای
+    # بعدی seed دیگر او را نمی‌شناخت و یک ردیف تازه با نام سند
+    # می‌ساخت. از بیرون این‌طور دیده می‌شد که «ویرایش اعمال نمی‌شود»،
+    # چون نام قدیمی دوباره روی صفحه پیدایش می‌شد.
+    source_key = models.CharField(max_length=200, blank=True, editable=False)
     title = models.CharField(_('عنوان/سمت'), max_length=300, blank=True)
     photo = models.ImageField(_('تصویر'), upload_to='board_members/', blank=True, null=True)
     bio = models.TextField(_('بیوگرافی'), blank=True)

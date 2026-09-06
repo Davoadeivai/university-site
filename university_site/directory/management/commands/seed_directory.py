@@ -160,7 +160,8 @@ class Command(BaseCommand):
                 if count:
                     self.stdout.write('  %s: %d ردیف قدیمی غیرفعال شد' % (category, count))
 
-        board_synced, board_merged = self._sync_board_members(data)
+        board_synced, board_merged = self._sync_board_members(
+            data, trust_document=options['trust_document'])
         lead_changed, conflicts = self._sync_leadership(
             data, refresh=options['refresh_photos'],
             trust_document=options['trust_document'])
@@ -341,7 +342,8 @@ class Command(BaseCommand):
         ).strip()
         return ('%s %s' % (row.get('honorific', ''), bare)).strip()
 
-    def _sync_board_members(self, data) -> tuple[int, int]:
+    def _sync_board_members(self, data,
+                            trust_document: bool = False) -> tuple[int, int]:
         """`core.BoardMember` را هم پر می‌کند.
 
         صفحه‌های «هیات موسس» و «هیات امنا» از آن مدل می‌خوانند. اگر
@@ -354,7 +356,7 @@ class Command(BaseCommand):
         اجرا یک ردیف تازه می‌ساخت — روی سرور ۲۸ ردیف به‌جای ۱۴. اینجا
         ردیف‌های هم‌نام پیدا و ادغام می‌شوند تا خودش را ترمیم کند.
         """
-        synced = merged = 0
+        synced = merged = kept = 0
         for category, board_type in BOARD_TYPE_MAP.items():
             for index, row in enumerate(data.get(category, []), start=1):
                 bare = row.get('full_name', '').strip()
@@ -363,28 +365,60 @@ class Command(BaseCommand):
                 honorific = row.get('honorific', '').strip()
                 display = ('%s %s' % (honorific, bare)).strip()
 
-                matches = [
-                    obj for obj in BoardMember.objects.filter(board_type=board_type)
-                    if _match_key(obj.full_name) == _match_key(bare)
-                ]
+                key = _match_key(bare)
+                rows = list(BoardMember.objects.filter(board_type=board_type))
+                # کلید ثابت اول: نامِ عوض‌شده در پنل نباید باعث شود
+                # این شخص ناشناس بماند و ردیف تکراری بسازد.
+                matches = [obj for obj in rows if obj.source_key == key]
+                if not matches:
+                    # ردیف‌های قدیمی هنوز کلید ندارند؛ یک بار از روی
+                    # نام پیدا و علامت‌گذاری می‌شوند.
+                    matches = [obj for obj in rows
+                               if not obj.source_key
+                               and _match_key(obj.full_name) == key]
 
                 if matches:
                     keep = matches[0]
                     for extra in matches[1:]:
                         extra.delete()
                         merged += 1
-                    keep.full_name = display
-                    keep.title = row.get('position', '')
-                    keep.order = index
-                    keep.is_active = True
-                    keep.save()
+                    # ردیفی که از قبل هست فقط جاهای خالی‌اش پر می‌شود.
+                    #
+                    # پیش از این نام و سمت هر بار از روی سند بازنویسی
+                    # می‌شدند؛ یعنی هر اصلاحی که موسسه در پنل روی
+                    # «هیات امنا» انجام می‌داد، با اجرای بعدی این
+                    # دستور بی‌صدا برمی‌گشت به متن سند. برای بازنویسی
+                    # عمدی، ‎--trust-document‎ هست — همان کلیدی که
+                    # برای ردیف‌های افراد هم به کار می‌رود.
+                    changed = []
+                    if keep.source_key != key:
+                        keep.source_key = key
+                        changed.append('source_key')
+                    if trust_document or not (keep.full_name or '').strip():
+                        keep.full_name = display
+                        changed.append('full_name')
+                    position = row.get('position', '')
+                    if trust_document or not (keep.title or '').strip():
+                        keep.title = position
+                        changed.append('title')
+                    if not keep.is_active:
+                        keep.is_active = True
+                        changed.append('is_active')
+                    if changed:
+                        keep.save(update_fields=changed)
+                    if changed == ['source_key'] or not changed:
+                        kept += 1
                 else:
                     BoardMember.objects.create(
                         board_type=board_type, full_name=display,
                         title=row.get('position', ''), order=index,
-                        is_active=True,
+                        is_active=True, source_key=key,
                     )
                 synced += 1
+        if kept:
+            self.stdout.write(
+                '  %d عضو هیئت از قبل ثبت شده بود و دست نخورد '
+                '(با --trust-document بازنویسی می‌شود)' % kept)
         return synced, merged
 
     def _sync_resources(self, rows) -> tuple[int, int]:

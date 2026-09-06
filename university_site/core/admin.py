@@ -402,10 +402,27 @@ class InstitutionGoalAdmin(CompletenessAdminMixin, admin.ModelAdmin):
 
 @admin.register(BoardMember)
 class BoardMemberAdmin(CompletenessAdminMixin, admin.ModelAdmin):
+    # صفحه‌های «هیات موسس» و «هیات امنا» از همین‌جا می‌خوانند، نه از
+    # «افراد موسسه». دو فهرست برای یک عده آدم وجود دارد و بدون این
+    # توضیح، ویرایش در آن یکی هیچ اثری روی سایت ندارد و کسی هم
+    # نمی‌گوید چرا.
     list_display = ['full_name', 'board_type', 'title', 'order', 'is_active', 'completeness']
     list_editable = ['order', 'is_active']
     list_filter = ['board_type', 'is_active']
     search_fields = ['full_name', 'title', 'bio']
+    fieldsets = (
+        (None, {
+            'fields': ('board_type', 'full_name', 'title', 'photo',
+                       'education', 'specialization', 'bio', 'email',
+                       'order', 'is_active'),
+            'description': (
+                'صفحه‌های <b>هیات مؤسس</b> و <b>هیات امنا</b> روی سایت از '
+                'همین فهرست خوانده می‌شوند. اگر نامی را در «افراد موسسه» '
+                'عوض کنید، روی آن دو صفحه دیده نمی‌شود — تغییر را اینجا '
+                'انجام دهید.'
+            ),
+        }),
+    )
 
 
 @admin.register(CityInfo)

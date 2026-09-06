@@ -563,14 +563,38 @@
 
 <!-- Urgent Announcements -->
 {% if urgent_announcements %}
-<div class="urgent-bar">
+{% comment %}
+نوار فوری همیشه یک خط است.
+
+پیش از این عنوان‌ها پشت سر هم می‌آمدند و می‌پیچیدند؛ با دو اطلاعیه
+نوار دو خطی می‌شد و روی گوشی چند خط، تا جایی که کل اسلایدر زیرش
+گم می‌شد. حالا متن در یک خط می‌ماند و آرام از چپ به راست می‌رود.
+
+متن دو بار نوشته می‌شود: حلقه باید بی‌درز بسته شود و برای این کار
+نسخهٔ دوم باید همان لحظه که نسخهٔ اول از قاب بیرون می‌رود، جایش
+بنشیند. نسخهٔ دوم از دید صفحه‌خوان پنهان است تا خبرها دو بار
+خوانده نشوند.
+
+سرعت با تعداد اطلاعیه‌ها بالا می‌رود، وگرنه سه خبر با همان زمانِ
+یک خبر رد می‌شدند و کسی فرصت خواندنشان را نداشت.
+{% endcomment %}
+<div class="urgent-bar" style="--urgent-secs: {% widthratio urgent_announcements|length 1 16 %}s">
     <div class="container">
-        <div class="d-flex align-items-center gap-3">
-            <span class="urgent-label"><i class="fas fa-exclamation-circle"></i> فوری</span>
+        <div class="urgent-row">
+            <span class="urgent-label"><i class="fas fa-exclamation-circle" aria-hidden="true"></i> فوری</span>
             <div class="urgent-ticker">
-                {% for ann in urgent_announcements %}
-                <span>{{ ann.title }}</span>{% if not forloop.last %} &nbsp;|&nbsp; {% endif %}
-                {% endfor %}
+                <div class="urgent-track">
+                    <span class="urgent-run">
+                        {% for ann in urgent_announcements %}
+                        <span class="urgent-item">{{ ann.title }}</span>
+                        {% endfor %}
+                    </span>
+                    <span class="urgent-run" aria-hidden="true">
+                        {% for ann in urgent_announcements %}
+                        <span class="urgent-item">{{ ann.title }}</span>
+                        {% endfor %}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
