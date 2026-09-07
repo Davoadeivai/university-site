@@ -4260,6 +4260,94 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     .vice-sub { transition: none; }
 }
 
+/* ── دسکتاپ: پنج ستون کنار هم ─────────────────────────────────
+   آکاردئون یک ستونِ بلند می‌ساخت و برای دیدن معاونت پنجم باید تا
+   ته اسکرول می‌کردی. اینجا جا هست و استفاده نمی‌شد: منو باریک بود
+   و صفحه پهن.
+
+   حالا هر معاونت یک ستون است و همهٔ زیرمجموعه‌ها از همان نگاه اول
+   دیده می‌شوند — نه اسکرولی، نه کلیکی برای بازکردن. چیزی که در
+   یک نگاه دیده شود، همان چیزی است که چارت سازمانی می‌خواهد
+   نشان بدهد. */
+@media (min-width: 992px) {
+    .nav-dd-vices {
+        --cols: 5;
+        display: grid !important;
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+        gap: 4px 10px;
+        inline-size: min(94vw, 1180px);
+        /* از وسطِ همان دکمه باز می‌شود، نه از لبه — وگرنه پنلِ پهن
+           از یک سوی صفحه بیرون می‌زند. */
+        inset-inline-start: 50% !important;
+        transform: translateX(50%);
+        padding: 14px 16px;
+        /* سقف ایمنی: اگر روزی واحدها چند برابر شدند، پنل از صفحه
+           بیرون نزند. */
+        max-block-size: min(78vh, 620px);
+        overflow-y: auto;
+    }
+    .nav-dd-faculties { --cols: 3; inline-size: min(88vw, 900px); }
+
+    /* هر معاونت یک ستون؛ خط جداکنندهٔ افقیِ حالت فهرستی معنا ندارد */
+    .nav-dd-vices > .vice-group + .vice-group {
+        margin-block-start: 0;
+        padding-block-start: 0;
+        border-block-start: 0;
+    }
+    .nav-dd-vices > .vice-group {
+        border-inline-end: 1px solid rgba(255, 255, 255, .08);
+        padding-inline-end: 8px;
+    }
+    .nav-dd-vices > .vice-group:last-child { border-inline-end: 0; }
+
+    /* عنوان ستون: هم‌رنگ رکنِ خودش، و همیشه بالای ستون */
+    .nav-dd-vices > .vice-group > .vice-lead-row {
+        border-block-end: 2px solid var(--hue, #7a1f2e);
+        margin-block-end: 6px;
+    }
+    .nav-dd-vices > .vice-group > .vice-lead-row .vice-lead {
+        white-space: normal;
+        line-height: 1.6;
+    }
+
+    /* زیرمجموعه‌ها باز و پیدا — دکمهٔ بازکردن اینجا کاری ندارد */
+    .nav-dd-vices > .vice-group > .vice-sub {
+        grid-template-rows: 1fr;
+        opacity: 1;
+        margin-inline-start: 0;
+        border-inline-start: 0;
+        background: transparent;
+        border-radius: 0;
+    }
+    .nav-dd-vices > .vice-group > .vice-lead-row .vice-toggle {
+        display: none;
+    }
+
+    /* سطح سوم، یک پله تورفته و با خطِ رنگِ همان رکن */
+    .nav-dd-vices .vice-sub .vice-sub {
+        grid-template-rows: 1fr;
+        opacity: 1;
+        margin-inline-start: 10px;
+        padding-inline-start: 4px;
+        border-inline-start: 1px dashed var(--hue, #c9a34e);
+        background: transparent;
+    }
+
+    .nav-dd-vices .nav-dd-sub {
+        padding-inline-start: 14px !important;
+        white-space: normal;
+        line-height: 1.75;
+    }
+    .nav-dd-vices .nav-dd-sub::before { inset-inline-start: 4px; }
+}
+
+/* روی نمایشگر متوسط، پنج ستون تنگ می‌شود */
+@media (min-width: 992px) and (max-width: 1250px) {
+    .nav-dd-vices { --cols: 3; inline-size: min(96vw, 860px); }
+    .nav-dd-vices > .vice-group { border-inline-end: 0; }
+}
+
+
 /* اطلاعیهٔ لینک‌دار: زیرخطِ نازک می‌گوید که می‌شود رویش زد */
 .urgent-item.is-link {
     color: inherit;

@@ -192,3 +192,63 @@ class TheMenuStillWorksWithoutHoverTests(TestCase):
         menu = html.split('nav-dd-vices')[1]
         self.assertIn('vice-lead', menu)
         self.assertIn(reverse('core:vice_detail', args=['education']), menu)
+
+
+class TheMenuFitsOnOneScreenTests(TestCase):
+    """یک ستونِ بلند بود و برای دیدن معاونت پنجم باید تا ته اسکرول می‌کردی."""
+
+    def _panel(self):
+        """قاعدهٔ ستونی، نه قاعدهٔ پایهٔ کشویی که بالاتر در فایل است."""
+        css = _css()
+        start = css.index('grid-template-columns: repeat(var(--cols)')
+        return css[css.rindex('.nav-dd-vices {', 0, start):
+                   css.index('}', start)]
+
+    def test_the_panel_lays_the_vices_side_by_side(self):
+        block = self._panel()
+        self.assertIn('display: grid', block)
+        self.assertIn('grid-template-columns: repeat(var(--cols)', block)
+
+    def test_there_is_a_column_for_each_vice(self):
+        self.assertIn('--cols: 5', self._panel())
+
+    def test_the_faculties_menu_gets_its_own_count(self):
+        """سه دانشکده در پنج ستون، دو ستون خالی می‌ماند."""
+        self.assertIn('.nav-dd-faculties { --cols: 3;', _css())
+
+    def test_a_narrow_screen_gets_fewer_columns(self):
+        css = _css()
+        self.assertIn('@media (min-width: 992px) and (max-width: 1250px)', css)
+
+    def test_the_panel_is_wider_than_a_plain_dropdown(self):
+        self.assertIn('inline-size: min(94vw, 1180px)', self._panel())
+
+    def test_it_opens_from_the_middle_so_it_stays_on_screen(self):
+        """پنلِ پهن از لبهٔ دکمه، از یک سوی صفحه بیرون می‌زند."""
+        block = self._panel()
+        self.assertIn('inset-inline-start: 50%', block)
+        self.assertIn('translateX(50%)', block)
+
+    def test_nothing_needs_opening_on_a_desktop(self):
+        """در حالت ستونی، همه‌چیز از نگاه اول پیداست."""
+        css = _css()
+        block = css[css.index('.nav-dd-vices > .vice-group > .vice-sub {'):][:300]
+        self.assertIn('grid-template-rows: 1fr', block)
+        self.assertIn('opacity: 1', block)
+
+    def test_the_arrow_button_steps_aside_there(self):
+        css = _css()
+        self.assertIn(
+            '.nav-dd-vices > .vice-group > .vice-lead-row .vice-toggle', css)
+
+    def test_a_runaway_panel_still_cannot_leave_the_screen(self):
+        block = self._panel()
+        self.assertIn('max-block-size', block)
+        self.assertIn('overflow-y: auto', block)
+
+    def test_the_accordion_survives_for_touch(self):
+        """زیر ۹۹۲ پیکسل منو عمودی است و همان آکاردئون می‌ماند."""
+        css = _css()
+        mega = css.index('grid-template-columns: repeat(var(--cols)')
+        guard = css.rindex('@media (min-width: 992px)', 0, mega)
+        self.assertGreater(mega, guard)
