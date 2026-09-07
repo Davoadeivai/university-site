@@ -228,16 +228,26 @@ class TheMenuFitsOnOneScreenTests(TestCase):
 
     def test_a_narrow_screen_gets_fewer_columns(self):
         css = _css()
-        self.assertIn('@media (min-width: 992px) and (max-width: 1250px)', css)
+        self.assertIn('@media (min-width: 1200px) and (max-width: 1400px)',
+                      css)
 
-    def test_the_panel_is_wider_than_a_plain_dropdown(self):
-        self.assertIn('inline-size: min(94vw, 1180px)', self._panel())
-
-    def test_it_opens_from_the_middle_so_it_stays_on_screen(self):
-        """پنلِ پهن از لبهٔ دکمه، از یک سوی صفحه بیرون می‌زند."""
+    def test_the_panel_spans_the_whole_navbar(self):
+        """پنلِ پهن که به آیتم بچسبد، روی همسایه‌هایش می‌افتد."""
         block = self._panel()
-        self.assertIn('inset-inline-start: 50%', block)
-        self.assertIn('translateX(50%)', block)
+        self.assertIn('position: absolute', block)
+        self.assertIn('inset-inline: 0', block)
+        self.assertIn('inline-size: auto', block)
+
+    def test_the_navbar_is_what_it_is_measured_against(self):
+        css = _css()
+        self.assertIn('#mainNav { position: relative; }', css)
+        self.assertIn('#mainNav .nav-item.has-mega { position: static; }', css)
+
+    def test_only_the_column_menus_are_detached(self):
+        """بقیهٔ کشویی‌ها باید سرِ جای دکمهٔ خودشان بمانند."""
+        html = self.client.get(reverse('core:home')).content.decode()
+        nav = html.split('id="mainNav"')[1].split('</nav>')[0]
+        self.assertEqual(nav.count('nav-item dropdown has-mega'), 2)
 
     def test_nothing_needs_opening_on_a_desktop(self):
         """در حالت ستونی، همه‌چیز از نگاه اول پیداست."""
@@ -264,9 +274,33 @@ class TheMenuFitsOnOneScreenTests(TestCase):
         self.assertIn('max-block-size', block)
         self.assertIn('overflow-y: auto', block)
 
-    def test_the_accordion_survives_for_touch(self):
-        """زیر ۹۹۲ پیکسل منو عمودی است و همان آکاردئون می‌ماند."""
+    def test_the_columns_wait_for_the_navbar_to_go_horizontal(self):
+        """نوار با ‎navbar-expand-xl‎ تا ۱۲۰۰ پیکسل عمودی است.
+
+        با شکستِ ۹۹۲، میان ۹۹۲ تا ۱۱۹۹ منوی عمودی ستون‌بندی می‌شد و
+        پنلِ پهن روی بقیه می‌افتاد.
+        """
         css = _css()
         mega = css.index('grid-template-columns: repeat(var(--cols)')
-        guard = css.rindex('@media (min-width: 992px)', 0, mega)
-        self.assertGreater(mega, guard)
+        guard = css.rindex('@media (min-width: ', 0, mega)
+        self.assertIn('1200px', css[guard:guard + 40])
+
+    def test_one_menu_at_a_time(self):
+        """پنل تمام‌پهنا روی همسایه می‌افتد؛ دو منوی باز یعنی قاطی."""
+        from pathlib import Path
+
+        from django.conf import settings
+
+        js = (Path(settings.BASE_DIR) / 'static' / 'js' /
+              'main.js').read_text(encoding='utf-8')
+        self.assertIn('items.forEach(function (other) {', js)
+        self.assertIn('if (other !== item) { close(other); }', js)
+
+    def test_clicking_a_destination_closes_the_menu(self):
+        from pathlib import Path
+
+        from django.conf import settings
+
+        js = (Path(settings.BASE_DIR) / 'static' / 'js' /
+              'main.js').read_text(encoding='utf-8')
+        self.assertIn("event.target.closest('a[href]')", js)

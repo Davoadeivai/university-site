@@ -34,22 +34,33 @@ document.addEventListener('DOMContentLoaded', function () {
         const mq = window.matchMedia('(min-width: 1200px) and (hover: hover)');
         const items = document.querySelectorAll('#mainNav .nav-item.dropdown');
 
+        function close(item) {
+            item.classList.remove('show');
+            const toggle = item.querySelector(':scope > .dropdown-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            const menu = item.querySelector(':scope > .dropdown-menu');
+            if (menu) menu.classList.remove('show');
+        }
+
         function onEnter(e) {
             const item = e.currentTarget;
+
+            // یکی در هر لحظه. پنل ستونی تمام پهنای نوار را می‌گیرد و
+            // روی آیتم‌های همسایه می‌افتد؛ بدون این، نشانگر که از
+            // رویشان رد می‌شد دو منو با هم باز می‌ماندند.
+            items.forEach(function (other) {
+                if (other !== item) { close(other); }
+            });
+
             item.classList.add('show');
-            const toggle = item.querySelector('.dropdown-toggle');
+            const toggle = item.querySelector(':scope > .dropdown-toggle');
             if (toggle) toggle.setAttribute('aria-expanded', 'true');
-            const menu = item.querySelector('.dropdown-menu');
+            const menu = item.querySelector(':scope > .dropdown-menu');
             if (menu) menu.classList.add('show');
         }
 
         function onLeave(e) {
-            const item = e.currentTarget;
-            item.classList.remove('show');
-            const toggle = item.querySelector('.dropdown-toggle');
-            if (toggle) toggle.setAttribute('aria-expanded', 'false');
-            const menu = item.querySelector('.dropdown-menu');
-            if (menu) menu.classList.remove('show');
+            close(e.currentTarget);
         }
 
         function applyMode() {
@@ -79,6 +90,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
+
+        // کلیک روی هر لینکِ داخل منو، منو را می‌بندد.
+        //
+        // ‎data-bs-auto-close="outside"‎ عمداً روی منوهاست تا بازکردنِ
+        // زیرشاخه منو را نبندد؛ ولی همان باعث می‌شد پس از کلیک روی یک
+        // مقصد هم باز بماند — و روی لنگرِ همان صفحه، تا ابد.
+        items.forEach(function (item) {
+            item.addEventListener('click', function (event) {
+                const link = event.target.closest('a[href]');
+                if (!link || !item.contains(link)) { return; }
+                if (link.classList.contains('dropdown-toggle')) { return; }
+                close(item);
+            });
+        });
 
         applyMode();
         if (mq.addEventListener) mq.addEventListener('change', applyMode);

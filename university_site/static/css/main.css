@@ -4273,24 +4273,33 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    دیده می‌شوند — نه اسکرولی، نه کلیکی برای بازکردن. چیزی که در
    یک نگاه دیده شود، همان چیزی است که چارت سازمانی می‌خواهد
    نشان بدهد. */
-@media (min-width: 992px) {
+/* نقطهٔ شکست ۱۲۰۰ است، نه ۹۹۲: نوار با ‎navbar-expand-xl‎ تا همین
+   عدد جمع و عمودی است. با ۹۹۲، میان ۹۹۲ تا ۱۱۹۹ پیکسل منوی عمودی
+   ستون‌بندی می‌شد و پنلِ پهن روی بقیه می‌افتاد. */
+@media (min-width: 1200px) {
+    /* پنل از لبه تا لبهٔ نوار، نه از لبهٔ دکمه.
+       با تکیه بر خودِ آیتم، پنلِ ۱۱۸۰ پیکسلی روی آیتم‌های همسایه
+       می‌افتاد: نشانگر که رد می‌شد، منوی بعدی هم باز می‌شد و هر دو
+       با هم دیده می‌شدند — همان «قاطی‌شدن منوها». */
+    #mainNav { position: relative; }
+    #mainNav .nav-item.has-mega { position: static; }
+
     .nav-dd-vices {
         --cols: 5;
         display: grid !important;
         grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
         gap: 4px 10px;
-        inline-size: min(94vw, 1180px);
-        /* از وسطِ همان دکمه باز می‌شود، نه از لبه — وگرنه پنلِ پهن
-           از یک سوی صفحه بیرون می‌زند. */
-        inset-inline-start: 50% !important;
-        transform: translateX(50%);
+        position: absolute;
+        inset-inline: 0;
+        inline-size: auto;
+        transform: none !important;
         padding: 14px 16px;
         /* سقف ایمنی: اگر روزی واحدها چند برابر شدند، پنل از صفحه
            بیرون نزند. */
         max-block-size: min(78vh, 620px);
         overflow-y: auto;
     }
-    .nav-dd-faculties { --cols: 3; inline-size: min(88vw, 900px); }
+    .nav-dd-faculties { --cols: 3; }
 
     /* هر معاونت یک ستون؛ خط جداکنندهٔ افقیِ حالت فهرستی معنا ندارد */
     .nav-dd-vices > .vice-group + .vice-group {
@@ -4351,7 +4360,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 /* فهرست رشته‌های یک دانشکده بلندتر از قد صفحه است؛ همان ستون
    خودش اسکرول می‌شود، نه کلِ پنل. */
-@media (min-width: 992px) {
+@media (min-width: 1200px) {
     .nav-dd-faculties > .vice-group > .vice-sub {
         max-block-size: min(62vh, 440px);
         overflow-y: auto;
@@ -4359,8 +4368,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 /* روی نمایشگر متوسط، پنج ستون تنگ می‌شود */
-@media (min-width: 992px) and (max-width: 1250px) {
-    .nav-dd-vices { --cols: 3; inline-size: min(96vw, 860px); }
+@media (min-width: 1200px) and (max-width: 1400px) {
+    .nav-dd-vices { --cols: 3; }
     .nav-dd-vices > .vice-group { border-inline-end: 0; }
 }
 
