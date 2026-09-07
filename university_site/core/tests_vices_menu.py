@@ -101,36 +101,78 @@ class TheActiveTabMapTests(TestCase):
         self.assertEqual(_active_tab(_Bare()), '')
 
 
-class TheSubmenuDoesNotFlickerTests(TestCase):
-    """عبور از روی ردیف‌های میانی، زیرمنو را زیر دست می‌پراند."""
+class TheSubmenuOpensInPlaceTests(TestCase):
+    """پنجرهٔ کنارى رفت؛ زیرشاخه در همان ستون باز می‌شود.
 
-    def test_closing_waits_long_enough_to_cross(self):
-        block = _desktop_block()
-        self.assertIn('transition-delay: .35s', block)
+    برای رسیدن به آن پنجره باید از روی ردیف‌های میانی رد می‌شدی و هر
+    کدام زیرمنوی خودش را باز می‌کرد — منو زیر دست می‌پرید. حالا سفرِ
+    موربی در کار نیست.
+    """
 
-    def test_opening_ignores_a_passing_pointer(self):
-        block = _desktop_block()
-        self.assertIn('transition-delay: .12s', block)
+    def _accordion(self):
+        """قاعده‌ای که زیرمنو را جمع و باز می‌کند.
 
-    def test_closing_is_slower_than_opening(self):
-        """وگرنه همان پرش برمی‌گردد."""
-        import re
+        دو قاعده با همین انتخابگر هست — یکی پایهٔ فهرست، یکی رفتار —
+        پس همان که ‎grid‎ دارد برداشته می‌شود، نه اولی.
+        """
+        css = _css()
+        start = css.index('grid-template-rows: 0fr')
+        return css[css.rindex('.vice-sub {', 0, start):
+                   css.index('}', start)]
 
-        block = _desktop_block()
-        delays = [float(value) for value in
-                  re.findall(r'transition-delay: \.(\d+)s', block)]
-        self.assertEqual(len(delays), 2)
-        self.assertGreater(max(delays), min(delays))
+    def test_the_flyout_is_gone(self):
+        css = _css()
+        self.assertNotIn('.vice-group.has-sub:hover > .vice-sub', css)
+        self.assertNotIn('inset-inline-start: 100%', self._accordion())
 
-    def test_a_bridge_covers_the_gap(self):
-        block = _desktop_block()
-        self.assertIn('.vice-group.has-sub > .vice-sub::before', block)
+    def test_it_expands_where_it_stands(self):
+        rule = self._accordion()
+        self.assertIn('grid-template-rows: 0fr', rule)
+        self.assertIn('overflow: hidden', rule)
 
-    def test_a_tall_submenu_can_be_reached(self):
-        """زیرمنوی معاونت آخر از پایین صفحه بیرون می‌زد."""
-        block = _desktop_block()
-        self.assertIn('.nav-dd-vices .vice-sub', block)
-        self.assertIn('overflow-y: auto', block)
+    def test_opening_is_animated_not_a_jump(self):
+        self.assertIn('transition: grid-template-rows', self._accordion())
+
+    def test_only_an_opened_branch_is_shown(self):
+        css = _css()
+        self.assertIn('.vice-group.has-sub.is-open > .vice-sub', css)
+        block = css[css.index('.vice-group.has-sub.is-open > .vice-sub'):][:220]
+        self.assertIn('grid-template-rows: 1fr', block)
+
+    def test_keyboard_focus_opens_it_too(self):
+        """بدون این، کسی که با Tab می‌گردد هیچ‌وقت زیرشاخه را نمی‌بیند."""
+        self.assertIn('.vice-group.has-sub:focus-within > .vice-sub', _css())
+
+    def test_the_arrow_button_works_everywhere_now(self):
+        """پیش از این روی دسکتاپ pointer-events نداشت."""
+        css = _css()
+        toggle = css[css.index(chr(10) + '.vice-toggle {'):][:400]
+        self.assertNotIn('pointer-events: none', toggle)
+
+    def test_someone_who_dislikes_motion_gets_no_animation(self):
+        css = _css()
+        self.assertIn('.vice-sub { transition: none; }', css)
+
+
+class EachBranchKeepsItsOwnColourTests(TestCase):
+    """پنج معاونت، پنج رنگ — و زیرمجموعه هم‌رنگِ رکنِ خودش."""
+
+    def test_the_open_branch_is_tinted_by_its_vice(self):
+        css = _css()
+        block = css[css.index('.vice-group.has-sub > .vice-sub {'):][:400]
+        self.assertIn('var(--hue', block)
+        self.assertIn('border-inline-start', block)
+
+    def test_every_vice_has_a_hue_of_its_own(self):
+        css = _css()
+        hues = {css[css.index('.vice-hue-%d {' % n):][:90] for n in range(1, 6)}
+        self.assertEqual(len(hues), 5)
+
+    def test_the_third_level_reads_as_deeper(self):
+        css = _css()
+        block = css[css.index('.vice-sub .vice-sub {'):][:260]
+        self.assertIn('margin-inline-start', block)
+        self.assertIn('dashed', block)
 
 
 class TheMenuStillWorksWithoutHoverTests(TestCase):

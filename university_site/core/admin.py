@@ -16,7 +16,7 @@ from .models import (
     InternationalOffice, InternationalActivity,
     PublicRelations, PressRelease,
     SecurityOffice,
-    VicePresidency, ViceUnit, ViceAchievement,
+    VicePresidency, ViceUnit, ViceUnitLink, ViceAchievement,
     BankAccount, PaymentIdentifier, DownloadableDocument,
     GraduateStudiesInfo,
     HomeFeature, HomeSection, AboutSection,
@@ -175,6 +175,17 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'صفحهٔ «دانشکده‌ها» فقط همین فایل را نشان می‌دهد — '
                 'در قاب صفحه، با دکمهٔ دانلود. برای جایگزینی، فایل '
                 'تازه را آپلود کنید.'
+            ),
+        }),
+        ('نوار خبر فوری', {
+            'fields': (('ticker_seconds', 'ticker_hold_seconds'),),
+            'description': (
+                'نوار قرمزِ زیر بنر. «زمان هر خبر» یعنی چند ثانیه طول '
+                'بکشد تا یک اطلاعیه از چپ به راست رد شود — بزرگ‌تر یعنی '
+                'آرام‌تر. «مکث» یعنی پیش از راه‌افتادن چند ثانیه کنار '
+                'لبهٔ چپ بایستد تا خوانده شود.<br>'
+                'نوار فقط وقتی دیده می‌شود که اطلاعیه‌ای «فوری» و فعال '
+                'باشد.'
             ),
         }),
         ('صفحهٔ اصلی', {
@@ -765,10 +776,49 @@ class VicePresidencyAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     get_vice_type_display.short_description = 'نوع معاونت'
 
 
+@admin.register(ViceUnitLink)
+class ViceUnitLinkAdmin(admin.ModelAdmin):
+    # چارت ده‌ها واحد دارد که در کد صفحه‌ای برایشان تعریف نشده و در
+    # منو متن ساده‌اند. اینجا هرکدام که صفحه‌ای پیدا کرد، بدون
+    # دست‌زدن به کد قابل کلیک می‌شود.
+    list_display  = ['title', 'url', 'is_active']
+    list_editable = ['url', 'is_active']
+    search_fields = ['title', 'url']
+    list_filter   = ['is_active']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['title'].help_text += ' ' + self._unlinked_hint()
+        return form
+
+    @staticmethod
+    def _unlinked_hint():
+        """واحدهایی که هنوز نشانی ندارند — تا مدیر حدس نزند."""
+        try:
+            from core import vices as structure
+
+            titles = []
+
+            def walk(rows):
+                for row in rows:
+                    if not row['url']:
+                        titles.append(row['title'])
+                    walk(row['children'])
+
+            for vice in structure.build():
+                walk(vice['children'])
+            if not titles:
+                return 'همهٔ واحدهای چارت نشانی دارند.'
+            return 'بدون نشانی: %s' % '، '.join(titles[:14])
+        except Exception:                      # noqa: BLE001
+            return ''
+
+
 @admin.register(ViceUnit)
 class ViceUnitAdmin(admin.ModelAdmin):
-    list_display  = ['name', 'vice', 'manager', 'phone', 'order', 'is_active']
-    list_editable = ['order', 'is_active']
+    list_display  = ['name', 'vice', 'link', 'manager', 'phone', 'order',
+                     'is_active']
+    list_editable = ['link', 'order', 'is_active']
     list_filter   = ['vice', 'is_active']
     search_fields = ['name', 'manager', 'duties']
     list_select_related = ('vice',)

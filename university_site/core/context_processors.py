@@ -96,7 +96,30 @@ def global_context(request):
     data = dict(cached)
     data['sections'] = {s.key: s for s in HomeSection.objects.all()}
     data['nav_active'] = _active_tab(request)
+    data.update(_ticker_timing(cached.get('site_settings'),
+                               cached.get('urgent_announcements')))
     return data
+
+
+def _ticker_timing(settings_row, announcements):
+    """زمان‌بندی نوار فوری، از تنظیمات سایت.
+
+    مکث در CSS ناچار درصدِ کل حرکت است — انتخابگر keyframe متغیر
+    نمی‌پذیرد — ولی موسسه ثانیه می‌خواهد بنویسد، نه درصد. پس درصد
+    همین‌جا از روی ثانیه حساب می‌شود و قالب ثانیهٔ خام را نمی‌بیند.
+    """
+    per_item = getattr(settings_row, 'ticker_seconds', None) or 60
+    hold = getattr(settings_row, 'ticker_hold_seconds', None)
+    if hold is None:
+        hold = 2
+    count = max(1, len(announcements or []))
+    total = per_item * count
+    # مکث نباید کل زمان را ببلعد؛ سقفش نیمهٔ حرکت است
+    percent = min(50, round(hold * 100.0 / total)) if total else 0
+    return {
+        'urgent_total_secs': total,
+        'urgent_hold_percent': percent,
+    }
 
 
 # کدام صفحه به کدام تب نوار بالا تعلق دارد.

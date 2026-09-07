@@ -268,42 +268,42 @@ class NestedDeputyMenuTests(TestCase):
         self.assertIn('.vice-toggle', js)
         self.assertIn('stopPropagation', js)
 
-    def test_the_submenu_opens_towards_the_left(self):
-        """موسسه خواست کشویی از سمت چپ باز شود.
+    def test_the_submenu_opens_where_it_stands(self):
+        """کشویی کنارِ منو برداشته شد.
 
-        در صفحهٔ راست‌چین، inline-start همان «راست» است؛ پس
-        ‎inset-inline-start: 100%‎ لبهٔ راستِ زیرمنو را به لبهٔ چپِ منو
-        می‌چسباند و زیرمنو به چپ باز می‌شود. مقدار ‎inline-end‎ دقیقاً
-        برعکسش را می‌کند و یک بار همین اشتباه رخ داد.
+        رسیدن به آن یعنی رد شدن از روی ردیف‌های میانی، و هر کدام
+        زیرمنوی خودش را باز و این را می‌بست. حالا در همان ستون باز
+        می‌شود و سفرِ موربی لازم نیست.
         """
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
-        # قاعدهٔ دسکتاپ، نه قاعدهٔ پایه: اولین ‎.vice-sub‎ در فایل فقط
-        # فهرست را صاف می‌کند و جای‌گذاری در بلوک ‎min-width: 992px‎ است.
-        desktop = css.split('.vice-group.has-sub { position: relative; }')[1]
-        block = desktop.split('.vice-sub {')[1].split('}')[0]
-        self.assertIn('inset-inline-start: 100%', block)
-        self.assertNotIn('inset-inline-end', block)
+        self.assertNotIn('.vice-group.has-sub { position: relative; }', css)
+        start = css.index('grid-template-rows: 0fr')
+        block = css[css.rindex('.vice-sub {', 0, start):
+                    css.index('}', start)]
+        self.assertNotIn('inset-inline-start: 100%', block)
 
-    def test_the_arrow_points_the_way_the_menu_opens(self):
-        """فلشی که به راست اشاره کند و منو به چپ باز شود، دروغ است."""
-        html = self.client.get(reverse('core:home')).content.decode()
-        nav = html.split('id="mainNav"')[1].split('</nav>')[0]
-        toggle = nav.split('vice-toggle')[1].split('</button>')[0]
-        self.assertIn('fa-chevron-left', toggle)
-
-    def test_the_submenu_has_its_own_ground(self):
-        """اگر زیرمنو و منو یک رنگ باشند، لایهٔ تازه دیده نمی‌شود."""
+    def test_the_arrow_turns_when_the_branch_opens(self):
+        """فلشی که تکان نخورد، نمی‌گوید چیزی باز شده."""
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
-        desktop = css.split('.vice-group.has-sub { position: relative; }')[1]
-        block = desktop.split('.vice-sub {')[1].split('}')[0]
-        declared = [line.strip() for line in block.splitlines()
-                    if line.strip().startswith('background:')]
-        self.assertEqual(len(declared), 1)
-        # پنل روشن روی منوی تیره؛ نه عنابیِ دیگری که با آن یکی شود
-        self.assertIn('#fbf8f4', declared[0])
-        self.assertNotIn('--primary', declared[0])
+        self.assertIn('.vice-toggle[aria-expanded="true"]', css)
+        block = css[css.index('.vice-toggle[aria-expanded="true"]'):][:120]
+        self.assertIn('rotate', block)
+
+    def test_the_open_branch_has_its_own_ground(self):
+        """اگر شاخهٔ باز و منو یک رنگ باشند، لایهٔ تازه دیده نمی‌شود.
+
+        پیش از این یک پنجرهٔ کاغذی کنارِ منو بود؛ حالا شاخه در جای
+        خودش باز می‌شود و رنگش را از همان معاونت می‌گیرد — پنج شاخه،
+        پنج رنگ.
+        """
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        start = css.index('.vice-group.has-sub > .vice-sub {')
+        block = css[start:css.index('}', start)]
+        self.assertIn('background: var(--hue-soft', block)
+        self.assertIn('border-inline-start: 2px solid var(--hue', block)
 
     def test_the_submenu_rows_use_the_institute_palette(self):
         """‎#b8cce4‎ از تم سرمه‌ای قدیمی مانده بود و بیگانه بود."""

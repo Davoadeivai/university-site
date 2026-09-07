@@ -86,6 +86,21 @@ class SiteSettings(ShrinkImagesMixin, models.Model):
     # ویرایش کد و یک دیپلوی کامل. حالا از پنل آپلود می‌شود و
     # خالی‌ماندنش یعنی همان نشان پیش‌فرض — پس سربرگ هیچ‌وقت بی‌نشان
     # نمی‌ماند.
+    # ── نوار خبر فوری ──
+    #
+    # این دو عدد سه بار دستی عوض شدند و هر بار یک دیپلوی خواست.
+    # چیزی که موسسه با چشمش تنظیمش می‌کند، جایش پنل است نه کد.
+    ticker_seconds = models.PositiveSmallIntegerField(
+        _('زمان هر خبر در نوار فوری (ثانیه)'), default=60,
+        validators=[MinValueValidator(5), MaxValueValidator(300)],
+        help_text=_('هر اطلاعیه چند ثانیه طول بکشد تا از چپ به راست رد '
+                    'شود. عدد بزرگ‌تر یعنی آرام‌تر.'))
+    ticker_hold_seconds = models.PositiveSmallIntegerField(
+        _('مکث در ابتدای حرکت (ثانیه)'), default=2,
+        validators=[MinValueValidator(0), MaxValueValidator(60)],
+        help_text=_('خبر پیش از راه‌افتادن، این چند ثانیه کنار لبهٔ چپ '
+                    'می‌ایستد تا خوانده شود. صفر یعنی بدون مکث.'))
+
     state_emblem = models.ImageField(
         _('ارم الله (نشان جمهوری اسلامی)'),
         # پوشهٔ خودش، نه ‎site/‎ که لوگو و فاویکون و نشان کلاس جهانی
@@ -1175,11 +1190,44 @@ class VicePresidency(models.Model):
         return self.display_name
 
 
+class ViceUnitLink(models.Model):
+    """نشانیِ یک واحدِ چارت، که در کد صفحه‌ای برایش تعریف نشده.
+
+    ساختار معاونت‌ها از چارت رسمی می‌آید و بیشترِ واحدهایش — «ادارهٔ
+    امتحانات»، «کارگزینی و دبیرخانه» و مانند این‌ها — صفحهٔ اختصاصی
+    ندارند، پس در منو متنِ ساده بودند. ولی بعضی‌شان بعداً صفحه پیدا
+    می‌کنند، یا موسسه می‌خواهد به یک فایل یا صفحهٔ موجود وصلشان کند.
+
+    این جدول همان پل است: نامِ واحد را همان‌طور که در منو دیده
+    می‌شود بنویسید، و نشانی مقصد را کنارش.
+    """
+    title = models.CharField(
+        _('نام واحد در چارت'), max_length=200, unique=True,
+        help_text=_('دقیقاً همان نامی که در منو دیده می‌شود، '
+                    'مثلاً «ادارهٔ امتحانات».'))
+    url = models.CharField(
+        _('نشانی مقصد'), max_length=300,
+        help_text=_('نشانی صفحه در همین سایت یا بیرون از آن.'))
+    is_active = models.BooleanField(_('فعال'), default=True)
+
+    class Meta:
+        verbose_name = _('لینک واحد معاونت')
+        verbose_name_plural = _('لینک واحدهای معاونت')
+        ordering = ['title']
+
+    def __str__(self):
+        return '%s → %s' % (self.title, self.url)
+
+
 class ViceUnit(models.Model):
     """واحدها / ادارات زیرمجموعه هر معاونت"""
     vice     = models.ForeignKey(VicePresidency, on_delete=models.CASCADE,
                                   related_name='units', verbose_name=_('معاونت'))
     name     = models.CharField(_('نام واحد'), max_length=200)
+    link     = models.CharField(
+        _('نشانی صفحه'), max_length=300, blank=True,
+        help_text=_('اگر این واحد در سایت صفحه‌ای دارد، نشانی‌اش را '
+                    'بنویسید تا در منو قابل کلیک شود.'))
     manager  = models.CharField(_('مدیر / مسئول'), max_length=200, blank=True)
     phone    = models.CharField(_('تلفن'), max_length=50, blank=True)
     email    = models.EmailField(_('ایمیل'), blank=True)

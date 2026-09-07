@@ -110,14 +110,44 @@ def _url(name: str) -> str:
         return ''
 
 
-def _units(rows) -> list:
+def _fold(text: str) -> str:
+    """نام، بدون تفاوت‌های نوشتاری بی‌اهمیت."""
+    cleaned = (text or '').replace('ي', 'ی').replace('ك', 'ک')
+    for ch in ('‌', '‏', '‎', 'ٔ', 'ء'):
+        cleaned = cleaned.replace(ch, '')
+    return ''.join(cleaned.split())
+
+
+def _extra_links() -> dict:
+    """نشانی‌هایی که موسسه در پنل برای واحدهای چارت نوشته.
+
+    چارت رسمی ده‌ها واحد دارد و بیشترشان صفحهٔ اختصاصی ندارند؛
+    این جدول اجازه می‌دهد هرکدام که صفحه‌ای پیدا کرد، بدون دست‌زدن
+    به کد قابل کلیک شود.
+    """
+    try:
+        from core.models import ViceUnitLink
+        return {_fold(row.title): row.url
+                for row in ViceUnitLink.objects.filter(is_active=True)
+                if (row.url or '').strip()}
+    except Exception:                          # noqa: BLE001
+        # جدول هنوز ساخته نشده (پیش از مهاجرت) — منو نباید بیفتد
+        return {}
+
+
+def _units(rows, extra=None) -> list:
     """سه‌تایی‌های STATIC_UNITS را به دیکشنری‌های تودرتو تبدیل می‌کند."""
+    if extra is None:
+        extra = _extra_links()
     built = []
     for title, name, kids in rows:
+        url = _url(name) if name else ''
+        if not url:
+            url = extra.get(_fold(title), '')
         built.append({
             'title': title,
-            'url': _url(name) if name else '',
-            'children': _units(kids),
+            'url': url,
+            'children': _units(kids, extra),
         })
     return built
 
@@ -140,6 +170,7 @@ def build(vices_by_type: dict | None = None,
             .prefetch_related('units')
         }
 
+    extra_links = _extra_links()
     rows = []
     for index, (key, label, icon) in enumerate(VICE_ORDER, start=1):
         vice = vices_by_type.get(key)
@@ -149,7 +180,7 @@ def build(vices_by_type: dict | None = None,
         if vice is not None and (vice.title or '').strip():
             label = vice.title.strip()
 
-        children = _units(STATIC_UNITS.get(key, []))
+        children = _units(STATIC_UNITS.get(key, []), extra_links)
         # گروه‌های دارای تحصیلات تکمیلی، زیر «تحصیلات تکمیلی»
         if key == 'education' and graduate_groups:
             for row in children:
@@ -164,7 +195,10 @@ def build(vices_by_type: dict | None = None,
         # واحدهای ثبت‌شده در پنل — بدون صفحهٔ اختصاصی، پس بدون لینک
         if vice is not None:
             children += [
-                {'title': unit.name, 'url': '', 'children': []}
+                {'title': unit.name,
+                 'url': (unit.link or '').strip()
+                        or extra_links.get(_fold(unit.name), ''),
+                 'children': []}
                 for unit in vice.units.all() if unit.is_active
             ]
 

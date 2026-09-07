@@ -588,7 +588,18 @@
 سرعت با تعداد اطلاعیه‌ها پایین می‌آید، وگرنه سه خبر با همان زمانِ
 یک خبر رد می‌شدند و کسی فرصت خواندنشان را نداشت.
 {% endcomment %}
-<div class="urgent-bar" style="--urgent-secs: {% widthratio urgent_announcements|length 1 60 %}s">
+{% comment %}
+زمان‌بندی از پنل می‌آید، و چون انتخابگر keyframe متغیر CSS
+نمی‌پذیرد، خودِ keyframe اینجا با درصدِ حساب‌شده نوشته می‌شود.
+همین تعریف بر نسخهٔ main.css می‌چربد، چون بعد از آن می‌آید.
+{% endcomment %}
+<style>
+@keyframes urgentSlide {
+    0%, {{ urgent_hold_percent }}% { left: 0; }
+    100% { left: 100%; }
+}
+</style>
+<div class="urgent-bar" style="--urgent-secs: {{ urgent_total_secs }}s">
     <div class="container">
         <div class="urgent-row">
             <span class="urgent-label"><i class="fas fa-exclamation-circle" aria-hidden="true"></i> فوری</span>

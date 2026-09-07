@@ -4202,7 +4202,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     transition: transform var(--duration-fast, 160ms) var(--easing-standard, ease),
                 color var(--duration-fast, 160ms) var(--easing-standard, ease);
 }
-.vice-toggle:hover { color: #fff; }
+.vice-toggle:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+.vice-toggle { border-radius: 8px; }
 .vice-toggle:focus-visible { outline: 2px solid var(--gold-light); outline-offset: -2px; }
 .vice-toggle[aria-expanded="true"] { transform: rotate(-90deg); }
 
@@ -4212,76 +4213,51 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     padding: 0;
 }
 
-/* ── دسکتاپ: زیرمنو از کنار باز می‌شود ── */
-@media (min-width: 992px) {
-    .vice-group.has-sub { position: relative; }
+/* ── زیرمنو در جای خودش باز می‌شود ──
+   پیش از این پنجره‌ای کنارِ منو باز می‌شد. برای رسیدن به آن باید از
+   روی ردیف‌های میانی رد می‌شدی و هر کدام زیرمنوی خودش را باز
+   می‌کرد؛ منو زیر دست می‌پرید. تازه روی معاونتِ آخر، پنجره از پایین
+   صفحه بیرون می‌زد.
 
-    .vice-sub {
-        position: absolute;
-        /* زیرمنو از سمت چپِ منوی مادر باز می‌شود.
-           در صفحهٔ راست‌چین، inline-start همان «راست» است، پس
-           ‎inset-inline-start: 100%‎ یعنی لبهٔ راستِ زیرمنو به لبهٔ
-           چپِ منو می‌چسبد و زیرمنو به چپ باز می‌شود. */
-        inset-inline-start: 100%;
-        inset-block-start: 0;
-        min-inline-size: 250px;
-        padding: 8px 0;
-        border-radius: 10px;
-        /* پنل روشن روی منوی تیره.
-           عنابی روی عنابی، لایهٔ تازه را از لایهٔ زیرش جدا نشان
-           نمی‌داد، و طلا روی آن فقط ۶٫۸:۱ کنتراست داشت. کاغذ گرم با
-           مرکب تیره ۱۶:۱ می‌دهد و خودش می‌گوید که این یک سطح جداست. */
-        background: #fbf8f4;
-        border: 1px solid rgba(122, 31, 46, .12);
-        border-inline-start: 3px solid var(--gold-light, #c9a34e);
-        box-shadow: 0 18px 44px -18px rgba(24, 8, 12, .55);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateX(8px);
-        transition: opacity var(--duration-fast, 160ms) ease,
-                    transform var(--duration-fast, 160ms) ease,
-                    visibility var(--duration-fast, 160ms);
-        z-index: 5;
-    }
+   حالا مثل یک آکاردئون در همان ستون باز می‌شود: هیچ سفرِ موربی
+   لازم نیست، سه سطحِ چارت با تورفتگی خوانده می‌شوند، و رفتار روی
+   موبایل و دسکتاپ یکی است. */
+.vice-sub {
+    /* grid با ارتفاعِ صفر، تنها راهِ انیمیشنِ ارتفاعِ نامعلوم است */
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    opacity: 0;
+    transition: grid-template-rows var(--duration-base, 260ms) ease,
+                opacity var(--duration-fast, 160ms) ease;
+}
+.vice-sub > * { min-block-size: 0; }
 
-    /* پلِ نامرئی میان ردیف و زیرمنو.
-       زیرمنو دقیقاً چسبیده باز می‌شود ولی در حالت بسته هشت پیکسل
-       عقب است؛ در همان هشت پیکسل، نشانگر روی «هیچ‌چیز» بود و
-       زیرمنو بسته می‌شد. این نوار عریض همان شکاف را می‌پوشاند. */
-    .vice-group.has-sub > .vice-sub::before {
-        content: "";
-        position: absolute;
-        inset-block: 0;
-        inset-inline-end: 100%;
-        inline-size: 16px;
-    }
+.vice-group.has-sub.is-open > .vice-sub,
+.vice-group.has-sub:focus-within > .vice-sub {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
 
-    /* بازشدن با کمی درنگ، بسته‌شدن با درنگ بیشتر.
-       بدون این، عبور از روی ردیف‌های میانی — که برای رسیدن به
-       زیرمنو ناگزیر است — هر بار زیرمنوی تازه‌ای باز و زیرمنوی
-       قبلی را می‌بست؛ منو زیر دست می‌پرید و به‌نظر می‌رسید موس
-       بیش از حد سریع است. */
-    .vice-group.has-sub > .vice-sub {
-        transition-delay: .35s;
-    }
-    .vice-group.has-sub:hover > .vice-sub,
-    .vice-group.has-sub:focus-within > .vice-sub,
-    .vice-group.has-sub.is-open > .vice-sub {
-        opacity: 1;
-        visibility: visible;
-        transform: translateX(0);
-        transition-delay: .12s;
-    }
+/* رنگِ هر شاخه از خودِ معاونت می‌آید: پنج شاخه، پنج رنگ، و
+   زیرمجموعه‌ها هم‌رنگِ رکنِ خودشان می‌مانند. */
+.vice-group.has-sub > .vice-sub {
+    margin-block-start: 4px;
+    margin-inline-start: 18px;
+    border-inline-start: 2px solid var(--hue, #7a1f2e);
+    background: var(--hue-soft, rgba(122, 31, 46, .09));
+    border-radius: 8px 0 0 8px;
+}
 
-    /* زیرمنوی معاونتِ آخر می‌توانست از پایین صفحه بیرون بزند و
-       ردیف‌هایش دیگر قابل رسیدن نبودند. */
-    .nav-dd-vices .vice-sub {
-        max-block-size: min(70vh, 460px);
-        overflow-y: auto;
-    }
+/* سطح سوم: یک پله تورفته‌تر و کم‌رنگ‌تر، تا عمق دیده شود */
+.vice-sub .vice-sub {
+    margin-inline-start: 12px;
+    border-inline-start-style: dashed;
+    background: transparent;
+}
 
-    /* روی دسکتاپ دکمه لازم نیست — هاور و فوکوس کار را می‌کنند */
-    .vice-toggle { pointer-events: none; opacity: .7; }
+@media (prefers-reduced-motion: reduce) {
+    .vice-sub { transition: none; }
 }
 
 /* اطلاعیهٔ لینک‌دار: زیرخطِ نازک می‌گوید که می‌شود رویش زد */
