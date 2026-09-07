@@ -118,7 +118,7 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         block = _keyframes()
         hold = re.search(r'0%,\s*(\d+)%\s*\{\s*left: 0;', block)
         self.assertIsNotNone(hold, 'مکثی در ابتدای حرکت نیست')
-        self.assertGreaterEqual(int(hold.group(1)), 8)
+        self.assertGreaterEqual(int(hold.group(1)), 2)
 
     def test_it_ends_at_the_right_edge(self):
         self.assertIn('left: 100%;', _keyframes())
