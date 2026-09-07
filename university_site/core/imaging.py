@@ -118,7 +118,17 @@ def _write(field_file, name, data, suffix, committed):
 
     storage = field_file.storage
     previous = field_file.name
-    if storage.exists(target):
+
+    # فقط فایلِ خودمان را بازنویسی می‌کنیم.
+    #
+    # پیش از این هر فایلی که سرِ راه بود پاک می‌شد. چند فیلد در یک
+    # پوشه می‌نشینند (لوگو، فاویکون، نشان کلاس جهانی، ارم)، پس
+    # آپلودِ ارم با نامی که از قبل در همان پوشه بود، فایل آن فیلد
+    # دیگر را پاک می‌کرد و جایش می‌نشست — ردیف دیتابیس همچنان به
+    # همان نشانی اشاره داشت و مدیر می‌دید «تنظیمات قبلی پاک شد».
+    #
+    # اگر نشانی مالِ ما نباشد، ذخیره‌سازی خودش نامی آزاد می‌سازد.
+    if target == previous and storage.exists(target):
         storage.delete(target)
     field_file.name = storage.save(target, ContentFile(data))
 

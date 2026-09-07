@@ -162,7 +162,12 @@ class AnnouncementAdmin(JalaliAdminMixin, admin.ModelAdmin):
     search_fields = ['title', 'content']
     fieldsets = (
         ('اطلاعیه', {
-            'fields': ('title', 'content', 'target', 'file')
+            'fields': ('title', 'content', 'target', 'link', 'file'),
+            'description': (
+                '«نشانی مقصد» اختیاری است: اگر پرش کنید، کلیک روی همین '
+                'اطلاعیه در نوار فوری، بازدیدکننده را به آن صفحه می‌برد — '
+                'مثلاً نشانی صفحهٔ انتخاب واحد.'
+            ),
         }),
         ('نمایش', {
             'fields': ('is_active', 'is_urgent', 'expires_at')

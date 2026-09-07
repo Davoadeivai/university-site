@@ -161,6 +161,17 @@ class Announcement(models.Model):
     content = models.TextField(_('محتوا'))
     target = models.CharField(_('مخاطب'), max_length=20, choices=TARGET_CHOICES, default='all')
     file = models.FileField(_('فایل پیوست'), upload_to='announcements/', blank=True, null=True)
+    # مقصدِ کلیک.
+    #
+    # اطلاعیه تا امروز فقط یک جملهٔ بی‌مقصد بود: «انتخاب واحد شروع شد»
+    # را می‌خواندی و بعد باید خودت دنبال صفحه‌اش می‌گشتی. با این
+    # نشانی، خودِ عنوان درِ همان صفحه می‌شود.
+    link = models.CharField(
+        _('نشانی مقصد'), max_length=300, blank=True,
+        help_text=_(
+            'با کلیک روی این اطلاعیه، بازدیدکننده به همین نشانی می‌رود — '
+            'مثلاً ‎/dashboard/registration/‎ برای انتخاب واحد. خالی '
+            'بگذارید تا اطلاعیه فقط متن باشد.'))
     is_active = models.BooleanField(_('فعال'), default=True)
     is_urgent = models.BooleanField(_('فوری'), default=False)
     created_at = models.DateTimeField(_('زمان ایجاد'), auto_now_add=True)

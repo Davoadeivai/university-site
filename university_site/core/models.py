@@ -88,11 +88,53 @@ class SiteSettings(ShrinkImagesMixin, models.Model):
     # نمی‌ماند.
     state_emblem = models.ImageField(
         _('ارم الله (نشان جمهوری اسلامی)'),
-        upload_to='site/', blank=True, null=True,
+        # پوشهٔ خودش، نه ‎site/‎ که لوگو و فاویکون و نشان کلاس جهانی
+        # در آن‌اند: هم‌نامیِ تصادفی آنجا یعنی یکی روی دیگری.
+        upload_to='site/emblem/', blank=True, null=True,
         help_text=_(
             'سمت چپ سربرگ، کنار «جمهوری اسلامی ایران». خالی بگذارید '
             'تا نشان پیش‌فرض بماند. PNG با پس‌زمینهٔ شفاف بهترین '
             'نتیجه را می‌دهد؛ نسبت عمودی (مثلاً ۱۸۲×۱۹۸).'))
+    STATE_EMBLEM_STYLES = [
+        ('', _('خودکار — بهترین حالت برای همین فایل')),
+        ('original', _('رنگ اصلی تصویر')),
+        ('bronze', _('هم‌رنگ با بنر (برنزی)')),
+    ]
+    state_emblem_style = models.CharField(
+        _('نمایش ارم'), max_length=10, choices=STATE_EMBLEM_STYLES,
+        default='', blank=True,
+        help_text=_(
+            'نشان پیش‌فرض یک خط‌نگارهٔ سفید است و باید برنزی شود تا روی '
+            'زمینهٔ روشن دیده شود؛ ولی همان فیلتر، ارمِ رنگی را یک‌دست '
+            'می‌کند. «خودکار» یعنی نشان پیش‌فرض برنزی و ارمِ آپلودی با '
+            'رنگ خودش.'))
+    state_emblem_scale = models.PositiveSmallIntegerField(
+        _('اندازهٔ ارم (درصد)'), default=100,
+        validators=[MinValueValidator(60), MaxValueValidator(150)],
+        help_text=_('اگر ارم شما کوچک‌تر یا بزرگ‌تر از حد به‌نظر می‌رسد، '
+                    'با همین عدد تنظیمش کنید. ۱۰۰ یعنی اندازهٔ عادی.'))
+
+    @property
+    def emblem_scale_ratio(self) -> str:
+        """درصدِ پنل، به ضریبِ بی‌واحدی که CSS می‌فهمد.
+
+        ‎calc(94px * 120%)‎ در CSS نامعتبر است و مرورگر کل قاعده را
+        بی‌صدا می‌اندازد؛ ‎calc(94px * 1.2)‎ درست است.
+        """
+        return '%.2f' % ((self.state_emblem_scale or 100) / 100.0)
+
+    @property
+    def emblem_is_bronzed(self) -> bool:
+        """آیا فیلترِ برنزی روی ارم بنشیند؟
+
+        خودکار یعنی: نشان پیش‌فرضِ سفید بله، فایلی که موسسه آپلود
+        کرده نه — وگرنه ارمِ طلاییِ آپلودی هم یک‌دست برنز می‌شد.
+        """
+        if self.state_emblem_style == 'bronze':
+            return True
+        if self.state_emblem_style == 'original':
+            return False
+        return not self.state_emblem
     faculties_pdf = models.FileField(
         _('فایل رشته‌های دانشکده‌ها (PDF)'),
         upload_to='site/faculties/', blank=True, null=True,

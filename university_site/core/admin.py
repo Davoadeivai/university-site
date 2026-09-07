@@ -148,6 +148,7 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
                 'favicon', 'favicon_preview',
                 'world_class_logo', 'world_class_logo_preview',
                 'state_emblem', 'state_emblem_preview',
+                ('state_emblem_style', 'state_emblem_scale'),
             ),
             'description': (
                 'چهار فیلد تصویری چهار کار متفاوت دارند و پیش‌نمایش هرکدام '
@@ -402,10 +403,13 @@ class InstitutionGoalAdmin(CompletenessAdminMixin, admin.ModelAdmin):
 
 @admin.register(BoardMember)
 class BoardMemberAdmin(CompletenessAdminMixin, admin.ModelAdmin):
-    # صفحه‌های «هیات موسس» و «هیات امنا» از همین‌جا می‌خوانند، نه از
-    # «افراد موسسه». دو فهرست برای یک عده آدم وجود دارد و بدون این
-    # توضیح، ویرایش در آن یکی هیچ اثری روی سایت ندارد و کسی هم
-    # نمی‌گوید چرا.
+    # تنها جای ویرایش این دو رکن، همین‌جاست.
+    #
+    # مدتی منوی سایت به صفحهٔ دیگری می‌رفت که از «افراد موسسه» ساخته
+    # می‌شد؛ ویرایش در این فهرست هیچ اثری روی سایت نداشت و هیچ‌جا هم
+    # نمی‌گفت چرا. حالا منو به همان صفحه‌ای می‌رود که این فهرست
+    # می‌سازد، و «افراد موسسه» دیگر برای هیئت مؤسس و امنا صفحه‌ای
+    # نمی‌سازد.
     list_display = ['full_name', 'board_type', 'title', 'order', 'is_active', 'completeness']
     list_editable = ['order', 'is_active']
     list_filter = ['board_type', 'is_active']

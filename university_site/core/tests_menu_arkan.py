@@ -63,23 +63,30 @@ class ArkanMenuTests(TestCase):
         self.assertIn(reverse('academics:group_heads'), nav)
 
     def test_each_body_has_a_page_of_its_own(self):
-        """پیش از این همه به یک صفحه می‌رفتند و فقط لنگر فرق داشت."""
+        """پیش از این همه به یک صفحه می‌رفتند و فقط لنگر فرق داشت.
+
+        دو رکنِ بالا صفحهٔ خودشان را دارند — همان که پنل با «عضو
+        هیات» ویرایشش می‌کند — و بقیه از «افراد موسسه» ساخته
+        می‌شوند.
+        """
         nav = self._nav()
-        for slug in ('هیات-موسس', 'هیات-امنا', 'هیات-علمی', 'مدرسین'):
+        self.assertIn(reverse('core:board_founders'), nav)
+        self.assertIn(reverse('core:board_trustees'), nav)
+        for slug in ('هیات-علمی', 'مدرسین'):
             self.assertIn(
                 reverse('directory:people_section', args=[slug]), nav)
 
     def test_those_pages_open_and_show_only_their_own_people(self):
+        from core.models import BoardMember
         from directory.models import DirectoryPerson
 
-        DirectoryPerson.objects.create(
-            category='founder', full_name='نمونهٔ مؤسس', is_active=True)
+        BoardMember.objects.create(
+            board_type='founder', full_name='نمونهٔ مؤسس', is_active=True)
         DirectoryPerson.objects.create(
             category='lecturer', full_name='نمونهٔ مدرس', is_active=True)
 
         founders = self.client.get(
-            reverse('directory:people_section',
-                    args=['هیات-موسس'])).content.decode()
+            reverse('core:board_founders')).content.decode()
         self.assertIn('نمونهٔ مؤسس', founders)
         self.assertNotIn('نمونهٔ مدرس', founders)
 
@@ -147,8 +154,6 @@ class PeopleSectionPagesTests(TestCase):
         from directory.models import DirectoryPerson
 
         for category, name in (
-            ('founder', 'مؤسس نمونه'),
-            ('trustee', 'امنای نمونه'),
             ('faculty', 'استاد نمونه'),
             ('group_head', 'مدیر گروه نمونه'),
             ('lecturer', 'مدرس نمونه'),
@@ -161,28 +166,35 @@ class PeopleSectionPagesTests(TestCase):
             reverse('directory:people_section', args=[slug]))
 
     def test_every_section_has_its_own_address(self):
-        for slug in ('هیات-موسس', 'هیات-امنا', 'هیات-علمی',
-                     'مدیران-گروه', 'مدرسین'):
+        for slug in ('هیات-علمی', 'مدیران-گروه', 'مدرسین'):
             self.assertEqual(self._page(slug).status_code, 200, slug)
 
     def test_a_section_shows_only_its_own_people(self):
-        html = self._page('هیات-امنا').content.decode()
-        self.assertIn('امنای نمونه', html)
-        for other in ('مؤسس نمونه', 'استاد نمونه', 'مدرس نمونه'):
+        html = self._page('هیات-علمی').content.decode()
+        self.assertIn('استاد نمونه', html)
+        for other in ('مدیر گروه نمونه', 'مدرس نمونه'):
             self.assertNotIn(other, html)
+
+    def test_the_two_bodies_moved_to_their_own_pages(self):
+        """نشانی قدیمی می‌ماند ولی به صفحهٔ تازه می‌رود."""
+        for slug, target in (('هیات-موسس', 'core:board_founders'),
+                             ('هیات-امنا', 'core:board_trustees')):
+            response = self._page(slug)
+            self.assertEqual(response.status_code, 301, slug)
+            self.assertIn(reverse(target), response['Location'])
 
     def test_an_unknown_section_is_a_404(self):
         self.assertEqual(self._page('چیزی-نیست').status_code, 404)
 
     def test_each_page_offers_the_way_to_the_others(self):
-        html = self._page('هیات-موسس').content.decode()
+        html = self._page('هیات-علمی').content.decode()
         self.assertIn('people-others', html)
         self.assertIn(
-            reverse('directory:people_section', args=['هیات-امنا']), html)
+            reverse('directory:people_section', args=['مدرسین']), html)
 
     def test_the_full_list_links_into_each_page(self):
         html = self.client.get(reverse('directory:people')).content.decode()
-        for slug in ('هیات-موسس', 'مدرسین'):
+        for slug in ('هیات-علمی', 'مدرسین'):
             self.assertIn(
                 reverse('directory:people_section', args=[slug]), html)
 

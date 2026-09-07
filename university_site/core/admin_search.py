@@ -580,10 +580,21 @@ def public_live_search(request):
 
         _section_of = {key: slug for slug, key, _l, _i, _b in PEOPLE_SECTIONS}
 
+        # دو رکنِ بالا صفحه و فهرست خودشان را دارند («عضو هیات»)؛
+        # این جدول جست‌وجو را به همان‌جا می‌فرستد، نه به صفحه‌ای که
+        # دیگر ساخته نمی‌شود.
+        _board_page = {
+            'founder': 'core:board_founders',
+            'trustee': 'core:board_trustees',
+        }
+
         def _person_url(person):
             """هر کس به صفحهٔ رکنِ خودش، نه به فهرست کلی."""
             if person.category == 'staff':
                 return reverse('directory:staff')
+            board = _board_page.get(person.category)
+            if board:
+                return reverse(board)
             slug = _section_of.get(person.category)
             if slug:
                 return reverse('directory:people_section', args=[slug])
@@ -596,6 +607,18 @@ def public_live_search(request):
             only={'is_active': True},
             label=lambda p: '%s — %s' % (
                 p.display_name, p.position or p.field_of_study or p.get_category_display()),
+        )
+        from core.models import BoardMember
+
+        collect(
+            BoardMember, ['full_name', 'title'],
+            lambda m: reverse('core:board_founders'
+                              if m.board_type == 'founder'
+                              else 'core:board_trustees'),
+            'person', 'pages', 'ارکان موسسه', limit=6,
+            only={'is_active': True},
+            label=lambda m: '%s — %s' % (
+                m.full_name, m.title or m.get_board_type_display()),
         )
         collect(
             CurriculumDocument, ['title', 'note'],

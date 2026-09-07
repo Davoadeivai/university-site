@@ -88,11 +88,19 @@ class SearchFindsContentTests(TestCase):
                       _urls(_search(self.client, 'رشتهٔ آزمایشی')))
 
     def test_a_person_lands_on_the_page_of_their_own_body(self):
-        """پیش از این همه به فهرست کلی می‌رفتند."""
-        rows = _search(self.client, 'امنای آزمایشی')
-        self.assertIn(
-            reverse('directory:people_section', args=['هیات-امنا']),
-            _urls(rows))
+        """پیش از این همه به فهرست کلی می‌رفتند.
+
+        هیئت مؤسس و امنا فهرست و صفحهٔ خودشان را دارند، پس نتیجهٔ
+        جست‌وجو هم باید به همان‌جا برسد، نه به صفحه‌ای که دیگر
+        ساخته نمی‌شود.
+        """
+        from core.models import BoardMember
+
+        BoardMember.objects.create(
+            board_type='trustee', full_name='امنای جست‌وجو',
+            is_active=True)
+        rows = _search(self.client, 'امنای جست‌وجو')
+        self.assertIn(reverse('core:board_trustees'), _urls(rows))
 
     def test_every_result_carries_a_link_that_opens(self):
         for query in ('شورای آزمایشی', 'گروه آزمایشی', 'رشتهٔ آزمایشی'):

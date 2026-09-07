@@ -205,8 +205,15 @@
             {% comment %}
             نشان از پنل می‌آید و اگر آپلود نشده باشد، فایل پیش‌فرض
             می‌ماند — یعنی این جای سربرگ هیچ‌وقت خالی نمی‌شود.
+
+            فیلترِ برنزی فقط روی نشانِ خط‌نگارهٔ سفید می‌نشیند. ارمی که
+            موسسه آپلود می‌کند معمولاً رنگی است و همان فیلتر یک‌دستش
+            می‌کرد؛ حالا با رنگ خودش می‌آید مگر آنکه در پنل جور دیگری
+            خواسته شود.
             {% endcomment %}
-            <img src="{% if site_settings.state_emblem %}{{ site_settings.state_emblem.url }}{% else %}{% static 'images/mark-iran.png' %}{% endif %}"
+            <img class="bnr-emblem{% if site_settings.emblem_is_bronzed %} is-bronzed{% endif %}"
+                 style="--emblem-scale: {{ site_settings.emblem_scale_ratio }};"
+                 src="{% if site_settings.state_emblem %}{{ site_settings.state_emblem.url }}{% else %}{% static 'images/mark-iran.png' %}{% endif %}"
                  alt="" aria-hidden="true"
                  width="182" height="198" fetchpriority="high">
         </span>
@@ -268,9 +275,9 @@
                                 </button>
                             </div>
                             <ul class="vice-sub">
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-موسس' %}">هیئت مؤسس</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:board_founders' %}">هیئت مؤسس</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-moases' %}">دبیرخانه هیأت مؤسس</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'هیات-امنا' %}">هیئت امنا</a></li>
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:board_trustees' %}">هیئت امنا</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'core:presidency_office_unit' 'dabirkhane-heyat-omana' %}">دبیرخانه هیأت امناء</a></li>
                             </ul>
                         </li>
@@ -587,8 +594,17 @@
             <span class="urgent-label"><i class="fas fa-exclamation-circle" aria-hidden="true"></i> فوری</span>
             <div class="urgent-ticker">
                 <div class="urgent-track">
+                    {% comment %}
+                    اطلاعیه‌ای که نشانی دارد، خودش درِ همان صفحه است.
+                    آن‌که ندارد متن ساده می‌ماند — لینکِ بی‌مقصد از
+                    نبودِ لینک بدتر است.
+                    {% endcomment %}
                     {% for ann in urgent_announcements %}
+                    {% if ann.link %}
+                    <a class="urgent-item is-link" href="{{ ann.link }}">{{ ann.title }}</a>
+                    {% else %}
                     <span class="urgent-item">{{ ann.title }}</span>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </div>

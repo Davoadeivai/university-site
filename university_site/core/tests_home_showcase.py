@@ -267,8 +267,19 @@ class BannerEmblemTests(TestCase):
         self.assertIn('text-overflow: ellipsis', rule)
 
     def test_the_captions_step_aside_early_enough(self):
+        """زیرنویس‌ها پیش از آنکه ارم را از قاب بیرون برانند می‌روند.
+
+        عدد چند بار بالا رفته — ۱۱۰۰، بعد ۱۳۰۰، حالا ۱۴۴۰ — چون هر
+        بار باز هم دیر بود. آنچه اهمیت دارد خودِ عدد نیست، بلکه این
+        است که پیش از تنگ‌شدنِ ستون نشان اتفاق بیفتد.
+        """
+        import re
+
         css = _css()
-        self.assertIn('@media (max-width: 1300px)', css)
+        block = css[css.index('.bnr-en, .bnr-min { display: none; }') - 400:
+                    css.index('.bnr-en, .bnr-min { display: none; }')]
+        width = int(re.findall(r'@media \(max-width: (\d+)px\)', block)[-1])
+        self.assertGreaterEqual(width, 1300)
 
     def test_the_banner_does_not_clip_its_marks(self):
         """لایه‌های تزئینی inset:0 دارند؛ برش فقط نشان‌ها را می‌برید."""
