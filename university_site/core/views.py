@@ -293,6 +293,35 @@ def board_trustees(request):
     return render(request, 'core/board_trustees.html', context)
 
 
+def announcement_detail(request, pk):
+    """صفحهٔ یک اطلاعیه.
+
+    اطلاعیه تا امروز هیچ صفحه‌ای نداشت: در نوار فوری و در داشبورد
+    دیده می‌شد و بس. کسی که «انتخاب واحد شروع شد» را می‌خواند، جایی
+    برای رفتن نداشت.
+
+    همان فیلترِ نوار: غیرفعال و منقضی باز نمی‌شوند — وگرنه نشانی یک
+    اطلاعیهٔ برداشته‌شده تا ابد در دسترس می‌ماند.
+    """
+    from django.shortcuts import get_object_or_404
+
+    from accounts.models import Announcement
+
+    today = timezone.now().date()
+    row = get_object_or_404(
+        Announcement.objects.filter(is_active=True).filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=today)),
+        pk=pk)
+    others = Announcement.objects.filter(is_active=True).filter(
+        Q(expires_at__isnull=True) | Q(expires_at__gte=today)
+    ).exclude(pk=row.pk).order_by('-created_at')[:5]
+    return render(request, 'core/announcement_detail.html', {
+        'announcement': row,
+        'others': others,
+        'page_title': row.title,
+    })
+
+
 def search(request):
     query = request.GET.get('q', '')
     results = []

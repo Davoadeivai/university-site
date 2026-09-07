@@ -108,11 +108,20 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
     def test_it_starts_at_the_left_corner_already_visible(self):
         """پیش از این از بیرونِ قاب می‌آمد و تا می‌رسید، داشت می‌رفت."""
         block = _keyframes()
-        self.assertIn('from { left: 0; }', block)
+        self.assertIn('left: 0;', block)
         self.assertNotIn('translateX(-100%)', block)
 
+    def test_it_holds_still_before_moving(self):
+        """موسسه خواست خبر چند ثانیه بایستد تا خوانده شود."""
+        import re
+
+        block = _keyframes()
+        hold = re.search(r'0%,\s*(\d+)%\s*\{\s*left: 0;', block)
+        self.assertIsNotNone(hold, 'مکثی در ابتدای حرکت نیست')
+        self.assertGreaterEqual(int(hold.group(1)), 8)
+
     def test_it_ends_at_the_right_edge(self):
-        self.assertIn('to   { left: 100%;', _keyframes())
+        self.assertIn('left: 100%;', _keyframes())
 
     def test_the_travel_is_measured_against_the_bar(self):
         """درصدِ ‎left‎ از پهنای قاب می‌آید، پس گذر همیشه کامل است."""

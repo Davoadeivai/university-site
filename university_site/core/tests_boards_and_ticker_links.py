@@ -110,11 +110,31 @@ class AnUrgentNoticeCanBeClickedTests(TestCase):
         ticker = self._ticker()
         self.assertIn('انتخاب واحد نیم‌سال آینده آغاز شد', ticker)
 
-    def test_a_notice_without_a_target_is_not_a_dead_link(self):
-        self._announce(link='')
+    def test_a_notice_without_a_target_gets_its_own_page(self):
+        """اطلاعیه صفحه‌ای نداشت، پس بدون نشانی دست‌نویس کلیک بی‌مقصد بود."""
+        row = self._announce(link='')
         ticker = self._ticker()
-        self.assertIn('<span class="urgent-item"', ticker)
-        self.assertNotIn('<a class="urgent-item', ticker)
+        self.assertIn('<a class="urgent-item is-link"', ticker)
+        self.assertIn(
+            reverse('core:announcement_detail', args=[row.pk]), ticker)
+
+    def test_that_page_opens_and_shows_the_notice(self):
+        row = self._announce(link='', content='جزئیات انتخاب واحد اینجاست.')
+        html = self.client.get(row.get_absolute_url()).content.decode()
+        self.assertIn('انتخاب واحد نیم‌سال آینده آغاز شد', html)
+        self.assertIn('جزئیات انتخاب واحد اینجاست.', html)
+
+    def test_a_typed_address_still_wins(self):
+        row = self._announce(link='/dashboard/registration/')
+        self.assertEqual(row.get_absolute_url(), '/dashboard/registration/')
+
+    def test_a_withdrawn_notice_has_no_page(self):
+        """وگرنه نشانی اطلاعیهٔ برداشته‌شده تا ابد باز می‌ماند."""
+        row = self._announce(link='')
+        url = reverse('core:announcement_detail', args=[row.pk])
+        row.is_active = False
+        row.save()
+        self.assertEqual(self.client.get(url).status_code, 404)
 
     def test_the_panel_offers_the_field(self):
         from accounts.admin import AnnouncementAdmin

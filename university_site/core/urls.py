@@ -26,6 +26,8 @@ urlpatterns = [
     path('هیات-امنا/', views.board_trustees, name='board_trustees'),
     path('معاونت‌ها/', views.vices_list, name='vices_list'),
     path('معاونت‌ها/<str:vice_type>/', views.vice_detail, name='vice_detail'),
+    path('اطلاعیه/<int:pk>/', views.announcement_detail,
+         name='announcement_detail'),
     path('search/', views.search, name='search'),
     path('captcha/', views.captcha_image, name='captcha'),
     path('سوالات-متداول/', views.faq_view, name='faq'),

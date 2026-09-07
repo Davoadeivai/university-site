@@ -595,16 +595,12 @@
             <div class="urgent-ticker">
                 <div class="urgent-track">
                     {% comment %}
-                    اطلاعیه‌ای که نشانی دارد، خودش درِ همان صفحه است.
-                    آن‌که ندارد متن ساده می‌ماند — لینکِ بی‌مقصد از
-                    نبودِ لینک بدتر است.
+                    هر اطلاعیه درِ صفحهٔ خودش است: نشانی دست‌نویس اگر
+                    داشته باشد، وگرنه صفحه‌ای که برای همین اطلاعیه
+                    ساخته می‌شود. پس هیچ خبری بی‌مقصد نمی‌ماند.
                     {% endcomment %}
                     {% for ann in urgent_announcements %}
-                    {% if ann.link %}
-                    <a class="urgent-item is-link" href="{{ ann.link }}">{{ ann.title }}</a>
-                    {% else %}
-                    <span class="urgent-item">{{ ann.title }}</span>
-                    {% endif %}
+                    <a class="urgent-item is-link" href="{{ ann.get_absolute_url }}">{{ ann.title }}</a>
                     {% endfor %}
                 </div>
             </div>

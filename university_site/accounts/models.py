@@ -169,13 +169,31 @@ class Announcement(models.Model):
     link = models.CharField(
         _('نشانی مقصد'), max_length=300, blank=True,
         help_text=_(
-            'با کلیک روی این اطلاعیه، بازدیدکننده به همین نشانی می‌رود — '
-            'مثلاً ‎/dashboard/registration/‎ برای انتخاب واحد. خالی '
-            'بگذارید تا اطلاعیه فقط متن باشد.'))
+            'اختیاری. اگر این اطلاعیه به صفحهٔ دیگری از سایت اشاره '
+            'دارد — مثلاً ‎/dashboard/registration/‎ برای انتخاب واحد — '
+            'همین‌جا بنویسیدش. خالی که بماند، کلیک روی اطلاعیه صفحهٔ '
+            'خودِ همین اطلاعیه را باز می‌کند.'))
     is_active = models.BooleanField(_('فعال'), default=True)
     is_urgent = models.BooleanField(_('فوری'), default=False)
     created_at = models.DateTimeField(_('زمان ایجاد'), auto_now_add=True)
     expires_at = models.DateField(_('تاریخ انقضا'), blank=True, null=True)
+
+    def get_absolute_url(self):
+        """مقصدِ کلیک: نشانی دست‌نویس، وگرنه صفحهٔ خودِ اطلاعیه.
+
+        پیش از این اطلاعیه هیچ صفحه‌ای نداشت، پس بدون نشانی دست‌نویس
+        کلیک‌کردن روی آن به هیچ‌جا نمی‌رسید — «انتخاب واحد شروع شد» را
+        می‌خواندی و باید خودت دنبال صفحه‌اش می‌گشتی.
+        """
+        from django.urls import NoReverseMatch, reverse
+
+        typed = (self.link or '').strip()
+        if typed:
+            return typed
+        try:
+            return reverse('core:announcement_detail', args=[self.pk])
+        except NoReverseMatch:
+            return ''
 
     class Meta:
         verbose_name = _('اطلاعیه')
