@@ -113,10 +113,10 @@ class TheSubmenuOpensInPlaceTests(TestCase):
         """قاعده‌ای که زیرمنو را جمع و باز می‌کند.
 
         دو قاعده با همین انتخابگر هست — یکی پایهٔ فهرست، یکی رفتار —
-        پس همان که ‎grid‎ دارد برداشته می‌شود، نه اولی.
+        پس همان که جمع‌شدن دارد برداشته می‌شود، نه اولی.
         """
         css = _css()
-        start = css.index('grid-template-rows: 0fr')
+        start = css.index('max-block-size: 0;')
         return css[css.rindex('.vice-sub {', 0, start):
                    css.index('}', start)]
 
@@ -127,17 +127,27 @@ class TheSubmenuOpensInPlaceTests(TestCase):
 
     def test_it_expands_where_it_stands(self):
         rule = self._accordion()
-        self.assertIn('grid-template-rows: 0fr', rule)
+        self.assertIn('max-block-size: 0', rule)
         self.assertIn('overflow: hidden', rule)
 
+    def test_every_row_keeps_its_own_line(self):
+        """با ‎grid-template-rows‎ همهٔ ردیف‌ها در یک ردیف می‌نشستند و
+        نام رشته روی مقطعش می‌افتاد؛ گرید یک فرزند می‌خواهد."""
+        import re
+
+        # توضیحِ خودِ قاعده اسمِ ترفندِ قبلی را می‌برد؛ اعلان‌ها مهم‌اند
+        rule = re.sub(r'/\*.*?\*/', '', self._accordion(), flags=re.S)
+        self.assertIn('display: block', rule)
+        self.assertNotIn('grid-template-rows', rule)
+
     def test_opening_is_animated_not_a_jump(self):
-        self.assertIn('transition: grid-template-rows', self._accordion())
+        self.assertIn('transition: max-block-size', self._accordion())
 
     def test_only_an_opened_branch_is_shown(self):
         css = _css()
         self.assertIn('.vice-group.has-sub.is-open > .vice-sub', css)
-        block = css[css.index('.vice-group.has-sub.is-open > .vice-sub'):][:220]
-        self.assertIn('grid-template-rows: 1fr', block)
+        block = css[css.index('.vice-group.has-sub.is-open > .vice-sub'):][:400]
+        self.assertIn('max-block-size: 160vh', block)
 
     def test_keyboard_focus_opens_it_too(self):
         """بدون این، کسی که با Tab می‌گردد هیچ‌وقت زیرشاخه را نمی‌بیند."""
@@ -233,8 +243,16 @@ class TheMenuFitsOnOneScreenTests(TestCase):
         """در حالت ستونی، همه‌چیز از نگاه اول پیداست."""
         css = _css()
         block = css[css.index('.nav-dd-vices > .vice-group > .vice-sub {'):][:300]
-        self.assertIn('grid-template-rows: 1fr', block)
+        self.assertIn('max-block-size: none', block)
         self.assertIn('opacity: 1', block)
+
+    def test_a_long_faculty_column_scrolls_by_itself(self):
+        """چهل‌ویک رشته در سه ستون، بلندتر از قدِ صفحه است."""
+        css = _css()
+        block = css[css.index(
+            '.nav-dd-faculties > .vice-group > .vice-sub {'):][:220]
+        self.assertIn('max-block-size', block)
+        self.assertIn('overflow-y: auto', block)
 
     def test_the_arrow_button_steps_aside_there(self):
         css = _css()

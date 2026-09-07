@@ -278,7 +278,7 @@ class NestedDeputyMenuTests(TestCase):
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
         self.assertNotIn('.vice-group.has-sub { position: relative; }', css)
-        start = css.index('grid-template-rows: 0fr')
+        start = css.index('max-block-size: 0;')
         block = css[css.rindex('.vice-sub {', 0, start):
                     css.index('}', start)]
         self.assertNotIn('inset-inline-start: 100%', block)
