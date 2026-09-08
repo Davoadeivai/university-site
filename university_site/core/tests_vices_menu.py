@@ -204,109 +204,53 @@ class TheMenuStillWorksWithoutHoverTests(TestCase):
         self.assertIn(reverse('core:vice_detail', args=['education']), menu)
 
 
-class TheMenuFitsOnOneScreenTests(TestCase):
-    """یک ستونِ بلند بود و برای دیدن معاونت پنجم باید تا ته اسکرول می‌کردی."""
+class TheMenuLooksLikeEveryOtherOneTests(TestCase):
+    """یک بار پنج‌ستونی و تمام‌پهنا شد؛ موسسه یک‌شکلی را خواست.
 
-    def _panel(self):
-        """قاعدهٔ ستونی، نه قاعدهٔ پایهٔ کشویی که بالاتر در فایل است."""
+    بلند نبودنش از بسته‌بودنِ شاخه‌ها می‌آید، نه از پهن‌بودن پنل: در
+    حالت بسته فقط پنج ردیفِ نام معاونت دیده می‌شود.
+    """
+
+    def test_the_wide_panel_is_gone(self):
         css = _css()
-        start = css.index('grid-template-columns: repeat(var(--cols)')
-        return css[css.rindex('.nav-dd-vices {', 0, start):
+        self.assertNotIn('has-mega', css)
+        self.assertNotIn('grid-template-columns: repeat(var(--cols)', css)
+
+    def test_the_markup_no_longer_marks_them_apart(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn('has-mega', html)
+
+    def test_it_is_a_plain_dropdown_again(self):
+        """عرضِ معمولی، زیر دکمهٔ خودش — مثل شوراها و درباره موسسه."""
+        css = _css()
+        self.assertIn('.nav-dd-vices { min-inline-size: 320px; }', css)
+
+    def test_the_panel_starts_short(self):
+        """شاخه‌ها بسته باز می‌شوند، پس اسکرولی در کار نیست."""
+        rule = self._closed()
+        self.assertIn('max-block-size: 0', rule)
+
+    def _closed(self):
+        css = _css()
+        start = css.index('max-block-size: 0;')
+        return css[css.rindex('.vice-sub {', 0, start):
                    css.index('}', start)]
 
-    def test_the_panel_lays_the_vices_side_by_side(self):
-        self.assertIn('grid-template-columns: repeat(var(--cols)',
-                      self._panel())
-
-    def test_it_is_only_a_grid_once_it_is_open(self):
-        """‎display‎ روی حالتِ بسته، پنل را همیشه روی صفحه نگه می‌داشت."""
-        block = self._panel()
-        self.assertNotIn('display:', block)
+    def test_a_long_faculty_branch_scrolls_inside_itself(self):
+        """چهل‌ویک رشته، بلندتر از قدِ صفحه است."""
         css = _css()
+        self.assertIn('.nav-dd-faculties .vice-sub { max-block-size:', css)
         self.assertIn(
-            '#mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-vices.show',
+            '.vice-group.has-sub.is-open > .vice-sub { overflow-y: auto; }',
             css)
-        opened = css[css.index(
-            '#mainNav .nav-item.has-mega:hover > .dropdown-menu.nav-dd-vices'):]
-        self.assertIn('display: grid !important', opened[:520])
-
-    def test_there_is_a_column_for_each_vice(self):
-        self.assertIn('--cols: 5', self._panel())
-
-    def test_the_faculties_menu_gets_its_own_count(self):
-        """سه دانشکده در پنج ستون، دو ستون خالی می‌ماند."""
-        self.assertIn(
-            '#mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-faculties',
-            _css())
-
-    def test_a_narrow_screen_gets_fewer_columns(self):
-        css = _css()
-        self.assertIn('@media (min-width: 1200px) and (max-width: 1400px)',
-                      css)
-
-    def test_the_panel_spans_the_whole_navbar(self):
-        """پنلِ پهن که به آیتم بچسبد، روی همسایه‌هایش می‌افتد."""
-        block = self._panel()
-        self.assertIn('position: absolute', block)
-        self.assertIn('inset-inline: 0', block)
-        self.assertIn('inline-size: auto', block)
-
-    def test_the_navbar_is_what_it_is_measured_against(self):
-        css = _css()
-        self.assertIn('#mainNav { position: relative; }', css)
-        self.assertIn('#mainNav .nav-item.has-mega { position: static; }', css)
-
-    def test_only_the_column_menus_are_detached(self):
-        """بقیهٔ کشویی‌ها باید سرِ جای دکمهٔ خودشان بمانند."""
-        html = self.client.get(reverse('core:home')).content.decode()
-        nav = html.split('id="mainNav"')[1].split('</nav>')[0]
-        self.assertEqual(nav.count('nav-item dropdown has-mega'), 2)
-
-    def test_nothing_needs_opening_on_a_desktop(self):
-        """در حالت ستونی، همه‌چیز از نگاه اول پیداست."""
-        css = _css()
-        block = css[css.index('.nav-dd-vices > .vice-group > .vice-sub {'):][:300]
-        self.assertIn('max-block-size: none', block)
-        self.assertIn('opacity: 1', block)
-
-    def test_a_long_faculty_column_scrolls_by_itself(self):
-        """چهل‌ویک رشته در سه ستون، بلندتر از قدِ صفحه است."""
-        css = _css()
-        block = css[css.index(
-            '.nav-dd-faculties > .vice-group > .vice-sub {'):][:220]
-        self.assertIn('max-block-size', block)
-        self.assertIn('overflow-y: auto', block)
-
-    def test_the_arrow_button_steps_aside_there(self):
-        css = _css()
-        self.assertIn(
-            '.nav-dd-vices > .vice-group > .vice-lead-row .vice-toggle', css)
-
-    def test_a_runaway_panel_still_cannot_leave_the_screen(self):
-        block = self._panel()
-        self.assertIn('max-block-size', block)
-        self.assertIn('overflow-y: auto', block)
-
-    def test_the_columns_wait_for_the_navbar_to_go_horizontal(self):
-        """نوار با ‎navbar-expand-xl‎ تا ۱۲۰۰ پیکسل عمودی است.
-
-        با شکستِ ۹۹۲، میان ۹۹۲ تا ۱۱۹۹ منوی عمودی ستون‌بندی می‌شد و
-        پنلِ پهن روی بقیه می‌افتاد.
-        """
-        css = _css()
-        mega = css.index('grid-template-columns: repeat(var(--cols)')
-        guard = css.rindex('@media (min-width: ', 0, mega)
-        self.assertIn('1200px', css[guard:guard + 40])
 
     def test_one_menu_at_a_time(self):
-        """پنل تمام‌پهنا روی همسایه می‌افتد؛ دو منوی باز یعنی قاطی."""
         from pathlib import Path
 
         from django.conf import settings
 
         js = (Path(settings.BASE_DIR) / 'static' / 'js' /
               'main.js').read_text(encoding='utf-8')
-        self.assertIn('items.forEach(function (other) {', js)
         self.assertIn('if (other !== item) { close(other); }', js)
 
     def test_clicking_a_destination_closes_the_menu(self):
@@ -317,3 +261,12 @@ class TheMenuFitsOnOneScreenTests(TestCase):
         js = (Path(settings.BASE_DIR) / 'static' / 'js' /
               'main.js').read_text(encoding='utf-8')
         self.assertIn("event.target.closest('a[href]')", js)
+
+    def test_closing_goes_through_bootstrap_where_it_drives(self):
+        from pathlib import Path
+
+        from django.conf import settings
+
+        js = (Path(settings.BASE_DIR) / 'static' / 'js' /
+              'main.js').read_text(encoding='utf-8')
+        self.assertIn('window.bootstrap.Dropdown.getInstance(toggle)', js)
