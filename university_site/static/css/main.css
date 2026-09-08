@@ -3736,7 +3736,8 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     background: rgba(201, 163, 78, .16);
     font-size: 10.5px;
     font-weight: 700;
-    line-height: 1.7;
+    /* از ارتفاع خط بالاتر نرود، وگرنه همان ردیف را بلند می‌کند */
+    line-height: 1.45;
     white-space: nowrap;
     opacity: .85;
 }
@@ -4311,6 +4312,12 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     border-bottom: 1px solid rgba(122, 31, 46, .07) !important;
     /* نشانگر عمودی روی زمینهٔ روشن دیده نمی‌شد */
     padding-inline-start: 34px !important;
+    /* ردیف زیرمنو باید جمع‌تر از ردیف اصلی باشد.
+       \u200E.nav-dd-item\u200E نُه پیکسل بالا و پایین می‌داد — اندازهٔ ردیفِ
+       سرشاخه — و نوزده رشتهٔ یک دانشکده با آن فاصله، فهرستی
+       می‌شد که سطرهایش از هم دور بودند. */
+    padding-block: 4px !important;
+    line-height: 1.75 !important;
 }
 .vice-sub li:last-child .nav-dd-sub { border-bottom: 0 !important; }
 
