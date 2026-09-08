@@ -3724,12 +3724,21 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     overflow-y: auto;
 }
 /* مقطع، زیر نام رشته: چند رشته یک نام دارند و در دو مقطع‌اند */
+/* مقطع، کنارِ نام رشته — نه زیرش.
+   با \u200Edisplay: block\u200E هر رشته دو خط می‌شد و ردیف‌های منوی دانشکده‌ها
+   دو برابرِ بقیهٔ منوها قد می‌کشیدند. یک نشانِ کوچک کنار نام، هم
+   جا می‌گیرد هم همان اطلاعات را می‌دهد. */
 .nav-dd-degree {
-    display: block;
-    margin-block-start: 2px;
-    font-size: 11px;
-    font-weight: 600;
-    opacity: .7;
+    display: inline-block;
+    margin-inline-start: 6px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgba(201, 163, 78, .16);
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.7;
+    white-space: nowrap;
+    opacity: .85;
 }
 
 /* ── صفحهٔ معاونت‌ها ─────────────────────────────────────────
@@ -4280,9 +4289,6 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     .nav-dd-faculties .vice-sub { max-block-size: min(58vh, 420px); }
     .vice-group.has-sub.is-open > .vice-sub { overflow-y: auto; }
 }
-
-}
-
 
 /* اطلاعیهٔ لینک‌دار: زیرخطِ نازک می‌گوید که می‌شود رویش زد */
 .urgent-item.is-link {
