@@ -4284,22 +4284,41 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     #mainNav { position: relative; }
     #mainNav .nav-item.has-mega { position: static; }
 
-    .nav-dd-vices {
+    /* هندسه — بدون ‎display‎.
+       ‎display: grid !important‎ اینجا بود و قاعدهٔ ‎display: none‎ی
+       را می‌شکست که کشویی را بسته نگه می‌دارد: هر دو پنل همیشه روی
+       صفحه بودند و روی هم می‌افتادند.
+
+       انتخابگر با شناسه نوشته می‌شود چون قاعدهٔ جای‌گذاریِ نوار
+       چهار کلاس دارد و ‎.nav-dd-vices‎ی تنها از آن ضعیف‌تر بود. */
+    #mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-vices {
         --cols: 5;
-        display: grid !important;
         grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
         gap: 4px 10px;
         position: absolute;
+        inset-block-start: 100%;
         inset-inline: 0;
         inline-size: auto;
-        transform: none !important;
+        transform: none;
         padding: 14px 16px;
         /* سقف ایمنی: اگر روزی واحدها چند برابر شدند، پنل از صفحه
            بیرون نزند. */
         max-block-size: min(78vh, 620px);
         overflow-y: auto;
     }
-    .nav-dd-faculties { --cols: 3; }
+    #mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-faculties {
+        --cols: 3;
+    }
+
+    /* و فقط وقتی باز است.
+       ‎!important‎ لازم است چون قاعدهٔ بازشدنِ نوار هم ‎!important‎
+       دارد — ولی فقط روی همین حالتِ باز، نه روی بسته. */
+    #mainNav .nav-item.has-mega:hover > .dropdown-menu.nav-dd-vices,
+    #mainNav .nav-item.has-mega:focus-within > .dropdown-menu.nav-dd-vices,
+    #mainNav .nav-item.has-mega.show > .dropdown-menu.nav-dd-vices,
+    #mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-vices.show {
+        display: grid !important;
+    }
 
     /* هر معاونت یک ستون؛ خط جداکنندهٔ افقیِ حالت فهرستی معنا ندارد */
     .nav-dd-vices > .vice-group + .vice-group {
@@ -4361,7 +4380,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 /* فهرست رشته‌های یک دانشکده بلندتر از قد صفحه است؛ همان ستون
    خودش اسکرول می‌شود، نه کلِ پنل. */
 @media (min-width: 1200px) {
-    .nav-dd-faculties > .vice-group > .vice-sub {
+    #mainNav .nav-dd-faculties > .vice-group > .vice-sub {
         max-block-size: min(62vh, 440px);
         overflow-y: auto;
     }
@@ -4369,7 +4388,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 /* روی نمایشگر متوسط، پنج ستون تنگ می‌شود */
 @media (min-width: 1200px) and (max-width: 1400px) {
-    .nav-dd-vices { --cols: 3; }
+    #mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-vices { --cols: 3; }
     .nav-dd-vices > .vice-group { border-inline-end: 0; }
 }
 

@@ -35,8 +35,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const items = document.querySelectorAll('#mainNav .nav-item.dropdown');
 
         function close(item) {
-            item.classList.remove('show');
             const toggle = item.querySelector(':scope > .dropdown-toggle');
+
+            // زیر ۱۲۰۰ پیکسل بوت‌استرپ خودش منو را می‌گرداند. اگر
+            // کلاس‌ها را دستی برداریم، حالتِ داخلی‌اش عوض نمی‌شود و
+            // کلیک بعدی وارونه عمل می‌کند — منو باز نمی‌شود چون فکر
+            // می‌کند هنوز باز است.
+            if (toggle && window.bootstrap && window.bootstrap.Dropdown) {
+                const instance = window.bootstrap.Dropdown.getInstance(toggle);
+                if (instance) { instance.hide(); return; }
+            }
+
+            item.classList.remove('show');
             if (toggle) toggle.setAttribute('aria-expanded', 'false');
             const menu = item.querySelector(':scope > .dropdown-menu');
             if (menu) menu.classList.remove('show');

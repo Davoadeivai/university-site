@@ -215,16 +215,29 @@ class TheMenuFitsOnOneScreenTests(TestCase):
                    css.index('}', start)]
 
     def test_the_panel_lays_the_vices_side_by_side(self):
+        self.assertIn('grid-template-columns: repeat(var(--cols)',
+                      self._panel())
+
+    def test_it_is_only_a_grid_once_it_is_open(self):
+        """‎display‎ روی حالتِ بسته، پنل را همیشه روی صفحه نگه می‌داشت."""
         block = self._panel()
-        self.assertIn('display: grid', block)
-        self.assertIn('grid-template-columns: repeat(var(--cols)', block)
+        self.assertNotIn('display:', block)
+        css = _css()
+        self.assertIn(
+            '#mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-vices.show',
+            css)
+        opened = css[css.index(
+            '#mainNav .nav-item.has-mega:hover > .dropdown-menu.nav-dd-vices'):]
+        self.assertIn('display: grid !important', opened[:520])
 
     def test_there_is_a_column_for_each_vice(self):
         self.assertIn('--cols: 5', self._panel())
 
     def test_the_faculties_menu_gets_its_own_count(self):
         """سه دانشکده در پنج ستون، دو ستون خالی می‌ماند."""
-        self.assertIn('.nav-dd-faculties { --cols: 3;', _css())
+        self.assertIn(
+            '#mainNav .nav-item.has-mega > .dropdown-menu.nav-dd-faculties',
+            _css())
 
     def test_a_narrow_screen_gets_fewer_columns(self):
         css = _css()
