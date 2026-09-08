@@ -146,7 +146,8 @@ class TheSubmenuOpensInPlaceTests(TestCase):
     def test_only_an_opened_branch_is_shown(self):
         css = _css()
         self.assertIn('.vice-group.has-sub.is-open > .vice-sub', css)
-        block = css[css.index('.vice-group.has-sub.is-open > .vice-sub'):][:400]
+        block = css[css.index(
+            chr(10) + '.vice-group.has-sub.is-open > .vice-sub'):][:400]
         self.assertIn('max-block-size: 160vh', block)
 
     def test_keyboard_focus_opens_it_too(self):
@@ -239,10 +240,22 @@ class TheMenuLooksLikeEveryOtherOneTests(TestCase):
     def test_a_long_faculty_branch_scrolls_inside_itself(self):
         """چهل‌ویک رشته، بلندتر از قدِ صفحه است."""
         css = _css()
-        self.assertIn('.nav-dd-faculties .vice-sub { max-block-size:', css)
         self.assertIn(
-            '.vice-group.has-sub.is-open > .vice-sub { overflow-y: auto; }',
-            css)
+            '.nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub', css)
+        self.assertIn('overflow-y: auto', css)
+
+    def test_the_ceiling_only_applies_to_an_open_branch(self):
+        """بی‌قید که بود، شاخهٔ بستهٔ نامرئی هم پانصد پیکسل جا می‌گرفت
+        و منو یک پنلِ بلندِ خالی می‌شد.
+
+        دو کلاسِ \u200E.nav-dd-faculties .vice-sub\u200E بر یک کلاسِ \u200E.vice-sub\u200E
+        می‌چربید، پس سقفِ ۵۲۰ پیکسلی جای \u200Emax-block-size: 0\u200E می‌نشست.
+        """
+        css = _css()
+        for line in css.splitlines():
+            if 'nav-dd-faculties' in line and 'vice-sub' in line:
+                opened = 'is-open' in line or 'focus-within' in line
+                self.assertTrue(opened, line.strip())
 
     def test_one_menu_at_a_time(self):
         from pathlib import Path

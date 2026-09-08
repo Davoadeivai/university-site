@@ -3718,8 +3718,14 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 /* ── منوی دانشکده‌ها: هر دانشکده، رشته‌های خودش ──────────────
    دانشکدهٔ مدیریت نوزده رشته دارد؛ بدون سقف ارتفاع، زیرمنو از کف
-   صفحه بیرون می‌زد و ردیف‌های آخرش دست‌نیافتنی می‌شد. */
-.nav-dd-faculties .vice-sub {
+   صفحه بیرون می‌زد و ردیف‌های آخرش دست‌نیافتنی می‌شد.
+
+   سقف فقط روی شاخهٔ باز.
+   بی‌قید که بود، بر \u200Emax-block-size: 0\u200Eی می‌چربید که شاخهٔ بسته را
+   جمع نگه می‌دارد — دو کلاس در برابر یک کلاس — پس هر شاخهٔ بسته
+   هم پانصد پیکسل جا می‌گرفت و منو یک پنلِ بلندِ خالی می‌شد. */
+.nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub,
+.nav-dd-faculties .vice-group.has-sub:focus-within > .vice-sub {
     max-block-size: min(70vh, 520px);
     overflow-y: auto;
 }
@@ -4286,9 +4292,13 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     .nav-dd-vices { min-inline-size: 320px; }
     .nav-dd-faculties { min-inline-size: 340px; }
 
-    /* فهرست رشته‌های یک دانشکده از قد صفحه بلندتر است */
-    .nav-dd-faculties .vice-sub { max-block-size: min(58vh, 420px); }
-    .vice-group.has-sub.is-open > .vice-sub { overflow-y: auto; }
+    /* فهرست رشته‌های یک دانشکده از قد صفحه بلندتر است — ولی سقف
+       فقط وقتی معنا دارد که شاخه باز باشد. */
+    .nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub,
+    .nav-dd-faculties .vice-group.has-sub:focus-within > .vice-sub {
+        max-block-size: min(58vh, 420px);
+        overflow-y: auto;
+    }
 }
 
 /* اطلاعیهٔ لینک‌دار: زیرخطِ نازک می‌گوید که می‌شود رویش زد */
