@@ -71,7 +71,11 @@ def _people_group(key, label, icon):
 
 
 def academic_people(request):
-    """فهرست کامل — همهٔ ارکان و اعضا، با لینک به صفحهٔ هرکدام."""
+    """فهرست کامل بدنهٔ آموزشی، با لینک به صفحهٔ هر بخش.
+
+    دو رکنِ حاکمیتی — هیئت مؤسس و هیئت امنا — صفحهٔ خودشان را دارند
+    و اینجا نمی‌آیند؛ نام صفحه هم همین را می‌گوید.
+    """
     groups = []
     for slug, key, label, icon, _blurb in PEOPLE_SECTIONS:
         group = _people_group(key, label, icon)

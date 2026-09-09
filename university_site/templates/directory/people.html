@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}اعضای موسسه | موسسه آموزش عالی علامه امینی{% endblock %}
-{% block meta_description %}هیات موسس، هیات امنا، اعضای هیات علمی، مدیران گروه آموزشی و مدرسین موسسه آموزش عالی علامه امینی{% endblock %}
+{% block meta_description %}اعضای هیات علمی، مدیران گروه آموزشی و مدرسین موسسه آموزش عالی علامه امینی{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -9,10 +9,15 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'core:home' %}">صفحه اصلی</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'core:about' %}">درباره موسسه</a></li>
-                <li class="breadcrumb-item active">اعضای موسسه</li>
+                <li class="breadcrumb-item active">اعضای آموزشی</li>
             </ol>
         </nav>
-        <h1 class="page-header-title">ارکان و اعضای موسسه</h1>
+        {% comment %}
+        هیئت مؤسس و هیئت امنا صفحهٔ خودشان را دارند و از این فهرست
+        بیرون رفتند؛ عنوان «ارکان» می‌ماند و کسی که دنبال آن دو بود،
+        اینجا پیدایشان نمی‌کرد.
+        {% endcomment %}
+        <h1 class="page-header-title">اعضای آموزشی موسسه</h1>
     </div>
 </div>
 

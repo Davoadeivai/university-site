@@ -150,9 +150,26 @@ class TheSubmenuOpensInPlaceTests(TestCase):
             chr(10) + '.vice-group.has-sub.is-open > .vice-sub'):][:400]
         self.assertIn('max-block-size: 160vh', block)
 
-    def test_keyboard_focus_opens_it_too(self):
-        """بدون این، کسی که با Tab می‌گردد هیچ‌وقت زیرشاخه را نمی‌بیند."""
-        self.assertIn('.vice-group.has-sub:focus-within > .vice-sub', _css())
+    def test_focus_alone_no_longer_opens_it(self):
+        """\u200E:focus-within\u200E شاخه را بی‌آنکه رویش کلیک شود باز می‌کرد.
+
+        فوکوس پس از هر کلیکی در منو همان‌جا می‌ماند، پس شاخه باز
+        می‌ماند و بار بعد که نشانگر از رویش رد می‌شد، انگار بی‌کلیک
+        باز شده بود. حالا فقط \u200E.is-open\u200E بازش می‌کند.
+        """
+        self.assertNotIn('.vice-group.has-sub:focus-within > .vice-sub',
+                         _css())
+
+    def test_a_closed_branch_is_out_of_the_tab_order(self):
+        """جای \u200E:focus-within\u200E را این گرفت: پنهانِ واقعی، نه فقط تاشده.
+
+        وگرنه کسی که با Tab می‌گردد داخل ردیف‌های نامرئی می‌افتاد.
+        """
+        self.assertIn('visibility: hidden', self._accordion())
+        css = _css()
+        block = css[css.index(
+            chr(10) + '.vice-group.has-sub.is-open > .vice-sub'):][:500]
+        self.assertIn('visibility: visible', block)
 
     def test_the_arrow_button_works_everywhere_now(self):
         """پیش از این روی دسکتاپ pointer-events نداشت."""
@@ -283,3 +300,68 @@ class TheMenuLooksLikeEveryOtherOneTests(TestCase):
         js = (Path(settings.BASE_DIR) / 'static' / 'js' /
               'main.js').read_text(encoding='utf-8')
         self.assertIn('window.bootstrap.Dropdown.getInstance(toggle)', js)
+
+
+class TheHeaderRowWaitsForAClickTests(TestCase):
+    """«ارکان موسسه» و «هیئت علمی» سرگروه‌اند، نه مقصد.
+
+    هر دو لینک بودند و به صفحه‌ای می‌رفتند که ردیف اولِ زیرِ خودشان
+    هم به همان می‌رفت. نتیجه این بود که نزدیک‌شدن به سرگروه آدم را از
+    منو بیرون می‌انداخت، پیش از آنکه ببیند زیرش چیست.
+    """
+
+    def setUp(self):
+        cache.clear()
+
+    def _nav(self):
+        html = self.client.get(reverse('core:home')).content.decode()
+        return html.split('id="mainNav"')[1].split('</nav>')[0]
+
+    def _row(self, label):
+        """\u200E.vice-lead-row\u200Eی که این نام رویش نوشته است."""
+        nav = self._nav()
+        for chunk in nav.split('<div class="vice-lead-row">')[1:]:
+            row = chunk.split('</div>')[0]
+            if '>%s<' % label in row:
+                return row
+        self.fail('سرگروه %s در نوار نیست' % label)
+
+    def test_the_two_bodies_header_is_a_button(self):
+        row = self._row('ارکان موسسه')
+        self.assertIn('vice-lead-head', row)
+        self.assertNotIn('<a ', row)
+
+    def test_the_academic_header_is_a_button(self):
+        row = self._row('هیئت علمی')
+        self.assertIn('vice-lead-head', row)
+        self.assertNotIn('<a ', row)
+
+    def test_it_says_whether_it_is_open(self):
+        self.assertIn('aria-expanded="false"', self._row('ارکان موسسه'))
+
+    def test_the_vice_headers_are_still_links(self):
+        """آنجا سرگروه صفحهٔ خودش را دارد، پس لینک می‌ماند."""
+        VicePresidency.objects.create(vice_type='education', is_active=True)
+        cache.clear()
+        menu = self._nav().split('nav-dd-vices')[1].split('</ul>')[0]
+        self.assertIn('vice-lead', menu)
+        self.assertNotIn('vice-lead-head', menu)
+
+    def test_the_button_toggles_the_branch(self):
+        js = (Path(settings.BASE_DIR) / 'static' / 'js' /
+              'main.js').read_text(encoding='utf-8')
+        self.assertIn(".vice-toggle, .vice-lead-head", js)
+
+    def test_the_button_looks_like_the_rows_around_it(self):
+        """مرورگر به دکمه قلم و رنگ خودش را می‌دهد."""
+        css = _css()
+        block = css[css.index(chr(10) + '.vice-lead-head {'):][:400]
+        for declaration in ('font: inherit', 'color: inherit',
+                            'background: none', 'text-align: start'):
+            self.assertIn(declaration, block)
+
+    def test_the_full_list_is_named_for_what_it_holds(self):
+        """دو رکن از آن صفحه رفتند؛ نامش هم باید همان را بگوید."""
+        nav = self._nav()
+        self.assertIn('فهرست کامل اعضای آموزشی', nav)
+        self.assertNotIn('فهرست کامل ارکان و اعضا', nav)

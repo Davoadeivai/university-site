@@ -3698,6 +3698,23 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
 .vice-lead-text { min-inline-size: 0; }
 
+/* سرگروهی که مقصدی از خودش ندارد، دکمه است نه لینک — ولی باید عین
+   بقیهٔ ردیف‌ها دیده شود. مرورگر به دکمه قلم و رنگ و تراز خودش را
+   می‌دهد، پس اینجا پس گرفته می‌شود. */
+.vice-lead-head {
+    inline-size: 100%;
+    text-align: start;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+.vice-lead-head:focus-visible {
+    outline: 2px solid var(--gold-light, #e8c56a);
+    outline-offset: -2px;
+}
+
 /* زیرمجموعه: تورفته، با یک خط راهنمای عمودی که به سرگروهش وصلش
    می‌کند. بدون آن، در فهرست بلند معلوم نبود زیرِ کدام معاونت است. */
 .nav-dd-sub {
@@ -3724,8 +3741,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
    بی‌قید که بود، بر \u200Emax-block-size: 0\u200Eی می‌چربید که شاخهٔ بسته را
    جمع نگه می‌دارد — دو کلاس در برابر یک کلاس — پس هر شاخهٔ بسته
    هم پانصد پیکسل جا می‌گرفت و منو یک پنلِ بلندِ خالی می‌شد. */
-.nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub,
-.nav-dd-faculties .vice-group.has-sub:focus-within > .vice-sub {
+.nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub {
     max-block-size: min(70vh, 520px);
     overflow-y: auto;
 }
@@ -4247,16 +4263,24 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
     max-block-size: 0;
     overflow: hidden;
     opacity: 0;
+    /* بسته که هست، از مسیر Tab هم بیرون است.
+       پیش از این ‎:focus-within‎ شاخه را باز می‌کرد تا لینک‌های
+       نامرئی دست‌یافتنی بمانند — ولی همان باعث می‌شد شاخه بی‌آنکه
+       رویش کلیک کنی باز شود و باز بماند. حالا فقط ‎.is-open‎ بازش
+       می‌کند و پنهانی هم واقعاً پنهان است. */
+    visibility: hidden;
     transition: max-block-size var(--duration-base, 260ms) ease,
-                opacity var(--duration-fast, 160ms) ease;
+                opacity var(--duration-fast, 160ms) ease,
+                visibility 0s linear var(--duration-base, 260ms);
 }
 
-.vice-group.has-sub.is-open > .vice-sub,
-.vice-group.has-sub:focus-within > .vice-sub {
+.vice-group.has-sub.is-open > .vice-sub {
     /* سقفی به‌قدر کافی بلند: انیمیشن به ‎auto‎ نمی‌رود، ولی این عدد
        از بلندترین شاخه هم بیشتر است. */
     max-block-size: 160vh;
     opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
 }
 
 /* رنگِ هر شاخه از خودِ معاونت می‌آید: پنج شاخه، پنج رنگ، و
@@ -4294,8 +4318,7 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 
     /* فهرست رشته‌های یک دانشکده از قد صفحه بلندتر است — ولی سقف
        فقط وقتی معنا دارد که شاخه باز باشد. */
-    .nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub,
-    .nav-dd-faculties .vice-group.has-sub:focus-within > .vice-sub {
+    .nav-dd-faculties .vice-group.has-sub.is-open > .vice-sub {
         max-block-size: min(58vh, 420px);
         overflow-y: auto;
     }

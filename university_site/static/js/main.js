@@ -1246,8 +1246,21 @@ function appendMsg(text, type) {
 (function () {
     'use strict';
 
-    var toggles = document.querySelectorAll('.vice-toggle');
+    // فلشِ کنارِ هر سرگروه، و — جایی که سرگروه مقصدی از خودش ندارد —
+    // خودِ نامِ آن. «ارکان موسسه» و «هیئت علمی» صفحهٔ مستقلی ندارند و
+    // مقصدها ردیف‌های زیرشان‌اند، پس دکمه‌اند نه لینک: اول باز
+    // می‌شوند، بعد آدم انتخاب می‌کند کجا برود.
+    var toggles = document.querySelectorAll('.vice-toggle, .vice-lead-head');
     if (!toggles.length) { return; }
+
+    function collapse(group) {
+        group.classList.remove('is-open');
+        var mates = group.querySelectorAll(':scope > .vice-lead-row > .vice-toggle, ' +
+                                           ':scope > .vice-lead-row > .vice-lead-head');
+        Array.prototype.forEach.call(mates, function (mate) {
+            mate.setAttribute('aria-expanded', 'false');
+        });
+    }
 
     Array.prototype.forEach.call(toggles, function (button) {
         button.addEventListener('click', function (event) {
@@ -1264,13 +1277,16 @@ function appendMsg(text, type) {
             var siblings = group.parentNode.querySelectorAll('.vice-group.is-open');
             Array.prototype.forEach.call(siblings, function (other) {
                 if (other === group) { return; }
-                other.classList.remove('is-open');
-                var mate = other.querySelector('.vice-toggle');
-                if (mate) { mate.setAttribute('aria-expanded', 'false'); }
+                collapse(other);
             });
 
             group.classList.toggle('is-open', opening);
-            button.setAttribute('aria-expanded', String(opening));
+            var mates = group.querySelectorAll(
+                ':scope > .vice-lead-row > .vice-toggle, ' +
+                ':scope > .vice-lead-row > .vice-lead-head');
+            Array.prototype.forEach.call(mates, function (mate) {
+                mate.setAttribute('aria-expanded', String(opening));
+            });
         });
     });
 })();

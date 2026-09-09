@@ -264,11 +264,19 @@
                         دبیرخانهٔ هیئت امنا هم از «حوزه ریاست» به اینجا
                         آمد، چون رکنِ خودش همین‌جاست.
                         {% endcomment %}
+                        {% comment %}
+                        سرگروه، نه مقصد: «ارکان موسسه» صفحهٔ خودش را
+                        ندارد و مقصدها همین چهار ردیفِ زیرش‌اند. تا
+                        امروز یک لینک بود و اولین برخورد با آن، آدم را
+                        از منو بیرون می‌برد — پیش از آنکه فرصت کند
+                        ببیند زیرش چیست.
+                        {% endcomment %}
                         <li class="vice-group vice-hue-1 has-sub">
                             <div class="vice-lead-row">
-                                <a class="dropdown-item nav-dd-item vice-lead" href="{% url 'directory:people' %}">
+                                <button type="button" class="dropdown-item nav-dd-item vice-lead vice-lead-head"
+                                        aria-expanded="false">
                                     <span class="vice-lead-text">ارکان موسسه</span>
-                                </a>
+                                </button>
                                 <button type="button" class="vice-toggle" aria-expanded="false"
                                         aria-label="ارکان موسسه">
                                     <i class="fas fa-chevron-left" aria-hidden="true"></i>
@@ -432,9 +440,17 @@
                         {% endcomment %}
                         <li class="vice-group vice-hue-4 has-sub">
                             <div class="vice-lead-row">
-                                <a class="dropdown-item nav-dd-item vice-lead" href="{% url 'directory:people_section' 'هیات-علمی' %}">
+                                {% comment %}
+                                سرگروه، نه مقصد. صفحهٔ هیئت علمی همان
+                                ردیف اولِ زیرش است؛ وقتی خودِ عنوان هم
+                                همان‌جا می‌رفت، بردنِ نشانگر روی آن
+                                آدم را بی‌آنکه بخواهد از منو بیرون
+                                می‌انداخت.
+                                {% endcomment %}
+                                <button type="button" class="dropdown-item nav-dd-item vice-lead vice-lead-head"
+                                        aria-expanded="false">
                                     <span class="vice-lead-text">هیئت علمی</span>
-                                </a>
+                                </button>
                                 <button type="button" class="vice-toggle" aria-expanded="false"
                                         aria-label="هیئت علمی">
                                     <i class="fas fa-chevron-left" aria-hidden="true"></i>
@@ -445,7 +461,12 @@
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'academics:group_heads' %}">مدیران گروه آموزشی</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people_section' 'مدرسین' %}">مدرسین</a></li>
                                 <li><a class="dropdown-item nav-dd-sub" href="{% url 'faculty:list' %}">صفحهٔ اساتید</a></li>
-                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}">فهرست کامل ارکان و اعضا</a></li>
+                                {% comment %}
+                                این صفحه از وقتی دو رکن از آن بیرون
+                                رفتند، فقط بدنهٔ آموزشی را دارد؛ نامش
+                                هم باید همان را بگوید.
+                                {% endcomment %}
+                                <li><a class="dropdown-item nav-dd-sub" href="{% url 'directory:people' %}">فهرست کامل اعضای آموزشی</a></li>
                             </ul>
                         </li>
                     </ul>
