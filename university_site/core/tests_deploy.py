@@ -57,3 +57,88 @@ class DeployPullsItsOwnCodeTests(SimpleTestCase):
         doc = ast.get_docstring(ast.parse(_source())) or ''
         self.assertIn('Execute python script', doc)
         self.assertNotIn('اول «Update from Remote» را بزنید', doc)
+
+
+def _run_deploy_source():
+    return io.open(Path(settings.BASE_DIR) / 'run_deploy.py',
+                   encoding='utf-8').read()
+
+
+def _content_commands():
+    """فهرست CONTENT_COMMANDS، بی‌آنکه اسکریپت اجرا شود."""
+    tree = ast.parse(_run_deploy_source())
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id == 'CONTENT_COMMANDS':
+                return [item.value for item in node.value.elts]
+    raise AssertionError('CONTENT_COMMANDS پیدا نشد')
+
+
+class TheRosterIsRestoredOnEveryDeployTests(SimpleTestCase):
+    """صفحه‌های ارکان موسسه و هیئت علمی از سند «افراد موسسه» پر می‌شوند.
+
+    این دستور روی دیپلوی اجرا نمی‌شد، پس هر پایگاه داده‌ای که دستی
+    روی آن اجرا نشده بود فهرستی ناقص یا کهنه نشان می‌داد — و نفرات
+    ارکان با آنچه سند می‌گوید فرق داشتند.
+    """
+
+    def test_the_people_document_is_seeded(self):
+        self.assertIn('seed_directory', _content_commands())
+
+    def test_it_runs_before_the_group_heads(self):
+        """مدیران گروه از همین فهرست خوانده می‌شوند."""
+        commands = _content_commands()
+        self.assertLess(commands.index('seed_directory'),
+                        commands.index('set_group_heads'))
+
+    def test_no_destructive_flag_is_passed(self):
+        """\u200E--prune\u200E و \u200E--trust-document\u200E ویرایش‌های پنل را می‌برند."""
+        source = _run_deploy_source()
+        for flag in ('--prune', '--trust-document', '--refresh-photos'):
+            self.assertNotIn(flag, source)
+
+    def test_every_listed_command_exists(self):
+        from django.core.management import get_commands
+
+        available = get_commands()
+        for name in _content_commands():
+            self.assertIn(name, available, name)
+
+
+class TheSeedDocumentIsCompleteTests(SimpleTestCase):
+    """سند افراد باید همان تعدادی را داشته باشد که موسسه اعلام کرده."""
+
+    def _people(self):
+        import json
+
+        path = (Path(settings.BASE_DIR) / 'directory' / 'seed_data' /
+                'people.json')
+        return json.loads(path.read_text(encoding='utf-8'))
+
+    def test_the_two_bodies_are_there(self):
+        people = self._people()
+        self.assertEqual(len(people['founder']), 6)
+        self.assertEqual(len(people['trustee']), 8)
+
+    def test_the_teaching_staff_are_there(self):
+        people = self._people()
+        self.assertEqual(len(people['faculty']), 12)
+        self.assertEqual(len(people['group_head']), 10)
+        self.assertEqual(len(people['lecturer']), 43)
+
+    def test_nobody_is_nameless(self):
+        """دو نوشتار در سند هست و مدل هر دو را می‌پذیرد.
+
+        ارکان و مدرسین نام کامل می‌دهند؛ کارکنان نام و نام خانوادگی
+        جدا، و \u200EDirectoryPerson.save\u200E آن دو را به هم می‌چسباند.
+        """
+        people = self._people()
+        for category in ('founder', 'trustee', 'faculty', 'group_head',
+                         'lecturer', 'staff'):
+            for row in people[category]:
+                name = (row.get('full_name')
+                        or '%s %s' % (row.get('first_name', ''),
+                                      row.get('last_name', '')))
+                self.assertTrue(name.strip(), '%s: ردیف بی‌نام' % category)
