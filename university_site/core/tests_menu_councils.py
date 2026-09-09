@@ -386,8 +386,19 @@ class NestedDeputyMenuTests(TestCase):
         nav = self._nav()
         self.assertIn('is-plain', nav)
 
-    def test_desktop_opens_on_focus_not_only_hover(self):
-        """کاربر صفحه‌کلید با هاورِ تنها هیچ‌وقت به زیرشاخه نمی‌رسد."""
+    def test_the_keyboard_still_reaches_the_branch(self):
+        """پیش از این \u200E:focus-within\u200E این کار را می‌کرد و بهایش سنگین بود.
+
+        فوکوس پس از هر کلیکی در منو همان‌جا می‌ماند، پس شاخه باز
+        می‌ماند و بار بعد انگار بی‌کلیک باز شده بود. حالا فلشِ کنارِ
+        هر سرگروه یک \u200Ebutton\u200E است — با Enter و Space کار می‌کند — و
+        شاخهٔ بسته با \u200Evisibility\u200E از مسیر Tab بیرون است، نه با قاعده‌ای
+        که بازش کند.
+        """
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
-        self.assertIn('.vice-group.has-sub:focus-within > .vice-sub', css)
+        self.assertNotIn('.vice-group.has-sub:focus-within > .vice-sub', css)
+        self.assertIn('visibility: hidden', css)
+
+        nav = self._nav()
+        self.assertIn('<button type="button" class="vice-toggle"', nav)
