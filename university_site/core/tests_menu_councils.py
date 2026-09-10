@@ -291,6 +291,12 @@ class NestedDeputyMenuTests(TestCase):
         block = css[css.index('.vice-toggle[aria-expanded="true"]'):][:120]
         self.assertIn('rotate', block)
 
+    def _branch_ground(self):
+        css = (Path(settings.BASE_DIR) / 'static' / 'css' /
+               'main.css').read_text(encoding='utf-8')
+        start = css.index('.vice-group.has-sub > .vice-sub {')
+        return css[start:css.index('}', start)]
+
     def test_the_open_branch_has_its_own_ground(self):
         """اگر شاخهٔ باز و منو یک رنگ باشند، لایهٔ تازه دیده نمی‌شود.
 
@@ -298,12 +304,30 @@ class NestedDeputyMenuTests(TestCase):
         خودش باز می‌شود و رنگش را از همان معاونت می‌گیرد — پنج شاخه،
         پنج رنگ.
         """
+        block = self._branch_ground()
+        self.assertIn('var(--hue-soft', block)
+        self.assertIn('border-inline-start: 2px solid var(--hue', block)
+
+    def test_the_branch_is_paper_first_then_tinted(self):
+        """رنگِ رکن روی کاغذ می‌نشیند، نه به‌جای آن.
+
+        \u200E--hue-soft\u200E یک عنابیِ نُه درصدی است. تنها که بود، روی زمینهٔ
+        منو — که خودش عنابیِ تقریباً سیاه است — هیچ روشنی‌ای اضافه
+        نمی‌کرد، و ردیف‌های زیرمنو با مرکبِ تیرهٔ \u200E--text-dark\u200E روی همان
+        سیاه می‌نشستند: کلِ زیرشاخه‌های دانشکده‌ها تاریک و ناخوانا.
+
+        کاغذ از همان نشانه‌ای می‌آید که مرکب از آن می‌آید، پس در تم
+        تیره هر دو با هم برمی‌گردند.
+        """
+        block = self._branch_ground()
+        self.assertIn('background-color: var(--bg-light', block)
+        self.assertIn('background-image: linear-gradient(', block)
+
+    def test_the_dark_theme_no_longer_paints_it_by_hand(self):
+        """آن قاعده یک کلاس داشت و قاعدهٔ اصلی سه کلاس؛ هیچ‌وقت ننشست."""
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
-        start = css.index('.vice-group.has-sub > .vice-sub {')
-        block = css[start:css.index('}', start)]
-        self.assertIn('background: var(--hue-soft', block)
-        self.assertIn('border-inline-start: 2px solid var(--hue', block)
+        self.assertNotIn('[data-theme="dark"] .vice-sub {', css)
 
     def test_the_submenu_rows_use_the_institute_palette(self):
         """‎#b8cce4‎ از تم سرمه‌ای قدیمی مانده بود و بیگانه بود."""
@@ -313,24 +337,48 @@ class NestedDeputyMenuTests(TestCase):
         self.assertIn('--text-dark', block)
         self.assertNotIn('#b8cce4', block)
 
-    def test_the_submenu_text_is_comfortably_legible(self):
-        """مرکب گرم روی کاغذ ۱۶:۱ می‌دهد؛ طلا روی عنابی ۶٫۸:۱ می‌داد."""
-        def luminance(value):
-            value = value.lstrip('#')
-            parts = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
-            parts = [c / 12.92 if c <= .03928 else ((c + .055) / 1.055) ** 2.4
-                     for c in parts]
-            return .2126 * parts[0] + .7152 * parts[1] + .0722 * parts[2]
+    @staticmethod
+    def _luminance(value):
+        value = value.lstrip('#')
+        parts = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        parts = [c / 12.92 if c <= .03928 else ((c + .055) / 1.055) ** 2.4
+                 for c in parts]
+        return .2126 * parts[0] + .7152 * parts[1] + .0722 * parts[2]
 
-        ink, paper = luminance('#241a1c'), luminance('#fbf8f4')
-        ratio = (max(ink, paper) + .05) / (min(ink, paper) + .05)
-        self.assertGreater(ratio, 7)
+    def _contrast(self, ink, paper):
+        ink, paper = self._luminance(ink), self._luminance(paper)
+        return (max(ink, paper) + .05) / (min(ink, paper) + .05)
 
-    def test_the_dark_theme_panel_is_not_a_glaring_white(self):
+    def _token(self, block_selector, name):
+        """مقدار یک نشانه، همان‌طور که در فایل نوشته شده."""
+        import re
+
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /
                'main.css').read_text(encoding='utf-8')
-        block = css.split('[data-theme="dark"] .vice-sub {')[1].split('}')[0]
-        self.assertIn('#2a1a1e', block)
+        start = css.index(block_selector)
+        block = css[start:css.index('}', start)]
+        found = re.search(r'%s:\s*(#[0-9a-fA-F]{6})' % re.escape(name), block)
+        self.assertIsNotNone(found, '%s در %s نیست' % (name, block_selector))
+        return found.group(1)
+
+    def test_the_submenu_text_is_comfortably_legible(self):
+        """مرکب گرم روی کاغذ ۱۶:۱ می‌دهد؛ طلا روی عنابی ۶٫۸:۱ می‌داد.
+
+        هر دو رنگ از خودِ فایل خوانده می‌شوند. پیش از این عددِ کاغذ
+        در تست ثابت نوشته شده بود، پس وقتی زمینهٔ واقعیِ شاخه به
+        عنابیِ تقریباً سیاه رفت و ردیف‌ها ناخوانا شدند، این تست
+        همچنان سبز ماند.
+        """
+        paper = self._token(':root {', '--bg-light')
+        ink = self._token(':root {', '--text-dark')
+        self.assertGreater(self._contrast(ink, paper), 7)
+
+    def test_the_dark_theme_panel_is_legible_too(self):
+        """در تم تیره هر دو نشانه با هم برمی‌گردند، پس تضاد می‌ماند."""
+        paper = self._token('[data-theme="dark"] {', '--bg-light')
+        ink = self._token('[data-theme="dark"] {', '--text-dark')
+        self.assertLess(self._luminance(paper), .1, 'پنل تیره سفید شده')
+        self.assertGreater(self._contrast(ink, paper), 7)
 
     def test_hovering_a_submenu_row_is_visible(self):
         css = (Path(settings.BASE_DIR) / 'static' / 'css' /

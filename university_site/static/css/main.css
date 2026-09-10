@@ -4284,12 +4284,26 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 
 /* رنگِ هر شاخه از خودِ معاونت می‌آید: پنج شاخه، پنج رنگ، و
-   زیرمجموعه‌ها هم‌رنگِ رکنِ خودشان می‌مانند. */
+   زیرمجموعه‌ها هم‌رنگِ رکنِ خودشان می‌مانند.
+
+   ولی رنگ روی کاغذ می‌نشیند، نه به‌جای آن. \u200E--hue-soft\u200E یک عنابیِ نُه
+   درصدی است؛ روی زمینهٔ منو — که خودش عنابیِ تقریباً سیاه است —
+   عملاً هیچ روشنی‌ای اضافه نمی‌کرد، و ردیف‌های زیرمنو با مرکبِ تیرهٔ
+   \u200E--text-dark\u200E روی همان سیاه می‌نشستند. یعنی همه‌شان تاریک و
+   ناخوانا. (خودِ کامنتِ آن ردیف‌ها از «پنل کاغذی» می‌گوید — کاغذ
+   جایی در راه گم شده بود.)
+
+   حالا کاغذ زیر است و رنگِ رکن یک لایه روی آن. کاغذ از \u200E--bg-light\u200E
+   می‌آید — همان نشانه‌ای که مرکبِ ردیف‌ها (\u200E--text-dark\u200E) از آن
+   می‌آید — پس در تم تیره هر دو با هم برمی‌گردند و تضاد سرِ جایش
+   می‌ماند. */
 .vice-group.has-sub > .vice-sub {
     margin-block-start: 4px;
     margin-inline-start: 18px;
     border-inline-start: 2px solid var(--hue, #7a1f2e);
-    background: var(--hue-soft, rgba(122, 31, 46, .09));
+    background-color: var(--bg-light, #faf6f1);
+    background-image: linear-gradient(var(--hue-soft, rgba(122, 31, 46, .09)),
+                                      var(--hue-soft, rgba(122, 31, 46, .09)));
     border-radius: 8px 0 0 8px;
 }
 
@@ -4385,11 +4399,11 @@ a.acal-card:focus-visible { box-shadow: var(--focus-ring), 0 0 26px -6px var(--t
 }
 .vice-sub .nav-dd-sub.is-plain::before { background: var(--text-muted, #6b5b5e); }
 
-/* حالت تیره: پنل زغالیِ گرم، نه سفیدِ خیره‌کننده */
-[data-theme="dark"] .vice-sub {
-    background: #2a1a1e;
-    border-color: rgba(255, 255, 255, .1);
-}
+/* حالت تیره: پنل زغالیِ گرم، نه سفیدِ خیره‌کننده.
+   زمینه را دیگر اینجا نمی‌نویسیم — \u200E--bg-light\u200E خودش در این تم زغالی
+   می‌شود. این قاعده یک کلاس دارد و آن یکی سه کلاس، پس هر رنگی که
+   اینجا می‌نوشتیم هم بی‌اثر بود. خطِ کنارِ شاخه هم از --hue می‌آید
+   که همین‌جا پایین‌تر برای هر رکن روشن‌تر تعریف شده. */
 [data-theme="dark"] .vice-sub .nav-dd-sub {
     color: #f5ece2 !important;
     border-bottom-color: rgba(255, 255, 255, .07) !important;
