@@ -211,7 +211,14 @@ class Command(BaseCommand):
                 unit.manager_name = PLACEHOLDER
                 touched.append('manager_name')
 
-            unit.is_active = True
+            # فقط ردیفِ تازه را روشن می‌کنیم.
+            #
+            # این دستور حالا روی هر دیپلوی اجرا می‌شود، و اگر هر بار
+            # is_active را True می‌کرد، واحدی که موسسه عمداً در پنل
+            # خاموش کرده بود با دیپلوی بعدی برمی‌گشت — بی‌آنکه کسی
+            # بفهمد چرا.
+            if is_new:
+                unit.is_active = True
             unit.save()
 
             created += is_new

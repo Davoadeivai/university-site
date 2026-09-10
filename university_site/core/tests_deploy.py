@@ -4,7 +4,7 @@ import io
 from pathlib import Path
 
 from django.conf import settings
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 
 def _source():
@@ -96,7 +96,8 @@ class TheRosterIsRestoredOnEveryDeployTests(SimpleTestCase):
     def test_no_destructive_flag_is_passed(self):
         """\u200E--prune\u200E و \u200E--trust-document\u200E ویرایش‌های پنل را می‌برند."""
         source = _run_deploy_source()
-        for flag in ('--prune', '--trust-document', '--refresh-photos'):
+        for flag in ('--prune', '--trust-document', '--refresh-photos',
+                     '--replace'):
             self.assertNotIn(flag, source)
 
     def test_every_listed_command_exists(self):
@@ -142,3 +143,64 @@ class TheSeedDocumentIsCompleteTests(SimpleTestCase):
                         or '%s %s' % (row.get('first_name', ''),
                                       row.get('last_name', '')))
                 self.assertTrue(name.strip(), '%s: ردیف بی‌نام' % category)
+
+
+class EveryPageTheMenuPointsAtIsBuiltOnDeployTests(TestCase):
+    """لینکِ منو یک قول است؛ ردیفِ پشتش باید ساخته شود.
+
+    «دبیرخانه هیأت مؤسس» و «دبیرخانه هیأت امناء» زیر «ارکان موسسه»
+    نشسته بودند و روی سرور ۴۰۴ می‌دادند: ردیفشان را \u200Eseed_presidency\u200E
+    می‌سازد و آن دستور روی دیپلوی اجرا نمی‌شد. سرور ترمینال ندارد،
+    پس «دستی اجرایش کن» راهی نیست.
+    """
+
+    def test_the_presidency_units_are_seeded(self):
+        self.assertIn('seed_presidency', _content_commands())
+
+    def test_every_unit_the_menu_links_to_exists_after_seeding(self):
+        from io import StringIO
+        import re
+
+        from django.core.management import call_command
+        from django.template.loader import get_template
+
+        from core.models import PresidencyOfficeUnit
+
+        call_command('seed_presidency', stdout=StringIO())
+
+        source = get_template('base.html').template.source
+        wanted = set(re.findall(
+            r"presidency_office_unit'\s+'([^']+)'", source))
+        self.assertTrue(wanted, 'قالب به هیچ واحدی لینک نمی‌دهد؟')
+
+        seeded = set(PresidencyOfficeUnit.objects.values_list(
+            'slug', flat=True))
+        self.assertEqual(wanted - seeded, set())
+
+    def test_both_secretariats_open(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        from django.urls import reverse
+
+        call_command('seed_presidency', stdout=StringIO())
+        for slug in ('dabirkhane-heyat-moases', 'dabirkhane-heyat-omana'):
+            url = reverse('core:presidency_office_unit', args=[slug])
+            self.assertEqual(self.client.get(url).status_code, 200, slug)
+
+    def test_seeding_again_does_not_revive_a_unit_switched_off(self):
+        """موسسه واحدی را در پنل خاموش می‌کند؛ دیپلوی بعدی نباید
+        برش گرداند."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        from core.models import PresidencyOfficeUnit
+
+        call_command('seed_presidency', stdout=StringIO())
+        PresidencyOfficeUnit.objects.filter(
+            slug='modir-daftar').update(is_active=False)
+
+        call_command('seed_presidency', stdout=StringIO())
+        self.assertFalse(
+            PresidencyOfficeUnit.objects.get(slug='modir-daftar').is_active)
