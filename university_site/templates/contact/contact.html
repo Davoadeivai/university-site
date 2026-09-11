@@ -2,7 +2,7 @@
 {% block content %}
 <div class="page-header">
     <div class="container">
-        <h1 class="page-header-title">تماس با ما</h1>
+        <h1 class="page-header-title">{{ page_title|default:"تماس با ما" }}</h1>
     </div>
 </div>
 <section class="section">
@@ -12,32 +12,66 @@
             <div class="col-lg-7" data-aos="fade-right">
                 <div class="uni-card p-5">
                     <h3 class="fw-bold text-primary-uni mb-4"><i class="fas fa-paper-plane"></i> ارسال پیام</h3>
-                    <form method="post">
+                    {% comment %}
+                    enctype لازم است، وگرنه مرورگر فقط نامِ فایل را
+                    می‌فرستد نه خودش، و فیش هیچ‌وقت به سرور نمی‌رسد.
+                    {% endcomment %}
+                    <form method="post" enctype="multipart/form-data" id="contactForm">
                         {% csrf_token %}
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">نام و نام خانوادگی *</label>
-                                <input type="text" name="full_name" class="form-control" required>
+                                <input type="text" name="full_name" class="form-control" required
+                                       value="{{ submitted.full_name|default:'' }}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">آدرس ایمیل *</label>
-                                <input type="email" name="email" class="form-control" required>
+                                <input type="email" name="email" class="form-control" required
+                                       value="{{ submitted.email|default:'' }}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">تلفن</label>
-                                <input type="tel" name="phone" class="form-control">
+                                <input type="tel" name="phone" class="form-control"
+                                       value="{{ submitted.phone|default:'' }}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">موضوع</label>
-                                <select name="subject" class="form-select">
+                                <select name="subject" class="form-select" id="contactSubject">
                                     {% for value, label in subject_choices %}
                                     <option value="{{ value }}" {% if selected_subject == value %}selected{% endif %}>{{ label }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
+
+                            {% comment %}
+                            دو فیلد زیر فقط برای فیش واریزی‌اند و تا
+                            وقتی آن موضوع انتخاب نشده پنهان می‌مانند.
+                            پنهان‌بودنشان با hidden است نه با حذف از
+                            صفحه، تا جاوااسکریپت بتواند بی‌هزینه
+                            بازشان کند.
+
+                            required را هم جاوااسکریپت می‌گذارد و
+                            برمی‌دارد: فیلدِ پنهانِ required مرورگر را
+                            قفل می‌کند و پیام خطایی نشان می‌دهد که
+                            کاربر اصلاً نمی‌بیند کجاست.
+                            {% endcomment %}
+                            <div class="col-md-6 receipt-field" id="receiptNumberBox" hidden>
+                                <label class="form-label">شماره دانشجویی *</label>
+                                <input type="text" name="student_number" class="form-control"
+                                       inputmode="numeric" autocomplete="off"
+                                       value="{{ submitted.student_number|default:'' }}">
+                                <div class="form-text">بدون شمارهٔ دانشجویی، امور مالی نمی‌تواند فیش را به پروندهٔ شما وصل کند.</div>
+                            </div>
+                            <div class="col-md-6 receipt-field" id="receiptFileBox" hidden>
+                                <label class="form-label">تصویر فیش واریزی *</label>
+                                <input type="file" name="attachment" class="form-control"
+                                       accept="image/*" id="receiptFile">
+                                <div class="form-text">JPG یا PNG، حداکثر ۵ مگابایت. از فیش عکس واضح بگیرید یا تصویر رسید اینترنتی را بفرستید.</div>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label">متن پیام *</label>
-                                <textarea name="message" class="form-control" rows="5" required></textarea>
+                                <textarea name="message" class="form-control" rows="5" required>{{ submitted.message|default:'' }}</textarea>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn-primary-uni w-100">
@@ -46,6 +80,32 @@
                             </div>
                         </div>
                     </form>
+
+                    <script>
+                    (function () {
+                        'use strict';
+                        var RECEIPT = '{{ receipt_subject|default:"tuition_receipt" }}';
+                        var select = document.getElementById('contactSubject');
+                        var boxes = document.querySelectorAll('.receipt-field');
+                        if (!select || !boxes.length) { return; }
+
+                        function apply() {
+                            var on = select.value === RECEIPT;
+                            Array.prototype.forEach.call(boxes, function (box) {
+                                box.hidden = !on;
+                                var field = box.querySelector('input');
+                                if (!field) { return; }
+                                // فیلدِ پنهان نباید required بماند؛ مرورگر
+                                // فرم را قفل می‌کند و جای خطا را نشان نمی‌دهد.
+                                if (on) { field.setAttribute('required', 'required'); }
+                                else { field.removeAttribute('required'); }
+                            });
+                        }
+
+                        select.addEventListener('change', apply);
+                        apply();   // با بارگذاری هم، اگر از پیش انتخاب شده باشد
+                    })();
+                    </script>
                 </div>
             </div>
             <!-- Contact Info -->

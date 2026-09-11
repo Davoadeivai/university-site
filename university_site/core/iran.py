@@ -72,15 +72,28 @@ ALLOWED_IMAGE_EXT = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'}
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024  # هم‌تراز UI: ۲ مگابایت
 
 
-def validate_image_upload(f, label: str = 'فایل', required: bool = False) -> str | None:
+def validate_image_upload(f, label: str = 'فایل', required: bool = False,
+                          max_bytes: int | None = None) -> str | None:
+    """خطای فارسی برمی‌گرداند، یا None اگر فایل سالم بود.
+
+    ``max_bytes`` برای جایی است که سقف دو مگابایتیِ فرم‌های پذیرش
+    تنگ است — مثل فیش واریزی که دانشجو با دوربین گوشی می‌گیرد و
+    عکس خامش به‌راحتی از دو مگابایت رد می‌شود.
+    """
     if not f:
         return f'{label} الزامی است.' if required else None
     ext = f.name.rsplit('.', 1)[-1].lower() if '.' in getattr(f, 'name', '') else ''
     if ext not in ALLOWED_IMAGE_EXT:
         return f'{label} باید تصویر (JPG/PNG/…) باشد.'
+    ceiling = max_bytes or MAX_UPLOAD_BYTES
     size = getattr(f, 'size', 0) or 0
-    if size > MAX_UPLOAD_BYTES:
-        return f'حجم {label} نباید بیش از ۲ مگابایت باشد.'
+    if size > ceiling:
+        from core.jalali import to_persian_digits
+
+        megabytes = ceiling / (1024 * 1024)
+        shown = ('%g' % megabytes).replace('.', '٫')
+        return 'حجم %s نباید بیش از %s مگابایت باشد.' % (
+            label, to_persian_digits(shown))
     return _too_small(f, label)
 
 

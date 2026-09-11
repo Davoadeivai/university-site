@@ -1,8 +1,15 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from core.imaging import ShrinkImagesMixin
 
-class ContactMessage(models.Model):
+
+class ContactMessage(ShrinkImagesMixin, models.Model):
+    # عکس فیش را دانشجو با گوشی می‌گیرد؛ خام‌ش چند مگابایت است و
+    # صدها تای آن، دیسک سرور را می‌خورد. ۱۶۰۰ پیکسل برای خواندن
+    # شمارهٔ پیگیری و مبلغ بیش از کافی است.
+    shrink_images = {'attachment': 1600}
+
     STATUS_CHOICES = [
         ('new', 'جدید'),
         ('read', 'خوانده شده'),
@@ -18,12 +25,29 @@ class ContactMessage(models.Model):
         ('complaint', 'شکایت'),
         ('suggestion', 'پیشنهاد'),
         ('presidency', 'ارتباط با ریاست'),
+        ('tuition_receipt', 'ارسال فیش واریزی شهریه'),
     ]
+
+    # موضوعی که فیش می‌خواهد. در یک جا نوشته می‌شود تا نما، قالب و
+    # ادمین هر سه از همین بخوانند و با هم اختلاف پیدا نکنند.
+    RECEIPT_SUBJECT = 'tuition_receipt'
+
     full_name = models.CharField(_('نام و نام خانوادگی'), max_length=200)
     email = models.EmailField()
     phone = models.CharField(_('تلفن'), max_length=15, blank=True)
     subject = models.CharField(_('موضوع'), max_length=20, choices=SUBJECT_CHOICES, default='general')
     message = models.TextField(_('پیام'))
+
+    # بدون شمارهٔ دانشجویی، فیش برای امور مالی بی‌مصرف است: عکسِ یک
+    # واریز که معلوم نیست به حساب چه کسی بنشیند. در فرم، همراه فیش
+    # الزامی می‌شود.
+    student_number = models.CharField(
+        _('شماره دانشجویی'), max_length=20, blank=True)
+    attachment = models.ImageField(
+        _('تصویر پیوست'), upload_to='contact/receipts/%Y/%m/',
+        blank=True, null=True,
+        help_text=_('فیش واریزی یا هر تصویر پیوست دیگر.'))
+
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='new')
     reply = models.TextField(_('پاسخ'), blank=True)
     ip_address = models.GenericIPAddressField(blank=True, null=True)

@@ -8,13 +8,25 @@ from .models import ContactMessage, Alumni
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(JalaliAdminMixin, admin.ModelAdmin):
-    list_display = ['full_name', 'email', 'phone', 'subject', 'status', 'replied_badge', 'created_jalali']
+    list_display = ['full_name', 'email', 'phone', 'subject', 'student_number',
+                    'receipt_badge', 'status', 'replied_badge', 'created_jalali']
     list_filter = ['status', 'subject', 'created_at']
     list_editable = ['status']
-    search_fields = ['full_name', 'email', 'message', 'reply', 'phone']
-    readonly_fields = ['full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at_jalali_ro']
+    search_fields = ['full_name', 'email', 'message', 'reply', 'phone',
+                     'student_number']
+    readonly_fields = ['full_name', 'email', 'phone', 'subject', 'message',
+                       'student_number', 'attachment_preview', 'ip_address',
+                       'created_at_jalali_ro']
     fieldsets = (
         ('پیام', {'fields': ('full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at_jalali_ro')}),
+        ('فیش واریزی', {
+            'fields': ('student_number', 'attachment_preview'),
+            'description': (
+                'این بخش وقتی پر است که دانشجو از فرم «تماس با ما» فیش '
+                'واریزی فرستاده باشد. برای دیدن تصویر در اندازهٔ کامل، '
+                'روی آن کلیک کنید.'
+            ),
+        }),
         ('پاسخ', {
             'fields': ('status', 'reply'),
             'description': (
@@ -28,6 +40,28 @@ class ContactMessageAdmin(JalaliAdminMixin, admin.ModelAdmin):
     @admin.display(description='پاسخ داده شده؟', boolean=True)
     def replied_badge(self, obj):
         return bool((obj.reply or '').strip())
+
+    @admin.display(description='فیش', boolean=True)
+    def receipt_badge(self, obj):
+        return bool(obj.attachment)
+
+    @admin.display(description='تصویر فیش')
+    def attachment_preview(self, obj):
+        """بندانگشتی، با پیوند به اندازهٔ کامل.
+
+        فیش را باید خواند، نه فقط دید که هست: شمارهٔ پیگیری و مبلغ
+        روی بندانگشتی خوانده نمی‌شود، پس تصویر به فایل اصلی پیوند
+        می‌خورد.
+        """
+        from django.utils.html import format_html
+
+        if not obj.attachment:
+            return '—'
+        return format_html(
+            '<a href="{0}" target="_blank" rel="noopener">'
+            '<img src="{0}" style="max-width:320px;max-height:420px;'
+            'border:1px solid #ddd;border-radius:6px"></a>',
+            obj.attachment.url)
 
     @admin.display(description='تاریخ ثبت')
     def created_at_jalali_ro(self, obj):
