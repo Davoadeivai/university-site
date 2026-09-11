@@ -1062,14 +1062,20 @@ def payment_start(request, pk):
         messages.error(request, 'مبلغ این قسط برای پرداخت آنلاین معتبر نیست.')
         return redirect('dashboard:student_payments')
 
-    # ترتیب اقساط: قبل از قسط n همه قبلی‌ها باید paid باشند
+    # ترتیب اقساط: قبل از قسط n همه قبلی‌ها باید تعیین‌تکلیف شده باشند.
+    #
+    # \u200Erefunded\u200E هم کنار گذاشته می‌شود. پیش از این فقط \u200Epaid\u200E استثنا بود،
+    # پس قسطی که مسترد شده بود برای همیشه «پرداخت‌نشده» می‌ماند و
+    # اقساط بعدی را قفل می‌کرد — دانشجو هیچ راهی برای ادامه نداشت جز
+    # دست‌کاری دستی در پنل. جای دیگرِ همین کد (\u200Etuition_payments_qs\u200E)
+    # از اول مسترد را کنار می‌گذاشت؛ دو جا دو حساب داشتند.
     if payment.installment_no and payment.installment_no > 1:
         earlier = Payment.objects.filter(
             student=request.user,
             payment_type='tuition',
             semester=payment.semester,
             installment_no__lt=payment.installment_no,
-        ).exclude(status='paid')
+        ).exclude(status__in=('paid', 'refunded'))
         if earlier.exists():
             messages.warning(request, 'ابتدا اقساط قبلی را پرداخت یا تأیید کنید.')
             return redirect('dashboard:student_payments')
@@ -1108,31 +1114,52 @@ def payment_mock(request, pk):
     return render(request, 'dashboard/payment_mock.html', ctx)
 
 
-@login_required
 def payment_callback(request):
-    """بازگشت از درگاه (mock یا زرین‌پال)."""
+    """بازگشت از درگاه (mock یا زرین‌پال).
+
+    عمداً \u200E@login_required\u200E ندارد.
+
+    بانک کاربر را با یک ریدایرکت ساده برمی‌گرداند و هیچ تضمینی نیست
+    که جلسهٔ او هنوز زنده باشد: رفت‌وبرگشت درگاه چند دقیقه طول
+    می‌کشد، گاهی در مرورگر یا دستگاه دیگری تمام می‌شود، و جلسه ممکن
+    است منقضی شده باشد. با \u200E@login_required\u200E آن درخواست به صفحهٔ ورود
+    می‌رفت و پرداخت هیچ‌وقت تأیید نمی‌شد — پول از حساب دانشجو کم شده
+    ولی قسط همچنان «در انتظار».
+
+    جای جلسه، خودِ \u200Eauthority\u200E سند هویت است: رشته‌ای که درگاه ساخته و
+    فقط روی همین ردیف پرداخت نشسته. حدس‌زدنی نیست و برای همان یک
+    پرداخت اعتبار دارد.
+    """
     from .payment_gateway import PaymentGatewayError, verify_payment
 
-    authority = request.GET.get('Authority', '')
+    authority = (request.GET.get('Authority') or '').strip()
     payment_id = request.GET.get('payment_id')
+    signed_in = request.user.is_authenticated
+
     payment = None
-    if payment_id:
-        payment = Payment.objects.filter(pk=payment_id, student=request.user).first()
+    if payment_id and signed_in:
+        payment = Payment.objects.filter(
+            pk=payment_id, student=request.user).first()
+    # \u200Eauthority\u200E خالی نباید به فیلتر برسد: ردیف‌های پرداختی که هنوز به
+    # درگاه نرفته‌اند همگی \u200Eauthority=''\u200E دارند و \u200E.first()\u200E یکی از آن‌ها
+    # را — متعلق به هر کسی — برمی‌گرداند.
     if not payment and authority:
-        payment = Payment.objects.filter(authority=authority, student=request.user).first()
-    if not payment:
-        # زرین‌پال ممکن است بدون login session برگردد — جستجو با authority
         payment = Payment.objects.filter(authority=authority).first()
 
     if not payment:
         messages.error(request, 'پرداخت یافت نشد.')
         return redirect('dashboard:student_payments')
 
-    # #29: Staff نباید بتواند پرداخت دانشجویان دیگر را مدیریت کند؛
-    # callback درگاه (بدون login) تنها با authority معتبر مجاز است.
-    if payment.student_id != request.user.id:
+    # #29: کارمند نباید پرداخت دانشجوی دیگری را دست‌کاری کند. کاربرِ
+    # واردشده باید صاحب همان پرداخت باشد؛ کاربرِ ناشناس فقط با
+    # \u200Eauthority\u200Eی که روی همین ردیف نشسته جلو می‌رود.
+    if signed_in:
+        if payment.student_id != request.user.id:
+            messages.error(request, 'دسترسی غیرمجاز.')
+            return redirect('dashboard:dashboard')
+    elif not (authority and payment.authority == authority):
         messages.error(request, 'دسترسی غیرمجاز.')
-        return redirect('dashboard:dashboard')
+        return redirect('accounts:login')
 
     if payment.status == 'paid':
         messages.success(request, 'پرداخت قبلاً تأیید شده است.')
@@ -1157,10 +1184,23 @@ def payment_callback(request):
             request,
             f'پرداخت موفق — کد پیگیری: {locked.transaction_id or locked.authority}',
         )
-        if tuition_fully_settled(request.user, locked.semester):
+        # صاحبِ پرداخت از خودِ ردیف خوانده می‌شود، نه از جلسه: وقتی
+        # بانک بدون جلسه برمی‌گرداند، \u200Erequest.user\u200E ناشناس است.
+        owner = locked.student
+
+        if not signed_in:
+            # پرداخت ثبت شد؛ برای دیدن وضعیت باید وارد شود.
+            messages.info(
+                request,
+                'پرداخت شما ثبت شد. برای مشاهدهٔ وضعیت اقساط وارد '
+                'حساب کاربری خود شوید.',
+            )
+            return redirect('accounts:login')
+
+        if tuition_fully_settled(owner, locked.semester):
             messages.info(request, 'شهریه کامل تسویه شد؛ می‌توانید کارت ورود به جلسه را دریافت کنید.')
             return redirect('dashboard:student_exam_card')
-        if tuition_first_paid(request.user, locked.semester):
+        if tuition_first_paid(owner, locked.semester):
             messages.info(request, 'قسط اول پرداخت شد؛ اکنون انتخاب واحد باز است.')
             return redirect('dashboard:student_registration')
         return redirect('dashboard:student_payments')

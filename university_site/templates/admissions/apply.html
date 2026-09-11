@@ -295,18 +295,20 @@
             <label class="form-label" for="degree">مقطع درخواستی <span class="text-danger">*</span></label>
             <select name="degree" id="degree" class="form-select" required>
                 <option value="">انتخاب کنید...</option>
-                {% if degree_choices %}
-                    {% for code, label in degree_choices %}
-                    <option value="{{ code }}" {% if post.degree == code or preselect_degree == code %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                {% else %}
-                    <option value="associate_cont" {% if post.degree == 'associate_cont' or preselect_degree == 'associate_cont' %}selected{% endif %}>کاردانی پیوسته</option>
-                    <option value="bachelor_disc" {% if post.degree == 'bachelor_disc' or preselect_degree == 'bachelor_disc' %}selected{% endif %}>کارشناسی ناپیوسته</option>
-                    <option value="bachelor_cont" {% if post.degree == 'bachelor_cont' or preselect_degree == 'bachelor_cont' %}selected{% endif %}>کارشناسی پیوسته</option>
-                    <option value="associate_tech" {% if post.degree == 'associate_tech' or preselect_degree == 'associate_tech' %}selected{% endif %}>کاردانی فنی</option>
-                    <option value="master" {% if post.degree == 'master' or preselect_degree == 'master' %}selected{% endif %}>کارشناسی ارشد</option>
-                {% endif %}
+                {% comment %}
+                فهرست از رشته‌های ثبت‌شده ساخته می‌شود، نه از فهرست
+                ثابت. اینجا یک نسخهٔ دستیِ پنج‌تایی هم نوشته شده بود
+                که «کاردانی فنی» را برمی‌گرداند — همان مقطعی که هیچ
+                رشته‌ای ندارد و کشوی رشته را خالی می‌گذاشت. دو فهرست
+                برای یک چیز، و دومی همان اشتباه را زنده نگه می‌داشت.
+                {% endcomment %}
+                {% for code, label in degree_choices %}
+                <option value="{{ code }}" {% if post.degree == code or preselect_degree == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
             </select>
+            {% if not degree_choices %}
+            <div class="form-text text-danger">هنوز رشته‌ای برای پذیرش ثبت نشده است. با دفتر پذیرش تماس بگیرید.</div>
+            {% endif %}
         </div>
         <div class="col-md-4">
             <label class="form-label" for="desired_major">اولویت اول رشته <span class="text-danger">*</span></label>

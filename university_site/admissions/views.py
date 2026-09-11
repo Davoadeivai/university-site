@@ -77,6 +77,25 @@ def _active_application_exists(national_id: str = '', phone: str = '') -> Applic
     return None
 
 
+def _degrees_that_have_majors(majors):
+    """فقط مقاطعی که واقعاً رشته‌ای زیرشان هست.
+
+    پیش از این هر پنج مقطع رسمی در کشو می‌آمدند، بی‌آنکه کسی بپرسد
+    رشته‌ای دارند یا نه. سند رشته‌ها ۵۶ رشته دارد و هیچ‌کدام «کاردانی
+    فنی» نیست — پس متقاضی آن مقطع را انتخاب می‌کرد و کشوی «اولویت
+    اول رشته» خالی می‌ماند، بدون یک کلمه توضیح که چرا.
+
+    حالا فهرست از خودِ رشته‌ها ساخته می‌شود: اگر روزی رشتهٔ کاردانی
+    فنی ثبت شود، خودش در کشو پیدا می‌شود، و تا آن روز بن‌بستی
+    پیشنهاد نمی‌شود.
+    """
+    from core.degree_map import CANONICAL_DEGREES
+
+    available = {m.admission_degree for m in majors}
+    return [(code, label) for code, label in CANONICAL_DEGREES
+            if code in available]
+
+
 def admissions_view(request):
     from core.degree_map import CANONICAL_DEGREES
 
@@ -263,13 +282,7 @@ def apply(request):
             'post': post,
             'preselect_degree': preselect_degree,
             'preselect_major': preselect_major,
-            'degree_choices': [
-                c for c in Application.DEGREE_CHOICES
-                if c[0] in {
-                    'associate_cont', 'bachelor_disc', 'bachelor_cont',
-                    'associate_tech', 'master',
-                }
-            ],
+            'degree_choices': _degrees_that_have_majors(all_majors),
             'prev_degree_choices': Application.PREV_DEGREE_CHOICES,
             'quota_choices': Application.QUOTA_CHOICES,
             'diploma_type_choices': Application.DIPLOMA_TYPE_CHOICES,
