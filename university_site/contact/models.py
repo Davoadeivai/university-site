@@ -32,17 +32,22 @@ class ContactMessage(ShrinkImagesMixin, models.Model):
     # ادمین هر سه از همین بخوانند و با هم اختلاف پیدا نکنند.
     RECEIPT_SUBJECT = 'tuition_receipt'
 
-    full_name = models.CharField(_('نام و نام خانوادگی'), max_length=200)
-    email = models.EmailField()
+    # هیچ‌کدام اجباری نیستند — خواستهٔ موسسه بود که ستاره‌ها برداشته
+    # شوند. مدل هم باید همان را بگوید، وگرنه پنل ادمین ردیفی را که
+    # خودِ سایت پذیرفته، هنگام ویرایش رد می‌کند.
+    full_name = models.CharField(
+        _('نام و نام خانوادگی'), max_length=200, blank=True)
+    email = models.EmailField(_('ایمیل'), blank=True)
     phone = models.CharField(_('تلفن'), max_length=15, blank=True)
     subject = models.CharField(_('موضوع'), max_length=20, choices=SUBJECT_CHOICES, default='general')
-    message = models.TextField(_('پیام'))
+    message = models.TextField(_('پیام'), blank=True)
 
     # بدون شمارهٔ دانشجویی، فیش برای امور مالی بی‌مصرف است: عکسِ یک
     # واریز که معلوم نیست به حساب چه کسی بنشیند. در فرم، همراه فیش
     # الزامی می‌شود.
     student_number = models.CharField(
         _('شماره دانشجویی'), max_length=20, blank=True)
+    national_id = models.CharField(_('کد ملی'), max_length=10, blank=True)
     attachment = models.ImageField(
         _('تصویر پیوست'), upload_to='contact/receipts/%Y/%m/',
         blank=True, null=True,

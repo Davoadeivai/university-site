@@ -13,12 +13,12 @@ class ContactMessageAdmin(JalaliAdminMixin, admin.ModelAdmin):
     list_filter = ['status', 'subject', 'created_at']
     list_editable = ['status']
     search_fields = ['full_name', 'email', 'message', 'reply', 'phone',
-                     'student_number']
-    readonly_fields = ['full_name', 'email', 'phone', 'subject', 'message',
-                       'student_number', 'attachment_preview', 'ip_address',
-                       'created_at_jalali_ro']
+                     'student_number', 'national_id']
+    readonly_fields = ['full_name', 'email', 'phone', 'national_id', 'subject',
+                       'message', 'student_number', 'attachment_preview',
+                       'ip_address', 'created_at_jalali_ro']
     fieldsets = (
-        ('پیام', {'fields': ('full_name', 'email', 'phone', 'subject', 'message', 'ip_address', 'created_at_jalali_ro')}),
+        ('پیام', {'fields': ('full_name', 'email', 'phone', 'national_id', 'subject', 'message', 'ip_address', 'created_at_jalali_ro')}),
         ('فیش واریزی', {
             'fields': ('student_number', 'attachment_preview'),
             'description': (

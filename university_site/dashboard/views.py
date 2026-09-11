@@ -954,6 +954,16 @@ def payment_offline(request, pk):
             messages.error(request, 'برای کارت‌به‌کارت یا فیش بانکی، شماره پیگیری یا تصویر رسید لازم است.')
             return redirect('dashboard:payment_offline', pk=pk)
 
+        # تا امروز فایل رسید هیچ بررسی‌ای نداشت — نه نوع، نه حجم.
+        # یعنی هر فایلی با هر اندازه‌ای در media می‌نشست، جایی که
+        # وب‌سرور مستقیم سروش می‌کند.
+        from core.iran import validate_receipt_upload
+
+        receipt_error = validate_receipt_upload(receipt, 'رسید پرداخت')
+        if receipt_error:
+            messages.error(request, receipt_error)
+            return redirect('dashboard:payment_offline', pk=pk)
+
         # #4: پرداخت آفلاین با transaction.atomic تا آپلود فایل و تغییر status باهم انجام شود
         with transaction.atomic():
             payment.method = method

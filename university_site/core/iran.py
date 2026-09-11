@@ -71,6 +71,31 @@ IRAN_PROVINCES = [
 ALLOWED_IMAGE_EXT = {'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'}
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024  # هم‌تراز UI: ۲ مگابایت
 
+# رسید بانکی گاهی PDF است — خروجی اپ بانک — و گاهی عکس گوشی.
+ALLOWED_RECEIPT_EXT = ALLOWED_IMAGE_EXT | {'pdf'}
+MAX_RECEIPT_BYTES = 5 * 1024 * 1024
+
+
+def validate_receipt_upload(f, label: str = 'رسید') -> str | None:
+    """رسید پرداخت: عکس یا PDF، با سقف حجم.
+
+    تا امروز ثبت پرداخت آفلاین هیچ بررسی‌ای روی فایل نداشت — نه نوع،
+    نه حجم. یعنی هر فایلی با هر اندازه‌ای بالا می‌رفت و در \u200Emedia\u200E
+    می‌نشست، جایی که وب‌سرور مستقیم سرو می‌کند.
+    """
+    if not f:
+        return None
+    name = getattr(f, 'name', '') or ''
+    ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+    if ext not in ALLOWED_RECEIPT_EXT:
+        return '%s باید تصویر (JPG/PNG) یا PDF باشد.' % label
+    if (getattr(f, 'size', 0) or 0) > MAX_RECEIPT_BYTES:
+        return 'حجم %s نباید بیش از ۵ مگابایت باشد.' % label
+    # PDF را نمی‌شود با Pillow سنجید؛ فقط تصویرها بررسی ابعاد می‌شوند.
+    if ext == 'pdf':
+        return None
+    return _too_small(f, label)
+
 
 def validate_image_upload(f, label: str = 'فایل', required: bool = False,
                           max_bytes: int | None = None) -> str | None:

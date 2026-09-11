@@ -23,14 +23,22 @@ def contact(request):
         is_receipt = subject == ContactMessage.RECEIPT_SUBJECT
         upload = request.FILES.get('attachment')
         student_number = normalize_digits(data.get('student_number', ''))
+        national_id = normalize_digits(data.get('national_id', ''))
 
-        # فیش بدون شمارهٔ دانشجویی، عکسِ واریزی است که معلوم نیست به
-        # حساب چه کسی بنشیند — امور مالی کاری با آن نمی‌تواند بکند.
+        # هیچ فیلدی اجباری نیست — خواستهٔ موسسه. اعتبارسنجی فقط وقتی
+        # حرف می‌زند که کاربر چیزی داده باشد و آن چیز به درد نخورد:
+        # فایلی که تصویر نیست یا آن‌قدر بزرگ است که سرور نمی‌پذیرد.
         error = validate_image_upload(
-            upload, 'تصویر فیش واریزی', required=is_receipt,
+            upload, 'تصویر فیش واریزی', required=False,
             max_bytes=RECEIPT_MAX_BYTES)
-        if not error and is_receipt and not student_number:
-            error = 'برای ارسال فیش، شمارهٔ دانشجویی الزامی است.'
+
+        # تنها نگهبانِ باقی‌مانده: فرمِ یکسره خالی.
+        #
+        # این فیلدِ اجباری نیست، شرطِ «چیزی بنویس» است. بدون آن، یک
+        # کلیک روی دکمهٔ ارسال یک ردیف بی‌محتوا می‌سازد و صندوق پیام‌ها
+        # پر از ردیف‌های خالی می‌شود که کارمند باید یکی‌یکی بازشان کند.
+        if not error and not _has_anything(data, upload):
+            error = 'برای ارسال، دست‌کم نام یا متن پیام یا تصویر را وارد کنید.'
 
         if error:
             messages.error(request, error)
@@ -50,6 +58,7 @@ def contact(request):
             subject=subject,
             message=data.get('message', ''),
             student_number=student_number,
+            national_id=national_id,
             ip_address=request.META.get('REMOTE_ADDR'),
         )
         if upload:
@@ -71,6 +80,15 @@ def contact(request):
         'receipt_subject': ContactMessage.RECEIPT_SUBJECT,
     }
     return render(request, 'contact/contact.html', context)
+
+
+def _has_anything(data, upload) -> bool:
+    """آیا کاربر اصلاً چیزی وارد کرده است؟"""
+    if upload:
+        return True
+    return any((data.get(name) or '').strip() for name in (
+        'full_name', 'email', 'phone', 'message',
+        'student_number', 'national_id'))
 
 
 def _page_title(subject: str) -> str:

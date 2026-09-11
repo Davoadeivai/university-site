@@ -89,20 +89,26 @@ class SendingAReceiptTests(TestCase):
         self.assertEqual(ContactMessage.objects.get().student_number,
                          '99123456')
 
-    def test_a_receipt_without_an_image_is_refused(self):
-        response = self._post()
-        self.assertEqual(ContactMessage.objects.count(), 0)
-        self.assertContains(response, 'الزامی')
+    def test_a_receipt_without_an_image_is_still_accepted(self):
+        """موسسه خواست هیچ فیلدی اجباری نباشد.
 
-    def test_a_receipt_without_a_student_number_is_refused(self):
-        """عکسِ واریزی که معلوم نیست به حساب چه کسی بنشیند، بی‌مصرف است."""
-        response = self._post(student_number='', attachment=_image())
-        self.assertEqual(ContactMessage.objects.count(), 0)
-        self.assertContains(response, 'شمارهٔ دانشجویی')
+        بهایش این است که پیامی با موضوع فیش ولی بدون تصویر هم ثبت
+        می‌شود؛ ستون «فیش» در پنل خالی می‌ماند و کارمند می‌بیند که
+        چیزی پیوست نشده.
+        """
+        self._post()
+        self.assertEqual(ContactMessage.objects.count(), 1)
+        self.assertFalse(ContactMessage.objects.get().attachment)
+
+    def test_a_receipt_without_a_student_number_is_still_accepted(self):
+        self._post(student_number='', attachment=_image())
+        self.assertEqual(ContactMessage.objects.get().student_number, '')
 
     def test_what_was_typed_survives_a_refusal(self):
         """اگر متن پاک شود، دانشجو بار دوم حوصله نمی‌کند."""
-        response = self._post()
+        bad = SimpleUploadedFile(
+            'receipt.pdf', b'%PDF-1.4 nope', content_type='application/pdf')
+        response = self._post(attachment=bad)
         self.assertContains(response, 'نمونهٔ دانشجو')
         self.assertContains(response, 'شهریه نیم‌سال اول واریز شد.')
 
@@ -322,3 +328,89 @@ class TheHomeGridHasRoomForItTests(TestCase):
         html = self.client.get(reverse('core:home')).content.decode()
         for index in range(1, 10):
             self.assertIn('کاشی %d' % index, html)
+
+
+class NothingIsMandatoryTests(TestCase):
+    """موسسه خواست ستاره‌ها برداشته شوند و همه‌چیز اختیاری باشد."""
+
+    def setUp(self):
+        self.url = reverse('contact:contact')
+
+    def test_no_field_is_marked_required(self):
+        html = self.client.get(self.url).content.decode()
+        form = html.split('id="contactForm"')[1].split('</form>')[0]
+        self.assertNotIn(' required', form)
+
+    def test_no_label_carries_a_star(self):
+        html = self.client.get(self.url).content.decode()
+        form = html.split('id="contactForm"')[1].split('</form>')[0]
+        for label in ('نام و نام خانوادگی', 'آدرس ایمیل', 'متن پیام',
+                      'شماره دانشجویی', 'تصویر فیش واریزی'):
+            chunk = form.split(label)[1].split('<')[0]
+            self.assertNotIn('*', chunk, label)
+
+    def test_the_javascript_no_longer_adds_it_back(self):
+        """پیش از این، انتخاب موضوعِ فیش دو فیلد را اجباری می‌کرد."""
+        html = self.client.get(self.url).content.decode()
+        self.assertNotIn("setAttribute('required'", html)
+
+    def test_a_message_with_only_a_name_is_accepted(self):
+        self.client.post(self.url, {'full_name': 'نمونه'})
+        self.assertEqual(ContactMessage.objects.count(), 1)
+
+    def test_a_message_with_only_text_is_accepted(self):
+        self.client.post(self.url, {'message': 'سلام'})
+        self.assertEqual(ContactMessage.objects.count(), 1)
+
+    def test_a_message_with_no_email_is_accepted(self):
+        self.client.post(self.url, {'full_name': 'نمونه', 'message': 'سلام'})
+        self.assertEqual(ContactMessage.objects.get().email, '')
+
+    def test_a_completely_empty_form_is_not_stored(self):
+        """این فیلدِ اجباری نیست، شرطِ «چیزی بنویس» است.
+
+        بدون آن، یک کلیک روی دکمهٔ ارسال یک ردیف بی‌محتوا می‌سازد و
+        صندوق پیام‌ها پر از ردیف‌هایی می‌شود که کارمند باید یکی‌یکی
+        بازشان کند تا ببیند خالی‌اند.
+        """
+        response = self.client.post(self.url, {'subject': 'general'})
+        self.assertEqual(ContactMessage.objects.count(), 0)
+        self.assertContains(response, 'دست‌کم')
+
+
+class TheNationalIdFieldTests(TestCase):
+    """کد ملی، برای اینکه کارمند بتواند پیام را به پرونده وصل کند."""
+
+    def setUp(self):
+        self.url = reverse('contact:contact')
+
+    def test_it_is_on_the_form(self):
+        html = self.client.get(self.url).content.decode()
+        self.assertIn('name="national_id"', html)
+        self.assertIn('کد ملی', html)
+
+    def test_it_is_stored(self):
+        self.client.post(self.url, {
+            'full_name': 'نمونه', 'message': 'سلام',
+            'national_id': '2050123456'})
+        self.assertEqual(ContactMessage.objects.get().national_id, '2050123456')
+
+    def test_persian_digits_are_normalised(self):
+        """کارمند با ارقام لاتین جست‌وجو می‌کند."""
+        self.client.post(self.url, {
+            'full_name': 'نمونه', 'national_id': '۲۰۵۰۱۲۳۴۵۶'})
+        self.assertEqual(ContactMessage.objects.get().national_id, '2050123456')
+
+    def test_it_is_optional(self):
+        self.client.post(self.url, {'full_name': 'نمونه'})
+        self.assertEqual(ContactMessage.objects.get().national_id, '')
+
+    def test_the_panel_can_search_by_it(self):
+        ContactMessage.objects.create(
+            full_name='نمونهٔ دانشجو', national_id='2050123456')
+        self.client.force_login(User.objects.create_superuser(
+            'boss2', 'boss2@example.org', 'x'))
+        html = self.client.get(
+            reverse('admin:contact_contactmessage_changelist'),
+            {'q': '2050123456'}).content.decode()
+        self.assertIn('نمونهٔ دانشجو', html)
