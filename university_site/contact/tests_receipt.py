@@ -206,3 +206,119 @@ class TheFinanceOfficeCanUseThemTests(TestCase):
         response = self.client.get(reverse(
             'admin:contact_contactmessage_change', args=[plain.pk]))
         self.assertEqual(response.status_code, 200)
+
+
+class TheWayInIsVisibleEverywhereTests(TestCase):
+    """گزینه در کشوی موضوع هست، ولی کسی کشو را باز نمی‌کند تا ببیند.
+
+    دانشجویی که شهریه را واریز کرده، سه جا ممکن است باشد: صفحهٔ
+    شهریه، صفحهٔ تماس، یا صفحهٔ اصلی. از هر سه باید راهی ببیند.
+    """
+
+    def _link(self):
+        return reverse('contact:contact') + '?to=tuition_receipt'
+
+    def test_the_tuition_page_points_at_it(self):
+        html = self.client.get(
+            reverse('admissions:tuition')).content.decode()
+        self.assertIn('ارسال فیش واریزی', html)
+        self.assertIn('to=tuition_receipt', html)
+
+    def test_the_contact_page_has_a_shortcut_above_the_form(self):
+        """فرم همان‌جاست؛ دکمه موضوع را انتخاب می‌کند، نه اینکه لینک
+        به خودِ صفحه بدهد."""
+        html = self.client.get(reverse('contact:contact')).content.decode()
+        self.assertIn('id="pickReceipt"', html)
+        self.assertLess(html.index('pickReceipt'), html.index('id="contactForm"'))
+
+    def test_the_home_quick_links_carry_it(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        call_command('seed_receipt_link', stdout=StringIO())
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('ارسال فیش واریزی', html)
+
+
+class TheQuickLinkTileTests(TestCase):
+    """کاشیِ دسترسی سریع، و آنچه نباید به آن دست بزند."""
+
+    def _run(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        call_command('seed_receipt_link', stdout=StringIO())
+
+    def test_it_creates_the_tile(self):
+        from core.models import QuickLink
+
+        self._run()
+        row = QuickLink.objects.get(category='home')
+        self.assertEqual(row.title, 'ارسال فیش واریزی')
+        self.assertIn('to=tuition_receipt', row.url)
+
+    def test_running_it_twice_makes_one_tile(self):
+        from core.models import QuickLink
+
+        self._run()
+        self._run()
+        self.assertEqual(QuickLink.objects.filter(category='home').count(), 1)
+
+    def test_a_title_edited_in_the_panel_survives_a_deploy(self):
+        """اگر هر بار بازنویسی می‌شد، ویرایش موسسه بی‌صدا از بین می‌رفت."""
+        from core.models import QuickLink
+
+        self._run()
+        QuickLink.objects.filter(category='home').update(
+            title='فرستادن رسید بانکی', order=2)
+
+        self._run()
+        row = QuickLink.objects.get(category='home')
+        self.assertEqual(row.title, 'فرستادن رسید بانکی')
+        self.assertEqual(row.order, 2)
+
+    def test_a_stale_address_is_corrected(self):
+        """نشانی مالِ کد است؛ اگر مسیر فرم عوض شود کاشی نباید ۴۰۴ بدهد."""
+        from core.models import QuickLink
+
+        self._run()
+        QuickLink.objects.filter(category='home').update(
+            url='/غلط/?to=tuition_receipt')
+
+        self._run()
+        self.assertIn('to=tuition_receipt',
+                      QuickLink.objects.get(category='home').url)
+
+    def test_it_does_not_wipe_links_added_in_the_panel(self):
+        """sync_official_eservices این کار را می‌کند؛ این یکی نباید."""
+        from core.models import QuickLink
+
+        QuickLink.objects.create(
+            title='لینک دستی موسسه', url='https://example.org',
+            category='home', order=3, is_active=True)
+        self._run()
+        self.assertTrue(
+            QuickLink.objects.filter(title='لینک دستی موسسه').exists())
+
+    def test_it_runs_on_every_deploy(self):
+        from core.tests_deploy import _content_commands
+
+        self.assertIn('seed_receipt_link', _content_commands())
+
+
+class TheHomeGridHasRoomForItTests(TestCase):
+    """هشت کاشی ثبت شده بود و سقف هم هشت — کاشی نهم یکی را می‌انداخت."""
+
+    def test_a_ninth_tile_does_not_push_one_out(self):
+        from core.models import QuickLink
+
+        for index in range(1, 10):
+            QuickLink.objects.create(
+                title='کاشی %d' % index, url='/%d/' % index,
+                category='home', order=index, is_active=True)
+
+        html = self.client.get(reverse('core:home')).content.decode()
+        for index in range(1, 10):
+            self.assertIn('کاشی %d' % index, html)

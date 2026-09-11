@@ -5260,3 +5260,45 @@ a.grp-head-name:hover { text-decoration: underline; }
     white-space: nowrap;
 }
 .news-row-views i { margin-inline-end: 4px; opacity: .7; }
+
+/* ══ کادر «ارسال فیش واریزی» ═════════════════════════════════════
+   در صفحهٔ شهریه و بالای فرم تماس. دانشجویی که شهریه را واریز کرده
+   دنبال جدول شهریه نیست؛ این کادر راهِ فرستادن رسید را جلو می‌آورد
+   تا لازم نباشد کشوی موضوع را باز کند و بگردد.
+
+   رنگ طلایی می‌گیرد نه عنابی: عنابیِ کارت‌های دیگر صفحه است و این
+   باید از میانشان بیرون بزند. */
+.receipt-callout {
+    border-inline-start: 4px solid var(--gold-light, #c9a34e);
+    background:
+        linear-gradient(90deg,
+                        rgba(201, 163, 78, .10) 0%,
+                        rgba(201, 163, 78, 0) 45%),
+        var(--bg-white, #fff);
+}
+
+.receipt-callout-icon {
+    flex: 0 0 auto;
+    inline-size: 52px;
+    block-size: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: rgba(201, 163, 78, .16);
+    border: 1px solid rgba(201, 163, 78, .45);
+    color: var(--gold-ink, #8a6412);
+    font-size: 22px;
+}
+
+.receipt-callout h5 { color: var(--primary, #7a1f2e); }
+
+[data-theme="dark"] .receipt-callout-icon {
+    background: rgba(201, 163, 78, .18);
+    color: var(--gold-light, #e0bd6e);
+}
+[data-theme="dark"] .receipt-callout h5 { color: var(--gold-light, #e0bd6e); }
+
+/* روی گوشی، دکمه تمام عرض می‌شود — وگرنه در کنارِ متن له می‌شود */
+@media (max-width: 575.98px) {
+    .receipt-callout .btn-primary-uni { inline-size: 100%; text-align: center; }
+}

@@ -5,6 +5,24 @@
 <section class="section">
 <div class="container">
 
+{% comment %}
+بالای صفحه، نه پایینش: دانشجویی که شهریه را واریز کرده و دنبال راهِ
+فرستادن رسید است، برای دیدن جدول شهریه نیامده. تا امروز راهی جز
+مراجعهٔ حضوری نبود.
+{% endcomment %}
+<div class="uni-card p-4 mb-5 receipt-callout" data-aos="fade-up">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+        <div class="receipt-callout-icon"><i class="fas fa-receipt"></i></div>
+        <div class="flex-grow-1" style="min-width:min(100%,260px)">
+            <h5 class="fw-bold mb-1">شهریه را واریز کرده‌اید؟</h5>
+            <p class="mb-0 text-muted">تصویر فیش را از همین‌جا بفرستید تا امور مالی آن را به پروندهٔ شما وصل کند — بدون مراجعهٔ حضوری.</p>
+        </div>
+        <a href="{% url 'contact:contact' %}?to=tuition_receipt" class="btn-primary-uni flex-shrink-0">
+            <i class="fas fa-upload"></i> ارسال فیش واریزی
+        </a>
+    </div>
+</div>
+
 <!-- تخفیف‌ها -->
 {% if discounts %}
 <div class="row g-4 mb-5" data-aos="fade-up">

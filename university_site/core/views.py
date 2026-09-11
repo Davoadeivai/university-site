@@ -41,9 +41,15 @@ def home(request):
     limit = getattr(settings_row, 'home_slider_count', None)
     slides = Slider.objects.filter(is_active=True).order_by('order')
     sliders = list(slides[:limit] if limit else slides)
-    quick_links = QuickLink.objects.filter(is_active=True, category='home')[:8]
+    # سقف دوازده، نه هشت.
+    #
+    # هشت کاشی از قبل ثبت شده بود و سقف هم هشت بود — یعنی هر کاشی
+    # تازه‌ای که اضافه می‌شد، بی‌صدا یکی از قبلی‌ها را بیرون
+    # می‌انداخت. با «ارسال فیش واریزی» دقیقاً همین می‌شد و «همه
+    # خدمات» از صفحهٔ اصلی غیب می‌شد.
+    quick_links = QuickLink.objects.filter(is_active=True, category='home')[:12]
     if not quick_links.exists():
-        quick_links = QuickLink.objects.filter(is_active=True, category='eservice')[:8]
+        quick_links = QuickLink.objects.filter(is_active=True, category='eservice')[:12]
 
     published = News.objects.filter(is_published=True).select_related('category')
     featured_news = published.filter(is_featured=True)[:3]

@@ -10,6 +10,24 @@
         <div class="row g-5">
             <!-- Contact Form -->
             <div class="col-lg-7" data-aos="fade-right">
+                {% comment %}
+                گزینهٔ فیش در کشوی موضوع هست، ولی کسی که آمده رسید
+                بفرستد کشو را باز نمی‌کند تا ببیند چه چیزی تویش است.
+                این کادر همان گزینه را مستقیم انتخاب می‌کند.
+                {% endcomment %}
+                <div class="uni-card p-4 mb-4 receipt-callout" data-aos="fade-up">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="receipt-callout-icon"><i class="fas fa-receipt"></i></div>
+                        <div class="flex-grow-1" style="min-width:min(100%,240px)">
+                            <h5 class="fw-bold mb-1">ارسال فیش واریزی شهریه</h5>
+                            <p class="mb-0 text-muted">شماره دانشجویی و تصویر فیش را بفرستید تا به امور مالی برسد.</p>
+                        </div>
+                        <button type="button" class="btn-primary-uni flex-shrink-0" id="pickReceipt">
+                            <i class="fas fa-upload"></i> فرستادن فیش
+                        </button>
+                    </div>
+                </div>
+
                 <div class="uni-card p-5">
                     <h3 class="fw-bold text-primary-uni mb-4"><i class="fas fa-paper-plane"></i> ارسال پیام</h3>
                     {% comment %}
@@ -104,6 +122,21 @@
 
                         select.addEventListener('change', apply);
                         apply();   // با بارگذاری هم، اگر از پیش انتخاب شده باشد
+
+                        // کادر بالای فرم: موضوع را می‌گذارد و فرم را
+                        // جلوی چشم می‌آورد، تا کاربر دنبال کشو نگردد.
+                        var pick = document.getElementById('pickReceipt');
+                        if (pick) {
+                            pick.addEventListener('click', function () {
+                                select.value = RECEIPT;
+                                apply();
+                                var file = document.getElementById('receiptFile');
+                                if (file) {
+                                    file.scrollIntoView({block: 'center'});
+                                    file.focus({preventScroll: true});
+                                }
+                            });
+                        }
                     })();
                     </script>
                 </div>
