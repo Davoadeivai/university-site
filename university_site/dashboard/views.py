@@ -288,18 +288,6 @@ def student_registration(request):
     ensure_tuition_invoice(request.user, semester)
     paid = tuition_first_paid(request.user, semester)
 
-    if getattr(profile, 'academic_status', 'active') in ('graduated', 'withdrawn', 'expelled', 'leave'):
-        messages.warning(
-            request,
-            'با وضعیت تحصیلی فعلی امکان انتخاب واحد وجود ندارد.',
-        )
-        return redirect('dashboard:dashboard')
-    if not semester:
-        messages.warning(request, 'ترم فعالی تعریف نشده است.')
-        return redirect('dashboard:dashboard')
-    if not semester.registration_open:
-        messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
-        return redirect('dashboard:student_courses')
     # قفلِ «قسط اول پرداخت نشده ← انتخاب واحد بسته» به درخواست موسسه
     # برداشته شد. دانشجو وارد می‌شود و انتخاب واحد می‌کند؛ فقط
     # یادآوری می‌بیند، نه در بسته.
@@ -309,13 +297,46 @@ def student_registration(request):
             'قسط اول شهریه هنوز پرداخت نشده است. انتخاب واحد باز است، '
             'ولی برای تکمیل ثبت‌نام آن را پرداخت کنید.',
         )
-    if not profile.major_id:
-        messages.error(
-            request,
-            'رشته تحصیلی در پروفایل شما تنظیم نشده است. '
-            'با دفتر آموزش تماس بگیرید تا رشته را ثبت کنند.',
-        )
-        return redirect('dashboard:dashboard')
+
+    # وقتی انتخاب واحد ممکن نیست، همین صفحه دلیلش را می‌گوید.
+    #
+    # پیش از این هر چهار حالت به داشبورد ریدایرکت می‌شدند با یک
+    # پیام. ولی داشبورد صفحهٔ بلندی است و آن نوار باریک بالای صفحه
+    # گم می‌شود؛ از دید کاربر، کلیک روی «انتخاب واحد» بی‌دلیل او را
+    # به جای دیگری می‌انداخت. حالا صفحه باز می‌شود و دلیل را
+    # سر جای خودش می‌گوید.
+    unavailable = None
+    status = getattr(profile, 'academic_status', 'active')
+    if status in ('graduated', 'withdrawn', 'expelled', 'leave'):
+        unavailable = {
+            'title': 'با وضعیت تحصیلی فعلی امکان انتخاب واحد نیست.',
+            'detail': 'برای بررسی وضعیت، با دفتر آموزش تماس بگیرید.',
+        }
+    elif not semester:
+        unavailable = {
+            'title': 'هنوز ترم فعالی تعریف نشده است.',
+            'detail': 'تا زمانی که آموزش ترم جاری را ثبت نکند، '
+                      'انتخاب واحد باز نمی‌شود.',
+        }
+    elif not semester.registration_open:
+        unavailable = {
+            'title': 'بازهٔ انتخاب واحد این ترم بسته است.',
+            'detail': 'دروس ثبت‌شدهٔ خود را از صفحهٔ «دروس من» ببینید.',
+            'url': reverse('dashboard:student_courses'),
+            'action': 'دروس من',
+        }
+    elif not profile.major_id:
+        unavailable = {
+            'title': 'رشتهٔ تحصیلی شما هنوز ثبت نشده است.',
+            'detail': 'بدون رشته، معلوم نیست چه درس‌هایی به شما ارائه '
+                      'می‌شود. با دفتر آموزش تماس بگیرید تا رشته را '
+                      'در پرونده‌تان ثبت کنند.',
+        }
+
+    if unavailable:
+        ctx['unavailable'] = unavailable
+        ctx['semester'] = semester
+        return render(request, 'dashboard/student_registration.html', ctx)
 
     offerings = list(
         TeachingAssignment.objects.filter(

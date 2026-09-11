@@ -148,3 +148,62 @@ class ARefundedInstallmentDoesNotLockTheRestTests(TestCase):
         self.assertContains(response, 'ابتدا اقساط قبلی')
         self.second.refresh_from_db()
         self.assertFalse(self.second.authority)
+
+
+class WhyRegistrationIsClosedIsSaidInPlaceTests(TestCase):
+    """صفحه باز می‌شود و دلیل را می‌گوید، نه اینکه کاربر را پرت کند.
+
+    پیش از این هر چهار حالتِ «نمی‌شود» به داشبورد ریدایرکت می‌شدند با
+    یک پیام در نوار بالای صفحه — که در آن صفحهٔ بلند گم می‌شد. از دید
+    کاربر، کلیک روی «انتخاب واحد» بی‌دلیل او را به جای دیگری
+    می‌انداخت.
+    """
+
+    def setUp(self):
+        self.user = _student('9955555')
+        self.client.force_login(self.user)
+        self.url = reverse('dashboard:student_registration')
+
+    def _page(self):
+        return self.client.get(self.url)
+
+    def test_it_no_longer_redirects_when_there_is_no_semester(self):
+        response = self._page()
+        self.assertEqual(response.status_code, 200)
+
+    def test_it_says_there_is_no_active_semester(self):
+        self.assertContains(self._page(), 'ترم فعالی تعریف نشده')
+
+    def test_it_says_the_major_is_missing(self):
+        _semester()
+        Semester.objects.update(registration_open=True)
+        self.assertContains(self._page(), 'رشتهٔ تحصیلی شما هنوز ثبت نشده')
+
+    def test_a_closed_window_offers_the_way_to_my_courses(self):
+        semester = _semester()
+        Semester.objects.filter(pk=semester.pk).update(
+            registration_open=False)
+        response = self._page()
+        self.assertContains(response, 'بازهٔ انتخاب واحد این ترم بسته')
+        self.assertContains(response, reverse('dashboard:student_courses'))
+
+    def test_every_reason_offers_a_way_back(self):
+        self.assertContains(self._page(), reverse('dashboard:dashboard'))
+
+    def test_the_real_page_still_works_when_nothing_is_wrong(self):
+        from academics.models import Department, Major
+        from accounts.models import UserProfile
+
+        dept = Department.objects.create(name='دانشکدهٔ نمونه', slug='dx')
+        major = Major.objects.create(
+            name='رشتهٔ نمونه', slug='mx', department=dept,
+            degree='bachelor_cont')
+        UserProfile.objects.filter(user=self.user).update(major=major)
+        semester = _semester()
+        Semester.objects.filter(pk=semester.pk).update(
+            registration_open=True)
+
+        response = self._page()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'ترم فعالی تعریف نشده')
+        self.assertContains(response, 'انتخاب واحد')
