@@ -5261,44 +5261,88 @@ a.grp-head-name:hover { text-decoration: underline; }
 }
 .news-row-views i { margin-inline-end: 4px; opacity: .7; }
 
-/* ══ کادر «ارسال فیش واریزی» ═════════════════════════════════════
-   در صفحهٔ شهریه و بالای فرم تماس. دانشجویی که شهریه را واریز کرده
-   دنبال جدول شهریه نیست؛ این کادر راهِ فرستادن رسید را جلو می‌آورد
-   تا لازم نباشد کشوی موضوع را باز کند و بگردد.
+/* ══ کشوی «ارسال فیش واریزی» ═════════════════════════════════
+   در صفحهٔ شهریه و بالای فرم تماس.
 
-   رنگ طلایی می‌گیرد نه عنابی: عنابیِ کارت‌های دیگر صفحه است و این
-   باید از میانشان بیرون بزند. */
+   عمداً uni-card نیست. آن کلاس ‎height: 100%‎ دارد تا کارت‌های یک
+   ردیف هم‌قد شوند — که برای کارت‌های شبکه درست است، ولی این کادر
+   کنارِ ستون بلندِ «اطلاعات تماس» می‌نشست و تا ته آن کش می‌آمد:
+   یک جعبهٔ بلندِ خالی با چهار خط متن در بالایش.
+
+   حالا details/summary است — هم قدش به اندازهٔ محتواست، هم کشویی
+   می‌شود بی‌آنکه جاوااسکریپتی لازم باشد. */
 .receipt-callout {
+    background: var(--bg-white, #fff);
+    border: 1px solid var(--border, #e8dcd0);
     border-inline-start: 4px solid var(--gold-light, #c9a34e);
-    background:
-        linear-gradient(90deg,
-                        rgba(201, 163, 78, .10) 0%,
-                        rgba(201, 163, 78, 0) 45%),
-        var(--bg-white, #fff);
+    border-radius: var(--radius-sm, 8px);
+    box-shadow: var(--shadow, 0 4px 24px rgba(78, 18, 32, .08));
+    overflow: hidden;
 }
+
+.receipt-callout-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+    color: var(--primary, #7a1f2e);
+    transition: background var(--duration-fast, 160ms) ease;
+}
+/* مثلث پیش‌فرضِ مرورگر؛ فلش خودمان جایش را می‌گیرد */
+.receipt-callout-head::-webkit-details-marker { display: none; }
+.receipt-callout-head::marker { content: ''; }
+.receipt-callout-head:hover { background: rgba(201, 163, 78, .08); }
+.receipt-callout-head:focus-visible {
+    outline: 2px solid var(--gold-light, #c9a34e);
+    outline-offset: -2px;
+}
+
+.receipt-callout-title { flex: 1 1 auto; min-inline-size: 0; }
 
 .receipt-callout-icon {
     flex: 0 0 auto;
-    inline-size: 52px;
-    block-size: 52px;
+    inline-size: 38px;
+    block-size: 38px;
     display: grid;
     place-items: center;
-    border-radius: 14px;
+    border-radius: 10px;
     background: rgba(201, 163, 78, .16);
     border: 1px solid rgba(201, 163, 78, .45);
     color: var(--gold-ink, #8a6412);
-    font-size: 22px;
+    font-size: 16px;
 }
 
-.receipt-callout h5 { color: var(--primary, #7a1f2e); }
-
-[data-theme="dark"] .receipt-callout-icon {
-    background: rgba(201, 163, 78, .18);
-    color: var(--gold-light, #e0bd6e);
+.receipt-callout-arrow {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: var(--gold-ink, #8a6412);
+    transition: transform var(--duration-fast, 160ms) ease;
 }
-[data-theme="dark"] .receipt-callout h5 { color: var(--gold-light, #e0bd6e); }
+.receipt-callout[open] .receipt-callout-arrow { transform: rotate(180deg); }
 
-/* روی گوشی، دکمه تمام عرض می‌شود — وگرنه در کنارِ متن له می‌شود */
+.receipt-callout-body {
+    padding: 0 18px 18px;
+    color: var(--text-muted, #6b5b5e);
+    font-size: 14px;
+}
+
+[data-theme="dark"] .receipt-callout-icon { color: var(--gold-light, #e0bd6e); }
+[data-theme="dark"] .receipt-callout-head { color: var(--gold-light, #e0bd6e); }
+[data-theme="dark"] .receipt-callout-arrow { color: var(--gold-light, #e0bd6e); }
+
+@media (prefers-reduced-motion: reduce) {
+    .receipt-callout-arrow, .receipt-callout-head { transition: none; }
+}
+
+/* روی گوشی، دکمه تمام عرض — وگرنه کنارِ متن له می‌شود */
 @media (max-width: 575.98px) {
-    .receipt-callout .btn-primary-uni { inline-size: 100%; text-align: center; }
+    .receipt-callout-body .btn-primary-uni,
+    .receipt-callout-body a.btn-primary-uni {
+        display: block;
+        inline-size: 100%;
+        text-align: center;
+    }
 }

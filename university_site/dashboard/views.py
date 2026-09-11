@@ -300,9 +300,15 @@ def student_registration(request):
     if not semester.registration_open:
         messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
         return redirect('dashboard:student_courses')
+    # قفلِ «قسط اول پرداخت نشده ← انتخاب واحد بسته» به درخواست موسسه
+    # برداشته شد. دانشجو وارد می‌شود و انتخاب واحد می‌کند؛ فقط
+    # یادآوری می‌بیند، نه در بسته.
     if not paid:
-        messages.error(request, 'قبل از انتخاب واحد، قسط اول شهریه را پرداخت کنید.')
-        return redirect('dashboard:student_payments')
+        messages.warning(
+            request,
+            'قسط اول شهریه هنوز پرداخت نشده است. انتخاب واحد باز است، '
+            'ولی برای تکمیل ثبت‌نام آن را پرداخت کنید.',
+        )
     if not profile.major_id:
         messages.error(
             request,
@@ -333,9 +339,9 @@ def student_registration(request):
         if not semester.registration_open:
             messages.warning(request, 'بازه انتخاب واحد این ترم بسته است.')
             return redirect('dashboard:student_courses')
-        if not tuition_first_paid(request.user, semester):
-            messages.error(request, 'قبل از انتخاب واحد، قسط اول شهریه را پرداخت کنید.')
-            return redirect('dashboard:student_payments')
+        # نگهبانِ شهریه اینجا هم برداشته شد. اگر فقط صفحه باز می‌شد
+        # ولی ثبتِ درس رد می‌شد، دانشجو فرم را پر می‌کرد و دکمه
+        # بی‌صدا کار نمی‌کرد — بدتر از در بسته.
         if not profile.major_id:
             return redirect('dashboard:dashboard')
         action = request.POST.get('action')

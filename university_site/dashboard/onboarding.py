@@ -523,8 +523,11 @@ def next_journey_url(user: User | None = None, national_id: str = '') -> str:
 
     semester = Semester.objects.filter(is_active=True).first()
     ensure_tuition_invoice(student, semester)
-    if not tuition_first_paid(student, semester):
-        return reverse('dashboard:student_payments')
+    # پیش از این، نپرداختنِ قسط اول مسیر را همین‌جا به صفحهٔ پرداخت
+    # می‌بُرد و دانشجو هیچ‌وقت به انتخاب واحد نمی‌رسید. موسسه خواست
+    # این قفل برداشته شود؛ اگر بازهٔ انتخاب واحد باز باشد، مرحلهٔ
+    # بعدی همان است. صفحهٔ پرداخت پایین‌تر می‌ماند، برای وقتی که
+    # بازه بسته است.
     if semester and semester.registration_open:
         enrolled = Enrollment.objects.filter(
             student=student, semester=semester
@@ -622,6 +625,10 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
         next_key = 'done'
     elif not has_account:
         next_key = 'account'
+    elif enrolled_count == 0 and registration_open:
+        # انتخاب واحد دیگر پشتِ شهریه قفل نیست؛ تا بازه باز است،
+        # مرحلهٔ بعدی همان است و پرداخت یادآوری می‌ماند نه مانع.
+        next_key = 'registration'
     elif not first_paid:
         next_key = 'tuition'
     elif enrolled_count == 0:
@@ -650,7 +657,7 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
             'key': 'tuition',
             'title': 'پرداخت قسط اول شهریه',
             'done': first_paid,
-            'hint': 'قسط اول برای باز شدن انتخاب واحد الزامی است؛ تسویه کامل برای کارت امتحان و مشاهده نمرات.',
+            'hint': 'تسویه کامل هر سه قسط، شرط کارت ورود به جلسه و مشاهده نمرات است.',
             'locked': terminal,
         },
         {
@@ -658,7 +665,8 @@ def build_journey_status(user: User | None = None, national_id: str = '') -> dic
             'title': 'انتخاب واحد / استاد و کلاس',
             'done': enrolled_count > 0,
             'hint': 'در بازه انتخاب واحد، درس و کلاس/استاد را انتخاب کنید.',
-            'locked': terminal or not first_paid or not registration_open,
+            # دیگر به شهریه گره نخورده — فقط بازهٔ انتخاب واحد.
+            'locked': terminal or not registration_open,
         },
         {
             'key': 'schedule',

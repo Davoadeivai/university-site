@@ -414,3 +414,57 @@ class TheNationalIdFieldTests(TestCase):
             reverse('admin:contact_contactmessage_changelist'),
             {'q': '2050123456'}).content.decode()
         self.assertIn('نمونهٔ دانشجو', html)
+
+
+class TheCalloutIsACollapsiblePanelTests(TestCase):
+    """کادر بالای فرم، جعبهٔ بلندِ خالی شده بود.
+
+    با کلاس \u200Euni-card\u200E ساخته شده بود، و آن کلاس \u200Eheight: 100%\u200E دارد تا
+    کارت‌های یک ردیف هم‌قد شوند. کنارِ ستون بلندِ «اطلاعات تماس»
+    می‌نشست و تا ته آن کش می‌آمد: چهار خط متن در بالای یک جعبهٔ
+    چندصد پیکسلی خالی.
+    """
+
+    def _css(self):
+        from pathlib import Path
+
+        from django.conf import settings
+
+        return (Path(settings.BASE_DIR) / 'static' / 'css' /
+                'main.css').read_text(encoding='utf-8')
+
+    def test_it_is_no_longer_a_stretching_card(self):
+        for url in (reverse('contact:contact'), reverse('admissions:tuition')):
+            html = self.client.get(url).content.decode()
+            chunk = html.split('receipt-callout')[0][-200:]
+            self.assertNotIn('uni-card', chunk, url)
+
+    def test_it_collapses_without_javascript(self):
+        """\u200Edetails/summary\u200E بومیِ مرورگر است و اسکریپتی لازم ندارد."""
+        html = self.client.get(reverse('contact:contact')).content.decode()
+        self.assertIn('<details class="receipt-callout', html)
+        self.assertIn('receipt-callout-head', html)
+
+    def test_the_browser_triangle_is_replaced_by_our_own(self):
+        css = self._css()
+        self.assertIn('.receipt-callout-head::-webkit-details-marker', css)
+        self.assertIn('.receipt-callout[open] .receipt-callout-arrow', css)
+
+    def test_it_starts_closed_on_the_contact_page(self):
+        """فرم همان پایین است؛ کادرِ باز فقط جا می‌گیرد."""
+        html = self.client.get(reverse('contact:contact')).content.decode()
+        tag = html.split('<details class="receipt-callout')[1].split('>')[0]
+        self.assertNotIn('open', tag)
+
+    def test_it_opens_itself_when_the_receipt_subject_is_requested(self):
+        html = self.client.get(
+            reverse('contact:contact') + '?to=tuition_receipt').content.decode()
+        tag = html.split('<details class="receipt-callout')[1].split('>')[0]
+        self.assertIn('open', tag)
+
+    def test_it_starts_open_on_the_tuition_page(self):
+        """آنجا خودش مقصد است، نه میان‌بُر به فرمِ پایین."""
+        html = self.client.get(
+            reverse('admissions:tuition')).content.decode()
+        tag = html.split('<details class="receipt-callout')[1].split('>')[0]
+        self.assertIn('open', tag)
