@@ -152,7 +152,15 @@
             </div>
             <!-- Contact Info -->
             <div class="col-lg-5" data-aos="fade-left">
-                <div class="uni-card p-4 mb-4">
+                {% comment %}
+                \u200Euni-card-fit\u200E یعنی «به قدِ محتوایت باش».
+
+                \u200Euni-card\u200E به تنهایی \u200Eheight: 100%\u200E دارد تا کارت‌های یک
+                ردیفِ شبکه هم‌قد شوند. ولی این کارت کنارِ ستون بلندِ
+                فرم می‌نشیند و تا ته آن کش می‌آمد: شش خط اطلاعات در
+                بالای چند صد پیکسل فضای خالی.
+                {% endcomment %}
+                <div class="uni-card uni-card-fit p-4 mb-4">
                     <h5 class="fw-bold text-primary-uni mb-4">اطلاعات تماس</h5>
                     <div class="d-flex gap-3 mb-3">
                         <div class="quick-link-icon" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"><i class="fas fa-map-marker-alt"></i></div>

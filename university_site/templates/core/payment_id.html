@@ -36,11 +36,11 @@
             <div class="col-lg-7" data-aos="fade-up">
                 <div class="uni-card p-4 p-md-5">
                     <h2 class="section-title mb-2" style="font-size:1.2rem;">دریافت شناسه واریز شهریه</h2>
-                    <p class="text-muted mb-4" style="font-size:14px;">کد ملی یا شماره دانشجویی خود را وارد کنید.</p>
+                    <p class="text-muted mb-4" style="font-size:14px;">شماره دانشجویی خود را وارد کنید.</p>
                     <form method="post">
                         {% csrf_token %}
                         <div class="input-group mb-3">
-                            <input type="text" name="query" value="{{ query }}" class="form-control" placeholder="کد ملی یا شماره دانشجویی" required dir="ltr" style="text-align:left;">
+                            <input type="text" name="query" value="{{ query }}" class="form-control" placeholder="شماره دانشجویی" required dir="ltr" inputmode="numeric" autocomplete="off" style="text-align:left;">
                             <button type="submit" class="btn-primary-uni"><i class="fas fa-search"></i> جستجو</button>
                         </div>
                     </form>

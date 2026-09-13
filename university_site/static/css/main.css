@@ -887,6 +887,14 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     border: 1px solid var(--border);
     height: 100%;
 }
+/* کارتی که باید به قدِ محتوایش باشد، نه به قدِ ستون.
+
+   ‎height: 100%‎ بالا برای کارت‌های یک ردیفِ شبکه درست است —
+   هم‌قدشان می‌کند. ولی کارتی که تنها در یک ستون کنارِ ستونِ
+   بلندتر می‌نشیند، تا تهِ آن کش می‌آید و جعبهٔ بلندِ خالی
+   می‌شود. دو بار در همین پروژه پیش آمد. */
+.uni-card-fit { height: auto; }
+
 .uni-card:hover {
     transform: translateY(-6px);
     box-shadow: var(--shadow-lg);

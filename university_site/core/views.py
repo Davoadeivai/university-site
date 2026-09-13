@@ -21,6 +21,7 @@ from core.models import (
     HomeFeature,
 )
 from core.academic_timeline import build_timeline
+from core.iran import normalize_digits
 from news.models import News, Category, Gallery
 from academics.models import (AcademicCalendar, AcademicGroup,
                               Department, Major)
@@ -400,10 +401,17 @@ def payment_id(request):
         if not allowed:
             messages.error(request, rl_msg)
         elif query:
+            # فقط شمارهٔ دانشجویی — به درخواست موسسه.
+            #
+            # جست‌وجو با کد ملی هم برداشته شد و خوب شد: هر کسی با
+            # داشتنِ کد ملیِ یک نفر می‌توانست نام و شناسهٔ واریزش را
+            # بیرون بکشد. شمارهٔ دانشجویی را فقط خودِ دانشجو دارد.
+            #
+            # نرمال‌سازی ارقام لازم است: دانشجو با صفحه‌کلید فارسی
+            # تایپ می‌کند و «۹۹۱۲۳» با «99123» برابر نیست.
             result = PaymentIdentifier.objects.filter(
-                is_active=True
-            ).filter(
-                Q(national_id=query) | Q(student_number=query) | Q(payment_id=query)
+                is_active=True,
+                student_number=normalize_digits(query),
             ).first()
     context = {
         'accounts': accounts,
