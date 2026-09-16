@@ -143,7 +143,8 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     fieldsets = (
         ('اطلاعات اصلی', {
             'fields': (
-                'university_name_fa', 'university_name_en',
+                'university_name_fa', 'university_location_fa',
+                'university_name_en',
                 'logo', 'logo_preview',
                 'favicon', 'favicon_preview',
                 'world_class_logo', 'world_class_logo_preview',

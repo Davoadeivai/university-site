@@ -52,3 +52,18 @@ class TheBannerShowsTheLocationTests(TestCase):
                      if 'display: flex' in chunk.split('}')[0])
         self.assertIn('flex-direction: column', block)
         self.assertIn('align-items: center', block)
+
+
+class TheFieldIsEditableInThePanelTests(TestCase):
+    """فرم تنظیمات سایت fieldsets ثابت دارد؛ فیلدی که در آن نباشد در
+    پنل دیده نمی‌شود — همان اتفاقی که اول برای این فیلد افتاد."""
+
+    def test_the_change_page_shows_it(self):
+        from django.contrib.auth.models import User
+
+        row, _ = SiteSettings.objects.get_or_create(pk=1)
+        self.client.force_login(User.objects.create_superuser(
+            'boss', 'boss@example.org', 'x'))
+        html = self.client.get(reverse(
+            'admin:core_sitesettings_change', args=[row.pk])).content.decode()
+        self.assertIn('name="university_location_fa"', html)
