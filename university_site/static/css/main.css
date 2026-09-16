@@ -2188,7 +2188,10 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .site-header.is-condensed .bnr-sub,
 .site-header.is-condensed .bnr-rule,
 .site-header.is-condensed .bnr-min,
-.site-header.is-condensed .bnr-en { display: none; }
+.site-header.is-condensed .bnr-en,
+/* در سربرگ جمع‌شده نام کوچک می‌شود؛ خط محل اگر بماند از نام بزرگ‌تر
+   می‌شد و در ارتفاع ۶۴ پیکسلی جا نمی‌گرفت */
+.site-header.is-condensed .bnr-place { display: none; }
 
 /* ── واکنش‌گرا: حذف عناصر، نه کوچک‌کردن تا ناخوانایی ── */
 /* زیرنویس‌ها پیش از آنکه نشان‌ها را تنگ کنند، کنار می‌روند.
@@ -2213,11 +2216,15 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     .bnr-state img { height: calc(var(--bnr-h-sm) - 22px); }
     .bnr-sub, .bnr-rule { display: none; }
     .bnr-fa { font-size: .95rem; letter-spacing: 0; }
+    /* روی گوشی نام خودش ۱۵ پیکسل است؛ خط محل باید از آن کوچک‌تر بماند
+       و هر دو خط در ارتفاع ۷۶ پیکسلی سربرگ جا شوند */
+    .bnr-place { font-size: .8rem; letter-spacing: 0; line-height: 1.3; }
     /* روی موبایل پارالاکس معنا ندارد و فقط باتری می‌برد */
     .bnr-mark, .bnr-state, .bnr-name { transform: none; }
 }
 @media (max-width: 380px) {
     .bnr-fa { font-size: .82rem; }
+    .bnr-place { font-size: .72rem; }
 }
 
 .site-banner > a:focus-visible { outline: none; box-shadow: var(--focus-ring); }
