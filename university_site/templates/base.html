@@ -196,6 +196,11 @@
         {% endcomment %}
         <span class="bnr-name">
             <span class="bnr-fa">{{ site_settings.university_name_fa|default:"موسسه آموزش عالی علامه امینی" }}</span>
+            {% if site_settings %}{% if site_settings.university_location_fa %}
+            <span class="bnr-place">{{ site_settings.university_location_fa }}</span>
+            {% endif %}{% else %}
+            <span class="bnr-place">بابلسر-بهنمیر</span>
+            {% endif %}
         </span>
 
         <span class="bnr-state">

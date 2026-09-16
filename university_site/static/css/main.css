@@ -1947,12 +1947,26 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
    شدند، پس چیزی برای چیدن زیر نام نمانده. */
 .bnr-name {
     display: flex;
-    flex-direction: row;
+    /* ستون: نام، و زیرش محل موسسه — هر دو وسط‌چین */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(10px, 1.6vw, 22px);
+    gap: 2px;
     min-width: 0;
+    text-align: center;
 }
+
+/* «بابلسر-بهنمیر» زیر نام: کوچک‌تر و آرام‌تر، تا نام اصلی دیده شود */
+.bnr-place {
+    font-family: Arial, 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    font-weight: 700;
+    font-size: clamp(.8rem, 1.15vw, 1.1rem);
+    line-height: 1.4;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    color: var(--bnr-ink-700, #7a1f2e);
+}
+[data-theme="dark"] .bnr-place { color: var(--bnr-ink-500, #f5c95e); }
 
 .bnr-fa {
     position: relative;

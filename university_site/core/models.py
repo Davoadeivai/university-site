@@ -62,6 +62,12 @@ class SiteSettings(ShrinkImagesMixin, models.Model):
         _('نام دانشگاه (انگلیسی)'), max_length=200,
         default='Allameh Amini Higher Education Institute',
     )
+    # خط دوم سربرگ، وسط‌چین زیر نام. از پنل عوض می‌شود تا تغییر
+    # متن به برنامه‌نویس نیاز نداشته باشد؛ خالی بماند، خط دوم نمی‌آید.
+    university_location_fa = models.CharField(
+        _('زیرعنوان سربرگ (محل موسسه)'), max_length=100, blank=True,
+        default='بابلسر-بهنمیر',
+    )
     world_class_url = models.URLField(
         _('نشانی سایت کلاس جهانی'), blank=True,
         default='https://WCM-Society.Com',
