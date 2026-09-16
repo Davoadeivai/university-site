@@ -1960,7 +1960,7 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
 .bnr-place {
     font-family: Arial, 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
     font-weight: 700;
-    font-size: clamp(.95rem, 1.45vw, 1.35rem);
+    font-size: clamp(1.05rem, 1.85vw, 1.7rem);
     line-height: 1.4;
     letter-spacing: .02em;
     white-space: nowrap;
