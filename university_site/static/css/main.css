@@ -1666,7 +1666,8 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     --bnr-ink-500: #f5c95e;
     --bnr-ink-700: #d9a534;
 }
-[data-theme="dark"] .bnr-fa {
+[data-theme="dark"] .bnr-fa,
+[data-theme="dark"] .bnr-place {
     filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .45));
 }
 [data-theme="dark"] .bnr-min,
@@ -1956,19 +1957,11 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     text-align: center;
 }
 
-/* «بابلسر-بهنمیر» زیر نام: کوچک‌تر و آرام‌تر، تا نام اصلی دیده شود */
+/* «بابلسر-بهنمیر» زیر نام: همان قلم و همان جنسِ طلایی نام موسسه،
+   فقط کوچک‌تر — قاعده‌اش را از \u200E.bnr-fa\u200E پایین‌تر می‌گیرد و اینجا
+   فقط اندازه و فاصلهٔ خطش جدا می‌شود. */
+.bnr-fa,
 .bnr-place {
-    font-family: Arial, 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.05rem, 1.85vw, 1.7rem);
-    line-height: 1.4;
-    letter-spacing: .02em;
-    white-space: nowrap;
-    color: var(--bnr-ink-700, #7a1f2e);
-}
-[data-theme="dark"] .bnr-place { color: var(--bnr-ink-500, #f5c95e); }
-
-.bnr-fa {
     position: relative;
     /* Arial به درخواست موسسه؛ Vazirmatn پشت سرش می‌ماند تا حروف
        فارسی روی سیستمی که Arial فارسی ندارد هم درست بنشینند. */
@@ -1998,6 +1991,14 @@ button, [type="button"], [type="submit"], [type="reset"] { touch-action: manipul
     filter:
         drop-shadow(0 1px 0 rgba(255, 255, 255, .75))
         drop-shadow(0 1px 2px rgba(59, 42, 9, .18));
+}
+
+/* خط محل، پس از قاعدهٔ مشترک می‌آید تا اندازه‌اش بر اندازهٔ نام
+   بچربد — وگرنه هم‌قدِ نام می‌شد و سربرگ را پر می‌کرد. */
+.bnr-place {
+    font-size: clamp(1.05rem, 1.85vw, 1.7rem);
+    line-height: 1.4;
+    letter-spacing: .02em;
 }
 
 .bnr-sub {
