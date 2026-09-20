@@ -58,7 +58,7 @@ class TheTimingComesFromThePanelTests(TestCase):
                                     ticker_hold_seconds=10)
         _announce(1)
         html = self._page()
-        self.assertIn('10% { left: 0; transform: translateX(-100%); }', html)
+        self.assertIn('10% { transform: translateX(-50%); }', html)
 
     def test_the_pause_follows_the_speed(self):
         """۲ ثانیه از ۶۰ می‌شود ۳٪، و از ۲۰۰ می‌شود ۱٪."""

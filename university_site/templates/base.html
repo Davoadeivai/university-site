@@ -621,9 +621,9 @@
 {% endcomment %}
 <style>
 @keyframes urgentSlide {
-    0%   { left: 0; transform: translateX(-100%); }
-    {{ urgent_hold_percent }}% { left: 0; transform: translateX(-100%); }
-    100% { left: 100%; transform: translateX(0); }
+    0%   { transform: translateX(-50%); }
+    {{ urgent_hold_percent }}% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
 }
 </style>
 <div class="urgent-bar" style="--urgent-secs: {{ urgent_total_secs }}s">
@@ -639,6 +639,22 @@
                     {% endcomment %}
                     {% for ann in urgent_announcements %}
                     <a class="urgent-item is-link" href="{{ ann.get_absolute_url }}">{{ ann.title }}</a>
+                    {% endfor %}
+                    {% comment %}
+                    نسخهٔ دوم، برای اینکه حلقه بی‌درز ببندد.
+
+                    با یک نسخه، زنجیر یک بار از چپ به راست رد می‌شد و
+                    بعد نوار خالی می‌ماند تا دور بعد — یعنی هر بار یک
+                    عبورِ جدا، همان «تکی‌تکی». ریل درست نصفِ پهنای خودش
+                    جابه‌جا می‌شود، پس لحظهٔ پایان عیناً مثل لحظهٔ آغاز
+                    است و جریان هیچ‌وقت قطع نمی‌شود.
+
+                    این نسخه برای خواننده است، نه برای صفحه‌خوان:
+                    \u200Earia-hidden\u200E و \u200Etabindex="-1"\u200E تا عنوان‌ها دو بار
+                    خوانده نشوند و با Tab دوباره به دست نیایند.
+                    {% endcomment %}
+                    {% for ann in urgent_announcements %}
+                    <a class="urgent-item is-link" href="{{ ann.get_absolute_url }}" aria-hidden="true" tabindex="-1">{{ ann.title }}</a>
                     {% endfor %}
                 </div>
             </div>

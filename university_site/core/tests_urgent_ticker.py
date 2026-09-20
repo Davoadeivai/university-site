@@ -67,8 +67,15 @@ class TheBarStaysOnOneLineTests(TestCase):
         self.assertIn('block-size: 22px', _rule('.urgent-ticker'))
 
 
-class OneCopyOnlyTests(TestCase):
-    """دو نسخه هم‌زمان دیده می‌شد و نوار دوتایی به‌نظر می‌رسید."""
+class TheChainLoopsWithoutASeamTests(TestCase):
+    """زنجیر دو نسخه دارد، ولی فقط یکی‌اش هم‌زمان در قاب است.
+
+    یک بار نسخهٔ دوم برداشته شد، چون هر دو با هم دیده می‌شدند و نوار
+    دوتایی به‌نظر می‌رسید. آن ایراد از جای دیگری می‌آمد: ریل به
+    اندازهٔ قاب پهن بود، نه به اندازهٔ زنجیر. با نسخهٔ یگانه اما نوار
+    میان دو دور خالی می‌ماند — همان «تکی‌تکی». حالا دو نسخه هست و
+    ریل درست نصفِ پهنای خودش جابه‌جا می‌شود، پس حلقه بی‌درز است.
+    """
 
     def setUp(self):
         cache.clear()
@@ -101,18 +108,27 @@ class OneCopyOnlyTests(TestCase):
         for hint in ('ticker.style.transform', 'ticker.innerHTML'):
             self.assertNotIn(hint, script)
 
-    def test_each_headline_appears_once(self):
+    def test_the_chain_is_written_twice(self):
         # فقط داخل خودِ نوار؛ همین عنوان‌ها پایین‌تر در بخش
         # اطلاعیه‌های صفحهٔ اصلی هم می‌آیند.
         ticker = self._html().split('urgent-ticker')[1].split('</div>')[0]
-        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 0'), 1)
-        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 1'), 1)
+        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 0'), 2)
+        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 1'), 2)
 
-    def test_nothing_is_hidden_from_screen_readers_any_more(self):
-        """نسخهٔ دوم رفت، پس دیگر چیزی برای پنهان‌کردن نیست."""
-        html = self._html()
-        ticker = html.split('urgent-ticker')[1].split('</div>')[0]
-        self.assertNotIn('aria-hidden', ticker)
+    def test_the_second_copy_repeats_the_first_in_the_same_order(self):
+        """حلقه وقتی بی‌درز است که نسخهٔ دوم عیناً تکرار اولی باشد."""
+        import re
+
+        ticker = self._html().split('urgent-ticker')[1].split('</div>')[0]
+        titles = re.findall(r'اطلاعیهٔ فوری شمارهٔ \d', ticker)
+        half = len(titles) // 2
+        self.assertEqual(titles[:half], titles[half:])
+
+    def test_the_second_copy_is_not_read_out_twice(self):
+        """نسخهٔ دوم برای چشم است، نه برای صفحه‌خوان و نه برای Tab."""
+        ticker = self._html().split('urgent-ticker')[1].split('</div>')[0]
+        self.assertEqual(ticker.count('aria-hidden="true"'), 2)
+        self.assertEqual(ticker.count('tabindex="-1"'), 2)
 
 
 class ItMakesOneFullPassLeftToRightTests(TestCase):
@@ -132,8 +148,11 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         بیرونِ قاب می‌آید تو.
         """
         block = _keyframes()
-        self.assertIn('translateX(-100%)', block)
-        self.assertIn('left: 0;', block)
+        # ریل از نصفِ پهنای خودش عقب شروع می‌کند — یعنی نسخهٔ دوم در
+        # قاب است و نسخهٔ اول بیرونِ چپ منتظر — و تا صفر پیش می‌آید.
+        self.assertIn('translateX(-50%)', block)
+        self.assertIn('translateX(0)', block)
+        self.assertIn('inline-size: max-content', _rule('.urgent-track'))
 
     def test_the_pause_happens_before_the_entry_not_in_the_middle_of_it(self):
         """مکث باید بیرونِ قاب باشد، نه وسطِ راه.
@@ -147,11 +166,9 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
 
         block = _keyframes()
         pause = re.search(
-            r'(\d+)%\s*\{\s*left: 0;\s*transform: translateX\(-100%\)',
+            r'(\d+)%\s*\{\s*transform: translateX\(-50%\)',
             block[block.index('0%') + 2:])
         self.assertIsNotNone(pause, 'مرحلهٔ مکث در انیمیشن نیست')
-        self.assertNotIn('transform: translateX(0); }\n    100%',
-                         block.replace('\r', ''))
 
     def test_the_speed_never_changes_mid_run(self):
         """تنها جایی که \u200EtranslateX(0)\u200E می‌آید، پایانِ حرکت است."""
@@ -176,12 +193,19 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         """
         self.assertIn('max-inline-size: 100%', _rule('.urgent-bar > .container'))
 
-    def test_it_ends_at_the_right_edge(self):
-        self.assertIn('left: 100%;', _keyframes())
+    def test_the_loop_closes_without_a_seam(self):
+        """جابه‌جایی باید دقیقاً نصفِ ریل باشد.
 
-    def test_the_travel_is_measured_against_the_bar(self):
-        """درصدِ ‎left‎ از پهنای قاب می‌آید، پس گذر همیشه کامل است."""
-        self.assertIn('left:', _keyframes())
+        ریل دو نسخه از زنجیر است؛ نصفِ پهنا یعنی یک نسخهٔ کامل، پس
+        لحظهٔ پایان عیناً مثل لحظهٔ آغاز است. هر عدد دیگری یعنی پرش.
+        """
+        block = _keyframes()
+        self.assertIn('0%   { transform: translateX(-50%); }', block)
+        self.assertIn('100% { transform: translateX(0);', block)
+
+    def test_the_rail_no_longer_jumps_with_left(self):
+        """حرکت فقط با ‎transform‎ است؛ ‎left‎ ثابت می‌ماند."""
+        self.assertNotIn('left:', _keyframes())
 
     def test_no_fade_hides_the_edges(self):
         """موسسه خواست متن کامل دیده شود."""
@@ -205,7 +229,8 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         self.assertNotIn('animation-delay', html)
         ticker = html.split('urgent-ticker')[1].split('</div>')[0]
         for index in range(3):
-            self.assertIn('اطلاعیهٔ فوری شمارهٔ %d' % index, ticker)
+            # هر کدام دو بار: یک زنجیر و نسخهٔ دومش برای حلقهٔ بی‌درز
+            self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ %d' % index), 2)
 
     def test_a_line_marks_where_one_headline_ends(self):
         """زنجیر یعنی بی‌فاصله، پس مرزشان باید دیده شود."""
@@ -215,12 +240,17 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         """حرکت مالِ ریل است؛ خبرها فقط سوارش‌اند.\u200Ebackwards\u200E"""
         self.assertNotIn('animation', _rule('.urgent-item'))
 
-    def test_the_chain_leaves_at_the_right_edge(self):
-        """آخرین خبر هم باید کامل بیرون برود، نه اینکه وسط قطع شود."""
+    def test_the_bar_is_never_empty(self):
+        """با یک نسخه، نوار میان دو دور خالی می‌ماند — «تکی‌تکی».
+
+        با یک اطلاعیه هم باید جریان پیوسته باشد، نه یک عبور و بعد
+        سکوت.
+        """
         cache.clear()
         _announce(1)
-        html = self.client.get(reverse('core:home')).content.decode()
-        self.assertIn('100% { left: 100%; transform: translateX(0); }', html)
+        ticker = (self.client.get(reverse('core:home')).content.decode()
+                  .split('urgent-ticker')[1].split('</div>')[0])
+        self.assertEqual(ticker.count('اطلاعیهٔ فوری شمارهٔ 0'), 2)
 
     def test_someone_who_dislikes_motion_gets_a_still_bar(self):
         css = _css()
