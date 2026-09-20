@@ -105,20 +105,25 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
     def test_the_track_is_animated(self):
         self.assertIn('animation: urgentSlide', _rule('.urgent-track'))
 
-    def test_it_starts_at_the_left_corner_already_visible(self):
-        """پیش از این از بیرونِ قاب می‌آمد و تا می‌رسید، داشت می‌رفت."""
-        block = _keyframes()
-        self.assertIn('left: 0;', block)
-        self.assertNotIn('translateX(-100%)', block)
+    def test_it_enters_from_outside_the_left_edge(self):
+        """موسسه خواست خبر کامل از سمت چپ وارد شود.
 
-    def test_it_holds_still_before_moving(self):
-        """موسسه خواست خبر چند ثانیه بایستد تا خوانده شود."""
+        پیش از این لحظهٔ صفر همان‌جا کنار لبهٔ چپ ظاهر می‌شد؛ حالا از
+        بیرونِ قاب می‌آید تو.
+        """
+        block = _keyframes()
+        self.assertIn('translateX(-100%)', block)
+        self.assertIn('left: 0;', block)
+
+    def test_the_entry_takes_the_time_set_in_the_panel(self):
+        """همان عددی که پیش‌تر مکث بود، حالا زمانِ ورود است."""
         import re
 
         block = _keyframes()
-        hold = re.search(r'0%,\s*(\d+)%\s*\{\s*left: 0;', block)
-        self.assertIsNotNone(hold, 'مکثی در ابتدای حرکت نیست')
-        self.assertGreaterEqual(int(hold.group(1)), 2)
+        entry = re.search(r'(\d+)%\s*\{\s*left: 0;\s*transform: translateX\(0\)',
+                          block)
+        self.assertIsNotNone(entry, 'مرحلهٔ ورود در انیمیشن نیست')
+        self.assertGreaterEqual(int(entry.group(1)), 2)
 
     def test_it_ends_at_the_right_edge(self):
         self.assertIn('left: 100%;', _keyframes())
