@@ -28,8 +28,13 @@ class HeaderRevisionTests(TestCase):
         from django.conf import settings as dj
         css = (Path(dj.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
             encoding='utf-8')
-        start = css.index(chr(10) + '.bnr-fa {')
-        block = css[start:css.index('}', start)]
+        # قاعده دیگر تنها \u200E.bnr-fa\u200E نیست؛ خط «بابلسر-بهنمیر» هم در
+        # همان انتخابگر نشسته و همان قلم را می‌گیرد.
+        import re
+
+        rule = re.search(r'\n\.bnr-fa[^{}]*\{([^}]*)\}', css)
+        self.assertIsNotNone(rule, 'قاعدهٔ \u200E.bnr-fa\u200E پیدا نشد')
+        block = rule.group(1)
         self.assertIn('font-family: Arial', block)
         # اندازهٔ بیشینه باید از نسخهٔ قبلی (1.9rem) بزرگ‌تر باشد
         self.assertIn('2.7rem', block)

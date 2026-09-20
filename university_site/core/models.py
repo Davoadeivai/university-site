@@ -98,9 +98,12 @@ class SiteSettings(ShrinkImagesMixin, models.Model):
     # چیزی که موسسه با چشمش تنظیمش می‌کند، جایش پنل است نه کد.
     ticker_seconds = models.PositiveSmallIntegerField(
         _('زمان هر خبر در نوار فوری (ثانیه)'), default=60,
-        validators=[MinValueValidator(5), MaxValueValidator(300)],
+        # کفِ ۵ ثانیه حدسِ ما بود، نه خواستهٔ موسسه، و سرِ راهِ تنظیم
+        # سرعت ایستاد. یک ثانیه تند است ولی انتخابِ خودشان است.
+        validators=[MinValueValidator(1), MaxValueValidator(300)],
         help_text=_('هر اطلاعیه چند ثانیه طول بکشد تا از چپ به راست رد '
-                    'شود. عدد بزرگ‌تر یعنی آرام‌تر.'))
+                    'شود. عدد بزرگ‌تر یعنی آرام‌تر. عدد فارسی هم '
+                    'پذیرفته می‌شود.'))
     ticker_hold_seconds = models.PositiveSmallIntegerField(
         _('مکث پیش از ورود خبر (ثانیه)'), default=2,
         validators=[MinValueValidator(0), MaxValueValidator(60)],

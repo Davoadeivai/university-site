@@ -116,10 +116,19 @@ class ThePanelShowsBothBoxesTests(TestCase):
 
         self.assertIn('نوار خبر فوری', str(SiteSettingsAdmin.fieldsets))
 
-    def test_an_absurd_speed_is_refused(self):
+    def test_a_very_fast_speed_is_allowed(self):
+        """کفِ پنج ثانیه حدسِ ما بود و سرِ راهِ تنظیم سرعت ایستاد.
+
+        موسسه پیغام «مطمئن شوید این مقدار بزرگ‌تر یا مساوی ۵ است»
+        می‌گرفت و نمی‌توانست تندش کند.
+        """
+        self.row.ticker_seconds = 1
+        self.row.full_clean()
+
+    def test_an_absurd_speed_is_still_refused(self):
         from django.core.exceptions import ValidationError
 
-        self.row.ticker_seconds = 1
+        self.row.ticker_seconds = 0
         with self.assertRaises(ValidationError):
             self.row.full_clean()
 

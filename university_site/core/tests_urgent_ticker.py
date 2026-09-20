@@ -137,6 +137,17 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         """تنها جایی که \u200EtranslateX(0)\u200E می‌آید، پایانِ حرکت است."""
         self.assertEqual(_keyframes().count('translateX(0)'), 1)
 
+    def test_the_rail_is_as_wide_as_its_text(self):
+        """ریشهٔ «خبر از وسط شروع می‌شود».
+
+        ریل مطلق است و فقط left دارد، پس پهنای جعبه‌اش حداکثر
+        اندازهٔ قاب می‌شد — نه اندازهٔ متن. عنوانِ بلندتر از قاب یعنی
+        عقب‌بردن صد درصدی فقط یک قاب عقب می‌برد و دنبالهٔ متن از همان
+        لحظهٔ صفر دیده می‌شد. سه بار کی‌فریم عوض شد و مشکل سر جایش
+        ماند، چون جای اشکال اینجا بود.
+        """
+        self.assertIn('inline-size: max-content', _rule('.urgent-track'))
+
     def test_it_ends_at_the_right_edge(self):
         self.assertIn('left: 100%;', _keyframes())
 
