@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 
@@ -184,8 +185,13 @@ class Command(BaseCommand):
                         raw = cand.read_text(encoding='utf-8', errors='ignore').splitlines()
                         if len(raw) >= 2:
                             try:
-                                mapping = eval(raw[1], {'__builtins__': {}})  # noqa: S307
-                            except Exception:
+                                # \u200Eeval\u200E بود، حتی با \u200E__builtins__\u200E خالی.
+                                # فایل \u200E.map\u200E کنار PDF می‌نشیند و هر کسی
+                                # که بتواند فایلی آنجا بگذارد، کدش روی
+                                # سرور اجرا می‌شد. \u200Eliteral_eval\u200E فقط
+                                # داده می‌خواند، نه کد.
+                                mapping = ast.literal_eval(raw[1])
+                            except (ValueError, SyntaxError):
                                 mapping = None
                         break
 

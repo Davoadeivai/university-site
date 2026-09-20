@@ -141,3 +141,13 @@ class NewsFeedTests(TestCase):
         html = self.client.get(reverse('core:home')).content.decode()
         self.assertIn('application/rss+xml', html)
         self.assertIn(reverse('news:feed'), html)
+
+    def test_the_button_is_gone_from_the_first_page(self):
+        """موسسه خواست آیکون «خوراک خبری» از صفحهٔ اول برداشته شود.
+
+        خودِ خوراک سر جایش است و مرورگر از روی \u200E<head>\u200E پیدایش می‌کند؛
+        فقط دکمه‌اش دیگر در سربرگ ستون دیده نمی‌شود.
+        """
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertNotIn('newsdesk-rss', html)
+        self.assertNotIn('fa-rss', html)

@@ -51,6 +51,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # پس از احراز هویت می‌آید، چون باید بداند ورود گرفت یا نه.
+    # کپچا جلوی ربات ساده را می‌گیرد؛ این جلوی امتحان‌کردن هزار رمز
+    # را می‌گیرد، و \u200E/admin/login/\u200E را هم که کپچا ندارد پوشش می‌دهد.
+    'core.login_guard.LoginRateLimitMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

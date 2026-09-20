@@ -7,6 +7,7 @@ On server:
 
 from pathlib import Path
 import os
+import sys
 
 from decouple import config, Csv
 
@@ -23,15 +24,45 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
+
+# این سه تا پیش‌تر پیش‌فرضِ False داشتند.
+#
+# یعنی اگر کسی یادش می‌رفت در \u200E.env\u200E روشنشان کند — و رفته بود — کوکی
+# نشست روی http هم فرستاده می‌شد. هر کسی در همان شبکه (وای‌فای
+# دانشگاه، مثلاً) می‌توانست بخواندش و به‌جای صاحبش وارد شود. سایت
+# روی https است و \u200E.htaccess\u200E هم اجبارش می‌کند، پس پیش‌فرضِ درست
+# True است و خاموش‌کردنش باید تصمیمِ آگاهانه باشد.
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+if 'test' in sys.argv:
+    # کلاینتِ تست همیشه http حرف می‌زند، پس با ریدایرکتِ https هر
+    # درخواستی ۳۰۱ می‌گرفت و هیچ تستی به ویو نمی‌رسید. تنظیمِ واقعی
+    # دست‌نخورده می‌ماند؛ فقط همین اجرا مستثناست.
+    SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
+
+# کوکی با درخواستی که از سایت دیگری آمده فرستاده نمی‌شود — جلوی
+# CSRF را از یک لایه پیش‌تر می‌گیرد.
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# نشانی صفحه‌ای که کاربر از آن می‌آید به سایت بیرونی نشت نکند؛
+# نشانی‌های پنل دانشجو شماره دانشجویی و شناسه پرداخت دارند.
+SECURE_REFERRER_POLICY = 'same-origin'
+
+# نشست با بستن مرورگر تمام می‌شود، و دو هفته بی‌کار هم.
+#
+# رایانهٔ مشترک — کافی‌نت، کتابخانه — جایی است که نشستِ جاماندهٔ یک
+# دانشجو به دست نفر بعدی می‌افتد.
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=1209600, cast=int)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = config(
+    'SESSION_EXPIRE_AT_BROWSER_CLOSE', default=True, cast=bool)
 
 # -----------------------------------------------------------------------------
 # Database (default sqlite for local/dev fallback)
@@ -166,7 +197,14 @@ ADMISSION_REQUIRE_MOBILE_OTP = config('ADMISSION_REQUIRE_MOBILE_OTP', default=Tr
 if SECURE_SSL_REDIRECT:
     SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    # \u200Epreload\u200E خاموش ماند، عمداً.
+    #
+    # ورود به فهرست پیش‌بارگذاریِ مرورگرها تقریباً برگشت‌ناپذیر است:
+    # اگر روزی گواهی یکی از زیردامنه‌ها منقضی شود، سایت برای ماه‌ها
+    # در مرورگرهای به‌روز اصلاً باز نمی‌شود. خودِ HSTS بی این هم کار
+    # می‌کند؛ روشن‌کردنش وقتی معنا دارد که کسی آگاهانه تصمیم بگیرد.
+    SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=False,
+                                 cast=bool)
 
 # -----------------------------------------------------------------------------
 # Logging

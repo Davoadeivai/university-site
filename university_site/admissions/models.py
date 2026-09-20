@@ -2,6 +2,7 @@ import secrets
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from core.private_media import private_upload_to
 
 
 # ─────────────────────────────────────────────
@@ -182,13 +183,13 @@ class Application(models.Model):
 
     # ── آپلود مدارک ──
     doc_national_id = models.ImageField(_('تصویر کارت ملی'),
-                                        upload_to='admissions/docs/', blank=True, null=True)
+                                        upload_to=private_upload_to('admissions/docs'), blank=True, null=True)
     doc_prev_degree = models.ImageField(_('تصویر مدرک تحصیلی'),
-                                        upload_to='admissions/docs/', blank=True, null=True)
+                                        upload_to=private_upload_to('admissions/docs'), blank=True, null=True)
     doc_photo       = models.ImageField(_('عکس پرسنلی'),
-                                        upload_to='admissions/docs/', blank=True, null=True)
+                                        upload_to=private_upload_to('admissions/docs'), blank=True, null=True)
     doc_military    = models.ImageField(_('کارت پایان خدمت/معافیت'),
-                                        upload_to='admissions/docs/', blank=True, null=True)
+                                        upload_to=private_upload_to('admissions/docs'), blank=True, null=True)
     photo_hijab_confirmed = models.BooleanField(
         _('تأیید حجاب کامل در عکس پرسنلی'),
         default=False,
@@ -352,7 +353,7 @@ class StudentPayment(models.Model):
     amount        = models.PositiveBigIntegerField(_('مبلغ (تومان)'))
     due_date      = models.DateField(_('تاریخ سررسید'))
     paid_at       = models.DateTimeField(_('تاریخ پرداخت'), blank=True, null=True)
-    receipt       = models.ImageField(_('فیش واریزی'), upload_to='payments/', blank=True, null=True)
+    receipt       = models.ImageField(_('فیش واریزی'), upload_to=private_upload_to('payments'), blank=True, null=True)
     status        = models.CharField(_('وضعیت'), max_length=20,
                                      choices=STATUS_CHOICES, default='pending')
     confirmed_by  = models.CharField(_('تأیید توسط'), max_length=100, blank=True)

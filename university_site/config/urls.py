@@ -1,14 +1,22 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 
+from core import private_media
 from core.admin_finance import finance_overview
 from core.admin_search import admin_live_counters, admin_nav_search_index, public_live_search
 
 urlpatterns = [
+    # پرونده‌های حساس از اینجا رد می‌شوند، نه از دست وب‌سرور.
+    #
+    # پیش از این هر چیزی زیر \u200E/media/\u200E برای همه باز بود: کارت ملی
+    # داوطلب، فیش واریزی دانشجو، مدرک تخفیف شهریه. این مسیر پیش از
+    # \u200Estatic()\u200E می‌آید تا در توسعهٔ محلی هم همان قاعده برقرار باشد.
+    re_path(r'^media/(?P<path>.+)$', private_media.serve,
+            name='private_media'),
     # بدون این، خزنده‌ها /admin/ و /dashboard/ را هم می‌بینند.
     path('robots.txt', TemplateView.as_view(
         template_name='robots.txt', content_type='text/plain'),

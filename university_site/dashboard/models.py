@@ -2,6 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
+from core.private_media import private_upload_to
 from academics.models import Major, Course, Department
 
 
@@ -262,7 +263,7 @@ class StudentRequest(models.Model):
     description = models.TextField(_('توضیحات'))
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='pending')
     response = models.TextField(_('پاسخ'), blank=True)
-    file = models.FileField(_('فایل'), upload_to='requests/', blank=True, null=True)
+    file = models.FileField(_('فایل'), upload_to=private_upload_to('requests'), blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -320,7 +321,7 @@ class Payment(models.Model):
     )
     due_date = models.DateField(_('سررسید قسط'), null=True, blank=True, db_index=True)
     receipt_file = models.FileField(
-        _('فیش / رسید آفلاین'), upload_to='tuition_receipts/', blank=True, null=True,
+        _('فیش / رسید آفلاین'), upload_to=private_upload_to('tuition_receipts'), blank=True, null=True,
     )
     receipt_ref = models.CharField(_('شماره پیگیری / مرجع'), max_length=100, blank=True)
     method_notes = models.TextField(_('توضیح روش پرداخت'), blank=True)
@@ -409,7 +410,7 @@ class AssignmentSubmission(models.Model):
     ]
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions', verbose_name=_('تکلیف'))
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions', verbose_name=_('دانشجو'))
-    file = models.FileField(_('فایل'), upload_to='submissions/')
+    file = models.FileField(_('فایل'), upload_to=private_upload_to('submissions'))
     submitted_at = models.DateTimeField(auto_now_add=True)
     grade = models.DecimalField(_('نمره'), max_digits=5, decimal_places=2, null=True, blank=True)
     feedback = models.TextField(_('بازخورد'), blank=True)
@@ -494,7 +495,7 @@ class StudentDiscountClaim(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name='discount_claims', verbose_name=_('ترم'))
     discount_type = models.CharField(_('نوع تخفیف'), max_length=20, choices=DISCOUNT_CHOICES)
     percent = models.PositiveSmallIntegerField(_('درصد تخفیف'), default=10)
-    document = models.FileField(_('مدرک پیوست'), upload_to='tuition_discounts/', blank=True, null=True)
+    document = models.FileField(_('مدرک پیوست'), upload_to=private_upload_to('tuition_discounts'), blank=True, null=True)
     notes = models.TextField(_('توضیحات دانشجو'), blank=True)
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='pending')
     admin_note = models.TextField(_('یادداشت ادمین'), blank=True)
@@ -627,7 +628,7 @@ class StudentLifecycleRequest(models.Model):
     status = models.CharField(_('وضعیت'), max_length=20, choices=STATUS_CHOICES, default='draft')
     reason = models.TextField(_('دلیل / توضیحات'), blank=True)
     attachment = models.FileField(
-        _('پیوست'), upload_to='lifecycle/', blank=True, null=True,
+        _('پیوست'), upload_to=private_upload_to('lifecycle'), blank=True, null=True,
     )
     admin_response = models.TextField(_('پاسخ ادمین'), blank=True)
     reviewed_by = models.ForeignKey(

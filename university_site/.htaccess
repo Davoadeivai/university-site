@@ -68,5 +68,12 @@ RewriteCond %{HTTP:X-Forwarded-Proto} !=https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 RewriteRule ^static/(.*)$ public/static/$1 [L]
+
+# پوشه‌های حساس را آپاچی تحویل نمی‌دهد؛ جنگو می‌دهد، بعد از اینکه
+# پرسید درخواست‌کننده کیست. فهرست باید با PRIVATE_PREFIXES در
+# core/private_media.py یکی باشد — تستِ tests_private_media نگهبانش
+# است.
+RewriteRule ^media/(admissions/docs|payments|tuition_receipts|tuition_discounts|contact/receipts|requests|submissions|lifecycle)/ - [L]
+
 RewriteRule ^media/(.*)$ public/media/$1 [L]
 </IfModule>

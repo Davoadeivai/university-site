@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from core.private_media import private_upload_to
 
 from core.imaging import ShrinkImagesMixin
 
@@ -49,7 +50,7 @@ class ContactMessage(ShrinkImagesMixin, models.Model):
         _('شماره دانشجویی'), max_length=20, blank=True)
     national_id = models.CharField(_('کد ملی'), max_length=10, blank=True)
     attachment = models.ImageField(
-        _('تصویر پیوست'), upload_to='contact/receipts/%Y/%m/',
+        _('تصویر پیوست'), upload_to=private_upload_to('contact/receipts'),
         blank=True, null=True,
         help_text=_('فیش واریزی یا هر تصویر پیوست دیگر.'))
 
