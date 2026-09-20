@@ -58,7 +58,7 @@ class TheTimingComesFromThePanelTests(TestCase):
                                     ticker_hold_seconds=10)
         _announce(1)
         html = self._page()
-        self.assertIn('10% { left: 0; transform: translateX(0); }', html)
+        self.assertIn('10% { left: 0; transform: translateX(-100%); }', html)
 
     def test_the_pause_follows_the_speed(self):
         """۲ ثانیه از ۶۰ می‌شود ۳٪، و از ۲۰۰ می‌شود ۱٪."""
@@ -127,3 +127,54 @@ class ThePanelShowsBothBoxesTests(TestCase):
         self.row.ticker_seconds = 90
         self.row.ticker_hold_seconds = 4
         self.row.full_clean()
+
+    def _form(self):
+        from django.contrib.admin.sites import site
+
+        return site._registry[SiteSettings].get_form(
+            self._request(), self.row, change=True)
+
+    def _request(self):
+        from django.test import RequestFactory
+
+        request = RequestFactory().get('/')
+        request.user = self.staff
+        return request
+
+    def test_the_number_boxes_are_not_html_number_inputs(self):
+        """ورودی \u200Etype="number"\u200E رقم فارسی را دور می‌ریخت.
+
+        مدیر سایت «۱» می‌نوشت، مرورگر خالی می‌فرستاد، و فرم می‌گفت
+        این فیلد لازم است — یعنی عدد اصلاً ذخیره نمی‌شد.
+        """
+        html = self.client.get(
+            '/admin/core/sitesettings/%d/change/' % self.row.pk
+        ).content.decode()
+        box = html.split('name="ticker_hold_seconds"')[0][-400:]
+        self.assertNotIn('type="number"', box)
+
+    def test_a_persian_one_is_saved_as_one(self):
+        form = self._form()(
+            {'ticker_hold_seconds': '۱'}, instance=self.row)
+        form.is_valid()
+        self.assertNotIn('ticker_hold_seconds', form.errors)
+        self.assertEqual(form.cleaned_data['ticker_hold_seconds'], 1)
+
+    def test_a_persian_zero_is_saved_as_zero(self):
+        """صفر یعنی بی‌مکث؛ پیش از این «لازم است» می‌گرفت."""
+        form = self._form()(
+            {'ticker_hold_seconds': '۰'}, instance=self.row)
+        form.is_valid()
+        self.assertEqual(form.cleaned_data['ticker_hold_seconds'], 0)
+
+    def test_a_latin_one_still_works(self):
+        form = self._form()({'ticker_hold_seconds': '1'}, instance=self.row)
+        form.is_valid()
+        self.assertEqual(form.cleaned_data['ticker_hold_seconds'], 1)
+
+    def test_one_second_reaches_the_page(self):
+        """عدد ۱ باید واقعاً روی صفحه اثر بگذارد، نه فقط ذخیره شود."""
+        self.row.ticker_seconds = 50
+        self.row.ticker_hold_seconds = 1
+        self.assertEqual(_ticker_timing(self.row, [1])['urgent_hold_percent'],
+                         2)

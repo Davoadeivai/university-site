@@ -1,7 +1,10 @@
 from django import forms
 from django.contrib import admin
+from django.db import models as db_models
 from django.urls import reverse
 from django.utils.html import format_html
+
+from core.iran import normalize_digits
 
 from core.admin_jalali import JalaliAdminMixin
 from core.admin_completeness import CompletenessAdminMixin
@@ -24,9 +27,43 @@ from .models import (
 from core.sms_queue import QueuedSMS
 
 
+class PersianDigitIntegerField(forms.IntegerField):
+    """«۱» هم یک عدد است.
+
+    صفحه‌کلید مدیر سایت فارسی است و ارقام فارسی می‌دهد. دو مشکل
+    پشت سر هم پیش می‌آمد: ورودی \u200Etype="number"\u200E رقم فارسی را اصلاً
+    نمی‌پذیرفت و فرم را خالی می‌فرستاد، و اگر هم می‌رسید،
+    \u200EIntegerField\u200E آن را «عدد صحیح نیست» می‌خواند. از دید مدیر سایت
+    فقط این دیده می‌شد که عدد ذخیره نمی‌شود.
+
+    پس ورودی متنی است (با \u200Einputmode\u200E عددی، تا روی گوشی هم صفحه‌کلید
+    عدد بالا بیاید) و ارقام همین‌جا لاتین می‌شوند.
+    """
+
+    widget = forms.TextInput(attrs={'inputmode': 'numeric', 'dir': 'ltr',
+                                    'size': 6, 'class': 'vIntegerField'})
+
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = normalize_digits(value)
+        return super().to_python(value)
+
+
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
     list_display = ['university_name_fa', 'phone', 'email', 'completeness']
+
+    # هر عدد این صفحه را مدیر سایت با صفحه‌کلید فارسی می‌نویسد.
+    #
+    # \u200Ewidget\u200E هم صریح می‌آید: جنگو گزینه‌های اینجا را روی پیش‌فرض‌های
+    # خودش «به‌روزرسانی» می‌کند، نه جایگزین — پس ویجت پیش‌فرضِ عددی
+    # سر جایش می‌ماند و ویجت خودِ کلاس فرم اصلاً به کار نمی‌آید.
+    formfield_overrides = {
+        db_models.IntegerField: {
+            'form_class': PersianDigitIntegerField,
+            'widget': PersianDigitIntegerField.widget,
+        },
+    }
 
 
     # ── پیش‌نمایش سه فیلد تصویری ──
@@ -183,8 +220,8 @@ class SiteSettingsAdmin(CompletenessAdminMixin, admin.ModelAdmin):
             'description': (
                 'نوار قرمزِ زیر بنر. «زمان هر خبر» یعنی چند ثانیه طول '
                 'بکشد تا یک اطلاعیه از چپ به راست رد شود — بزرگ‌تر یعنی '
-                'آرام‌تر. «مکث» یعنی پیش از راه‌افتادن چند ثانیه کنار '
-                'لبهٔ چپ بایستد تا خوانده شود.<br>'
+                'آرام‌تر (کمترین عدد ۵). «مکث» یعنی نوار چند ثانیه خالی '
+                'بماند و بعد خبر از سمت چپ وارد شود؛ صفر یعنی بی‌مکث.<br>'
                 'نوار فقط وقتی دیده می‌شود که اطلاعیه‌ای «فوری» و فعال '
                 'باشد.'
             ),

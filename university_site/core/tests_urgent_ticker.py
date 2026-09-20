@@ -115,15 +115,27 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         self.assertIn('translateX(-100%)', block)
         self.assertIn('left: 0;', block)
 
-    def test_the_entry_takes_the_time_set_in_the_panel(self):
-        """همان عددی که پیش‌تر مکث بود، حالا زمانِ ورود است."""
+    def test_the_pause_happens_before_the_entry_not_in_the_middle_of_it(self):
+        """مکث باید بیرونِ قاب باشد، نه وسطِ راه.
+
+        نسخهٔ پیشین در آن درصد به \u200EtranslateX(0)\u200E می‌رسید، یعنی خبر
+        باید کل پهنای خودش را در همان چند درصدِ کوتاه می‌دوید و
+        یک‌باره نزدیک میانهٔ نوار ظاهر می‌شد. حالا تا لحظهٔ راه‌افتادن
+        همان بیرون می‌ماند و بعد یک‌نواخت می‌آید.
+        """
         import re
 
         block = _keyframes()
-        entry = re.search(r'(\d+)%\s*\{\s*left: 0;\s*transform: translateX\(0\)',
-                          block)
-        self.assertIsNotNone(entry, 'مرحلهٔ ورود در انیمیشن نیست')
-        self.assertGreaterEqual(int(entry.group(1)), 2)
+        pause = re.search(
+            r'(\d+)%\s*\{\s*left: 0;\s*transform: translateX\(-100%\)',
+            block[block.index('0%') + 2:])
+        self.assertIsNotNone(pause, 'مرحلهٔ مکث در انیمیشن نیست')
+        self.assertNotIn('transform: translateX(0); }\n    100%',
+                         block.replace('\r', ''))
+
+    def test_the_speed_never_changes_mid_run(self):
+        """تنها جایی که \u200EtranslateX(0)\u200E می‌آید، پایانِ حرکت است."""
+        self.assertEqual(_keyframes().count('translateX(0)'), 1)
 
     def test_it_ends_at_the_right_edge(self):
         self.assertIn('left: 100%;', _keyframes())

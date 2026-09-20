@@ -102,10 +102,11 @@ class SiteSettings(ShrinkImagesMixin, models.Model):
         help_text=_('هر اطلاعیه چند ثانیه طول بکشد تا از چپ به راست رد '
                     'شود. عدد بزرگ‌تر یعنی آرام‌تر.'))
     ticker_hold_seconds = models.PositiveSmallIntegerField(
-        _('مکث در ابتدای حرکت (ثانیه)'), default=2,
+        _('مکث پیش از ورود خبر (ثانیه)'), default=2,
         validators=[MinValueValidator(0), MaxValueValidator(60)],
-        help_text=_('خبر پیش از راه‌افتادن، این چند ثانیه کنار لبهٔ چپ '
-                    'می‌ایستد تا خوانده شود. صفر یعنی بدون مکث.'))
+        help_text=_('نوار این چند ثانیه خالی می‌ماند و بعد خبر از سمت چپ '
+                    'وارد می‌شود. صفر یعنی بدون مکث. عدد فارسی هم '
+                    'پذیرفته می‌شود.'))
 
     state_emblem = models.ImageField(
         _('ارم الله (نشان جمهوری اسلامی)'),
