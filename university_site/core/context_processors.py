@@ -117,13 +117,26 @@ def _ticker_timing(settings_row, announcements):
     per_item = getattr(settings_row, 'ticker_seconds', None) or 60
     hold = getattr(settings_row, 'ticker_hold_seconds', None) or 0
     count = max(1, len(announcements or []))
-    travel = per_item * count
-    total = travel + hold
+
+    # هر خبر تنها و کامل رد می‌شود، بعد نوبت بعدی.
+    #
+    # پیش از این همهٔ عنوان‌ها در یک ریل پشت سر هم بودند و با هم
+    # حرکت می‌کردند، پس همیشه دُمِ یکی و سرِ دیگری هم‌زمان دیده
+    # می‌شد — «نیمه‌کاره». حالا هر خبر انیمیشن خودش را دارد و
+    # نوبتش با تأخیر می‌رسد: \u200Estep\u200E فاصلهٔ شروع دو خبر پشت سر هم است
+    # و \u200Ecycle\u200E یک دور کامل.
+    step = per_item + hold
+    cycle = step * count
+    delays = [index * step for index in range(count)]
+
     # و باز هم سقف دارد: مکثِ بلند یعنی نواری که بیشترِ وقت خالی است
-    percent = min(40, round(hold * 100.0 / total)) if total else 0
+    percent = min(40, round(hold * 100.0 / cycle)) if cycle else 0
+    travel_percent = round(per_item * 100.0 / cycle) if cycle else 100
     return {
-        'urgent_total_secs': total,
+        'urgent_total_secs': cycle,
         'urgent_hold_percent': percent,
+        'urgent_cross_percent': min(100, percent + travel_percent),
+        'urgent_delays': delays,
     }
 
 

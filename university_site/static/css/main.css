@@ -705,37 +705,44 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
        قاب عقب می‌برد و دنبالهٔ متن از همان لحظهٔ صفر داخل قاب دیده
        می‌شد. با \u200Emax-content\u200E جعبه به اندازهٔ خودِ متن است و ۱۰۰٪ یعنی
        واقعاً کاملاً بیرونِ قاب. */
-    inline-size: max-content;
+    inset-inline-end: 0;
     /* چیدمانِ ریل چپ‌به‌راست است، نه راست‌به‌چپ.
        صفحه RTL است، پس خبرها از لبهٔ راستِ ریل شروع می‌شدند — یعنی
        درست کنارِ برچسب «فوری» و در میانهٔ صفحه، نه از گوشهٔ چپ.
        حالا اولین خبر از همان لبهٔ چپ آغاز می‌شود؛ متنِ خودِ هر خبر
        با قاعدهٔ \u200E.urgent-item\u200E فارسی و راست‌به‌چپ می‌ماند. */
     direction: ltr;
-    animation: urgentSlide var(--urgent-secs, 60s) linear infinite;
+    /* ریل دیگر خودش حرکت نمی‌کند؛ فقط قابی است که هر خبر داخلش
+       نوبتِ خودش را می‌گیرد. */
+    block-size: 100%;
 }
 /* روی نوار که بایستید، می‌ایستد — وگرنه خبری که نیمه‌خوانده مانده
    از قاب بیرون می‌رود و باید یک دور کامل منتظرش ماند. */
-.urgent-bar:hover .urgent-track,
-.urgent-bar:focus-within .urgent-track { animation-play-state: paused; }
+.urgent-bar:hover .urgent-item,
+.urgent-bar:focus-within .urgent-item { animation-play-state: paused; }
 
+/* هر خبر، تنها و کامل.
+   پیش از این همهٔ عنوان‌ها در یک ریل پشت سر هم بودند و با هم حرکت
+   می‌کردند، پس همیشه دُمِ یکی و سرِ دیگری هم‌زمان دیده می‌شد.
+   حالا هر خبر مطلق است، انیمیشن خودش را دارد و نوبتش با تأخیری
+   می‌رسد که قالب برایش می‌نویسد؛ تا آن لحظه بیرونِ لبهٔ چپ منتظر
+   می‌ماند. \u200Ebackwards\u200E همین انتظار را ممکن می‌کند. */
 .urgent-item {
     white-space: nowrap;
     padding-inline: 22px;
-    position: relative;
+    position: absolute;
+    inset-block-start: 0;
+    left: 0;
+    /* به اندازهٔ خودِ متن، نه به اندازهٔ قاب — وگرنه «کاملاً بیرون»
+       یعنی فقط یک قاب عقب، و دنبالهٔ متن از همان اول دیده می‌شود. */
+    inline-size: max-content;
+    animation: urgentSlide var(--urgent-secs, 60s) linear infinite backwards;
     /* ریل چپ‌به‌راست چیده می‌شود، ولی خودِ عنوان خبر فارسی است */
     direction: rtl;
     unicode-bidi: isolate;
 }
-/* جداکنندهٔ میان خبرها، از CSS نه از متن */
-.urgent-item + .urgent-item::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block: 5px;
-    inline-size: 1px;
-    background: rgba(255, 255, 255, .45);
-}
+/* جداکننده برداشته شد: حالا هر بار فقط یک خبر در قاب است، پس
+   چیزی برای جداکردن نمانده. */
 
 /* از همان گوشهٔ چپ، دیده‌شده، و بعد آرام به راست.
    نسخهٔ پیش از این از بیرونِ قاب شروع می‌کرد: خبر چند ثانیه اول
@@ -765,11 +772,16 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     3%   { left: 0;    transform: translateX(-100%); }
     100% { left: 100%; transform: translateX(0); }
 }
+/* نسخهٔ بالا برای یک خبر است. وقتی چند خبر باشد، هر کدام باید فقط
+   در سهمِ خودش از دور حرکت کند و بقیهٔ وقت بیرونِ راست بایستد —
+   آن نسخه را قالب با درصدهای حساب‌شده می‌نویسد و چون بعد از این
+   فایل می‌آید، بر این می‌چربد. */
 
 /* کسی که حرکت را دوست ندارد یا برایش آزاردهنده است: نوار می‌ایستد
    و به‌جایش با انگشت یا موشواره کنار می‌رود. */
 @media (prefers-reduced-motion: reduce) {
     .urgent-track { animation: none; position: static; }
+    .urgent-item { animation: none; position: static; display: inline-block; }
     .urgent-ticker { overflow-x: auto; block-size: auto; }
 }
 

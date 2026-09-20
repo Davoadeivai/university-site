@@ -102,8 +102,9 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         cache.clear()
         _announce(1)
 
-    def test_the_track_is_animated(self):
-        self.assertIn('animation: urgentSlide', _rule('.urgent-track'))
+    def test_each_headline_is_animated(self):
+        """حرکت از ریل به خودِ خبرها منتقل شد، تا هر کدام تنها بیاید."""
+        self.assertIn('animation: urgentSlide', _rule('.urgent-item'))
 
     def test_it_enters_from_outside_the_left_edge(self):
         """موسسه خواست خبر کامل از سمت چپ وارد شود.
@@ -146,7 +147,7 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         لحظهٔ صفر دیده می‌شد. سه بار کی‌فریم عوض شد و مشکل سر جایش
         ماند، چون جای اشکال اینجا بود.
         """
-        self.assertIn('inline-size: max-content', _rule('.urgent-track'))
+        self.assertIn('inline-size: max-content', _rule('.urgent-item'))
 
     def test_the_bar_reaches_the_edges_of_the_screen(self):
         """«از لبهٔ چپ» یعنی لبهٔ صفحه، نه لبهٔ ستون میانی.
@@ -169,8 +170,35 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
 
     def test_it_pauses_on_hover(self):
         css = _css()
-        self.assertIn('.urgent-bar:hover .urgent-track', css)
+        self.assertIn('.urgent-bar:hover .urgent-item', css)
         self.assertIn('animation-play-state: paused', css)
+
+    def test_each_headline_waits_for_its_own_turn(self):
+        """موسسه خواست خبر «کامل» بیاید، نه نیمه‌کاره.
+
+        با یک ریلِ مشترک همیشه دُمِ یک خبر و سرِ خبر بعدی با هم در
+        قاب بودند. حالا هر خبر تأخیر خودش را دارد.
+        """
+        cache.clear()
+        _announce(3)
+        html = self.client.get(reverse('core:home')).content.decode()
+        for nth in (1, 2, 3):
+            self.assertIn('.urgent-item:nth-child(%d)' % nth, html)
+        # سه خبر، سه شروعِ جدا: ۰ و ۶۰ و ۱۲۰ ثانیه
+        for seconds in (0, 60, 120):
+            self.assertIn('animation-delay: %ds;' % seconds, html)
+
+    def test_a_headline_stands_still_outside_the_frame_until_its_turn(self):
+        """بدون \u200Ebackwards\u200E تا لحظهٔ شروع همان‌جا وسط قاب دیده می‌شود."""
+        self.assertIn('backwards', _rule('.urgent-item'))
+
+    def test_the_single_headline_case_is_unchanged(self):
+        """با یک خبر، دور همان یک عبور است و تأخیری در کار نیست."""
+        cache.clear()
+        _announce(1)
+        html = self.client.get(reverse('core:home')).content.decode()
+        self.assertIn('100% { left: 100%; transform: translateX(0); }', html)
+        self.assertIn('animation-delay: 0s;', html)
 
     def test_someone_who_dislikes_motion_gets_a_still_bar(self):
         css = _css()

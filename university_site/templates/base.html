@@ -623,8 +623,17 @@
 @keyframes urgentSlide {
     0%   { left: 0; transform: translateX(-100%); }
     {{ urgent_hold_percent }}% { left: 0; transform: translateX(-100%); }
+    {{ urgent_cross_percent }}% { left: 100%; transform: translateX(0); }
     100% { left: 100%; transform: translateX(0); }
 }
+{% comment %}
+هر خبر نوبت خودش را دارد: تا تأخیرش نرسد بیرونِ لبهٔ چپ منتظر
+می‌ماند، بعد تنها و کامل رد می‌شود و تا پایان دور بیرونِ راست
+می‌ایستد. پس هیچ‌وقت دو خبر نیمه‌نیمه با هم دیده نمی‌شوند.
+{% endcomment %}
+{% for seconds in urgent_delays %}
+.urgent-item:nth-child({{ forloop.counter }}) { animation-delay: {{ seconds }}s; }
+{% endfor %}
 </style>
 <div class="urgent-bar" style="--urgent-secs: {{ urgent_total_secs }}s">
     <div class="container">
