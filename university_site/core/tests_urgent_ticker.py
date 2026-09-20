@@ -82,6 +82,25 @@ class OneCopyOnlyTests(TestCase):
         self.assertNotIn('urgent-run', self._html())
         self.assertNotIn('.urgent-run', _css())
 
+    def test_no_script_moves_the_bar_behind_the_stylesheet(self):
+        """ریشهٔ واقعیِ «از چپ وارد نمی‌شود».
+
+        در \u200Emain.js\u200E یک تایمر بیست‌میلی‌ثانیه‌ای بود که خودِ قاب را با
+        \u200Estyle.transform\u200E به راست می‌برد و متن را هم دو بار می‌نوشت.
+        استایل درون‌خطی بر هر قاعده‌ای می‌چربد، پس هر چه در CSS
+        اصلاح می‌شد بی‌اثر می‌ماند.
+        """
+        from pathlib import Path
+
+        from django.conf import settings
+
+        script = (Path(settings.BASE_DIR) / 'static' / 'js' /
+                  'main.js').read_text(encoding='utf-8')
+        self.assertNotIn("querySelectorAll('.urgent-ticker')", script)
+        self.assertNotIn('.urgent-ticker"', script)
+        for hint in ('ticker.style.transform', 'ticker.innerHTML'):
+            self.assertNotIn(hint, script)
+
     def test_each_headline_appears_once(self):
         # فقط داخل خودِ نوار؛ همین عنوان‌ها پایین‌تر در بخش
         # اطلاعیه‌های صفحهٔ اصلی هم می‌آیند.

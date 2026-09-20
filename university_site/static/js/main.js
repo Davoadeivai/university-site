@@ -227,18 +227,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ---- Ticker (RTL: move positive X) ----
-    const tickers = document.querySelectorAll('.urgent-ticker');
-    tickers.forEach(function (ticker) {
-        const content = ticker.innerHTML;
-        ticker.innerHTML = content + ' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ' + content;
-        let pos = 0;
-        setInterval(function () {
-            pos += 1;
-            if (pos > ticker.scrollWidth / 2) pos = 0;
-            ticker.style.transform = 'translateX(' + pos + 'px)';
-        }, 20);
-    });
+    // نوار خبر فوری اینجا اسکریپتی نمی‌خواهد؛ حرکتش با CSS است.
+    //
+    // اینجا یک تایمر بیست‌میلی‌ثانیه‌ای بود که خودِ قابِ نوار را با
+    // \u200Estyle.transform\u200E جابه‌جا می‌کرد و متن را هم دو بار می‌نوشت.
+    // چون استایل درون‌خطی بر هر قاعده‌ای می‌چربد، هر اصلاحی که در
+    // CSS می‌شد بی‌اثر می‌ماند: خبر نه از چپ وارد می‌شد، نه کامل
+    // دیده می‌شد، و همیشه دو نسخه از هر عنوان در قاب بود.
 
 });
 
