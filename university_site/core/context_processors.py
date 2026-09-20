@@ -118,25 +118,21 @@ def _ticker_timing(settings_row, announcements):
     hold = getattr(settings_row, 'ticker_hold_seconds', None) or 0
     count = max(1, len(announcements or []))
 
-    # هر خبر تنها و کامل رد می‌شود، بعد نوبت بعدی.
+    # خبرها زنجیروار پشت سر هم‌اند، در یک ریل، و ریل یک‌جا از چپ
+    # وارد و از راست خارج می‌شود.
     #
-    # پیش از این همهٔ عنوان‌ها در یک ریل پشت سر هم بودند و با هم
-    # حرکت می‌کردند، پس همیشه دُمِ یکی و سرِ دیگری هم‌زمان دیده
-    # می‌شد — «نیمه‌کاره». حالا هر خبر انیمیشن خودش را دارد و
-    # نوبتش با تأخیر می‌رسد: \u200Estep\u200E فاصلهٔ شروع دو خبر پشت سر هم است
-    # و \u200Ecycle\u200E یک دور کامل.
-    step = per_item + hold
-    cycle = step * count
-    delays = [index * step for index in range(count)]
+    # یک بار تکی‌تکی شدند — هر خبر با نوبت خودش — ولی موسسه زنجیر
+    # خواست: یکی پشت دیگری، بی‌آنکه نوار میانِ دو خبر خالی بماند.
+    #
+    # هر خبر سهم خودش را از زمان می‌گیرد، پس سرعت با زیاد شدن
+    # خبرها عوض نمی‌شود.
+    cycle = per_item * count + hold
 
-    # و باز هم سقف دارد: مکثِ بلند یعنی نواری که بیشترِ وقت خالی است
+    # مکث سقف دارد: مکثِ بلند یعنی نواری که بیشترِ وقت خالی است
     percent = min(40, round(hold * 100.0 / cycle)) if cycle else 0
-    travel_percent = round(per_item * 100.0 / cycle) if cycle else 100
     return {
         'urgent_total_secs': cycle,
         'urgent_hold_percent': percent,
-        'urgent_cross_percent': min(100, percent + travel_percent),
-        'urgent_delays': delays,
     }
 
 

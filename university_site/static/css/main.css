@@ -705,44 +705,43 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
        قاب عقب می‌برد و دنبالهٔ متن از همان لحظهٔ صفر داخل قاب دیده
        می‌شد. با \u200Emax-content\u200E جعبه به اندازهٔ خودِ متن است و ۱۰۰٪ یعنی
        واقعاً کاملاً بیرونِ قاب. */
-    inset-inline-end: 0;
+    inline-size: max-content;
     /* چیدمانِ ریل چپ‌به‌راست است، نه راست‌به‌چپ.
        صفحه RTL است، پس خبرها از لبهٔ راستِ ریل شروع می‌شدند — یعنی
        درست کنارِ برچسب «فوری» و در میانهٔ صفحه، نه از گوشهٔ چپ.
        حالا اولین خبر از همان لبهٔ چپ آغاز می‌شود؛ متنِ خودِ هر خبر
        با قاعدهٔ \u200E.urgent-item\u200E فارسی و راست‌به‌چپ می‌ماند. */
     direction: ltr;
-    /* ریل دیگر خودش حرکت نمی‌کند؛ فقط قابی است که هر خبر داخلش
-       نوبتِ خودش را می‌گیرد. */
-    block-size: 100%;
+    /* خبرها زنجیروار در همین یک ریل‌اند و ریل یک‌جا حرکت می‌کند، پس
+       میان دو خبر نوار خالی نمی‌ماند. */
+    animation: urgentSlide var(--urgent-secs, 60s) linear infinite;
 }
 /* روی نوار که بایستید، می‌ایستد — وگرنه خبری که نیمه‌خوانده مانده
    از قاب بیرون می‌رود و باید یک دور کامل منتظرش ماند. */
-.urgent-bar:hover .urgent-item,
-.urgent-bar:focus-within .urgent-item { animation-play-state: paused; }
+.urgent-bar:hover .urgent-track,
+.urgent-bar:focus-within .urgent-track { animation-play-state: paused; }
 
-/* هر خبر، تنها و کامل.
-   پیش از این همهٔ عنوان‌ها در یک ریل پشت سر هم بودند و با هم حرکت
-   می‌کردند، پس همیشه دُمِ یکی و سرِ دیگری هم‌زمان دیده می‌شد.
-   حالا هر خبر مطلق است، انیمیشن خودش را دارد و نوبتش با تأخیری
-   می‌رسد که قالب برایش می‌نویسد؛ تا آن لحظه بیرونِ لبهٔ چپ منتظر
-   می‌ماند. \u200Ebackwards\u200E همین انتظار را ممکن می‌کند. */
+/* خبرها زنجیروار، یکی پشت دیگری، در همان یک ریل.
+   یک بار تکی‌تکی شدند — هر خبر با نوبت و انیمیشن خودش — ولی موسسه
+   زنجیر خواست: نوار میان دو خبر نباید خالی بماند.\u200Ebackwards\u200E */
 .urgent-item {
     white-space: nowrap;
     padding-inline: 22px;
-    position: absolute;
-    inset-block-start: 0;
-    left: 0;
-    /* به اندازهٔ خودِ متن، نه به اندازهٔ قاب — وگرنه «کاملاً بیرون»
-       یعنی فقط یک قاب عقب، و دنبالهٔ متن از همان اول دیده می‌شود. */
-    inline-size: max-content;
-    animation: urgentSlide var(--urgent-secs, 60s) linear infinite backwards;
+    position: relative;
     /* ریل چپ‌به‌راست چیده می‌شود، ولی خودِ عنوان خبر فارسی است */
     direction: rtl;
     unicode-bidi: isolate;
 }
-/* جداکننده برداشته شد: حالا هر بار فقط یک خبر در قاب است، پس
-   چیزی برای جداکردن نمانده. */
+/* جداکنندهٔ میان خبرها، از CSS نه از متن — زنجیر که باشند، مرزشان
+   باید دیده شود. */
+.urgent-item + .urgent-item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: 5px;
+    inline-size: 1px;
+    background: rgba(255, 255, 255, .45);
+}
 
 /* از همان گوشهٔ چپ، دیده‌شده، و بعد آرام به راست.
    نسخهٔ پیش از این از بیرونِ قاب شروع می‌کرد: خبر چند ثانیه اول
@@ -781,7 +780,6 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
    و به‌جایش با انگشت یا موشواره کنار می‌رود. */
 @media (prefers-reduced-motion: reduce) {
     .urgent-track { animation: none; position: static; }
-    .urgent-item { animation: none; position: static; display: inline-block; }
     .urgent-ticker { overflow-x: auto; block-size: auto; }
 }
 
