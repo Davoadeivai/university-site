@@ -1,4 +1,4 @@
-"""ستون کنار اسلایدر: سربرگ «پایگاه خبری»، شمارش معکوس، و خوراک."""
+"""ستون کنار اسلایدر: سربرگ «پایگاه خبری» و شمارش معکوس رویدادها."""
 from datetime import date, timedelta
 
 from django.core.cache import cache
@@ -103,51 +103,38 @@ class EventCountdownTests(TestCase):
         self.assertIn(format_jalali_date(row.date, 'short'), self._html())
 
 
-class NewsFeedTests(TestCase):
-    """خوراک: خبر را می‌رساند بی‌آنکه کسی به سایت سر بزند."""
+class TheFeedIsGoneTests(TestCase):
+    """خوراک خبری (RSS/Atom) به خواست موسسه کامل برداشته شد.
 
-    def setUp(self):
-        cache.clear()
-        News.objects.create(title='خبر خوراک', content='متن',
-                            summary='خلاصهٔ خبر', is_published=True)
-        News.objects.create(title='خبر پنهان', content='متن',
-                            summary='…', is_published=False)
+    سالی که روی سایت بود نه کسی مشترکش شد و نه جایی نشان داده
+    می‌شد. این تست‌ها می‌مانند تا اگر روزی بی‌سبب برگشت، معلوم شود.
+    """
 
-    def test_the_rss_feed_is_served(self):
-        response = self.client.get(reverse('news:feed'))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('rss+xml', response['Content-Type'])
+    def test_no_route_is_left_behind(self):
+        from django.urls import NoReverseMatch
 
-    def test_the_atom_feed_is_served(self):
-        response = self.client.get(reverse('news:feed_atom'))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('atom+xml', response['Content-Type'])
+        for name in ('news:feed', 'news:feed_atom'):
+            with self.assertRaises(NoReverseMatch):
+                reverse(name)
 
-    def test_it_carries_the_published_news(self):
-        body = self.client.get(reverse('news:feed')).content.decode()
-        self.assertIn('خبر خوراک', body)
-        self.assertIn('خلاصهٔ خبر', body)
+    def test_the_old_addresses_are_not_served(self):
+        for path in ('/اخبار/rss/', '/اخبار/atom/'):
+            self.assertEqual(self.client.get(path).status_code, 404,
+                             'هنوز پاسخ می‌دهد: %s' % path)
 
-    def test_a_draft_never_leaves_the_building(self):
-        body = self.client.get(reverse('news:feed')).content.decode()
-        self.assertNotIn('خبر پنهان', body)
-
-    def test_the_feed_route_does_not_shadow_a_news_page(self):
-        """«rss» نباید به‌جای خوراک، عنوان یک خبر گرفته شود."""
-        self.assertEqual(reverse('news:feed'),
-                         reverse('news:list') + 'rss/')
-
-    def test_browsers_are_told_where_it_is(self):
+    def test_the_browser_is_no_longer_told_about_it(self):
         html = self.client.get(reverse('core:home')).content.decode()
-        self.assertIn('application/rss+xml', html)
-        self.assertIn(reverse('news:feed'), html)
+        self.assertNotIn('application/rss+xml', html)
+        self.assertNotIn('application/atom+xml', html)
 
     def test_the_button_is_gone_from_the_first_page(self):
-        """موسسه خواست آیکون «خوراک خبری» از صفحهٔ اول برداشته شود.
-
-        خودِ خوراک سر جایش است و مرورگر از روی \u200E<head>\u200E پیدایش می‌کند؛
-        فقط دکمه‌اش دیگر در سربرگ ستون دیده نمی‌شود.
-        """
         html = self.client.get(reverse('core:home')).content.decode()
         self.assertNotIn('newsdesk-rss', html)
         self.assertNotIn('fa-rss', html)
+
+    def test_the_news_page_itself_still_works(self):
+        """برداشتن خوراک نباید به خودِ اخبار دست بزند."""
+        News.objects.create(title='خبر تازه', content='متن',
+                            summary='خلاصه', is_published=True)
+        body = self.client.get(reverse('news:list')).content.decode()
+        self.assertIn('خبر تازه', body)
