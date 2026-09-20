@@ -54,7 +54,7 @@ class TheTimingComesFromThePanelTests(TestCase):
     def test_the_pause_is_written_in_seconds_not_percent(self):
         """موسسه ثانیه می‌نویسد؛ درصد کار CSS است، نه کار مدیر سایت."""
         SiteSettings.objects.create(university_name_fa='موسسه',
-                                    ticker_seconds=100,
+                                    ticker_seconds=90,
                                     ticker_hold_seconds=10)
         _announce(1)
         html = self._page()
@@ -80,7 +80,34 @@ class TheTimingComesFromThePanelTests(TestCase):
                                           ticker_seconds=10,
                                           ticker_hold_seconds=60)
         self.assertLessEqual(_ticker_timing(row, [1])['urgent_hold_percent'],
-                             50)
+                             40)
+
+    def test_the_pause_is_added_to_the_run_not_taken_from_it(self):
+        """موسسه هر دو عدد را روی یک گذاشت و عبور شد نیم‌ثانیه.
+
+        مکث از همان یک ثانیه کم می‌شد، پس «زمان هر خبر» دیگر زمانِ
+        عبور نبود. حالا عبور همیشه همان عددی است که نوشته‌اند.
+        """
+        row = SiteSettings.objects.create(university_name_fa='موسسه',
+                                          ticker_seconds=40,
+                                          ticker_hold_seconds=10)
+        timing = _ticker_timing(row, [1])
+        self.assertEqual(timing['urgent_total_secs'], 50)
+        # ۱۰ ثانیه از ۵۰ یعنی یک‌پنجم؛ ۴۰ ثانیهٔ عبور دست‌نخورده
+        self.assertEqual(timing['urgent_hold_percent'], 20)
+
+    def test_the_travel_time_is_what_the_panel_says(self):
+        """هر مکثی که باشد، عبور همان عدد است."""
+        row = SiteSettings.objects.create(university_name_fa='موسسه',
+                                          ticker_seconds=30)
+        for hold in (0, 1, 5, 20):
+            row.ticker_hold_seconds = hold
+            timing = _ticker_timing(row, [1])
+            travel = (timing['urgent_total_secs']
+                      * (100 - timing['urgent_hold_percent']) / 100.0)
+            self.assertAlmostEqual(travel, 30, delta=1,
+                                   msg='با مکث %d ثانیه عبور %s شد' % (
+                                       hold, travel))
 
     def test_a_fresh_database_still_renders(self):
         """هنوز ردیف تنظیماتی نیست."""

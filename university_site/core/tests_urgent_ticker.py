@@ -148,6 +148,14 @@ class ItMakesOneFullPassLeftToRightTests(TestCase):
         """
         self.assertIn('inline-size: max-content', _rule('.urgent-track'))
 
+    def test_the_bar_reaches_the_edges_of_the_screen(self):
+        """«از لبهٔ چپ» یعنی لبهٔ صفحه، نه لبهٔ ستون میانی.
+
+        \u200E.container\u200E روی نمایشگر بزرگ حدود ۳۰۰ پیکسل از هر سو تو
+        می‌آمد و خبر از همان‌جا وارد می‌شد.
+        """
+        self.assertIn('max-inline-size: 100%', _rule('.urgent-bar > .container'))
+
     def test_it_ends_at_the_right_edge(self):
         self.assertIn('left: 100%;', _keyframes())
 

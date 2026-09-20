@@ -107,15 +107,20 @@ def _ticker_timing(settings_row, announcements):
     مکث در CSS ناچار درصدِ کل حرکت است — انتخابگر keyframe متغیر
     نمی‌پذیرد — ولی موسسه ثانیه می‌خواهد بنویسد، نه درصد. پس درصد
     همین‌جا از روی ثانیه حساب می‌شود و قالب ثانیهٔ خام را نمی‌بیند.
+
+    مکث به زمان اضافه می‌شود، از آن کم نمی‌شود. پیش از این هر دو عدد
+    را که روی یک می‌گذاشتند، نیمِ آن یک ثانیه صرف مکث می‌شد و عبور
+    در نیم‌ثانیه تمام می‌شد — آن‌قدر تند که ورود از چپ اصلاً دیده
+    نمی‌شد. حالا «زمان هر خبر» دقیقاً یعنی زمانِ عبور، هر عددی که
+    مکث باشد.
     """
     per_item = getattr(settings_row, 'ticker_seconds', None) or 60
-    hold = getattr(settings_row, 'ticker_hold_seconds', None)
-    if hold is None:
-        hold = 2
+    hold = getattr(settings_row, 'ticker_hold_seconds', None) or 0
     count = max(1, len(announcements or []))
-    total = per_item * count
-    # مکث نباید کل زمان را ببلعد؛ سقفش نیمهٔ حرکت است
-    percent = min(50, round(hold * 100.0 / total)) if total else 0
+    travel = per_item * count
+    total = travel + hold
+    # و باز هم سقف دارد: مکثِ بلند یعنی نواری که بیشترِ وقت خالی است
+    percent = min(40, round(hold * 100.0 / total)) if total else 0
     return {
         'urgent_total_secs': total,
         'urgent_hold_percent': percent,
