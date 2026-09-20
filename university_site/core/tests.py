@@ -273,14 +273,24 @@ class HomeSectionTests(TestCase):
         self.assertNotIn('bnr-sub', body)
 
     def test_the_name_is_set_in_arial(self):
-        """سند اصلاحات فونت Arial و اندازهٔ درشت‌تر خواسته است."""
+        """سند اصلاحات فونت Arial و اندازهٔ درشت‌تر خواسته است.
+
+        قاعده دیگر تنها \u200E.bnr-fa\u200E نیست: خط «بابلسر-بهنمیر» هم همان
+        قلم را می‌گیرد و هر دو در یک انتخابگر نشسته‌اند. پس اینجا
+        دنبال شکلِ دقیقِ انتخابگر نمی‌گردیم، دنبال قاعده‌ای که نام
+        موسسه را می‌سازد.
+        """
+        import re
         from pathlib import Path
+
         from django.conf import settings as dj
+
         css = (Path(dj.BASE_DIR) / 'static' / 'css' / 'main.css').read_text(
             encoding='utf-8')
-        start = css.index(chr(10) + '.bnr-fa {')
-        block = css[start:css.index('}', start)]
-        self.assertIn('font-family: Arial', block)
+        rule = re.search(
+            r'\n\.bnr-fa[^{}]*\{([^}]*)\}', css)
+        self.assertIsNotNone(rule, 'قاعدهٔ \u200E.bnr-fa\u200E پیدا نشد')
+        self.assertIn('font-family: Arial', rule.group(1))
 
     def test_the_header_carries_only_the_name(self):
         """نشان کلاس جهانی از سربرگ برداشته شد، به خواست موسسه.
