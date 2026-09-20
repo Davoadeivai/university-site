@@ -168,3 +168,36 @@ class TheSpeedIsUnhurriedTests(TestCase):
         Announcement.objects.all().delete()
         html = self.client.get(reverse('core:home')).content.decode()
         self.assertNotIn('urgent-bar', html)
+
+
+class TheTickerStartsAtTheFarLeftTests(TestCase):
+    """خبر باید از گوشهٔ چپ آغاز شود، نه از میانهٔ صفحه.
+
+    صفحه راست‌به‌چپ است، پس خبرهای داخل ریل از لبهٔ راستِ آن شروع
+    می‌شدند — درست کنار برچسب «فوری» و در میانهٔ صفحه. حرکت از همان
+    نقطه به راست می‌رفت و نیمهٔ چپِ نوار همیشه خالی بود.
+    """
+
+    def _css(self):
+        from pathlib import Path
+
+        from django.conf import settings
+
+        return (Path(settings.BASE_DIR) / 'static' / 'css' /
+                'main.css').read_text(encoding='utf-8')
+
+    def _rule(self, selector):
+        css = self._css()
+        start = css.index('\n' + selector + ' {')
+        return css[start:css.index('}', start)]
+
+    def test_the_rail_is_laid_out_left_to_right(self):
+        self.assertIn('direction: ltr', self._rule('.urgent-track'))
+
+    def test_each_headline_stays_right_to_left(self):
+        rule = self._rule('.urgent-item')
+        self.assertIn('direction: rtl', rule)
+        self.assertIn('unicode-bidi: isolate', rule)
+
+    def test_it_still_begins_flush_with_the_left_edge(self):
+        self.assertIn('left: 0;', self._rule('.urgent-track'))

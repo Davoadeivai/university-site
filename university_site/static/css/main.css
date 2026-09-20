@@ -691,6 +691,12 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     inset-block-start: 0;
     left: 0;
     white-space: nowrap;
+    /* چیدمانِ ریل چپ‌به‌راست است، نه راست‌به‌چپ.
+       صفحه RTL است، پس خبرها از لبهٔ راستِ ریل شروع می‌شدند — یعنی
+       درست کنارِ برچسب «فوری» و در میانهٔ صفحه، نه از گوشهٔ چپ.
+       حالا اولین خبر از همان لبهٔ چپ آغاز می‌شود؛ متنِ خودِ هر خبر
+       با قاعدهٔ \u200E.urgent-item\u200E فارسی و راست‌به‌چپ می‌ماند. */
+    direction: ltr;
     animation: urgentSlide var(--urgent-secs, 60s) linear infinite;
 }
 /* روی نوار که بایستید، می‌ایستد — وگرنه خبری که نیمه‌خوانده مانده
@@ -702,6 +708,9 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     white-space: nowrap;
     padding-inline: 22px;
     position: relative;
+    /* ریل چپ‌به‌راست چیده می‌شود، ولی خودِ عنوان خبر فارسی است */
+    direction: rtl;
+    unicode-bidi: isolate;
 }
 /* جداکنندهٔ میان خبرها، از CSS نه از متن */
 .urgent-item + .urgent-item::before {
