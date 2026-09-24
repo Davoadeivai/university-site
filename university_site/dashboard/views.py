@@ -830,13 +830,19 @@ def student_lifecycle(request):
                 'درخواست شما به‌عنوان «ارسال‌شده» ثبت می‌شود ولی تأیید نهایی منوط به تسویه است.',
             )
 
+        attachment = request.FILES.get('attachment')
+        from core.iran import validate_document_upload
+        file_error = validate_document_upload(attachment, 'پیوست')
+        if file_error:
+            messages.error(request, file_error)
+            return redirect('dashboard:student_lifecycle')
+
         req = StudentLifecycleRequest(
             student=request.user,
             request_type=req_type,
             reason=reason,
             status='submitted',
         )
-        attachment = request.FILES.get('attachment')
         if attachment:
             req.attachment = attachment
         req.save()
@@ -1040,6 +1046,11 @@ def tuition_discount_claim(request):
     percent = max(1, min(percent, 50))
     notes = (request.POST.get('notes') or '').strip()[:1000]
     document = request.FILES.get('document')
+    from core.iran import validate_receipt_upload
+    doc_error = validate_receipt_upload(document, 'مدرک تخفیف')
+    if doc_error:
+        messages.error(request, doc_error)
+        return redirect('dashboard:student_payments')
 
     claim, created = StudentDiscountClaim.objects.get_or_create(
         student=request.user,

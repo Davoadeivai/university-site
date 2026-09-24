@@ -196,9 +196,17 @@ def membership(request):
     elif check_id:
         membership_result = LibraryMembership.objects.filter(student_id=check_id).first()
 
+    # این صفحه بدون ورود باز است و شماره دانشجویی ترتیبی و حدس‌زدنی؛
+    # نام کامل یعنی ساختن فهرست «شماره → نام» همهٔ دانشجوها.
+    masked_name = ''
+    if membership_result:
+        parts = (membership_result.full_name or '').split()
+        masked_name = ' '.join((w[:1] + '…') for w in parts) or '—'
+
     context = {
         'page_title': 'عضویت در کتابخانه',
         'membership_result': membership_result,
+        'masked_name': masked_name,
         'check_id': check_id,
     }
     return render(request, 'library/membership.html', context)

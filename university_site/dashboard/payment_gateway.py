@@ -55,6 +55,14 @@ def verify_payment(request, payment, authority=None):
     gateway = payment.gateway or getattr(settings, 'PAYMENT_GATEWAY', 'mock')
     authority = authority or payment.authority or request.GET.get('Authority', '')
 
+    # authority باید همانی باشد که هنگام شروع روی همین ردیف نشست.
+    # زرین‌پال برای تراکنشی که قبلاً تأیید شده کد ۱۰۱ برمی‌گرداند؛ بدون
+    # این بررسی، authorityِ یک قسطِ پرداخت‌شده با payment_idِ قسطِ دیگری
+    # (با همان مبلغ) فرستاده می‌شد و قسط دوم بی‌پرداخت «paid» می‌شد.
+    if not payment.authority or authority != payment.authority:
+        logger.warning('authority mismatch for payment %s', payment.pk)
+        return False
+
     if gateway == 'zarinpal':
         return _zarinpal_verify(payment, authority)
     if not _mock_allowed():

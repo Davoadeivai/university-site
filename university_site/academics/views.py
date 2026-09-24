@@ -201,6 +201,8 @@ def group_heads(request):
     groups = list(
         AcademicGroup.objects.filter(is_active=True)
         .select_related('department', 'head_professor')
+        # heads_list برای هر گروه جدا کوئری می‌زد (N+1)
+        .prefetch_related('group_heads__professor')
         .order_by('department__order', 'order', 'name')
     )
     named = [g for g in groups if g.head_name]

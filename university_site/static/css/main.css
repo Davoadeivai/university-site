@@ -1441,6 +1441,21 @@ p, li, dd, td, .uni-card, .panel-empty { overflow-wrap: anywhere; }
     box-shadow: 0 0 0 3px rgba(122, 31, 46, 0.1);
 }
 .form-label { font-weight: 600; color: var(--text-dark); margin-bottom: 6px; font-size: 14px; }
+/* inline-flex: روی <a> بدون display، پس‌زمینه و padding هنگام شکستن خط در موبایل روی هم می‌افتاد */
+.btn-primary-uni,
+.btn-secondary-uni {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    max-width: 100%;
+    text-align: center;
+    text-decoration: none;
+    line-height: 1.6;
+    vertical-align: middle;
+}
+.btn-primary-uni:hover,
+.btn-secondary-uni:hover { color: white; text-decoration: none; }
 .btn-primary-uni {
     background: var(--gradient-primary);
     color: white;

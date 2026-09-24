@@ -178,15 +178,17 @@ class MajorAdmin(admin.ModelAdmin):
             '<th style="padding:4px 8px;text-align:right;">وضعیت</th>'
             '</tr></thead><tbody>'
         )
+        from django.utils.html import escape
         for e in rows:
             color = status_colors.get(e.status, '#64748b')
+            # نام را خود دانشجو وارد می‌کند؛ بدون escape در صفحهٔ ادمین اجرا می‌شد (XSS)
             html += (
                 f'<tr style="border-bottom:1px solid #e5e7eb;">'
-                f'<td style="padding:3px 8px;">{e.student.get_full_name() or e.student.username}</td>'
-                f'<td style="padding:3px 8px;">{e.course.name}</td>'
+                f'<td style="padding:3px 8px;">{escape(e.student.get_full_name() or e.student.username)}</td>'
+                f'<td style="padding:3px 8px;">{escape(e.course.name)}</td>'
                 f'<td style="padding:3px 8px;">'
                 f'<span style="background:{color};color:#fff;padding:1px 6px;border-radius:6px;">'
-                f'{e.get_status_display()}</span></td></tr>'
+                f'{escape(e.get_status_display())}</span></td></tr>'
             )
         html += '</tbody></table>'
         return format_html('{}', mark_safe(html))

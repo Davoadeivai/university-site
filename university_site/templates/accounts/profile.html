@@ -114,7 +114,7 @@
         </div>
         <div class="col-md-6">
             <label class="form-label" style="font-size:12px;">شماره دانشجویی / کارمندی</label>
-            <input type="text" name="student_id" class="form-control" value="{{ profile.student_id }}" dir="ltr">
+            <input type="text" name="student_id" class="form-control" value="{{ profile.student_id }}" dir="ltr"{% if profile.role == 'student' and profile.student_id %} readonly title="شماره دانشجویی توسط آموزش تعیین می‌شود"{% endif %}>
         </div>
     </div>
 </div>

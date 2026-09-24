@@ -11,3 +11,6 @@ class CoreConfig(AppConfig):
         # بلافاصله روی سایت دیده شود (نه با تأخیر ۶۰ ثانیه‌ای کش)
         from core.cache_invalidation import register
         register()
+        # متن بلندتر از ستون روی MySQL (strict) خطای ۵۰۰ می‌داد
+        from core import field_limits
+        field_limits.register()

@@ -330,18 +330,17 @@ def announcement_detail(request, pk):
 
 
 def search(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()[:100]
     results = []
     if query:
         news_results = News.objects.filter(
             is_published=True, title__icontains=query
         )[:5]
-        professor_results = Professor.objects.filter(
-            is_active=True
-        ).filter(
-            first_name__icontains=query
-        ) | Professor.objects.filter(last_name__icontains=query)
-        professor_results = professor_results[:5]
+        # پیش‌تر «| Professor.objects.filter(last_name…)» فیلتر is_active را
+        # دور می‌زد و استادِ غیرفعال با نام خانوادگی در نتایج می‌آمد.
+        professor_results = Professor.objects.filter(is_active=True).filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query)
+        )[:5]
         major_results = Major.objects.filter(
             is_active=True, name__icontains=query
         )[:5]

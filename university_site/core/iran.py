@@ -76,6 +76,29 @@ ALLOWED_RECEIPT_EXT = ALLOWED_IMAGE_EXT | {'pdf'}
 MAX_RECEIPT_BYTES = 5 * 1024 * 1024
 
 
+# پیوست‌های عمومی پنل (تکلیف، درخواست، مرخصی، مدرک تخفیف).
+# html/svg/js عمداً نیستند: از همین دامنه سرو می‌شوند و اسکریپتشان
+# با نشست کسی که بازشان می‌کند اجرا می‌شد.
+ALLOWED_DOCUMENT_EXT = ALLOWED_RECEIPT_EXT | {
+    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'odt',
+    'zip', 'rar', '7z',
+}
+MAX_DOCUMENT_BYTES = 20 * 1024 * 1024
+
+
+def validate_document_upload(f, label: str = 'فایل') -> str | None:
+    """پیوست عمومی: فقط پسوندهای بی‌خطر، با سقف حجم."""
+    if not f:
+        return None
+    name = getattr(f, 'name', '') or ''
+    ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+    if ext not in ALLOWED_DOCUMENT_EXT:
+        return '%s باید PDF، Word، Excel، PowerPoint، تصویر یا فایل فشرده باشد.' % label
+    if (getattr(f, 'size', 0) or 0) > MAX_DOCUMENT_BYTES:
+        return 'حجم %s نباید بیش از ۲۰ مگابایت باشد.' % label
+    return None
+
+
 def validate_receipt_upload(f, label: str = 'رسید') -> str | None:
     """رسید پرداخت: عکس یا PDF، با سقف حجم.
 

@@ -72,6 +72,10 @@ OWNERS = (
 )
 
 
+# SVG عمداً نیست: می‌تواند اسکریپت داشته باشد.
+INLINE_SAFE_SUFFIXES = frozenset({'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.pdf'})
+
+
 def is_private(name: str) -> bool:
     """آیا این نشانی زیر یکی از پوشه‌های حساس است؟"""
     clean = (name or '').lstrip('/')
@@ -172,10 +176,19 @@ def serve(request, path: str):
     if not target.is_file():
         raise Http404
 
-    response = FileResponse(target.open('rb'))
+    # فقط عکس و PDF درون مرورگر باز می‌شوند. هر چیز دیگری (html، svg،
+    # js، …) دانلود می‌شود: این فایل‌ها را دانشجو آپلود کرده و از همین
+    # دامنه سرو می‌شوند؛ اگر inline باز می‌شدند، اسکریپتِ داخلشان با
+    # نشستِ کارمندی که پیوست را باز کرده اجرا می‌شد (XSS ذخیره‌شده).
+    inline = target.suffix.lower() in INLINE_SAFE_SUFFIXES
+    response = FileResponse(
+        target.open('rb'),
+        content_type=None if inline else 'application/octet-stream',
+    )
     # نه در کش میانی بماند، نه موتور جست‌وجو سراغش برود.
     response['Cache-Control'] = 'private, no-store'
     response['X-Robots-Tag'] = 'noindex, nofollow'
-    response['Content-Disposition'] = 'inline; filename="%s"' % (
-        target.name.replace('"', ''))
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Content-Disposition'] = '%s; filename="%s"' % (
+        'inline' if inline else 'attachment', target.name.replace('"', ''))
     return response

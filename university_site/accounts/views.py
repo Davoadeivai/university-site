@@ -394,6 +394,13 @@ def profile(request):
             errors.append('این شماره موبایل قبلاً ثبت شده است.')
         if postal_code and len(postal_code) not in (0, 10):
             errors.append('کد پستی باید ۱۰ رقم باشد.')
+        # شماره دانشجویی را موسسه می‌دهد؛ دانشجو فقط وقتی خالی است پرش می‌کند
+        # و نمی‌تواند شمارهٔ دانشجوی دیگری را روی خودش بگذارد.
+        if profile_obj.role == 'student' and profile_obj.student_id:
+            student_id = profile_obj.student_id
+        elif student_id and UserProfile.objects.filter(
+                student_id=student_id).exclude(pk=profile_obj.pk).exists():
+            errors.append('این شماره دانشجویی متعلق به حساب دیگری است.')
         if gender and gender not in dict(UserProfile.GENDER_CHOICES):
             errors.append('جنسیت نامعتبر است.')
         gpa_val, gpa_err = parse_gpa(p.get('gpa'))
@@ -692,19 +699,32 @@ def magic_login_request(request):
         messages.error(request, rl_msg)
         return redirect(f"{reverse('admissions:track')}?q={nid}")
 
+    # پاسخ برای همهٔ حالت‌ها یکی است: کد ملی محرمانه نیست و پیام متفاوت
+    # یعنی هر کس می‌توانست بفهمد صاحب یک کد ملی پذیرفته شده یا نه.
+    generic_msg = (
+        'اگر برای این کد ملی پذیرش قطعی ثبت شده باشد، '
+        'لینک ورود به موبایل ثبت‌شده در درخواست ارسال می‌شود.'
+    )
+    back = f"{reverse('admissions:track')}?q={nid}" if nid else reverse('admissions:track')
+
     app = (
         Application.objects.filter(national_id=nid, status='accepted')
         .order_by('-id')
         .first()
-    )
-    if not app:
-        messages.error(request, 'فقط برای درخواست‌های پذیرفته‌شده لینک ورود ارسال می‌شود.')
-        return redirect('admissions:track')
-
-    phone = normalize_phone(app.phone)
+    ) if nid else None
+    phone = normalize_phone(app.phone) if app else ''
     if not phone:
-        messages.error(request, 'شماره موبایل روی درخواست ثبت نشده است.')
-        return redirect(f"{reverse('admissions:track')}?q={nid}")
+        messages.info(request, generic_msg)
+        return redirect(back)
+
+    # سقف ارسال پیامک مستقل از RATE_LIMIT_ENABLED: بدون آن با تکرار یک
+    # کد ملی می‌شد بی‌نهایت پیامک به موبایل متقاضی (و روی قبض موسسه) فرستاد.
+    from core.sms import can_send_otp, mark_otp_sent
+    ok, err = can_send_otp(phone, scope='magic_login')
+    if not ok:
+        messages.error(request, err)
+        return redirect(back)
+    mark_otp_sent(phone, scope='magic_login')
 
     user = User.objects.filter(username=nid).first()
     if user is None:
@@ -720,8 +740,8 @@ def magic_login_request(request):
             phone,
             f'{label}: حساب ندارید. برای ادامه ثبت‌نام کنید: {reg_url}',
         )
-        messages.success(request, 'لینک ساخت حساب به موبایل شما ارسال شد.')
-        return redirect(f"{reverse('admissions:track')}?q={nid}")
+        messages.info(request, generic_msg)
+        return redirect(back)
 
     token = make_magic_token(user)
     magic_url = request.build_absolute_uri(reverse('accounts:magic_login', args=[token]))
@@ -729,8 +749,8 @@ def magic_login_request(request):
         phone,
         f'{label}: لینک ورود یک‌بارمصرف (۳۰ دقیقه): {magic_url}',
     )
-    messages.success(request, 'لینک ورود یک‌بارمصرف به موبایل شما ارسال شد.')
-    return redirect(f"{reverse('admissions:track')}?q={nid}")
+    messages.info(request, generic_msg)
+    return redirect(back)
 
 
 def magic_login(request, token):

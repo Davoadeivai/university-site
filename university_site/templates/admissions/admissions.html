@@ -66,11 +66,15 @@
     font-weight: 700;
 }
 .admit-cta-wrap {
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
     margin-bottom: 2.5rem;
 }
 @media (max-width: 576px) {
     .admit-step-line { display: none; }
+    .admit-cta-wrap > a { flex: 1 1 100%; }
 }
 </style>
 {% endblock %}
@@ -105,7 +109,7 @@
             <a href="{% url 'admissions:apply_otp_send' %}" class="btn-primary-uni">
                 <i class="fas fa-user-graduate"></i> شروع ثبت درخواست
             </a>
-            <a href="{% url 'admissions:track' %}" class="btn-secondary-uni ms-2">
+            <a href="{% url 'admissions:track' %}" class="btn-secondary-uni">
                 <i class="fas fa-search"></i> پیگیری وضعیت
             </a>
         </div>

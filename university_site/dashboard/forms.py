@@ -1,8 +1,22 @@
 from django import forms
+from core.iran import validate_document_upload
 from .models import StudentRequest, Enrollment, Assignment, AssignmentSubmission
 
 
-class StudentRequestForm(forms.ModelForm):
+class _SafeFileMixin:
+    """پیوست را به پسوندهای بی‌خطر محدود می‌کند (نه html/svg/js)."""
+
+    def clean_file(self):
+        f = self.cleaned_data.get('file')
+        # فایلِ تازه آپلودشده content_type دارد؛ فایلِ قبلیِ ذخیره‌شده نه
+        if f and hasattr(f, 'content_type'):
+            err = validate_document_upload(f, 'فایل')
+            if err:
+                raise forms.ValidationError(err)
+        return f
+
+
+class StudentRequestForm(_SafeFileMixin, forms.ModelForm):
     class Meta:
         model = StudentRequest
         fields = ['request_type', 'title', 'description', 'file']
@@ -26,7 +40,7 @@ class EnrollmentGradeForm(forms.ModelForm):
         }
 
 
-class AssignmentForm(forms.ModelForm):
+class AssignmentForm(_SafeFileMixin, forms.ModelForm):
     class Meta:
         model = Assignment
         fields = ['course', 'title', 'description', 'assignment_type', 'due_date', 'max_score', 'file']
@@ -49,7 +63,7 @@ class AssignmentForm(forms.ModelForm):
 
 
 
-class AssignmentSubmissionForm(forms.ModelForm):
+class AssignmentSubmissionForm(_SafeFileMixin, forms.ModelForm):
     class Meta:
         model = AssignmentSubmission
         fields = ['file']
