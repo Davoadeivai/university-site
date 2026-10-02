@@ -58,7 +58,7 @@
           </tr>
           <tr>
             <th>کد رهگیری</th><td class="ltr mono">{{ app.tracking_code }}</td>
-            <th>تاریخ ثبت</th><td>{{ app.created_at|date:"Y/m/d" }}</td>
+            <th>تاریخ ثبت</th><td>{{ app.created_at|jalali_date:"short" }}</td>
           </tr>
         </tbody>
       </table>

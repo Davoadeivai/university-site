@@ -10,7 +10,7 @@
     <div class="text-center mb-3">
         <div class="fw-bold">برنامه کلاسی دانشجو</div>
         <div>{{ student.get_full_name|default:student.username }}
-            {% if semester %} — {{ semester.name }}{% endif %}
+            {% if semester %} — {{ semester.name|jalali_years }}{% endif %}
         </div>
     </div>
     <table class="table table-bordered" style="font-size:13px;">

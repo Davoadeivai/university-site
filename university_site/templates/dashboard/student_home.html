@@ -152,7 +152,7 @@
             <div class="announce-card mb-2">
                 <div class="flex-grow-1">
                     <div class="announce-title" style="font-size:13px;">{{ exam.course.name }}</div>
-                    <div class="announce-date">{{ exam.date }} | {{ exam.start_time }}{% if exam.location %} | {{ exam.location }}{% endif %}</div>
+                    <div class="announce-date">{{ exam.date|jalali_date:"full" }} | {{ exam.start_time }}{% if exam.location %} | {{ exam.location }}{% endif %}</div>
                 </div>
                 <span class="badge bg-{% if exam.exam_type == 'final' %}danger{% else %}warning{% endif %}">{{ exam.get_exam_type_display }}</span>
             </div>

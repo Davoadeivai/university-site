@@ -51,7 +51,7 @@
             <tbody>
             {% for en in all_enrollments %}
             <tr>
-                <td>{{ en.semester.name }}</td>
+                <td>{{ en.semester.name|jalali_years }}</td>
                 <td>{{ en.course.name }}</td>
                 <td>{{ en.get_status_display }}</td>
                 <td>{% if en.final_grade %}{{ en.final_grade }}{% else %}—{% endif %}</td>

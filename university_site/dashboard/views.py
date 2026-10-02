@@ -215,7 +215,7 @@ def dashboard(request):
     graded = all_current.filter(final_grade__isnull=False)
     upcoming_exams = ExamSchedule.objects.filter(
         course_id__in=course_ids,
-        date__gte=timezone.now().date(),
+        date__gte=timezone.localdate(),
     ).select_related('course').order_by('date', 'start_time')[:5]
     pending_assignments = Assignment.objects.filter(
         course_id__in=course_ids,
@@ -923,8 +923,8 @@ def student_exams(request):
         course_id__in=course_ids
     ).select_related('course', 'semester').order_by('date', 'start_time')
     ctx['exams'] = exams
-    ctx['upcoming'] = exams.filter(date__gte=timezone.now().date())
-    ctx['today'] = timezone.now().date()
+    ctx['upcoming'] = exams.filter(date__gte=timezone.localdate())
+    ctx['today'] = timezone.localdate()
     return render(request, 'dashboard/student_exams.html', ctx)
 
 

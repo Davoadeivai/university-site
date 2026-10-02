@@ -83,7 +83,7 @@ def home(request):
         ),
     ]
     upcoming_events = Event.objects.filter(
-        is_active=True, date__gte=timezone.now().date()
+        is_active=True, date__gte=timezone.localdate()
     ).order_by('date')[:4]
     # بدون ترتیب صریح، به ترتیب پیش‌فرض مدل تکیه می‌کرد و با صفحهٔ
     # دانشکده‌ها هم‌خوان نبود؛ حالا هر دو یک ترتیب دارند.
@@ -109,7 +109,7 @@ def home(request):
                      to_attr='active_groups'))
         .order_by('order', 'name'))
     calendar_items = AcademicCalendar.objects.filter(
-        start_date__gte=timezone.now().date()
+        start_date__gte=timezone.localdate()
     ).order_by('start_date')[:5]
     # بخش «هیئت علمی برگزیده» به درخواست موسسه از صفحهٔ اصلی برداشته
     # شد؛ صفحهٔ اساتید و «اعضای موسسه» سر جایشان هستند.
@@ -172,7 +172,7 @@ def home(request):
     if getattr(settings_row, 'hero_side_show_events', True):
         # از خود مدل، نه از upcoming_events که پیش‌تر به چهار بریده
         # شده — وگرنه عدد پنل بالای چهار بی‌اثر می‌ماند.
-        today = timezone.now().date()
+        today = timezone.localdate()
         rows = list(Event.objects.filter(
             is_active=True, date__gte=today
         ).order_by('date')[:side_count])
@@ -201,7 +201,7 @@ def home(request):
         'hero_side_tagline': getattr(settings_row, 'hero_side_tagline', ''),
         # تاریخ امروز، بالای ستون — همان کاری که سرصفحهٔ یک روزنامه
         # می‌کند: می‌گوید این صفحه مال امروز است.
-        'today': timezone.now().date(),
+        'today': timezone.localdate(),
         'hero_side_width': getattr(settings_row, 'hero_side_width', None) or 340,
         'hero_side_blocks': hero_side_blocks,
         # مرزِ «تازه» برای قالب، تا نشانش را روی ردیف‌های همین هفته بگذارد
@@ -314,7 +314,7 @@ def announcement_detail(request, pk):
 
     from accounts.models import Announcement
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     row = get_object_or_404(
         Announcement.objects.filter(is_active=True).filter(
             Q(expires_at__isnull=True) | Q(expires_at__gte=today)),
@@ -519,7 +519,7 @@ def document_detail(request, pk):
 
 def events_list(request):
     """فهرست رویدادها"""
-    today = timezone.now().date()
+    today = timezone.localdate()
     upcoming = Event.objects.filter(is_active=True, date__gte=today).order_by('date')
     past = Event.objects.filter(is_active=True, date__lt=today).order_by('-date')[:20]
     context = {

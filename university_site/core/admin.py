@@ -437,10 +437,15 @@ class FAQAdmin(admin.ModelAdmin):
 
 @admin.register(PageView)
 class PageViewAdmin(admin.ModelAdmin):
-    list_display = ['path', 'ip', 'date']
+    list_display = ['path', 'ip', 'date_jalali']
     list_filter = ['date']
     search_fields = ['path', 'ip', 'user_agent']
-    readonly_fields = ['path', 'ip', 'date', 'user_agent']
+    readonly_fields = ['path', 'ip', 'date_jalali', 'user_agent']
+
+    @admin.display(description='تاریخ', ordering='date')
+    def date_jalali(self, obj):
+        from core.jalali import format_jalali_date
+        return format_jalali_date(obj.date, 'short') or '—'
 
 
 @admin.register(InstitutionGoal)

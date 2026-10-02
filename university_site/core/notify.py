@@ -147,7 +147,9 @@ def notify_installment_due(payment) -> bool:
     """یادآوری پیامکی قبل از سررسید قسط شهریه."""
     label = _site_label()
     amount = f'{int(payment.amount):,}'
-    due = payment.due_date.strftime('%Y-%m-%d') if payment.due_date else ''
+    # سررسید شمسی؛ قبلاً «2026-10-02» میلادی در پیامک می‌رفت
+    from core.jalali import format_jalali_date
+    due = format_jalali_date(payment.due_date, 'short') if payment.due_date else ''
     stage = ''
     if payment.installment_stage:
         try:

@@ -44,7 +44,7 @@
     {% for blk in by_semester %}
     <div class="tr-sem">
       <div class="tr-sem-head">
-        <span>{{ blk.semester.name }}</span>
+        <span>{{ blk.semester.name|jalali_years }}</span>
         <span class="tr-sem-gpa">
           معدل ترم: <strong>{{ blk.gpa|default:'—' }}</strong>
           &nbsp;·&nbsp; واحد: <strong>{{ blk.units }}</strong>
@@ -100,7 +100,7 @@
 
     <p class="tr-note">
       این کارنامه به‌صورت سیستمی صادر شده و بدون مهر و امضای اداره آموزش فاقد اعتبار رسمی است.
-      تاریخ صدور: {% now "Y/m/d" %}
+      تاریخ صدور: {% jalali_today %}
     </p>
 
     <footer class="tr-foot">

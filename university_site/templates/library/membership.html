@@ -64,7 +64,7 @@
                         </div>
                         <div class="text-muted" style="font-size:13px;">
                             تاریخ ثبت: {{ membership_result.created_at|jalali_date }}
-                            {% if membership_result.expires_at %}<br>انقضا: {{ membership_result.expires_at }}{% endif %}
+                            {% if membership_result.expires_at %}<br>انقضا: {{ membership_result.expires_at|jalali_date }}{% endif %}
                         </div>
                     </div>
                     {% endif %}

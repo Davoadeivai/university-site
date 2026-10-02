@@ -24,10 +24,10 @@
                 <tr {% if exam.date >= today %}style="background:rgba(16,185,129,.06);"{% endif %}>
                     <td><strong>{{ exam.course.name }}</strong></td>
                     <td><span class="badge bg-{% if exam.exam_type == 'final' %}danger{% else %}warning{% endif %}">{{ exam.get_exam_type_display }}</span></td>
-                    <td>{{ exam.date }}</td>
+                    <td>{{ exam.date|jalali_date:"full" }}</td>
                     <td>{{ exam.start_time }} — {{ exam.end_time }}</td>
                     <td>{{ exam.location }}</td>
-                    <td>{{ exam.semester.name }}</td>
+                    <td>{{ exam.semester.name|jalali_years }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

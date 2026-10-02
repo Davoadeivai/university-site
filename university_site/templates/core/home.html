@@ -1530,7 +1530,7 @@
                         {% endif %}
                         <h3 class="uni-card-title">{{ event.title }}</h3>
                         <div class="uni-card-meta">
-                            <i class="fas fa-calendar-alt"></i> {{ event.date }}
+                            <i class="fas fa-calendar-alt"></i> {{ event.date|jalali_date }}
                             {% if event.location %}
                             <br><i class="fas fa-map-marker-alt"></i> {{ event.location }}
                             {% endif %}

@@ -15,7 +15,7 @@
     <div class="mb-3" style="font-size:14px;">
         دانشجو: <strong>{{ student.get_full_name|default:student.username }}</strong>
         | کد کاربری: <strong>{{ student.username }}</strong>
-        {% if semester %} | ترم: <strong>{{ semester.name }}</strong>{% endif %}
+        {% if semester %} | ترم: <strong>{{ semester.name|jalali_years }}</strong>{% endif %}
     </div>
     <table class="table table-bordered" style="font-size:13px;">
         <thead>

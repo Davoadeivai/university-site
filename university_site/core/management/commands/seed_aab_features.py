@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 doc.file.save(f'{category}_{doc.pk or "new"}.pdf', ContentFile(pdf), save=True)
                 self.stdout.write(self.style.SUCCESS(f'سند PDF: {title}'))
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         if not Event.objects.filter(date__gte=today).exists():
             Event.objects.create(
                 title='جلسه توجیهی دانشجویان جدید',

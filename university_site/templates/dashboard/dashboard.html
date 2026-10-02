@@ -331,7 +331,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-primary-uni mb-0">دروس این ترم</h5>
                         {% if active_semester %}
-                        <span class="badge bg-success" style="font-size:11px;">{{ active_semester.name }}</span>
+                        <span class="badge bg-success" style="font-size:11px;">{{ active_semester.name|jalali_years }}</span>
                         {% endif %}
                     </div>
                     {% for ta in my_courses %}
@@ -443,7 +443,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-primary-uni mb-0">دروس این ترم</h5>
                         {% if active_semester %}
-                        <span class="badge bg-success" style="font-size:11px;">{{ active_semester.name }}</span>
+                        <span class="badge bg-success" style="font-size:11px;">{{ active_semester.name|jalali_years }}</span>
                         {% endif %}
                     </div>
                     {% for en in current_enrollments %}
@@ -472,7 +472,7 @@
                         <div class="flex-grow-1">
                             <div class="announce-title" style="font-size:13px;">{{ exam.course.name }}</div>
                             <div class="announce-date">
-                                {{ exam.date }} | {{ exam.start_time }} — {{ exam.end_time }}
+                                {{ exam.date|jalali_date:"full" }} | {{ exam.start_time }} — {{ exam.end_time }}
                                 {% if exam.location %} | {{ exam.location }}{% endif %}
                             </div>
                         </div>

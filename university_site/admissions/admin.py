@@ -674,9 +674,14 @@ class ApplicationDraftAdmin(admin.ModelAdmin):
     فقط خواندنی است: این‌ها دادهٔ متقاضی‌اند و ویرایششان از اینجا
     معنایی ندارد. حذف باز است تا بشود پیش‌نویس‌های کهنه را پاک کرد.
     """
-    list_display = ('phone', 'filled_ratio', 'updated_at')
+    list_display = ('phone', 'filled_ratio', 'updated_jalali')
     search_fields = ('phone',)
-    readonly_fields = ('phone', 'payload', 'updated_at')
+    readonly_fields = ('phone', 'payload', 'updated_jalali')
+
+    @admin.display(description='آخرین ذخیره', ordering='updated_at')
+    def updated_jalali(self, obj):
+        from core.jalali import format_jalali_datetime
+        return format_jalali_datetime(obj.updated_at) or '—'
 
     def has_add_permission(self, request):
         return False

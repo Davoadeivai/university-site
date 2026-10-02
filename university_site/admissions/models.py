@@ -43,7 +43,7 @@ class AdmissionInfo(models.Model):
     def is_open(self):
         if not self.is_active:
             return False
-        if self.deadline and self.deadline < timezone.now().date():
+        if self.deadline and self.deadline < timezone.localdate():
             return False
         return True
 
@@ -369,7 +369,7 @@ class StudentPayment(models.Model):
 
     @property
     def is_overdue(self):
-        return self.status != 'paid' and self.due_date < timezone.now().date()
+        return self.status != 'paid' and self.due_date < timezone.localdate()
 
 
 # ─────────────────────────────────────────────

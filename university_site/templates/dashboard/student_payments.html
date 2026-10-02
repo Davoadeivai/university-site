@@ -90,7 +90,7 @@
                             {{ p.get_status_display }}
                         </span>
                     </td>
-                    <td>{% if p.semester %}{{ p.semester.name }}{% else %}—{% endif %}</td>
+                    <td>{% if p.semester %}{{ p.semester.name|jalali_years }}{% else %}—{% endif %}</td>
                     <td class="text-nowrap">
                         {% if p.status == 'pending' or p.status == 'failed' %}
                         <a href="{% url 'dashboard:payment_start' p.pk %}" class="btn btn-sm btn-primary">آنلاین</a>

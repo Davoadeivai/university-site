@@ -37,6 +37,13 @@ def jalali_datetime(value, fmt='short'):
     return format_jalali_datetime(value, persian_digits=True)
 
 
+@register.simple_tag
+def jalali_today(fmt='short'):
+    """{% jalali_today %} → ۱۴۰۵/۰۷/۱۰ — جایگزین شمسیِ {% now %} (امروزِ تهران)."""
+    from django.utils import timezone
+    return format_jalali_date(timezone.localdate(), fmt=fmt, persian_digits=True)
+
+
 @register.filter
 def jalali_years(value):
     """سال‌های میلادی داخل متن یا سال تحصیلی را شمسی می‌کند."""

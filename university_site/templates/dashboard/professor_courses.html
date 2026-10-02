@@ -24,7 +24,7 @@
                 <tr>
                     <td><strong>{{ ta.course.name }}</strong></td>
                     <td>{{ ta.course.code }}</td>
-                    <td>{{ ta.semester.name }}</td>
+                    <td>{{ ta.semester.name|jalali_years }}</td>
                     <td>{{ ta.classroom|default:"—" }}</td>
                     <td style="max-width:180px;font-size:12px;">{{ ta.class_schedule|truncatechars:60|default:"—" }}</td>
                     <td>
